@@ -4,7 +4,7 @@
 
 | Phase | Name | Plans | Status | Progress |
 |-------|------|-------|--------|----------|
-| 1 | 1/1 | Complete   | 2026-03-06 | 0/5 |
+| 1 | Foundation | 5 | In Progress | 1/5 |
 | 2 | Mission Control & Activity Log | 4 | Planned | 0/4 |
 | 3 | CodeReviewBot Plugin | 6 | Planned | 0/6 |
 | 4 | DbInspector Plugin | 5 | Planned | 0/5 |
@@ -15,13 +15,14 @@
 
 **Goal:** Runnable Electron app with secure architecture, sidebar navigation, plugin registration, settings persistence, and AI agent configuration.
 
-| Plan | Name | Status |
-|------|------|--------|
-| 01-01 | Scaffold + Dependencies | Planned |
-| 01-02 | App Shell + Navigation | Planned |
-| 01-03 | Plugin Registry System | Planned |
-| 01-04 | Settings Persistence + IPC | Planned |
-| 01-05 | AI Agent Configuration | Planned |
+**Plans:** 5 plans
+
+Plans:
+- [x] 01-01-PLAN.md -- Scaffold electron-vite project with secure BrowserWindow and typed contextBridge
+- [ ] 01-02-PLAN.md -- App shell layout with sidebar navigation, React Router, window state persistence
+- [ ] 01-03-PLAN.md -- PluginDefinition type system and compiled-in plugin registry with stub views
+- [ ] 01-04-PLAN.md -- Settings persistence via electron-store, IPC handlers, settings UI with auto-save
+- [ ] 01-05-PLAN.md -- AI agent configuration table, test connection, per-plugin agent dropdown
 
 ## Phase 2: Mission Control & Activity Log
 
