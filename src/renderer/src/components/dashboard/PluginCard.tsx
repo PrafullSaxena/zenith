@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   GitPullRequest,
@@ -26,10 +27,16 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.Element {
   const navigate = useNavigate()
-  const entries = useActivityStore((s) => s.getEntriesByPlugin(plugin.id))
-  const recentCount = entries.filter(
-    (e) => Date.now() - new Date(e.timestamp).getTime() < 86400000
-  ).length
+  // Select the stable entries array — NOT getEntriesByPlugin which returns a
+  // new array via .filter() on every call, causing Zustand's Object.is check
+  // to always see a "changed" value → infinite re-render loop.
+  const allEntries = useActivityStore((s) => s.entries)
+  const recentCount = useMemo(() => {
+    const now = Date.now()
+    return allEntries.filter(
+      (e) => e.pluginId === plugin.id && now - new Date(e.timestamp).getTime() < 86400000
+    ).length
+  }, [allEntries, plugin.id])
   const Icon = ICON_MAP[plugin.icon]
 
   return (
