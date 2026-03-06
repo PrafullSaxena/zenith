@@ -2,7 +2,9 @@ import { app, BrowserWindow, Menu } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
-import WinState from 'electron-win-state'
+import WinStateModule from 'electron-win-state'
+// CJS/ESM interop: electron-win-state uses module.exports = { default: Class }
+const WinState = (WinStateModule as { default?: typeof WinStateModule }).default || WinStateModule
 
 let mainWindow: BrowserWindow | null = null
 
