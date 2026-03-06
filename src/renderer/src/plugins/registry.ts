@@ -15,7 +15,7 @@ export const PLUGINS: readonly PluginDefinition[] = [
     description: 'Automated Bitbucket PR code review with AI-generated inline comments',
     icon: 'GitPullRequest',
     route: '/code-review-bot',
-    component: React.lazy(() => import('./stubs/CodeReviewBotView')),
+    component: React.lazy(() => import('./code-review-bot/CodeReviewBotView')),
     settingsSchema: [
       {
         key: 'bitbucketWorkspace',
@@ -34,6 +34,24 @@ export const PLUGINS: readonly PluginDefinition[] = [
         defaultValue: '',
         required: true,
         placeholder: 'my-repo'
+      },
+      {
+        key: 'bitbucketClientId',
+        label: 'Bitbucket OAuth Client ID',
+        type: 'text',
+        description: 'OAuth consumer client ID from Bitbucket workspace settings',
+        defaultValue: '',
+        required: true,
+        placeholder: 'your-client-id'
+      },
+      {
+        key: 'bitbucketClientSecret',
+        label: 'Bitbucket OAuth Client Secret',
+        type: 'password',
+        description: 'OAuth consumer client secret (stored securely)',
+        defaultValue: '',
+        required: true,
+        placeholder: 'your-client-secret'
       },
       {
         key: 'autoReview',
