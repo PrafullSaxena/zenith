@@ -5,7 +5,7 @@
 | Phase | Name | Plans | Status | Progress |
 |-------|------|-------|--------|----------|
 | 1 | Foundation | 5 | In Progress | 2/5 |
-| 2 | Mission Control & Activity Log | 4 | Planned | 0/4 |
+| 2 | Mission Control & Activity Log | 3 | Planned | 0/3 |
 | 3 | CodeReviewBot Plugin | 6 | Planned | 0/6 |
 | 4 | DbInspector Plugin | 5 | Planned | 0/5 |
 | 5 | AstroPatch Plugin | 7 | Planned | 0/7 |
@@ -26,7 +26,16 @@ Plans:
 
 ## Phase 2: Mission Control & Activity Log
 
-**Goal:** Main dashboard view with activity tracking.
+**Goal:** Mission Control dashboard as default landing view with responsive plugin summary cards, quick-action navigation, live activity feed, and a dedicated activity log with filtering.
+
+**Requirements:** [DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, ACTV-01, ACTV-02, ACTV-03]
+
+**Plans:** 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md -- Activity types and Zustand store with IPC persistence (data layer)
+- [ ] 02-02-PLAN.md -- Dashboard UI components: MissionControl, PluginCard, ActivityFeed, StatusBadge
+- [ ] 02-03-PLAN.md -- Routing wiring, sidebar icons, dedicated ActivityLog view, default view update
 
 ## Phase 3: CodeReviewBot Plugin
 
