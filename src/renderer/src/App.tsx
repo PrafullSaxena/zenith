@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { PLUGINS } from './plugins/registry'
 import { AppLayout } from './components/AppLayout'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { SettingsLayout } from './components/settings/SettingsLayout'
 
 function LoadingFallback(): React.JSX.Element {
   return (
@@ -32,11 +33,7 @@ function App(): React.JSX.Element {
           ))}
           <Route
             path="/settings"
-            element={
-              <div className="flex h-full items-center justify-center text-text-secondary">
-                Settings
-              </div>
-            }
+            element={<SettingsLayout />}
           />
           {/* Default redirect to first plugin */}
           <Route path="/" element={<Navigate to={PLUGINS[0].route} replace />} />
