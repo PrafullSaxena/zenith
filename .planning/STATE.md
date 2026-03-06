@@ -5,20 +5,20 @@
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** CodeReviewBot must work flawlessly — automated PR code review that connects to Bitbucket, fetches diffs, and posts inline AI-generated review comments
-**Current focus:** Phase 1 — Foundation
+**Current focus:** Phase 2 — Mission Control & Activity Log
 
 ## Current Position
 
-**Current Phase:** 01
-**Current Phase Name:** Foundation
+**Current Phase:** 02
+**Current Phase Name:** Mission Control & Activity Log
 **Total Phases:** 6
-**Current Plan:** Not started
-**Total Plans in Phase:** 5
-**Status:** Milestone complete
+**Current Plan:** 2
+**Total Plans in Phase:** 3
+**Status:** In progress
 **Last Activity:** 2026-03-06
-**Last Activity Description:** Phase 01 complete
+**Last Activity Description:** Completed 02-01 activity log data layer
 
-**Progress:** [██████████] 100%
+**Progress:** [████████░░] 75%
 
 ## Performance Metrics
 
@@ -36,6 +36,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 01-foundation P02 | 3min | 2 tasks | 6 files |
 | Phase 01-foundation P04 | 4min | 2 tasks | 9 files |
 | Phase 01-foundation P05 | 3min | 2 tasks | 7 files |
+| Phase 02 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,8 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: Settings: registerIpcHandlers() before createWindow(); separate electron-store for credentials; zustand with optimistic updates; auto-save per field change
 - [Phase 01-foundation]: Agent store pattern: DEFAULT_PROVIDERS merged with persisted state on load; runtime fields reconstructed; Ollama auto-probed
 - [Phase 01-foundation]: Per-plugin default agent dropdown: shows all providers as fallback, derives configured list reactively from providers array
+- [Phase 02]: Activity store uses MAX_ENTRIES constant (500) for entry cap and STORAGE_KEY constant for settings persistence
+- [Phase 02]: Activity store follows same optimistic-update-then-IPC pattern as settings-store for consistency
 
 ### Pending Todos
 
@@ -72,6 +75,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-06T05:29:23.247Z
-**Stopped at:** Completed 01-foundation-05-PLAN.md
+**Last session:** 2026-03-06T18:09:36.722Z
+**Stopped at:** Completed 02-01-PLAN.md
 **Resume file:** None
