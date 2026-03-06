@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSettingsStore } from '../../stores/settings-store'
+import { useAgentStore } from '../../stores/agent-store'
 import { getPluginById } from '../../plugins/registry'
 import { SettingsField } from './SettingsField'
 import type { PluginId } from '../../types/plugin'
@@ -14,11 +15,15 @@ interface PluginSettingsProps {
  */
 export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Element {
   const { isLoading, loadSettings, getSetting, setSetting } = useSettingsStore()
+  const { providers, loadProviders } = useAgentStore()
+  // Derive configured providers from reactive providers array for proper re-renders
+  const configuredProviders = providers.filter((p) => p.status === 'connected' || p.hasApiKey)
   const [errors, setErrors] = useState<Record<string, string | null>>({})
 
   useEffect(() => {
     loadSettings()
-  }, [loadSettings])
+    loadProviders()
+  }, [loadSettings, loadProviders])
 
   const plugin = getPluginById(pluginId)
 
@@ -76,6 +81,34 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
           error={errors[field.key]}
         />
       ))}
+
+      {/* Default AI Agent dropdown */}
+      <div className="mt-6 border-t border-border pt-5">
+        <label className="mb-1.5 block text-sm font-medium text-text-primary">
+          Default AI Agent
+        </label>
+        <select
+          className="w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition appearance-none"
+          value={
+            (getSetting(`plugins.${pluginId}.defaultAgent`) as string) ?? ''
+          }
+          onChange={(e) =>
+            setSetting(`plugins.${pluginId}.defaultAgent`, e.target.value || null)
+          }
+        >
+          <option value="">None selected</option>
+          {(configuredProviders.length > 0 ? configuredProviders : providers).map(
+            (provider) => (
+              <option key={provider.id} value={provider.id}>
+                {provider.name}
+              </option>
+            )
+          )}
+        </select>
+        <p className="mt-1 text-xs text-text-secondary">
+          Select the AI provider to use with this plugin
+        </p>
+      </div>
     </div>
   )
 }

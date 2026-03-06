@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { PLUGINS } from '../../plugins/registry'
 import { GeneralSettings } from './GeneralSettings'
 import { PluginSettings } from './PluginSettings'
+import { AIAgentsSettings } from './AIAgentsSettings'
 import type { PluginId } from '../../types/plugin'
 
 type SettingsCategory = 'general' | 'ai-agents' | PluginId
@@ -33,14 +34,7 @@ export function SettingsLayout(): React.JSX.Element {
       case 'general':
         return <GeneralSettings />
       case 'ai-agents':
-        return (
-          <div>
-            <h2 className="mb-6 text-lg font-semibold text-text-primary">AI Agents</h2>
-            <p className="text-sm text-text-secondary">
-              AI Agents configuration coming soon.
-            </p>
-          </div>
-        )
+        return <AIAgentsSettings />
       default:
         return <PluginSettings pluginId={activeCategory as PluginId} />
     }
