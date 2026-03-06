@@ -6,7 +6,7 @@ import Store from 'electron-store'
  */
 const DEFAULTS: Record<string, unknown> = {
   general: {
-    defaultView: 'code-review-bot',
+    defaultView: 'dashboard',
     showWelcomeOnStart: true
   },
   plugins: {

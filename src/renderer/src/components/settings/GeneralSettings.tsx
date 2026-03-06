@@ -29,8 +29,11 @@ export function GeneralSettings(): React.JSX.Element {
     label: 'Default View',
     type: 'select',
     description: 'The view to show when the app starts',
-    defaultValue: 'code-review-bot',
-    options: PLUGINS.map((p) => ({ label: p.name, value: p.id }))
+    defaultValue: 'dashboard',
+    options: [
+      { label: 'Mission Control', value: 'dashboard' },
+      ...PLUGINS.map((p) => ({ label: p.name, value: p.id }))
+    ]
   }
 
   const showWelcomeField: SettingsFieldDef = {
