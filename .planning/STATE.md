@@ -14,11 +14,11 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Total Phases:** 6
 **Current Plan:** 4
 **Total Plans in Phase:** 4
-**Status:** Ready to execute
+**Status:** Phase complete — ready for verification
 **Last Activity:** 2026-03-06
 **Last Activity Description:** Completed 03-01 Bitbucket backend (OAuth, API, token manager)
 
-**Progress:** [█████████░] 92%
+**Progress:** [██████████] 100%
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 03 P01 | 5min | 2 tasks | 6 files |
 | Phase 03 P02 | 7min | 2 tasks | 2 files |
 | Phase 03 P03 | 3min | 2 tasks | 7 files |
+| Phase 03 P04 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase 03]: Session-scoped IPC listeners with removeStreamListeners cleanup in done/error/cancel to prevent listener accumulation
 - [Phase 03]: parse-diff output mapped to custom DiffFile[] renderer type to avoid Node.js type leaks into renderer
 - [Phase 03]: Review history persisted via settings.set/get IPC with optimistic local update, capped at 100 entries
+- [Phase 03]: Tab navigation with local useState for diff/review/history tabs rather than router-based sub-routes
+- [Phase 03]: Unified diff view with green/red line backgrounds; inline AI comment cards with severity-colored left borders
+- [Phase 03]: Agent fallback: if no defaultAgent configured, first provider with connected/hasApiKey status is used
 
 ### Pending Todos
 
@@ -95,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-06T20:36:36.025Z
-**Stopped at:** Completed 03-03-PLAN.md
+**Last session:** 2026-03-06T20:44:19.603Z
+**Stopped at:** Completed 03-04-PLAN.md
 **Resume file:** None
