@@ -1,0 +1,97 @@
+/**
+ * AI provider factory.
+ * Maps agent store provider IDs to Vercel AI SDK LanguageModel instances.
+ * API keys are resolved from the credentials store (safeStorage) in the main process.
+ */
+
+import { safeStorage } from 'electron'
+import Store from 'electron-store'
+import { createAnthropic } from '@ai-sdk/anthropic'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createOpenAI } from '@ai-sdk/openai'
+import { createOllama } from 'ollama-ai-provider'
+import type { LanguageModel } from 'ai'
+
+/**
+ * Credentials store instance (same pattern as ipc-handlers.ts).
+ * Values are encrypted via safeStorage and stored as base64 strings.
+ */
+const credentialsStore = new Store({ name: 'zenith-credentials' })
+
+/**
+ * Retrieve a decrypted API key for the given provider from the credentials store.
+ * Returns undefined if no key is stored or encryption is unavailable.
+ */
+export async function getApiKeyForProvider(providerId: string): Promise<string | undefined> {
+  if (!credentialsStore.has(providerId)) {
+    return undefined
+  }
+
+  if (!safeStorage.isEncryptionAvailable()) {
+    return undefined
+  }
+
+  const encrypted = credentialsStore.get(providerId) as string
+  return safeStorage.decryptString(Buffer.from(encrypted, 'base64'))
+}
+
+/**
+ * Create a Vercel AI SDK LanguageModel from a provider ID and model name.
+ *
+ * @param providerId - Provider identifier from agent store (e.g. 'claude', 'gemini', 'ollama')
+ * @param modelName  - Model identifier (e.g. 'claude-sonnet-4-20250514', 'gemini-2.0-flash')
+ * @param apiKey     - Optional API key (overrides credentials store lookup)
+ * @param baseUrl    - Optional custom base URL for the provider
+ * @returns A LanguageModel instance ready for streamText() / generateText()
+ */
+export function createModel(
+  providerId: string,
+  modelName: string,
+  apiKey?: string,
+  baseUrl?: string
+): LanguageModel {
+  switch (providerId) {
+    case 'claude': {
+      const provider = createAnthropic({
+        ...(apiKey ? { apiKey } : {})
+      })
+      return provider(modelName)
+    }
+
+    case 'gemini': {
+      const provider = createGoogleGenerativeAI({
+        ...(apiKey ? { apiKey } : {})
+      })
+      return provider(modelName)
+    }
+
+    case 'ollama': {
+      // ollama-ai-provider exports LanguageModelV1; cast is safe because
+      // the ai package's streamText/generateText accept V1 models at runtime.
+      const provider = createOllama({
+        ...(baseUrl ? { baseURL: baseUrl } : {})
+      })
+      return provider(modelName) as unknown as LanguageModel
+    }
+
+    case 'codex':
+    case 'opencode':
+    case 'cursor-agent':
+    default: {
+      if (
+        providerId !== 'codex' &&
+        providerId !== 'opencode' &&
+        providerId !== 'cursor-agent' &&
+        !providerId.startsWith('custom-')
+      ) {
+        throw new Error(`Unsupported provider: ${providerId}`)
+      }
+
+      const provider = createOpenAI({
+        ...(apiKey ? { apiKey } : {}),
+        ...(baseUrl ? { baseURL: baseUrl } : {})
+      })
+      return provider(modelName)
+    }
+  }
+}
