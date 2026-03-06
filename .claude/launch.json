@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["node_modules/.pnpm/electron-vite@5.0.0_vite@7.3.1_@types+node@22.19.15_jiti@2.6.1_lightningcss@1.31.1_/node_modules/electron-vite/bin/electron-vite.js", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "preview",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["node_modules/.pnpm/electron-vite@5.0.0_vite@7.3.1_@types+node@22.19.15_jiti@2.6.1_lightningcss@1.31.1_/node_modules/electron-vite/bin/electron-vite.js", "preview"],
+      "port": 5173
+    }
+  ]
+}
