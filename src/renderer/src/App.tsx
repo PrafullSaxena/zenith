@@ -1,23 +1,50 @@
+import { Suspense } from 'react'
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { PLUGINS } from './plugins/registry'
+import { AppLayout } from './components/AppLayout'
+import { ErrorBoundary } from './components/ErrorBoundary'
+
+function LoadingFallback(): React.JSX.Element {
+  return (
+    <div className="flex h-full items-center justify-center">
+      <span className="text-sm text-text-secondary">Loading...</span>
+    </div>
+  )
+}
+
 function App(): React.JSX.Element {
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100vh',
-        background: '#0f0f0f',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'oklch(90% 0 0)',
-        fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
-      }}
-    >
-      <div style={{ textAlign: 'center', opacity: 0.3 }}>
-        <div style={{ fontSize: 14, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          Zenith
-        </div>
-      </div>
-    </div>
+    <HashRouter>
+      <Routes>
+        <Route element={<AppLayout />}>
+          {PLUGINS.map((plugin) => (
+            <Route
+              key={plugin.id}
+              path={plugin.route}
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <ErrorBoundary>
+                    <plugin.component />
+                  </ErrorBoundary>
+                </Suspense>
+              }
+            />
+          ))}
+          <Route
+            path="/settings"
+            element={
+              <div className="flex h-full items-center justify-center text-text-secondary">
+                Settings
+              </div>
+            }
+          />
+          {/* Default redirect to first plugin */}
+          <Route path="/" element={<Navigate to={PLUGINS[0].route} replace />} />
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to={PLUGINS[0].route} replace />} />
+        </Route>
+      </Routes>
+    </HashRouter>
   )
 }
 
