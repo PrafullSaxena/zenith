@@ -6,7 +6,7 @@
 |-------|------|-------|--------|----------|
 | 1 | Foundation | 5 | In Progress | 2/5 |
 | 2 | Mission Control & Activity Log | 3 | Planned | 0/3 |
-| 3 | CodeReviewBot Plugin | 6 | Planned | 0/6 |
+| 3 | CodeReviewBot Plugin | 4 | Planned | 0/4 |
 | 4 | DbInspector Plugin | 5 | Planned | 0/5 |
 | 5 | AstroPatch Plugin | 7 | Planned | 0/7 |
 | 6 | Polish & Production | 3 | Planned | 0/3 |
@@ -39,7 +39,17 @@ Plans:
 
 ## Phase 3: CodeReviewBot Plugin
 
-**Goal:** Automated PR code review via Bitbucket + AI.
+**Goal:** Working CodeReviewBot plugin: connect to Bitbucket via OAuth, browse PRs, view diffs, stream AI code review, post inline comments back to Bitbucket, and persist review history.
+
+**Requirements:** [CRVW-01, CRVW-02, CRVW-03, CRVW-04, CRVW-05, CRVW-06, CRVW-07, CRVW-08]
+
+**Plans:** 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md -- Install deps, Bitbucket OAuth flow, API client, token manager (main process)
+- [ ] 03-02-PLAN.md -- AI streaming infrastructure with Vercel AI SDK and provider factory (main process)
+- [ ] 03-03-PLAN.md -- IPC handlers, preload bridge, renderer types, review Zustand store
+- [ ] 03-04-PLAN.md -- CodeReviewBot UI: PR list, diff viewer, review panel, history, registry swap
 
 ## Phase 4: DbInspector Plugin
 
