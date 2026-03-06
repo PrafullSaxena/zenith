@@ -12,13 +12,13 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Current Phase:** 03
 **Current Phase Name:** CodeReviewBot Plugin
 **Total Phases:** 6
-**Current Plan:** 3
+**Current Plan:** 4
 **Total Plans in Phase:** 4
 **Status:** Ready to execute
 **Last Activity:** 2026-03-06
 **Last Activity Description:** Completed 03-01 Bitbucket backend (OAuth, API, token manager)
 
-**Progress:** [████████░░] 83%
+**Progress:** [█████████░] 92%
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 02 P03 | 2min | 2 tasks | 5 files |
 | Phase 03 P01 | 5min | 2 tasks | 6 files |
 | Phase 03 P02 | 7min | 2 tasks | 2 files |
+| Phase 03 P03 | 3min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,10 @@ Recent decisions affecting current work:
 - [Phase 03]: Cast ollama-ai-provider LanguageModelV1 to LanguageModel since ollama-ai-provider has not updated to V3 types yet; runtime compatible
 - [Phase 03]: Guard against destroyed BrowserWindow during IPC streaming to prevent send-after-close crashes
 - [Phase 03]: Suppress AbortError on review cancellation to avoid false error events in renderer
+- [Phase 03]: Fire-and-forget streamReview in ai:startReview IPC handler -- returns immediately while chunks stream via webContents.send events
+- [Phase 03]: Session-scoped IPC listeners with removeStreamListeners cleanup in done/error/cancel to prevent listener accumulation
+- [Phase 03]: parse-diff output mapped to custom DiffFile[] renderer type to avoid Node.js type leaks into renderer
+- [Phase 03]: Review history persisted via settings.set/get IPC with optimistic local update, capped at 100 entries
 
 ### Pending Todos
 
@@ -90,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-06T20:30:45.105Z
-**Stopped at:** Completed 03-02-PLAN.md
+**Last session:** 2026-03-06T20:36:36.025Z
+**Stopped at:** Completed 03-03-PLAN.md
 **Resume file:** None
