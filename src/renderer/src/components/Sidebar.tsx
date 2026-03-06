@@ -5,6 +5,8 @@ import {
   Wrench,
   MessageSquare,
   Settings,
+  LayoutDashboard,
+  Activity,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PLUGINS } from '../plugins/registry'
@@ -19,6 +21,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Wrench,
   MessageSquare,
   Settings,
+  LayoutDashboard,
+  Activity,
 }
 
 function SidebarIcon({
@@ -71,8 +75,16 @@ export function Sidebar(): React.JSX.Element {
       {/* Drag region for macOS traffic lights */}
       <div className="drag-region h-8 w-full" />
 
-      {/* Plugin icons */}
+      {/* Navigation icons */}
       <nav className="flex flex-1 flex-col items-center gap-2 pt-1">
+        {/* App-level navigation */}
+        <SidebarIcon iconName="LayoutDashboard" label="Mission Control" to="/dashboard" />
+        <SidebarIcon iconName="Activity" label="Activity Log" to="/activity" />
+
+        {/* Separator between app icons and plugin icons */}
+        <div className="mx-auto my-1 h-px w-6 bg-border" />
+
+        {/* Plugin icons */}
         {PLUGINS.map((plugin) => (
           <SidebarIcon
             key={plugin.id}
