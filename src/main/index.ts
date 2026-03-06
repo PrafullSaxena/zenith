@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
+import { registerIpcHandlers } from './ipc-handlers'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -65,6 +66,7 @@ function buildMenu(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 app.whenReady().then(() => {
+  registerIpcHandlers()
   createWindow()
   buildMenu()
 
