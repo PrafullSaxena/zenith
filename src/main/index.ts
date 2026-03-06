@@ -33,14 +33,15 @@ function createWindow(): void {
     },
   })
 
-  // CSP header: deny everything except self; adjust as plugins add external fetches
+  // CSP header: strict in production, relaxed in dev for Vite HMR
   mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    const csp = is.dev
+      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ws://localhost:*"
+      : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [
-          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:",
-        ],
+        'Content-Security-Policy': [csp],
       },
     })
   })
