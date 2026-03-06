@@ -2,13 +2,18 @@ import { app, BrowserWindow, Menu } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
+import WinState from 'electron-win-state'
 
 let mainWindow: BrowserWindow | null = null
 
 function createWindow(): void {
+  const winState = new WinState({
+    defaultWidth: 1280,
+    defaultHeight: 800,
+  })
+
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
+    ...winState.winOptions,
     minWidth: 900,
     minHeight: 600,
     titleBarStyle: 'hidden',
@@ -37,6 +42,9 @@ function createWindow(): void {
       },
     })
   })
+
+  // Track window size/position for persistence across sessions
+  winState.manage(mainWindow)
 
   mainWindow.once('ready-to-show', () => mainWindow!.show())
   mainWindow.on('closed', () => {
