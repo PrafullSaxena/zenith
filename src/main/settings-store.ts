@@ -10,12 +10,16 @@ const DEFAULTS: Record<string, unknown> = {
     showWelcomeOnStart: true
   },
   plugins: {
-    'code-review-bot': {},
+    'code-review-bot': {
+      bitbucketClientId: '',
+      bitbucketClientSecret: ''
+    },
     'db-inspector': {},
     'astro-patch': {},
     'prompt-builder': {}
   },
-  agents: {}
+  agents: {},
+  reviewHistory: []
 }
 
 const store = new Store({ name: 'zenith-settings' })

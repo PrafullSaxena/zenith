@@ -1,12 +1,19 @@
-import { ipcMain, safeStorage } from 'electron'
+import { ipcMain, safeStorage, BrowserWindow } from 'electron'
 import Store from 'electron-store'
 import { getSettings, getSetting, setSetting, resetSettings } from './settings-store'
+import { TokenManager } from './bitbucket/token-manager'
+import { startOAuthFlow } from './bitbucket/oauth'
+import { listOpenPRs, getPRDiff, postInlineComment } from './bitbucket/api'
+import { streamReview, cancelReview } from './ai/stream'
 
 /**
  * Separate electron-store instance for credentials.
  * Values are encrypted via safeStorage and stored as base64 strings.
  */
 const credentialsStore = new Store({ name: 'zenith-credentials' })
+
+/** Module-level token manager for Bitbucket OAuth token lifecycle. */
+const tokenManager = new TokenManager()
 
 /**
  * Registers all IPC handlers for settings, credentials, and app channels.
@@ -37,6 +44,89 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('credentials:has', (_event, service: string) => {
     return credentialsStore.has(service)
+  })
+
+  // --- Bitbucket channels ---
+  ipcMain.handle('bitbucket:connect', async () => {
+    const clientId = getSetting('plugins.code-review-bot.bitbucketClientId') as string
+    const clientSecret = getSetting('plugins.code-review-bot.bitbucketClientSecret') as string
+
+    if (!clientId || !clientSecret) {
+      throw new Error(
+        'Bitbucket OAuth credentials not configured. Set Client ID and Client Secret in Settings > Code Review Bot.'
+      )
+    }
+
+    const tokens = await startOAuthFlow(clientId, clientSecret)
+    tokenManager.storeTokens(tokens, clientId, clientSecret)
+    return { connected: true }
+  })
+
+  ipcMain.handle('bitbucket:disconnect', () => {
+    tokenManager.clearTokens()
+    return { connected: false }
+  })
+
+  ipcMain.handle('bitbucket:isConnected', () => {
+    return tokenManager.isConnected()
+  })
+
+  ipcMain.handle(
+    'bitbucket:listPRs',
+    async (_event, workspace: string, repoSlug: string) => {
+      const token = await tokenManager.getAccessToken()
+      return listOpenPRs(workspace, repoSlug, token)
+    }
+  )
+
+  ipcMain.handle(
+    'bitbucket:getPRDiff',
+    async (_event, workspace: string, repoSlug: string, prId: number) => {
+      const token = await tokenManager.getAccessToken()
+      return getPRDiff(workspace, repoSlug, prId, token)
+    }
+  )
+
+  ipcMain.handle(
+    'bitbucket:postComment',
+    async (
+      _event,
+      workspace: string,
+      repoSlug: string,
+      prId: number,
+      filePath: string,
+      line: number,
+      comment: string
+    ) => {
+      const token = await tokenManager.getAccessToken()
+      await postInlineComment(workspace, repoSlug, prId, token, filePath, line, comment)
+    }
+  )
+
+  // --- AI channels ---
+  ipcMain.handle(
+    'ai:startReview',
+    async (
+      _event,
+      providerId: string,
+      modelName: string,
+      diff: string,
+      sessionId: string
+    ) => {
+      const mainWindow =
+        BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      if (!mainWindow) {
+        throw new Error('No browser window available for streaming')
+      }
+
+      // Fire and forget -- streaming happens asynchronously via IPC events
+      streamReview({ mainWindow, diff, providerId, modelName, sessionId })
+      return { started: true, sessionId }
+    }
+  )
+
+  ipcMain.handle('ai:cancelReview', (_event, sessionId: string) => {
+    cancelReview(sessionId)
   })
 
   // --- App channels ---
