@@ -778,6 +778,18 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
         console.error(`[review-store] Failed to post summary comment:`, err)
       }
     }
+
+    // Update history entry with actual posted count
+    const finalPostedCount = postedComments.length
+    if (finalPostedCount > 0) {
+      const updatedHistory = get().history.map((h) =>
+        h.prId === prId && h.workspace === workspace && h.repoSlug === repoSlug
+          ? { ...h, postedCount: finalPostedCount }
+          : h
+      )
+      set({ history: updatedHistory })
+      await window.api.settings.set(HISTORY_STORAGE_KEY, updatedHistory)
+    }
   },
 
   loadHistory: async () => {

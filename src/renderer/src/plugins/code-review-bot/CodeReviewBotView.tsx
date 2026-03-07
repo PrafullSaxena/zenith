@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useReviewStore } from '../../stores/review-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useAgentStore } from '../../stores/agent-store'
@@ -128,23 +128,30 @@ export default function CodeReviewBotView(): React.JSX.Element {
     }
   }, [workspace, repoSlug, loadPersistedSessions])
 
+  // Track which sessions have already been logged to avoid duplicates
+  // (effect re-fires on mount/re-render when status is already 'complete')
+  const loggedSessionIds = useRef<Set<string>>(new Set())
+
   // Activity integration: log review completion or error
   useEffect(() => {
-    if (!selectedPR) return
-    const status = currentSession?.status
+    if (!selectedPR || !currentSession) return
+    const { status, sessionId } = currentSession
+
+    // Skip if already logged this session
+    if (loggedSessionIds.current.has(sessionId)) return
 
     if (status === 'complete') {
+      loggedSessionIds.current.add(sessionId)
       const sessionComments = currentSession.comments ?? []
       const commentCount = sessionComments.length
       const durationMs = Date.now() - new Date(currentSession.startedAt).getTime()
 
-      const postedCount = sessionComments.filter((c) => c.posted).length
       addActivity({
         pluginId: 'code-review-bot',
         operation: `PR Review: ${selectedPR.title}`,
         status: commentCount > 0 ? 'success' : 'failure',
         durationMs,
-        detail: `${workspace}/${repoSlug} · ${commentCount} comments, ${postedCount} posted`
+        detail: `${workspace}/${repoSlug} · ${commentCount} comments found`
       })
 
       addHistoryEntry({
@@ -154,16 +161,18 @@ export default function CodeReviewBotView(): React.JSX.Element {
         workspace,
         repoSlug,
         commentCount,
-        postedCount,
+        postedCount: 0,
         status: commentCount > 0 ? 'success' : 'partial'
       })
     } else if (status === 'error') {
+      loggedSessionIds.current.add(sessionId)
+
       addActivity({
         pluginId: 'code-review-bot',
         operation: `PR Review: ${selectedPR.title}`,
         status: 'failure',
         durationMs: null,
-        detail: `${workspace}/${repoSlug} · ${currentSession?.error ?? 'unknown error'}`
+        detail: `${workspace}/${repoSlug} · ${currentSession.error ?? 'unknown error'}`
       })
 
       addHistoryEntry({
