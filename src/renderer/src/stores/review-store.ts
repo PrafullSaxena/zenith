@@ -784,7 +784,18 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
     set({ isLoadingHistory: true })
     try {
       const raw = await window.api.settings.get(HISTORY_STORAGE_KEY)
-      const history = Array.isArray(raw) ? (raw as ReviewHistoryEntry[]) : []
+      const all = Array.isArray(raw) ? (raw as ReviewHistoryEntry[]) : []
+
+      // Prune entries older than 5 days
+      const fiveDaysAgo = Date.now() - 5 * 24 * 60 * 60 * 1000
+      const history = all.filter((e) => new Date(e.timestamp).getTime() > fiveDaysAgo)
+
+      // Persist pruned list if anything was removed
+      if (history.length < all.length) {
+        console.log(`[review-store] Pruned ${all.length - history.length} history entries older than 5 days`)
+        await window.api.settings.set(HISTORY_STORAGE_KEY, history)
+      }
+
       set({ history, isLoadingHistory: false })
     } catch (err) {
       console.error('[review-store] Failed to load history:', err)

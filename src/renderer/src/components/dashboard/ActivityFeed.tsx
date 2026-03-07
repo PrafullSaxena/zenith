@@ -56,10 +56,17 @@ export function ActivityFeed({
                 {Icon ? <Icon size={16} /> : <span className="text-xs">?</span>}
               </div>
 
-              {/* Operation name */}
-              <span className="min-w-0 flex-1 truncate text-sm text-text-primary">
-                {entry.operation}
-              </span>
+              {/* Operation name + detail */}
+              <div className="min-w-0 flex-1">
+                <span className="block truncate text-sm text-text-primary">
+                  {entry.operation}
+                </span>
+                {entry.detail && (
+                  <span className="block truncate text-xs text-text-secondary">
+                    {entry.detail}
+                  </span>
+                )}
+              </div>
 
               {/* Status badge */}
               <StatusBadge status={entry.status} />

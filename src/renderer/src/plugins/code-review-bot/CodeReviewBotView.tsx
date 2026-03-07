@@ -86,6 +86,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
 
   // Agent store for configured AI provider
   const providers = useAgentStore((s) => s.providers)
+  const loadProviders = useAgentStore((s) => s.loadProviders)
   const agent = defaultAgentId
     ? providers.find((p) => p.id === defaultAgentId)
     : providers.find((p) => p.status === 'connected' || p.hasApiKey)
@@ -94,12 +95,13 @@ export default function CodeReviewBotView(): React.JSX.Element {
   // Activity store
   const addActivity = useActivityStore((s) => s.addEntry)
 
-  // On mount: ensure settings are loaded, check connection, and load history
+  // On mount: ensure settings are loaded, check connection, load history, and probe agents
   useEffect(() => {
     loadSettings()
     checkConnection()
     loadHistory()
-  }, [loadSettings, checkConnection, loadHistory])
+    loadProviders()
+  }, [loadSettings, checkConnection, loadHistory, loadProviders])
 
   // Load PRs when connected + repo is configured. Triggers on:
   // - component mount (if already connected with settings loaded)
@@ -136,14 +138,13 @@ export default function CodeReviewBotView(): React.JSX.Element {
       const commentCount = sessionComments.length
       const durationMs = Date.now() - new Date(currentSession.startedAt).getTime()
 
+      const postedCount = sessionComments.filter((c) => c.posted).length
       addActivity({
         pluginId: 'code-review-bot',
-        operation: 'PR Review',
+        operation: `PR Review: ${selectedPR.title}`,
         status: commentCount > 0 ? 'success' : 'failure',
         durationMs,
-        detail: commentCount > 0
-          ? `Reviewed PR #${selectedPR.id} — ${commentCount} comments`
-          : `Reviewed PR #${selectedPR.id} — no comments parsed (check console for AI output)`
+        detail: `${workspace}/${repoSlug} · ${commentCount} comments, ${postedCount} posted`
       })
 
       addHistoryEntry({
@@ -153,15 +154,16 @@ export default function CodeReviewBotView(): React.JSX.Element {
         workspace,
         repoSlug,
         commentCount,
-        postedCount: sessionComments.filter((c) => c.posted).length,
+        postedCount,
         status: commentCount > 0 ? 'success' : 'partial'
       })
     } else if (status === 'error') {
       addActivity({
         pluginId: 'code-review-bot',
-        operation: 'PR Review',
+        operation: `PR Review: ${selectedPR.title}`,
         status: 'failure',
-        detail: `PR #${selectedPR.id} — ${currentSession?.error ?? 'unknown error'}`
+        durationMs: null,
+        detail: `${workspace}/${repoSlug} · ${currentSession?.error ?? 'unknown error'}`
       })
 
       addHistoryEntry({
