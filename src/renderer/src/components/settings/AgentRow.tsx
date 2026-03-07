@@ -12,6 +12,7 @@ interface AgentRowProps {
 const typeLabels: Record<string, string> = {
   cloud: 'Cloud',
   local: 'Local',
+  cli: 'CLI',
   custom: 'Custom'
 }
 

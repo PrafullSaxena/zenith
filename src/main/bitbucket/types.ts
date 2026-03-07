@@ -1,9 +1,9 @@
 /**
- * Bitbucket API response types for OAuth tokens, pull requests, and inline comments.
- * Used by oauth.ts, api.ts, and token-manager.ts in the main process.
+ * Bitbucket API response types for pull requests, inline comments, and credentials.
+ * Used by api.ts and token-manager.ts in the main process.
  */
 
-/** OAuth 2.0 token pair returned by Bitbucket token endpoint */
+/** OAuth 2.0 token pair returned by Bitbucket token endpoint (legacy — kept for type compat) */
 export interface BitbucketTokenPair {
   access_token: string
   refresh_token: string
@@ -44,9 +44,11 @@ export interface BitbucketPR {
 /** Paginated PR list response from Bitbucket */
 export interface BitbucketPRListResponse {
   values: BitbucketPR[]
-  page: number
-  size: number
-  next?: string
+  page?: number
+  size?: number       // Total count of matching items
+  pagelen?: number    // Items per page
+  next?: string       // URL for next page (absent on last page)
+  previous?: string   // URL for previous page
 }
 
 /** Inline comment payload for posting to a PR */
@@ -61,7 +63,13 @@ export interface BitbucketInlineComment {
   }
 }
 
-/** Token data stored locally via safeStorage + electron-store */
+/** App Password credentials stored locally via safeStorage + electron-store */
+export interface StoredCredentials {
+  username: string
+  appPassword: string
+}
+
+/** Legacy OAuth token storage (kept for migration) */
 export interface StoredTokens {
   accessToken: string
   refreshToken: string

@@ -2,9 +2,9 @@ import { ipcMain, safeStorage, BrowserWindow } from 'electron'
 import Store from 'electron-store'
 import { getSettings, getSetting, setSetting, resetSettings } from './settings-store'
 import { TokenManager } from './bitbucket/token-manager'
-import { startOAuthFlow } from './bitbucket/oauth'
-import { listOpenPRs, getPRDiff, postInlineComment } from './bitbucket/api'
-import { streamReview, cancelReview } from './ai/stream'
+import { listOpenPRs, getPRDiff, postInlineComment, postTopLevelComment, testCredentials, basicAuthHeader } from './bitbucket/api'
+import { streamReview, cancelSdkReview } from './ai/stream'
+import { streamCliReview, cancelCliReview, probeCliBinary } from './ai/cli-stream'
 
 /**
  * Separate electron-store instance for credentials.
@@ -12,7 +12,7 @@ import { streamReview, cancelReview } from './ai/stream'
  */
 const credentialsStore = new Store({ name: 'zenith-credentials' })
 
-/** Module-level token manager for Bitbucket OAuth token lifecycle. */
+/** Module-level credential manager for Bitbucket App Password auth. */
 const tokenManager = new TokenManager()
 
 /**
@@ -48,22 +48,27 @@ export function registerIpcHandlers(): void {
 
   // --- Bitbucket channels ---
   ipcMain.handle('bitbucket:connect', async () => {
-    const clientId = getSetting('plugins.code-review-bot.bitbucketClientId') as string
-    const clientSecret = getSetting('plugins.code-review-bot.bitbucketClientSecret') as string
+    const username = getSetting('plugins.code-review-bot.bitbucketUsername') as string
+    const appPassword = getSetting('plugins.code-review-bot.bitbucketAppPassword') as string
 
-    if (!clientId || !clientSecret) {
+    if (!username || !appPassword) {
       throw new Error(
-        'Bitbucket OAuth credentials not configured. Set Client ID and Client Secret in Settings > Code Review Bot.'
+        'Bitbucket credentials not configured. Set Username and App Password in Settings > CodeReviewBot.'
       )
     }
 
-    const tokens = await startOAuthFlow(clientId, clientSecret)
-    tokenManager.storeTokens(tokens, clientId, clientSecret)
-    return { connected: true }
+    // Test credentials by calling the /user endpoint
+    const authHeader = basicAuthHeader(username, appPassword)
+    const displayName = await testCredentials(authHeader)
+
+    // Store credentials securely for future API calls
+    tokenManager.storeCredentials(username, appPassword)
+
+    return { connected: true, displayName }
   })
 
   ipcMain.handle('bitbucket:disconnect', () => {
-    tokenManager.clearTokens()
+    tokenManager.clearCredentials()
     return { connected: false }
   })
 
@@ -73,17 +78,17 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     'bitbucket:listPRs',
-    async (_event, workspace: string, repoSlug: string) => {
-      const token = await tokenManager.getAccessToken()
-      return listOpenPRs(workspace, repoSlug, token)
+    async (_event, workspace: string, repoSlug: string, page?: number, pagelen?: number) => {
+      const authHeader = tokenManager.getAuthHeader()
+      return listOpenPRs(workspace, repoSlug, authHeader, page, pagelen)
     }
   )
 
   ipcMain.handle(
     'bitbucket:getPRDiff',
     async (_event, workspace: string, repoSlug: string, prId: number) => {
-      const token = await tokenManager.getAccessToken()
-      return getPRDiff(workspace, repoSlug, prId, token)
+      const authHeader = tokenManager.getAuthHeader()
+      return getPRDiff(workspace, repoSlug, prId, authHeader)
     }
   )
 
@@ -98,8 +103,22 @@ export function registerIpcHandlers(): void {
       line: number,
       comment: string
     ) => {
-      const token = await tokenManager.getAccessToken()
-      await postInlineComment(workspace, repoSlug, prId, token, filePath, line, comment)
+      const authHeader = tokenManager.getAuthHeader()
+      await postInlineComment(workspace, repoSlug, prId, authHeader, filePath, line, comment)
+    }
+  )
+
+  ipcMain.handle(
+    'bitbucket:postTopLevelComment',
+    async (
+      _event,
+      workspace: string,
+      repoSlug: string,
+      prId: number,
+      comment: string
+    ) => {
+      const authHeader = tokenManager.getAuthHeader()
+      await postTopLevelComment(workspace, repoSlug, prId, authHeader, comment)
     }
   )
 
@@ -111,7 +130,9 @@ export function registerIpcHandlers(): void {
       providerId: string,
       modelName: string,
       diff: string,
-      sessionId: string
+      sessionId: string,
+      command?: string,
+      guidelines?: string
     ) => {
       const mainWindow =
         BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
@@ -119,14 +140,22 @@ export function registerIpcHandlers(): void {
         throw new Error('No browser window available for streaming')
       }
 
-      // Fire and forget -- streaming happens asynchronously via IPC events
-      streamReview({ mainWindow, diff, providerId, modelName, sessionId })
+      if (command) {
+        // CLI agent — spawn a local process
+        streamCliReview({ mainWindow, diff, command, sessionId, guidelines })
+      } else {
+        // SDK agent — use Vercel AI SDK
+        streamReview({ mainWindow, diff, providerId, modelName, sessionId, guidelines })
+      }
+
       return { started: true, sessionId }
     }
   )
 
   ipcMain.handle('ai:cancelReview', (_event, sessionId: string) => {
-    cancelReview(sessionId)
+    // Try both cancellation methods — only the active one will have the session
+    cancelSdkReview(sessionId)
+    cancelCliReview(sessionId)
   })
 
   // --- App channels ---
@@ -150,5 +179,10 @@ export function registerIpcHandlers(): void {
     } catch {
       return { available: false, models: [] }
     }
+  })
+
+  ipcMain.handle('app:probeCli', async (_event, command: string) => {
+    const available = await probeCliBinary(command)
+    return { available }
   })
 }

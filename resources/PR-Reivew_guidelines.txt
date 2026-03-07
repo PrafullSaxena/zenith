@@ -1,0 +1,292 @@
+1) Comment schema to use internally
+
+Do not post raw model output. Normalize it first.
+
+type ReviewSeverity = "blocking" | "important" | "suggestion" | "info";
+type ReviewConfidence = "high" | "medium" | "low";
+type ReviewKind =
+  | "bug"
+  | "security"
+  | "performance"
+  | "correctness"
+  | "maintainability"
+  | "test-gap"
+  | "style";
+
+type ReviewFinding = {
+  id: string;                 // stable hash: repo + pr + file + line + kind + normalized message
+  kind: ReviewKind;
+  severity: ReviewSeverity;
+  confidence: ReviewConfidence;
+
+  title: string;              // short issue label
+  body: string;               // concise explanation
+  whyItMatters?: string;      // impact
+  suggestedFix?: string;      // concrete next step
+
+  filePath?: string;          // relative repo path
+  lineTo?: number;            // target line in new version
+  lineFrom?: number;          // target line in old version, if needed
+
+  duplicateOf?: string;       // finding id if grouped
+  source: "ai" | "rule" | "hybrid";
+  tags?: string[];
+
+  isInlineEligible: boolean;
+  shouldPost: boolean;
+  shouldCreateTask: boolean;
+
+  metadata?: {
+    model?: string;
+    runId?: string;
+    diffHunkId?: string;
+  };
+};
+
+2) Posting policy that will not turn your bot into office malware
+
+Use this decision table:
+	•	blocking + high confidence → inline comment, optionally task
+	•	important + high confidence → inline comment
+	•	suggestion + high confidence → inline comment only if genuinely useful
+	•	medium confidence → summary or clearly marked “please verify”
+	•	low confidence → do not post by default
+
+Also enforce:
+	•	max 10 comments per PR
+	•	dedupe by id
+	•	group repeated findings into one summary
+	•	never post style-only junk unless repo policy explicitly enables it
+
+3) Comment body template
+
+Keep it rigid and short.
+
+Issue: {title}
+
+Why it matters: {whyItMatters}
+
+Suggested fix: {suggestedFix}
+
+Severity: {severity}
+Confidence: {confidence}
+
+Example rendered body:
+
+Issue: Possible null dereference of provider address
+
+Why it matters: Augment providers with incomplete records can cause a runtime failure in the geocode request builder.
+
+Suggested fix: Guard `provider.getAddress()` before dereferencing, or filter incomplete providers before request construction.
+
+Severity: important
+Confidence: high
+
+4) Exact Bitbucket Cloud API endpoints you need
+
+Create PR comment
+
+POST /2.0/repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments
+
+Bitbucket Cloud uses the pull request comments endpoint for both top-level and inline PR comments.  ￼
+
+List PR comments
+
+GET /2.0/repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments
+
+Get PR activity
+
+GET /2.0/repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/activity
+
+PR activity is useful for dedupe and for understanding existing review state.  ￼
+
+5) Exact payloads
+
+A) Top-level PR comment
+
+Use this when the comment is not tied to a specific line.
+
+curl -u "EMAIL:API_TOKEN" \
+  -X POST \
+  "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": {
+      "raw": "Issue: Missing test coverage for county-level gap recomputation\n\nWhy it matters: The logic changes affect recalculation paths and can regress silently.\n\nSuggested fix: Add one integration test for county-only recompute and one for county+specialty recompute.\n\nSeverity: suggestion\nConfidence: high"
+    }
+  }'
+
+The content.raw field is the standard way to provide comment text for Bitbucket Cloud comments.  ￼
+
+B) Inline PR comment on a changed file/line
+
+Use inline.path and either inline.to or inline.from. Atlassian’s docs and community guidance note that if both from and to are sent, to is ignored, so do not send both unless you know exactly why.  ￼
+
+curl -u "EMAIL:API_TOKEN" \
+  -X POST \
+  "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": {
+      "raw": "Issue: Shared mutable list updated inside parallel execution\n\nWhy it matters: This can corrupt results or throw intermittently under concurrent writes.\n\nSuggested fix: Replace the shared ArrayList with a collector or a thread-safe accumulation strategy.\n\nSeverity: blocking\nConfidence: high"
+    },
+    "inline": {
+      "path": "src/main/java/com/example/GapService.java",
+      "to": 147
+    }
+  }'
+
+C) Reply to an existing PR comment thread
+
+For follow-up comments, set the parent comment.
+
+curl -u "EMAIL:API_TOKEN" \
+  -X POST \
+  "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": {
+      "raw": "Confirmed. This still applies after the latest push because the null path remains unguarded."
+    },
+    "parent": {
+      "id": 123456789
+    }
+  }'
+
+Bitbucket Cloud supports threaded PR comments through parent-child comment relationships on the PR comments resource.  ￼
+
+6) TypeScript helper for posting comments
+
+type BitbucketInline = {
+  path: string;
+  to?: number;
+  from?: number;
+};
+
+type PostPrCommentInput = {
+  workspace: string;
+  repoSlug: string;
+  pullRequestId: number;
+  authUser: string;       // email for API token auth
+  authToken: string;
+  raw: string;
+  inline?: BitbucketInline;
+  parentId?: number;
+};
+
+async function postBitbucketPrComment(input: PostPrCommentInput) {
+  const {
+    workspace,
+    repoSlug,
+    pullRequestId,
+    authUser,
+    authToken,
+    raw,
+    inline,
+    parentId,
+  } = input;
+
+  if (inline?.to && inline?.from) {
+    throw new Error("Provide only one of inline.to or inline.from");
+  }
+
+  const url =
+    `https://api.bitbucket.org/2.0/repositories/` +
+    `${encodeURIComponent(workspace)}/` +
+    `${encodeURIComponent(repoSlug)}/pullrequests/${pullRequestId}/comments`;
+
+  const payload: Record<string, unknown> = {
+    content: { raw },
+  };
+
+  if (inline) {
+    payload.inline = inline;
+  }
+
+  if (parentId) {
+    payload.parent = { id: parentId };
+  }
+
+  const basicAuth = Buffer.from(`${authUser}:${authToken}`).toString("base64");
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${basicAuth}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Bitbucket comment post failed: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
+
+7) Summary comment format for multi-finding reviews
+
+Post one top-level summary only when there are multiple findings.
+
+Zenith review summary
+
+Blocking: 1
+Important: 2
+Suggestions: 3
+
+Key themes:
+1. Concurrency safety in county gap recomputation
+2. Missing null guards in provider enrichment
+3. Incomplete test coverage for snapshot exclusion logic
+
+Do not dump every finding into the summary. That is lazy and unreadable.
+
+8) Dedupe strategy before posting
+
+Store this per finding:
+
+type PostedCommentRecord = {
+  findingId: string;
+  workspace: string;
+  repoSlug: string;
+  pullRequestId: number;
+  commentId: number;
+  filePath?: string;
+  line?: number;
+  contentHash: string;
+  createdAt: string;
+};
+
+Before posting:
+	•	fetch PR comments
+	•	normalize their text
+	•	compare by findingId or contentHash
+	•	skip if already present on same file/line
+
+9) Production rule set for Zenith
+
+Use this exact flow:
+	1.	Fetch PR diff
+	2.	Fetch PR comments + activity
+	3.	Generate findings
+	4.	Remove low-confidence findings
+	5.	Collapse duplicates
+	6.	Cap count at 10
+	7.	Post inline comments first
+	8.	Post one summary comment if needed
+	9.	Persist posted comment IDs
+
+That is a reviewer. Everything else is just automated nuisance.
+
+10) Scopes required
+
+For reading PRs/comments and posting comments:
+	•	read:repository:bitbucket
+	•	read:pullrequest:bitbucket
+	•	write:pullrequest:bitbucket
+	•	read:user:bitbucket
+
+Those scopes are the practical baseline for this workflow.  ￼

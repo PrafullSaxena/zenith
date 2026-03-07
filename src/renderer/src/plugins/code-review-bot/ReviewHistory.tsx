@@ -30,7 +30,7 @@ export function ReviewHistory({
     )
   }
 
-  if (history.length === 0) {
+  if (!history || history.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-text-secondary">
         No review history yet

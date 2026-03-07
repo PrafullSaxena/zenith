@@ -31,78 +31,83 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
 
   loadProviders: async () => {
     set({ isLoading: true })
+    try {
+      // Load saved providers from settings
+      const saved = (await window.api.settings.get('agents.providers')) as
+        | AgentProviderPersist[]
+        | null
 
-    // Load saved providers from settings
-    const saved = (await window.api.settings.get('agents.providers')) as
-      | AgentProviderPersist[]
-      | null
-
-    // Build a map of saved providers by id for quick lookup
-    const savedMap = new Map<string, AgentProviderPersist>()
-    if (Array.isArray(saved)) {
-      for (const p of saved) {
-        savedMap.set(p.id, p)
-      }
-    }
-
-    // Merge defaults with saved state — defaults are always present
-    const merged: AgentProvider[] = DEFAULT_PROVIDERS.map((def) => {
-      const s = savedMap.get(def.id)
-      if (s) {
-        return {
-          ...def,
-          model: s.model || def.model,
-          baseUrl: s.baseUrl || def.baseUrl,
-          status: 'not-configured' as const,
-          hasApiKey: false
+      // Build a map of saved providers by id for quick lookup
+      const savedMap = new Map<string, AgentProviderPersist>()
+      if (Array.isArray(saved)) {
+        for (const p of saved) {
+          savedMap.set(p.id, p)
         }
       }
-      return { ...def }
-    })
 
-    // Add custom providers from saved state
-    if (Array.isArray(saved)) {
-      const defaultIds = new Set(DEFAULT_PROVIDERS.map((d) => d.id))
-      for (const s of saved) {
-        if (!defaultIds.has(s.id)) {
-          merged.push({
-            ...s,
-            status: 'not-configured',
+      // Merge defaults with saved state — defaults are always present
+      const merged: AgentProvider[] = DEFAULT_PROVIDERS.map((def) => {
+        const s = savedMap.get(def.id)
+        if (s) {
+          return {
+            ...def,
+            model: s.model || def.model,
+            baseUrl: s.baseUrl || def.baseUrl,
+            command: s.command || def.command,
+            status: 'not-configured' as const,
             hasApiKey: false
-          })
-        }
-      }
-    }
-
-    // Check API key presence for each provider that requires one
-    const withApiKeys = await Promise.all(
-      merged.map(async (provider) => {
-        if (provider.requiresApiKey) {
-          const hasKey = await window.api.credentials.has(provider.id)
-          return { ...provider, hasApiKey: hasKey }
-        }
-        return provider
-      })
-    )
-
-    // Auto-probe Ollama
-    const ollamaIdx = withApiKeys.findIndex((p) => p.id === 'ollama')
-    if (ollamaIdx !== -1) {
-      try {
-        const result = await window.api.app.probeOllama()
-        if (result.available) {
-          withApiKeys[ollamaIdx] = {
-            ...withApiKeys[ollamaIdx],
-            status: 'connected',
-            model: withApiKeys[ollamaIdx].model || result.models[0] || ''
           }
         }
-      } catch {
-        // Ollama not available — leave as not-configured
-      }
-    }
+        return { ...def }
+      })
 
-    set({ providers: withApiKeys, isLoading: false })
+      // Add custom providers from saved state
+      if (Array.isArray(saved)) {
+        const defaultIds = new Set(DEFAULT_PROVIDERS.map((d) => d.id))
+        for (const s of saved) {
+          if (!defaultIds.has(s.id)) {
+            merged.push({
+              ...s,
+              status: 'not-configured',
+              hasApiKey: false
+            })
+          }
+        }
+      }
+
+      // Probe each provider for availability
+      const probed = await Promise.all(
+        merged.map(async (provider) => {
+          if (provider.type === 'cli' && provider.command) {
+            // CLI agent — check if the binary is available on PATH
+            try {
+              const result = await window.api.app.probeCli(provider.command)
+              return {
+                ...provider,
+                status: result.available ? ('connected' as const) : ('not-configured' as const)
+              }
+            } catch {
+              return provider
+            }
+          } else if (provider.requiresApiKey) {
+            // Cloud/SDK agent — check if API key is stored
+            try {
+              const hasKey = await window.api.credentials.has(provider.id)
+              return { ...provider, hasApiKey: hasKey }
+            } catch {
+              return provider
+            }
+          }
+          return provider
+        })
+      )
+
+      set({ providers: probed, isLoading: false })
+    } catch (err) {
+      console.error('[agent-store] Failed to load providers:', err)
+      // Fall back to defaults so UI isn't stuck on "Loading providers..."
+      set({ providers: DEFAULT_PROVIDERS.map((d) => ({ ...d })), isLoading: false })
+    }
   },
 
   testConnection: async (providerId: string) => {
@@ -118,20 +123,11 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
 
     let newStatus: AgentProvider['status'] = 'not-configured'
 
-    if (provider.id === 'ollama') {
-      // Probe Ollama locally
+    if (provider.type === 'cli' && provider.command) {
+      // CLI agent — probe the binary
       try {
-        const result = await window.api.app.probeOllama()
+        const result = await window.api.app.probeCli(provider.command)
         newStatus = result.available ? 'connected' : 'failed'
-
-        if (result.available && result.models.length > 0 && !provider.model) {
-          // Auto-populate model with first available
-          set((state) => ({
-            providers: state.providers.map((p) =>
-              p.id === providerId ? { ...p, model: result.models[0] } : p
-            )
-          }))
-        }
       } catch {
         newStatus = 'failed'
       }
@@ -139,7 +135,7 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
       // Cloud/custom: check if API key is set
       newStatus = provider.hasApiKey ? 'connected' : 'not-configured'
     } else {
-      // Local (non-Ollama): mark as connected
+      // Local: mark as connected
       newStatus = 'connected'
     }
 
@@ -149,9 +145,6 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
         p.id === providerId ? { ...p, status: newStatus } : p
       )
     }))
-
-    // Persist status
-    await window.api.settings.set(`agents.${providerId}.status`, newStatus)
   },
 
   setApiKey: async (providerId: string, apiKey: string) => {

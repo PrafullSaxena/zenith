@@ -1,7 +1,9 @@
 /**
- * AI review streaming module.
+ * AI review streaming module (SDK-based).
  * Orchestrates AI code review via Vercel AI SDK and forwards tokens
  * to the renderer process via IPC (webContents.send).
+ *
+ * For CLI-based providers, see cli-stream.ts.
  *
  * Channels:
  *   ai:stream:chunk  - { sessionId, chunk }  per token
@@ -13,19 +15,11 @@ import type { BrowserWindow } from 'electron'
 import { streamText } from 'ai'
 import { createModel, getApiKeyForProvider } from './providers'
 
-/** Active review sessions keyed by sessionId, used for cancellation. */
-const activeSessions = new Map<string, AbortController>()
+/** Active SDK review sessions keyed by sessionId, used for cancellation. */
+const activeSdkSessions = new Map<string, AbortController>()
 
 /**
- * Stream an AI code review for the given diff.
- *
- * 1. Creates an AbortController for cancellation support.
- * 2. Resolves the API key from the credentials store.
- * 3. Constructs the LanguageModel via the provider factory.
- * 4. Calls streamText() and iterates the textStream async iterable.
- * 5. Forwards each chunk to the renderer via webContents.send().
- * 6. Sends a done event when the stream completes.
- * 7. Sends an error event on failure.
+ * Stream an AI code review using the Vercel AI SDK.
  */
 export async function streamReview(params: {
   mainWindow: BrowserWindow
@@ -33,11 +27,36 @@ export async function streamReview(params: {
   providerId: string
   modelName: string
   sessionId: string
+  guidelines?: string
 }): Promise<void> {
-  const { mainWindow, diff, providerId, modelName, sessionId } = params
+  const { mainWindow, diff, providerId, modelName, sessionId, guidelines } = params
 
   const controller = new AbortController()
-  activeSessions.set(sessionId, controller)
+  activeSdkSessions.set(sessionId, controller)
+
+  // Build structured review prompt — TOON (Token-Optimized Output Notation)
+  let systemPrompt = `You are a senior code reviewer. Analyze the unified diff and report issues.
+
+OUTPUT: One finding per line, 7 pipe-separated fields:
+SEV|CONF|KIND|FILE:LINE|TITLE|EXPLANATION|FIX
+
+SEV: B=blocking I=important S=suggestion
+CONF: H=high M=medium L=low
+KIND: bug sec perf cor mnt test sty
+
+After all findings, output a line "---" then a 2-3 sentence summary.
+
+RULES:
+- Exact file paths from diff headers (strip a/ b/ prefix)
+- LINE = new-file line number (from + lines)
+- TITLE ≤10 words, EXPLANATION ≤30 words, FIX ≤20 words
+- Max 10 findings, ordered by severity desc
+- Skip pure style nits unless they harm readability
+- No markdown, no JSON, no code fences`
+
+  if (guidelines?.trim()) {
+    systemPrompt += `\n\nREVIEW GUIDELINES (provided by the team — prioritize these):\n${guidelines.trim()}`
+  }
 
   try {
     const apiKey = await getApiKeyForProvider(providerId)
@@ -45,14 +64,7 @@ export async function streamReview(params: {
 
     const { textStream } = streamText({
       model,
-      system: `You are a senior code reviewer. Analyze the following unified diff and provide a structured code review.
-
-For each issue found, output a JSON object on its own line with this format:
-{"file": "path/to/file", "line": number, "severity": "critical"|"warning"|"suggestion", "comment": "description"}
-
-After all file-specific comments, provide a brief overall summary.
-
-Be concise. Focus on bugs, security issues, performance problems, and code quality.`,
+      system: systemPrompt,
       prompt: diff,
       abortSignal: controller.signal
     })
@@ -76,18 +88,17 @@ Be concise. Focus on bugs, security issues, performance problems, and code quali
       mainWindow.webContents.send('ai:stream:error', { sessionId, error: message })
     }
   } finally {
-    activeSessions.delete(sessionId)
+    activeSdkSessions.delete(sessionId)
   }
 }
 
 /**
- * Cancel an in-progress review session.
- * Aborts the underlying AI stream via AbortController.
+ * Cancel an in-progress SDK review session.
  */
-export function cancelReview(sessionId: string): void {
-  const controller = activeSessions.get(sessionId)
+export function cancelSdkReview(sessionId: string): void {
+  const controller = activeSdkSessions.get(sessionId)
   if (controller) {
     controller.abort()
-    activeSessions.delete(sessionId)
+    activeSdkSessions.delete(sessionId)
   }
 }

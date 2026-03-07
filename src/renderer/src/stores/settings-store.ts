@@ -49,8 +49,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   loadSettings: async () => {
     set({ isLoading: true })
-    const settings = await window.api.settings.getAll()
-    set({ settings, isLoading: false })
+    try {
+      const settings = await window.api.settings.getAll()
+      set({ settings: settings ?? {}, isLoading: false })
+    } catch (err) {
+      console.error('[settings-store] Failed to load settings:', err)
+      set({ isLoading: false })
+    }
   },
 
   getSetting: (key: string) => {
@@ -63,7 +68,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       settings: setPath(state.settings, key, value)
     }))
     // Persist via IPC
-    await window.api.settings.set(key, value)
+    try {
+      await window.api.settings.set(key, value)
+    } catch (err) {
+      console.error('[settings-store] Failed to persist setting:', key, err)
+    }
   },
 
   resetSettings: async (namespace: string) => {

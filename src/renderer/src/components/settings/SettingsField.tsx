@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import type { SettingsField as SettingsFieldType } from '../../types/plugin'
+import { RepoListEditor } from './RepoListEditor'
+import type { RepoEntry } from './RepoListEditor'
 
 interface SettingsFieldProps {
   field: SettingsFieldType
@@ -95,6 +97,25 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
               </option>
             ))}
           </select>
+        )
+
+      case 'textarea':
+        return (
+          <textarea
+            className={`${inputClass} min-h-[120px] resize-y font-mono text-xs`}
+            value={(value as string) ?? ''}
+            placeholder={field.placeholder}
+            onChange={(e) => onChange(e.target.value)}
+            rows={8}
+          />
+        )
+
+      case 'repo-list':
+        return (
+          <RepoListEditor
+            value={(value as RepoEntry[]) ?? []}
+            onChange={(repos) => onChange(repos)}
+          />
         )
 
       default:

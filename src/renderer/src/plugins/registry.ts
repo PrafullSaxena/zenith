@@ -18,40 +18,38 @@ export const PLUGINS: readonly PluginDefinition[] = [
     component: React.lazy(() => import('./code-review-bot/CodeReviewBotView')),
     settingsSchema: [
       {
-        key: 'bitbucketWorkspace',
-        label: 'Bitbucket Workspace',
-        type: 'text',
-        description: 'Your Bitbucket workspace slug',
-        defaultValue: '',
-        required: true,
-        placeholder: 'my-workspace'
+        key: 'repos',
+        label: 'Repositories',
+        type: 'repo-list',
+        description: 'Bitbucket workspace + repository pairs to review PRs from',
+        defaultValue: [],
+        required: true
       },
       {
-        key: 'repositorySlug',
-        label: 'Repository Slug',
+        key: 'bitbucketUsername',
+        label: 'Bitbucket Username',
         type: 'text',
-        description: 'The repository slug to review PRs from',
+        description: 'Your Bitbucket username or email (used for App Password auth)',
         defaultValue: '',
         required: true,
-        placeholder: 'my-repo'
+        placeholder: 'user@example.com'
       },
       {
-        key: 'bitbucketClientId',
-        label: 'Bitbucket OAuth Client ID',
-        type: 'text',
-        description: 'OAuth consumer client ID from Bitbucket workspace settings',
-        defaultValue: '',
-        required: true,
-        placeholder: 'your-client-id'
-      },
-      {
-        key: 'bitbucketClientSecret',
-        label: 'Bitbucket OAuth Client Secret',
+        key: 'bitbucketAppPassword',
+        label: 'Bitbucket App Password',
         type: 'password',
-        description: 'OAuth consumer client secret (stored securely)',
+        description: 'App password from Bitbucket > Personal settings > App passwords',
         defaultValue: '',
         required: true,
-        placeholder: 'your-client-secret'
+        placeholder: 'your-app-password'
+      },
+      {
+        key: 'reviewGuidelines',
+        label: 'Review Guidelines',
+        type: 'textarea',
+        description: 'Markdown guidelines for AI code review. Include repo-specific rules, coding standards, and focus areas.',
+        defaultValue: '',
+        placeholder: '# Code Review Guidelines\n\n## Code Quality\n- Check for proper error handling\n- Verify logging is present\n- Look for security vulnerabilities\n\n## Best Practices\n- Functions should have single responsibilities\n- Use meaningful variable names'
       },
       {
         key: 'autoReview',

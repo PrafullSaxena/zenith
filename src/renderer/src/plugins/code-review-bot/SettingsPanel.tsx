@@ -3,17 +3,19 @@ interface SettingsPanelProps {
   onConnect: () => void
   onDisconnect: () => void
   isConnecting: boolean
+  connectionError: string | null
 }
 
 /**
  * Inline settings panel for quick Bitbucket connection management.
- * Shows connection status and connect/disconnect controls.
+ * Shows connection status, connect/disconnect controls, and error messages.
  */
 export function SettingsPanel({
   isConnected,
   onConnect,
   onDisconnect,
-  isConnecting
+  isConnecting,
+  connectionError
 }: SettingsPanelProps): React.JSX.Element {
   return (
     <div className="flex items-center gap-3">
@@ -21,7 +23,11 @@ export function SettingsPanel({
       <div className="flex items-center gap-1.5">
         <span
           className={`inline-block h-2 w-2 rounded-full ${
-            isConnected ? 'bg-green-400' : 'bg-text-secondary'
+            isConnected
+              ? 'bg-green-400'
+              : connectionError
+                ? 'bg-red-400'
+                : 'bg-text-secondary'
           }`}
         />
         <span className="text-xs text-text-secondary">
@@ -50,10 +56,19 @@ export function SettingsPanel({
         </button>
       )}
 
-      {/* Hint text */}
-      <span className="hidden text-[11px] text-text-secondary lg:inline">
-        Configure OAuth credentials in Settings &gt; CodeReviewBot
-      </span>
+      {/* Error message */}
+      {connectionError && !isConnected && (
+        <span className="max-w-xs truncate text-[11px] text-red-400" title={connectionError}>
+          {connectionError}
+        </span>
+      )}
+
+      {/* Hint text — only show when no error */}
+      {!connectionError && !isConnected && (
+        <span className="hidden text-[11px] text-text-secondary lg:inline">
+          Configure OAuth credentials in Settings &gt; CodeReviewBot
+        </span>
+      )}
     </div>
   )
 }

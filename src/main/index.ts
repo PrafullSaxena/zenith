@@ -26,7 +26,7 @@ function createWindow(): void {
     backgroundColor: '#0f0f0f', // Prevent white flash on load
     show: false, // Show after ready-to-show avoids visual jump
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/index.cjs'),
       nodeIntegration: false, // MANDATORY — never enable
       contextIsolation: true, // MANDATORY — never disable
       sandbox: true, // Additional renderer hardening

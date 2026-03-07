@@ -11,8 +11,8 @@ const DEFAULTS: Record<string, unknown> = {
   },
   plugins: {
     'code-review-bot': {
-      bitbucketClientId: '',
-      bitbucketClientSecret: ''
+      bitbucketUsername: '',
+      bitbucketAppPassword: ''
     },
     'db-inspector': {},
     'astro-patch': {},
@@ -35,7 +35,8 @@ if (store.size === 0) {
  * Returns entire settings object.
  */
 export function getSettings(): Record<string, unknown> {
-  return store.store as Record<string, unknown>
+  // JSON round-trip ensures a plain serializable object for IPC structured clone
+  return JSON.parse(JSON.stringify(store.store)) as Record<string, unknown>
 }
 
 /**

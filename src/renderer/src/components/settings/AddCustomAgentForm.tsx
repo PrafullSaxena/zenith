@@ -11,9 +11,11 @@ interface AddCustomAgentFormProps {
  */
 export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.JSX.Element {
   const [name, setName] = useState('')
+  const [providerType, setProviderType] = useState<'custom' | 'cli'>('cli')
   const [baseUrl, setBaseUrl] = useState('')
   const [apiKey, setApiKey] = useState('')
   const [model, setModel] = useState('')
+  const [command, setCommand] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const { addCustomProvider, setApiKey: storeSetApiKey } = useAgentStore()
@@ -21,7 +23,11 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
     if (!name.trim()) newErrors.name = 'Name is required'
-    if (!baseUrl.trim()) newErrors.baseUrl = 'Base URL is required'
+    if (providerType === 'cli') {
+      if (!command.trim()) newErrors.command = 'Command is required'
+    } else {
+      if (!baseUrl.trim()) newErrors.baseUrl = 'Base URL is required'
+    }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -33,14 +39,15 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
     await addCustomProvider({
       id: '', // Will be overwritten by store with custom-{timestamp}
       name: name.trim(),
-      type: 'custom',
-      baseUrl: baseUrl.trim(),
+      type: providerType,
+      baseUrl: providerType === 'cli' ? '' : baseUrl.trim(),
       model: model.trim(),
-      requiresApiKey: true
+      command: providerType === 'cli' ? command.trim() : '',
+      requiresApiKey: providerType !== 'cli'
     })
 
     // If API key was provided, set it on the newly created provider
-    if (apiKey.trim()) {
+    if (apiKey.trim() && providerType !== 'cli') {
       const providers = useAgentStore.getState().providers
       const newest = providers[providers.length - 1]
       if (newest) {
@@ -58,6 +65,32 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
     <form onSubmit={handleSubmit} className="mt-4 rounded-lg border border-border bg-surface p-4">
       <h3 className="mb-3 text-sm font-semibold text-text-primary">Add Custom Provider</h3>
 
+      {/* Provider type toggle */}
+      <div className="mb-3 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setProviderType('cli')}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+            providerType === 'cli'
+              ? 'bg-accent text-background'
+              : 'border border-border text-text-secondary hover:border-accent hover:text-accent'
+          }`}
+        >
+          CLI Agent
+        </button>
+        <button
+          type="button"
+          onClick={() => setProviderType('custom')}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+            providerType === 'custom'
+              ? 'bg-accent text-background'
+              : 'border border-border text-text-secondary hover:border-accent hover:text-accent'
+          }`}
+        >
+          API Provider
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         {/* Name */}
         <div>
@@ -68,40 +101,59 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="My Provider"
+            placeholder={providerType === 'cli' ? 'My CLI Agent' : 'My Provider'}
             className={inputClass}
           />
           {errors.name && <p className="mt-0.5 text-xs text-red-400">{errors.name}</p>}
         </div>
 
-        {/* Base URL */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-text-secondary">
-            Base URL <span className="text-red-400">*</span>
-          </label>
-          <input
-            type="text"
-            value={baseUrl}
-            onChange={(e) => setBaseUrl(e.target.value)}
-            placeholder="https://api.example.com/v1"
-            className={inputClass}
-          />
-          {errors.baseUrl && <p className="mt-0.5 text-xs text-red-400">{errors.baseUrl}</p>}
-        </div>
+        {providerType === 'cli' ? (
+          /* CLI Command */
+          <div>
+            <label className="mb-1 block text-xs font-medium text-text-secondary">
+              Command <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              placeholder="my-agent -p"
+              className={inputClass}
+            />
+            {errors.command && <p className="mt-0.5 text-xs text-red-400">{errors.command}</p>}
+          </div>
+        ) : (
+          /* Base URL */
+          <div>
+            <label className="mb-1 block text-xs font-medium text-text-secondary">
+              Base URL <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="https://api.example.com/v1"
+              className={inputClass}
+            />
+            {errors.baseUrl && <p className="mt-0.5 text-xs text-red-400">{errors.baseUrl}</p>}
+          </div>
+        )}
 
-        {/* API Key */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-text-secondary">
-            API Key
-          </label>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="sk-..."
-            className={inputClass}
-          />
-        </div>
+        {/* API Key — only for API providers */}
+        {providerType !== 'cli' && (
+          <div>
+            <label className="mb-1 block text-xs font-medium text-text-secondary">
+              API Key
+            </label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-..."
+              className={inputClass}
+            />
+          </div>
+        )}
 
         {/* Model */}
         <div>

@@ -7,15 +7,16 @@
 export type AgentStatus = 'connected' | 'failed' | 'not-configured' | 'testing'
 
 /** Classification of agent provider */
-export type AgentProviderType = 'cloud' | 'local' | 'custom'
+export type AgentProviderType = 'cloud' | 'local' | 'cli' | 'custom'
 
 /** Full agent provider configuration */
 export interface AgentProvider {
-  id: string // Unique identifier (e.g., 'claude', 'ollama', 'custom-xyz')
-  name: string // Display name (e.g., 'Claude', 'Ollama')
-  type: AgentProviderType // cloud, local, or custom
-  baseUrl: string // API base URL (empty for cloud providers that use official SDK)
-  model: string // Model identifier (e.g., 'claude-sonnet-4-20250514', 'llama3')
+  id: string // Unique identifier (e.g., 'claude', 'ollama-qwen25-pr-32k')
+  name: string // Display name (e.g., 'Claude', 'Ollama Qwen 2.5 PR 32K')
+  type: AgentProviderType // cloud, local, cli, or custom
+  baseUrl: string // API base URL (empty for cloud/CLI providers)
+  model: string // Model identifier (e.g., 'claude-sonnet-4-20250514')
+  command: string // CLI command (e.g., 'claude -p'). Empty for SDK providers.
   status: AgentStatus // Current connection status
   isCustom: boolean // true for user-added providers
   requiresApiKey: boolean // Whether this provider needs an API key
@@ -30,60 +31,66 @@ export interface AgentProvider {
 export type AgentProviderPersist = Omit<AgentProvider, 'status' | 'hasApiKey'>
 
 /**
- * Pre-listed default providers. Always present in the provider list;
- * user-saved state overrides status/model/baseUrl but cannot remove defaults.
+ * Pre-listed default providers — CLI-first.
+ * Uses locally installed CLI tools that handle their own authentication.
+ * Cloud/SDK providers can be added via "Add Custom Provider" if needed.
  */
 export const DEFAULT_PROVIDERS: AgentProvider[] = [
   {
     id: 'claude',
     name: 'Claude',
-    type: 'cloud',
+    type: 'cli',
     baseUrl: '',
-    model: 'claude-sonnet-4-20250514',
+    model: '',
+    command: 'claude -p',
     status: 'not-configured',
     isCustom: false,
-    requiresApiKey: true,
-    hasApiKey: false
-  },
-  {
-    id: 'gemini',
-    name: 'Gemini',
-    type: 'cloud',
-    baseUrl: '',
-    model: 'gemini-2.0-flash',
-    status: 'not-configured',
-    isCustom: false,
-    requiresApiKey: true,
+    requiresApiKey: false,
     hasApiKey: false
   },
   {
     id: 'codex',
     name: 'Codex',
-    type: 'cloud',
+    type: 'cli',
     baseUrl: '',
-    model: 'codex',
+    model: '',
+    command: 'codex exec --json -',
     status: 'not-configured',
     isCustom: false,
-    requiresApiKey: true,
+    requiresApiKey: false,
     hasApiKey: false
   },
   {
-    id: 'opencode',
-    name: 'Opencode',
-    type: 'cloud',
+    id: 'gemini',
+    name: 'Gemini',
+    type: 'cli',
     baseUrl: '',
     model: '',
+    command: 'gemini prompt -',
     status: 'not-configured',
     isCustom: false,
-    requiresApiKey: true,
+    requiresApiKey: false,
     hasApiKey: false
   },
   {
-    id: 'ollama',
-    name: 'Ollama',
-    type: 'local',
-    baseUrl: 'http://localhost:11434',
+    id: 'ollama-qwen25-pr-32k',
+    name: 'Ollama Qwen 2.5 PR 32K',
+    type: 'cli',
+    baseUrl: '',
     model: '',
+    command: 'ollama run qwen25-pr-32k',
+    status: 'not-configured',
+    isCustom: false,
+    requiresApiKey: false,
+    hasApiKey: false
+  },
+  {
+    id: 'ollama-qwen-coder-14b',
+    name: 'Ollama Qwen 2.5 Coder 14B',
+    type: 'cli',
+    baseUrl: '',
+    model: '',
+    command: 'ollama run qwen2.5-coder:14b-instruct-q4_K_M',
     status: 'not-configured',
     isCustom: false,
     requiresApiKey: false,
@@ -92,9 +99,10 @@ export const DEFAULT_PROVIDERS: AgentProvider[] = [
   {
     id: 'cursor-agent',
     name: 'Cursor Agent',
-    type: 'local',
+    type: 'cli',
     baseUrl: '',
     model: '',
+    command: 'cursor-agent -p',
     status: 'not-configured',
     isCustom: false,
     requiresApiKey: false,

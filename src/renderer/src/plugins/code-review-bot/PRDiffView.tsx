@@ -2,25 +2,12 @@ import { useState } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import type { DiffFile, DiffChange } from '../../types/bitbucket'
 import type { ReviewComment } from '../../types/review'
+import { SEVERITY_CONFIG, KIND_CONFIG } from '../../types/review'
 
 interface PRDiffViewProps {
   diffFiles: DiffFile[]
   reviewComments: ReviewComment[]
   onCommentClick?: (comment: ReviewComment) => void
-}
-
-/** Map severity to left-border color class for inline comment cards. */
-const SEVERITY_BORDER: Record<ReviewComment['severity'], string> = {
-  critical: 'border-l-red-500',
-  warning: 'border-l-yellow-500',
-  suggestion: 'border-l-cyan-500'
-}
-
-/** Map severity to badge color classes. */
-const SEVERITY_BADGE: Record<ReviewComment['severity'], string> = {
-  critical: 'bg-red-500/10 text-red-400',
-  warning: 'bg-yellow-500/10 text-yellow-400',
-  suggestion: 'bg-cyan-500/10 text-cyan-400'
 }
 
 /**
@@ -35,7 +22,7 @@ export function PRDiffView({
 }: PRDiffViewProps): React.JSX.Element {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
-  if (diffFiles.length === 0) {
+  if (!diffFiles || diffFiles.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-text-secondary">
         No diff loaded. Select a pull request to view changes.
@@ -137,37 +124,65 @@ export function PRDiffView({
                           </div>
 
                           {/* Inline AI comment cards */}
-                          {lineComments.map((comment, commentIdx) => (
-                            <div
-                              key={commentIdx}
-                              className={`ml-12 mr-3 my-1 rounded border-l-4 bg-surface-elevated p-2.5 ${SEVERITY_BORDER[comment.severity]}`}
-                            >
-                              <div className="flex items-start gap-2">
-                                <span
-                                  className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${SEVERITY_BADGE[comment.severity]}`}
-                                >
-                                  {comment.severity}
-                                </span>
-                                <p className="min-w-0 flex-1 text-sm text-text-primary">
-                                  {comment.comment}
+                          {lineComments.map((comment, commentIdx) => {
+                            const sevConfig = SEVERITY_CONFIG[comment.severity]
+                            const kindConfig = KIND_CONFIG[comment.kind]
+
+                            return (
+                              <div
+                                key={commentIdx}
+                                className={`ml-12 mr-3 my-1 rounded-lg border-l-4 bg-surface-elevated p-2.5 ${sevConfig.border}`}
+                              >
+                                {/* Header row: severity + kind + title */}
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span
+                                    className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${sevConfig.badge}`}
+                                  >
+                                    {sevConfig.emoji} {sevConfig.label}
+                                  </span>
+                                  <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-surface text-text-secondary">
+                                    {kindConfig.icon} {kindConfig.label}
+                                  </span>
+                                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-primary">
+                                    {comment.title}
+                                  </span>
+                                </div>
+
+                                {/* Body */}
+                                <p className="text-sm text-text-primary leading-relaxed">
+                                  {comment.body}
                                 </p>
+
+                                {/* Suggested fix */}
+                                {comment.suggestedFix && (
+                                  <div className="mt-1.5 rounded bg-green-500/5 border border-green-500/10 px-2 py-1">
+                                    <p className="text-xs text-green-400">
+                                      <span className="font-semibold">Fix: </span>
+                                      {comment.suggestedFix}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {/* Actions */}
+                                <div className="mt-1.5 flex items-center gap-2">
+                                  {!comment.posted && onCommentClick && (
+                                    <button
+                                      type="button"
+                                      onClick={() => onCommentClick(comment)}
+                                      className="text-xs font-medium text-accent hover:text-accent/80 transition-colors"
+                                    >
+                                      Post to Bitbucket
+                                    </button>
+                                  )}
+                                  {comment.posted && (
+                                    <span className="text-xs text-green-400">
+                                      Posted
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                              {!comment.posted && onCommentClick && (
-                                <button
-                                  type="button"
-                                  onClick={() => onCommentClick(comment)}
-                                  className="mt-1.5 text-xs font-medium text-accent hover:text-accent/80 transition-colors"
-                                >
-                                  Post to Bitbucket
-                                </button>
-                              )}
-                              {comment.posted && (
-                                <span className="mt-1.5 inline-block text-xs text-green-400">
-                                  Posted
-                                </span>
-                              )}
-                            </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       )
                     })}
