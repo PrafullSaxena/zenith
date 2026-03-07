@@ -10,7 +10,7 @@ import { ReviewHistory } from './ReviewHistory'
 import { SettingsPanel } from './SettingsPanel'
 import { GitFork, ChevronDown } from 'lucide-react'
 import type { PullRequest } from '../../types/bitbucket'
-import type { ReviewComment } from '../../types/review'
+import type { ReviewComment, ReviewHistoryEntry } from '../../types/review'
 import type { RepoEntry } from '../../components/settings/RepoListEditor'
 
 type Tab = 'diff' | 'review' | 'history'
@@ -38,11 +38,13 @@ export default function CodeReviewBotView(): React.JSX.Element {
   const prPage = useReviewStore((s) => s.prPage)
   const prTotalPages = useReviewStore((s) => s.prTotalPages)
   const prTotalCount = useReviewStore((s) => s.prTotalCount)
+  const prFileCounts = useReviewStore((s) => s.prFileCounts)
 
   const connect = useReviewStore((s) => s.connect)
   const disconnect = useReviewStore((s) => s.disconnect)
   const checkConnection = useReviewStore((s) => s.checkConnection)
   const loadPRs = useReviewStore((s) => s.loadPRs)
+  const loadFileCounts = useReviewStore((s) => s.loadFileCounts)
   const selectPR = useReviewStore((s) => s.selectPR)
   const loadDiff = useReviewStore((s) => s.loadDiff)
   const startReview = useReviewStore((s) => s.startReview)
@@ -52,6 +54,8 @@ export default function CodeReviewBotView(): React.JSX.Element {
   const loadHistory = useReviewStore((s) => s.loadHistory)
   const addHistoryEntry = useReviewStore((s) => s.addHistoryEntry)
   const updateComment = useReviewStore((s) => s.updateComment)
+  const loadPersistedSessions = useReviewStore((s) => s.loadPersistedSessions)
+  const restoreSessionFromHistory = useReviewStore((s) => s.restoreSessionFromHistory)
 
   // Settings store for workspace/repo config
   // Subscribe to settings object so component re-renders when settings load asynchronously
@@ -107,6 +111,20 @@ export default function CodeReviewBotView(): React.JSX.Element {
       loadPRs(workspace, repoSlug, 1)
     }
   }, [workspace, repoSlug, isConnected, loadPRs])
+
+  // Load file counts once PRs are loaded
+  useEffect(() => {
+    if (isConnected && workspace && repoSlug && pullRequests.length > 0) {
+      loadFileCounts(workspace, repoSlug)
+    }
+  }, [isConnected, workspace, repoSlug, pullRequests, loadFileCounts])
+
+  // Load persisted sessions when repo changes
+  useEffect(() => {
+    if (workspace && repoSlug) {
+      loadPersistedSessions(workspace, repoSlug)
+    }
+  }, [workspace, repoSlug, loadPersistedSessions])
 
   // Activity integration: log review completion or error
   useEffect(() => {
@@ -211,6 +229,14 @@ export default function CodeReviewBotView(): React.JSX.Element {
     postAllComments(workspace, repoSlug, selectedPR.id)
   }, [postAllComments, selectedPR, workspace, repoSlug])
 
+  const handleHistoryOpen = useCallback(
+    async (entry: ReviewHistoryEntry) => {
+      await restoreSessionFromHistory(entry)
+      setActiveTab('review')
+    },
+    [restoreSessionFromHistory]
+  )
+
   const handleCommentClick = useCallback(
     (comment: ReviewComment) => {
       if (!selectedPR || !workspace || !repoSlug) return
@@ -307,6 +333,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
             totalPages={prTotalPages}
             totalCount={prTotalCount}
             onPageChange={handlePageChange}
+            fileCounts={prFileCounts}
           />
         </div>
 
@@ -355,7 +382,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
               />
             )}
             {activeTab === 'history' && (
-              <ReviewHistory history={history} isLoading={isLoadingHistory} />
+              <ReviewHistory history={history} isLoading={isLoadingHistory} onOpen={handleHistoryOpen} />
             )}
           </div>
         </div>

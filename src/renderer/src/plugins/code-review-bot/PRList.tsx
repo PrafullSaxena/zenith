@@ -1,6 +1,6 @@
 import type { PullRequest } from '../../types/bitbucket'
 import { formatRelativeTime } from '../../components/dashboard/utils'
-import { RefreshCw, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
+import { RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, ExternalLink, Files } from 'lucide-react'
 
 interface PRListProps {
   pullRequests: PullRequest[]
@@ -13,6 +13,7 @@ interface PRListProps {
   totalPages: number
   totalCount: number
   onPageChange: (page: number) => void
+  fileCounts?: Record<number, number>
 }
 
 /**
@@ -30,7 +31,8 @@ export function PRList({
   page,
   totalPages,
   totalCount,
-  onPageChange
+  onPageChange,
+  fileCounts
 }: PRListProps): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
@@ -92,8 +94,36 @@ export function PRList({
                   : 'border border-transparent hover:bg-surface-elevated'
               }`}
             >
-              {/* PR title */}
-              <p className="truncate font-medium text-text-primary">{pr.title}</p>
+              {/* Top row: PR title + link icon (left), file count badge (right) */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <p className="min-w-0 truncate font-medium text-text-primary">{pr.title}</p>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      window.api?.app?.openExternal?.(pr.links.html.href)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.stopPropagation()
+                        window.api?.app?.openExternal?.(pr.links.html.href)
+                      }
+                    }}
+                    className="shrink-0 text-text-secondary/50 transition-colors hover:text-accent"
+                    title="Open in Bitbucket"
+                  >
+                    <ExternalLink size={12} />
+                  </span>
+                </div>
+                {fileCounts && fileCounts[pr.id] != null && (
+                  <span className="flex shrink-0 items-center gap-1 rounded bg-surface-elevated px-1.5 py-0.5 text-[11px] text-text-secondary">
+                    <Files size={11} />
+                    {fileCounts[pr.id]}
+                  </span>
+                )}
+              </div>
 
               {/* Author */}
               <p className="mt-0.5 text-sm text-text-secondary">

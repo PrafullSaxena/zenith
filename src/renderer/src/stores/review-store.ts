@@ -47,11 +47,15 @@ interface ReviewStoreState {
   history: ReviewHistoryEntry[]
   isLoadingHistory: boolean
 
+  // PR file counts (prId → number of files changed)
+  prFileCounts: Record<number, number>
+
   // Actions
   connect: () => Promise<void>
   disconnect: () => Promise<void>
   checkConnection: () => Promise<void>
   loadPRs: (workspace: string, repoSlug: string, page?: number) => Promise<void>
+  loadFileCounts: (workspace: string, repoSlug: string) => Promise<void>
   selectPR: (pr: PullRequest) => void
   loadDiff: (workspace: string, repoSlug: string, prId: number) => Promise<void>
   startReview: (providerId: string, modelName: string, command?: string, guidelines?: string) => Promise<void>
@@ -73,6 +77,8 @@ interface ReviewStoreState {
   addHistoryEntry: (
     entry: Omit<ReviewHistoryEntry, 'id' | 'timestamp'>
   ) => Promise<void>
+  loadPersistedSessions: (workspace: string, repoSlug: string) => Promise<void>
+  restoreSessionFromHistory: (entry: ReviewHistoryEntry) => Promise<void>
 }
 
 /** Settings key for persisted review history. */
@@ -83,6 +89,25 @@ const MAX_HISTORY_ENTRIES = 100
 
 /** Maximum comments to post per PR (from guidelines). */
 const MAX_COMMENTS_PER_PR = 10
+
+/** Maximum persisted sessions per repository. */
+const MAX_PERSISTED_SESSIONS = 10
+
+/** Persisted session data (subset of ReviewSession — excludes large rawText). */
+interface PersistedSession {
+  sessionId: string
+  prId: number
+  prTitle: string
+  prUrl: string
+  comments: ReviewComment[]
+  summary: string
+  completedAt: string
+}
+
+/** Build a settings storage key for persisted sessions per repo. */
+function sessionsStorageKey(workspace: string, repoSlug: string): string {
+  return `reviewSessions:${workspace}/${repoSlug}`
+}
 
 // ---------------------------------------------------------------------------
 // TOON Parser — Token-Optimized Output Notation
@@ -151,7 +176,7 @@ function resolveKind(code: string): ReviewKind {
  *   medium confidence → post with "please verify" note
  *   low confidence → skip
  */
-function shouldPostComment(severity: ReviewSeverity, confidence: ReviewConfidence): boolean {
+function shouldPostComment(_severity: ReviewSeverity, confidence: ReviewConfidence): boolean {
   if (confidence === 'low') return false
   return true // blocking/important/suggestion with high or medium → post
 }
@@ -447,6 +472,7 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
   sessions: {},
   history: [],
   isLoadingHistory: false,
+  prFileCounts: {},
 
   connect: async () => {
     set({ isConnecting: true, connectionError: null })
@@ -523,6 +549,24 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
       console.error('[review-store] loadPRs failed:', message)
       set({ pullRequests: [], prError: message, isLoadingPRs: false })
     }
+  },
+
+  loadFileCounts: async (workspace: string, repoSlug: string) => {
+    const prs = get().pullRequests
+    if (!prs.length || !window.api?.bitbucket?.getDiffstatCount) return
+
+    const counts: Record<number, number> = {}
+    await Promise.all(
+      prs.map(async (pr) => {
+        try {
+          counts[pr.id] = await window.api.bitbucket.getDiffstatCount(workspace, repoSlug, pr.id)
+        } catch {
+          counts[pr.id] = 0
+        }
+      })
+    )
+
+    set({ prFileCounts: { ...get().prFileCounts, ...counts } })
   },
 
   selectPR: (pr: PullRequest) => {
@@ -758,5 +802,105 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
     const updated = [newEntry, ...get().history].slice(0, MAX_HISTORY_ENTRIES)
     set({ history: updated })
     await window.api.settings.set(HISTORY_STORAGE_KEY, updated)
+
+    // Persist session data for "Open from history" feature
+    if (entry.status !== 'error') {
+      const session = get().sessions[entry.prId]
+      if (session && session.status === 'complete' && session.comments.length > 0) {
+        try {
+          const key = sessionsStorageKey(entry.workspace, entry.repoSlug)
+          const raw = await window.api.settings.get(key)
+          const existing = Array.isArray(raw) ? (raw as PersistedSession[]) : []
+
+          const persisted: PersistedSession = {
+            sessionId: session.sessionId,
+            prId: entry.prId,
+            prTitle: entry.prTitle,
+            prUrl: entry.prUrl,
+            comments: session.comments,
+            summary: session.summary,
+            completedAt: timestamp
+          }
+
+          const filtered = existing.filter((s) => s.prId !== entry.prId)
+          const updatedSessions = [persisted, ...filtered].slice(0, MAX_PERSISTED_SESSIONS)
+          await window.api.settings.set(key, updatedSessions)
+          console.log(
+            `[review-store] Persisted session for PR #${entry.prId} (${updatedSessions.length} total for ${entry.workspace}/${entry.repoSlug})`
+          )
+        } catch (err) {
+          console.error('[review-store] Failed to persist session:', err)
+        }
+      }
+    }
+  },
+
+  loadPersistedSessions: async (workspace: string, repoSlug: string) => {
+    if (!workspace || !repoSlug) return
+    const key = sessionsStorageKey(workspace, repoSlug)
+    try {
+      const raw = await window.api.settings.get(key)
+      const persisted = Array.isArray(raw) ? (raw as PersistedSession[]) : []
+
+      const restored: Record<number, ReviewSession> = {}
+      for (const p of persisted) {
+        restored[p.prId] = {
+          sessionId: p.sessionId,
+          prId: p.prId,
+          status: 'complete',
+          rawText: '',
+          comments: p.comments,
+          summary: p.summary,
+          startedAt: p.completedAt
+        }
+      }
+
+      // Merge: in-memory active sessions take precedence over restored ones
+      const current = get().sessions
+      const activeEntries: Record<number, ReviewSession> = {}
+      for (const [k, v] of Object.entries(current)) {
+        if (v.status === 'streaming') {
+          activeEntries[Number(k)] = v
+        }
+      }
+
+      set({ sessions: { ...restored, ...activeEntries } })
+      console.log(
+        `[review-store] Loaded ${persisted.length} persisted sessions for ${workspace}/${repoSlug}`
+      )
+    } catch (err) {
+      console.error('[review-store] Failed to load persisted sessions:', err)
+    }
+  },
+
+  restoreSessionFromHistory: async (entry: ReviewHistoryEntry) => {
+    const key = sessionsStorageKey(entry.workspace, entry.repoSlug)
+    try {
+      const raw = await window.api.settings.get(key)
+      const persisted = Array.isArray(raw) ? (raw as PersistedSession[]) : []
+      const session = persisted.find((s) => s.prId === entry.prId)
+
+      if (!session) {
+        console.warn(`[review-store] No persisted session found for PR #${entry.prId}`)
+        return
+      }
+
+      const restored: ReviewSession = {
+        sessionId: session.sessionId,
+        prId: session.prId,
+        status: 'complete',
+        rawText: '',
+        comments: session.comments,
+        summary: session.summary,
+        startedAt: session.completedAt
+      }
+
+      set({
+        currentSession: restored,
+        sessions: { ...get().sessions, [restored.prId]: restored }
+      })
+    } catch (err) {
+      console.error('[review-store] Failed to restore session from history:', err)
+    }
   }
 }))

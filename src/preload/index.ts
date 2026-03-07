@@ -23,6 +23,8 @@ const api = {
       ipcRenderer.invoke('app:probeOllama'),
     probeCli: (command: string): Promise<{ available: boolean }> =>
       ipcRenderer.invoke('app:probeCli', command),
+    openExternal: (url: string): Promise<void> =>
+      ipcRenderer.invoke('app:openExternal', url),
   },
   bitbucket: {
     connect: (): Promise<{ connected: boolean; displayName: string }> =>
@@ -63,6 +65,8 @@ const api = {
         prId,
         comment
       ),
+    getDiffstatCount: (workspace: string, repoSlug: string, prId: number): Promise<number> =>
+      ipcRenderer.invoke('bitbucket:getDiffstatCount', workspace, repoSlug, prId),
   },
   ai: {
     startReview: (

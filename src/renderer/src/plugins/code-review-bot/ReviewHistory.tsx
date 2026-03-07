@@ -1,10 +1,11 @@
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Eye } from 'lucide-react'
 import type { ReviewHistoryEntry } from '../../types/review'
 import { formatRelativeTime } from '../../components/dashboard/utils'
 
 interface ReviewHistoryProps {
   history: ReviewHistoryEntry[]
   isLoading: boolean
+  onOpen?: (entry: ReviewHistoryEntry) => void
 }
 
 /** Map history status to badge styling. */
@@ -20,7 +21,8 @@ const STATUS_STYLES: Record<ReviewHistoryEntry['status'], string> = {
  */
 export function ReviewHistory({
   history,
-  isLoading
+  isLoading,
+  onOpen
 }: ReviewHistoryProps): React.JSX.Element {
   if (isLoading) {
     return (
@@ -49,7 +51,7 @@ export function ReviewHistory({
           <div className="min-w-0 flex-1">
             <button
               type="button"
-              onClick={() => window.open(entry.prUrl, '_blank')}
+              onClick={() => window.api?.app?.openExternal?.(entry.prUrl)}
               className="group flex items-center gap-1 text-left"
             >
               <span className="truncate text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
@@ -81,6 +83,19 @@ export function ReviewHistory({
           <span className="shrink-0 text-xs text-text-secondary">
             {formatRelativeTime(entry.timestamp)}
           </span>
+
+          {/* Open review button */}
+          {onOpen && entry.commentCount > 0 && (
+            <button
+              type="button"
+              onClick={() => onOpen(entry)}
+              className="shrink-0 rounded px-2 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10"
+              title="Open review comments"
+            >
+              <Eye size={13} className="inline mr-1" />
+              Open
+            </button>
+          )}
         </div>
       ))}
     </div>

@@ -21,6 +21,7 @@ export interface ElectronAPI {
   app: {
     probeOllama: () => Promise<{ available: boolean; models: string[] }>
     probeCli: (command: string) => Promise<{ available: boolean }>
+    openExternal: (url: string) => Promise<void>
   }
   bitbucket: {
     connect: () => Promise<{ connected: boolean }>
@@ -51,6 +52,11 @@ export interface ElectronAPI {
       prId: number,
       comment: string
     ) => Promise<void>
+    getDiffstatCount: (
+      workspace: string,
+      repoSlug: string,
+      prId: number
+    ) => Promise<number>
   }
   ai: {
     startReview: (

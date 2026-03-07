@@ -216,3 +216,24 @@ export async function postTopLevelComment(
     throw new Error(`Failed to post top-level comment (${response.status}): ${body}`)
   }
 }
+
+/**
+ * Returns the number of files changed in a pull request using the diffstat endpoint.
+ * Uses pagelen=1 to minimize payload — we only need the `size` (total count) field.
+ */
+export async function getDiffstatCount(
+  workspace: string,
+  repoSlug: string,
+  prId: number,
+  authHeader: string
+): Promise<number> {
+  const response = await fetch(
+    `${BB_API}/repositories/${workspace}/${repoSlug}/pullrequests/${prId}/diffstat?pagelen=1`,
+    { headers: { Authorization: authHeader } }
+  )
+
+  if (!response.ok) return 0
+
+  const data = (await response.json()) as { size?: number; values?: unknown[] }
+  return data.size ?? data.values?.length ?? 0
+}

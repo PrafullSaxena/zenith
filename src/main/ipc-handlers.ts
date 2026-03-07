@@ -1,8 +1,8 @@
-import { ipcMain, safeStorage, BrowserWindow } from 'electron'
+import { ipcMain, safeStorage, shell, BrowserWindow } from 'electron'
 import Store from 'electron-store'
 import { getSettings, getSetting, setSetting, resetSettings } from './settings-store'
 import { TokenManager } from './bitbucket/token-manager'
-import { listOpenPRs, getPRDiff, postInlineComment, postTopLevelComment, testCredentials, basicAuthHeader } from './bitbucket/api'
+import { listOpenPRs, getPRDiff, postInlineComment, postTopLevelComment, getDiffstatCount, testCredentials, basicAuthHeader } from './bitbucket/api'
 import { streamReview, cancelSdkReview } from './ai/stream'
 import { streamCliReview, cancelCliReview, probeCliBinary } from './ai/cli-stream'
 
@@ -122,6 +122,14 @@ export function registerIpcHandlers(): void {
     }
   )
 
+  ipcMain.handle(
+    'bitbucket:getDiffstatCount',
+    async (_event, workspace: string, repoSlug: string, prId: number) => {
+      const authHeader = tokenManager.getAuthHeader()
+      return getDiffstatCount(workspace, repoSlug, prId, authHeader)
+    }
+  )
+
   // --- AI channels ---
   ipcMain.handle(
     'ai:startReview',
@@ -184,5 +192,9 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('app:probeCli', async (_event, command: string) => {
     const available = await probeCliBinary(command)
     return { available }
+  })
+
+  ipcMain.handle('app:openExternal', async (_event, url: string) => {
+    await shell.openExternal(url)
   })
 }
