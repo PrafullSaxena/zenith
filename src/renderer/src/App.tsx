@@ -1,9 +1,10 @@
-import React, { Suspense } from 'react'
+import React, { Suspense, useEffect } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { PLUGINS } from './plugins/registry'
 import { AppLayout } from './components/AppLayout'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { SettingsLayout } from './components/settings/SettingsLayout'
+import { useSettingsStore } from './stores/settings-store'
 
 const MissionControl = React.lazy(() => import('./components/dashboard/MissionControl'))
 const ActivityLog = React.lazy(() => import('./components/activity/ActivityLog'))
@@ -18,6 +19,17 @@ function LoadingFallback(): React.JSX.Element {
 }
 
 function App(): React.JSX.Element {
+  const theme = useSettingsStore((s) => s.getSetting('general.theme')) as string | undefined
+
+  // Apply data-theme attribute to <html> so CSS variable overrides take effect
+  useEffect(() => {
+    if (theme && theme !== 'zenith') {
+      document.documentElement.setAttribute('data-theme', theme)
+    } else {
+      document.documentElement.removeAttribute('data-theme')
+    }
+  }, [theme])
+
   return (
     <HashRouter>
       <Routes>

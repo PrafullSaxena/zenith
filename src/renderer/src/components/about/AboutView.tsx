@@ -3,7 +3,6 @@
  * Default-exported for React.lazy() compatibility in App.tsx.
  */
 import {
-  Sparkles,
   User,
   Github,
   Linkedin,
@@ -17,6 +16,7 @@ import {
   Server,
   BookOpen
 } from 'lucide-react'
+import zenithLogo from '../../assets/zenith-logo.png'
 
 const APP_VERSION = '1.0.0'
 
@@ -113,9 +113,11 @@ export default function AboutView(): React.JSX.Element {
     <div className="mx-auto max-w-3xl space-y-8">
       {/* ── App Header ── */}
       <div className="text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-violet-600 shadow-lg shadow-accent/20">
-          <Sparkles size={28} className="text-white" />
-        </div>
+        <img
+          src={zenithLogo}
+          alt="Zenith"
+          className="mx-auto mb-4 h-20 w-20 shadow-lg shadow-accent/20"
+        />
         <h1 className="text-2xl font-bold text-text-primary">Zenith</h1>
         <p className="mt-1 text-sm text-text-secondary">
           Your AI-powered development toolkit

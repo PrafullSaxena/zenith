@@ -12,7 +12,8 @@ import {
   Copy,
   Check,
   CornerDownRight,
-  Trash2
+  Trash2,
+  Clock
 } from 'lucide-react'
 import type { DbQASession } from '../../types/database'
 import MarkdownRenderer from './MarkdownRenderer'
@@ -24,6 +25,8 @@ interface AskAIProps {
   hasAgent: boolean
   /** Active connection ID for running SQL queries from code blocks */
   activeConnectionId: string | null
+  /** Persisted list of recent questions (max 10) */
+  questionHistory: string[]
   onStart: (question: string) => void
   onCancel: () => void
 }
@@ -57,6 +60,7 @@ export default function AskAI({
   hasConnection,
   hasAgent,
   activeConnectionId,
+  questionHistory,
   onStart,
   onCancel
 }: AskAIProps): React.JSX.Element {
@@ -251,7 +255,7 @@ export default function AskAI({
       {/* Response area */}
       <div ref={responseRef} className="flex-1 overflow-auto p-4">
         {!session && (
-          <div className="flex h-full items-center justify-center text-text-secondary/50">
+          <div className="flex h-full flex-col items-center justify-center text-text-secondary/50">
             <div className="text-center">
               <MessageSquare size={32} className="mx-auto mb-2 opacity-30" />
               <p className="text-sm">Ask a question about your database</p>
@@ -259,6 +263,32 @@ export default function AskAI({
                 AI will analyze your schema and answer using table structures, relationships, and data types
               </p>
             </div>
+
+            {/* Recent questions */}
+            {questionHistory.length > 0 && (
+              <div className="mt-6 w-full max-w-md">
+                <div className="mb-2 flex items-center gap-1.5">
+                  <Clock size={11} className="text-text-secondary/50" />
+                  <span className="text-[11px] font-medium text-text-secondary/60">Recent questions</span>
+                </div>
+                <div className="space-y-1">
+                  {questionHistory.map((q, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      disabled={!canAsk}
+                      onClick={() => {
+                        setQuestion(q)
+                        inputRef.current?.focus()
+                      }}
+                      className="w-full truncate rounded-lg border border-border/50 bg-surface/50 px-3 py-1.5 text-left text-xs text-text-secondary transition-colors hover:border-accent/30 hover:text-text-primary disabled:opacity-40"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

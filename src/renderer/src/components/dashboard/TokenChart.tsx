@@ -94,7 +94,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
     return (
       <div className="flex h-full flex-col rounded-lg border border-border bg-surface-elevated p-4">
         <div className="mb-3">
-          <h3 className="text-sm font-semibold text-text-primary">Token Usage (7 days)</h3>
+          <h3 className="text-sm font-semibold text-text-primary">Token Usage by AI Agent (7 days)</h3>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
@@ -112,7 +112,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
             </div>
             <p className="text-sm text-text-secondary/50">No token usage data yet</p>
             <p className="mt-1 text-[11px] text-text-secondary/30">
-              Token consumption will appear here after AI queries
+              Token consumption per AI agent will appear here after AI queries
             </p>
           </div>
         </div>
@@ -123,7 +123,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
   return (
     <div className="flex h-full flex-col rounded-lg border border-border bg-surface-elevated p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-primary">Token Usage (7 days)</h3>
+        <h3 className="text-sm font-semibold text-text-primary">Token Usage by AI Agent (7 days)</h3>
         <span className="text-[10px] text-text-secondary">
           {totalTokens.toLocaleString()} total tokens
         </span>
@@ -201,18 +201,22 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
         </svg>
       </div>
 
-      {/* Legend */}
-      <div className="mt-2 flex flex-wrap gap-3">
+      {/* Legend — per AI agent breakdown */}
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
         {providerIds.map((pid, pi) => {
-          const pct = totalTokens > 0 ? ((providerTotals[pid] || 0) / totalTokens) * 100 : 0
+          const total = providerTotals[pid] || 0
+          const pct = totalTokens > 0 ? (total / totalTokens) * 100 : 0
           return (
             <div key={pid} className="flex items-center gap-1.5">
               <span
-                className="inline-block h-2 w-2 rounded-full"
+                className="inline-block h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: PROVIDER_COLORS[pi % PROVIDER_COLORS.length] }}
               />
+              <span className="text-[10px] font-medium text-text-primary">
+                {providerMap[pid]}
+              </span>
               <span className="text-[10px] text-text-secondary">
-                {providerMap[pid]} ({pct.toFixed(0)}%)
+                {total.toLocaleString()} tokens ({pct.toFixed(0)}%)
               </span>
             </div>
           )

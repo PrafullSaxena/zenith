@@ -1,10 +1,18 @@
-import { app, BrowserWindow, Menu } from 'electron'
+import { app, BrowserWindow, Menu, nativeImage } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
+import { getSetting } from './settings-store'
 import WinStateModule from 'electron-win-state'
 // CJS/ESM interop: electron-win-state uses module.exports = { default: Class }
 const WinState = (WinStateModule as { default?: typeof WinStateModule }).default || WinStateModule
+
+// Set app name early so macOS menu bar, dock tooltip, and About dialog show "Zenith"
+// (In production electron-builder handles this, but dev mode defaults to "Electron")
+app.name = 'Zenith'
+if (process.platform === 'darwin') {
+  app.setName('Zenith')
+}
 
 let mainWindow: BrowserWindow | null = null
 
@@ -14,16 +22,25 @@ function createWindow(): void {
     defaultHeight: 800,
   })
 
+  // App icon — used in dev mode & Linux; macOS production uses the .icns in build/
+  const iconPath = join(__dirname, '../../resources/icon.png')
+  const appIcon = nativeImage.createFromPath(iconPath)
+
+  // Theme-aware background color to prevent white flash on load
+  const theme = getSetting('general.theme') as string | undefined
+  const bgColor = theme === 'portfolio' ? '#0f172a' : '#0f0f0f'
+
   mainWindow = new BrowserWindow({
     ...winState.winOptions,
+    icon: appIcon,
     minWidth: 900,
     minHeight: 600,
     titleBarStyle: 'hidden',
     // macOS: traffic lights stay native; Windows/Linux: overlay
     ...(process.platform !== 'darwin'
-      ? { titleBarOverlay: { color: '#0f0f0f', symbolColor: '#a0a0a0', height: 32 } }
+      ? { titleBarOverlay: { color: bgColor, symbolColor: '#a0a0a0', height: 32 } }
       : {}),
-    backgroundColor: '#0f0f0f', // Prevent white flash on load
+    backgroundColor: bgColor,
     show: false, // Show after ready-to-show avoids visual jump
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
@@ -63,13 +80,16 @@ function createWindow(): void {
   }
 }
 
-// macOS standard menu (Edit, View, Window)
+// macOS standard menu — appMenu picks up app.name for "About Zenith", "Quit Zenith", etc.
 function buildMenu(): void {
+  const isMac = process.platform === 'darwin'
   const template = Menu.buildFromTemplate([
-    { role: 'appMenu' },
-    { role: 'editMenu' },
-    { role: 'viewMenu' },
-    { role: 'windowMenu' },
+    ...(isMac
+      ? [{ role: 'appMenu' as const }]
+      : []),
+    { role: 'editMenu' as const },
+    { role: 'viewMenu' as const },
+    { role: 'windowMenu' as const },
   ])
   Menu.setApplicationMenu(template)
 }
@@ -77,6 +97,12 @@ function buildMenu(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 app.whenReady().then(() => {
+  // Set dock icon on macOS (dev mode — production uses the .icns from build/)
+  if (process.platform === 'darwin' && is.dev) {
+    const dockIcon = nativeImage.createFromPath(join(__dirname, '../../resources/icon.png'))
+    if (!dockIcon.isEmpty()) app.dock.setIcon(dockIcon)
+  }
+
   registerIpcHandlers()
   createWindow()
   buildMenu()

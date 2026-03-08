@@ -36,6 +36,18 @@ export function GeneralSettings(): React.JSX.Element {
     ]
   }
 
+  const themeField: SettingsFieldDef = {
+    key: 'theme',
+    label: 'Theme',
+    type: 'select',
+    description: 'Color theme for the application',
+    defaultValue: 'zenith',
+    options: [
+      { label: 'Zenith (Cyan)', value: 'zenith' },
+      { label: 'Portfolio (Amber)', value: 'portfolio' }
+    ]
+  }
+
   const showWelcomeField: SettingsFieldDef = {
     key: 'showWelcomeOnStart',
     label: 'Show welcome on start',
@@ -47,6 +59,12 @@ export function GeneralSettings(): React.JSX.Element {
   return (
     <div>
       <h2 className="mb-6 text-lg font-semibold text-text-primary">General</h2>
+
+      <SettingsField
+        field={themeField}
+        value={getSetting('general.theme')}
+        onChange={(value) => setSetting('general.theme', value)}
+      />
 
       <SettingsField
         field={defaultViewField}

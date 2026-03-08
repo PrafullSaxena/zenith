@@ -77,6 +77,8 @@ export default function DbInspectorView(): React.JSX.Element {
     setSelectedTable,
     startQA,
     cancelQA,
+    qaQuestionHistory,
+    loadQAHistory,
     startOptimization,
     cancelOptimization,
     setSelectedTablesForER,
@@ -116,6 +118,7 @@ export default function DbInspectorView(): React.JSX.Element {
   useEffect(() => {
     loadConnections()
     loadHistory()
+    loadQAHistory()
     loadProviders()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -372,6 +375,7 @@ export default function DbInspectorView(): React.JSX.Element {
                 hasConnection={isConnected}
                 hasAgent={hasAgent}
                 activeConnectionId={isConnected ? activeConnectionId : null}
+                questionHistory={qaQuestionHistory}
                 onStart={handleStartQA}
                 onCancel={cancelQA}
               />

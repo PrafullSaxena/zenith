@@ -10,8 +10,8 @@
  */
 import { useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles } from 'lucide-react'
 import { PLUGINS } from '../../plugins/registry'
+import zenithLogo from '../../assets/zenith-logo.png'
 import { useActivityStore } from '../../stores/activity-store'
 import { useTokenStore } from '../../stores/token-store'
 import { useHealthStore } from '../../stores/health-store'
@@ -60,9 +60,11 @@ export default function MissionControl(): React.JSX.Element {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="rounded-lg bg-accent/10 p-2">
-          <Sparkles size={22} className="text-accent" />
-        </div>
+        <img
+          src={zenithLogo}
+          alt="Zenith"
+          className="h-10 w-10"
+        />
         <div>
           <h1 className="text-xl font-bold text-text-primary">Zenith</h1>
           <p className="text-xs text-text-secondary">

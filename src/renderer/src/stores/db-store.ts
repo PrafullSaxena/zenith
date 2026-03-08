@@ -210,6 +210,8 @@ interface DbStoreState {
 
   // AI Q&A
   qaSession: DbQASession | null
+  /** Recent Ask AI questions (persisted, max 10) */
+  qaQuestionHistory: string[]
 
   // Query Optimizer
   optimizerSession: QueryOptimizationSession | null
@@ -267,6 +269,8 @@ interface DbStoreState {
     command?: string
   ) => Promise<void>
   cancelQA: () => void
+  loadQAHistory: () => Promise<void>
+  clearQAHistory: () => Promise<void>
 
   // ── Query Optimizer actions ─────────────────────────────────────
 
@@ -322,6 +326,7 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
   selectedTable: null,
 
   qaSession: null,
+  qaQuestionHistory: [],
   optimizerSession: null,
   optimizerTiles: [],
   erSession: null,
@@ -640,6 +645,17 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
     const { activeConnectionId, activeSchema } = get()
     if (!activeConnectionId || !activeSchema) return
 
+    // Persist question to history (max 10, deduplicated, newest first)
+    const rawQ = question.includes('---\nNew follow-up question:')
+      ? question.split('---\nNew follow-up question:').pop()!.trim()
+      : question.trim()
+    if (rawQ) {
+      const prev = get().qaQuestionHistory.filter((q) => q !== rawQ)
+      const updated = [rawQ, ...prev].slice(0, 10)
+      set({ qaQuestionHistory: updated })
+      window.api.settings.set('db.qaQuestionHistory', updated)
+    }
+
     const sessionId = `qa-${Date.now()}`
     const session: DbQASession = {
       sessionId,
@@ -709,6 +725,21 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
       set({ qaSession: { ...current, status: 'cancelled' } })
       window.api.ai.removeStreamListeners()
     }
+  },
+
+  loadQAHistory: async () => {
+    try {
+      const raw = await window.api.settings.get('db.qaQuestionHistory')
+      const history = Array.isArray(raw) ? (raw as string[]).slice(0, 10) : []
+      set({ qaQuestionHistory: history })
+    } catch {
+      set({ qaQuestionHistory: [] })
+    }
+  },
+
+  clearQAHistory: async () => {
+    set({ qaQuestionHistory: [] })
+    await window.api.settings.set('db.qaQuestionHistory', [])
   },
 
   // ── Query Optimizer actions ─────────────────────────────────────
