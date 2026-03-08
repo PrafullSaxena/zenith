@@ -82,6 +82,19 @@
 - **ARPA-05**: Create Jira issue comments with patch details and status updates
 - **ARPA-06**: Patch history with link back to originating Jira issue
 
+### Launchpad — Cloud Cost Estimator (LNCH)
+
+- **LNCH-01**: Provider selection — choose from AWS, GCP, and Azure as cloud provider
+- **LNCH-02**: Service catalog — browse and select services per provider (compute, storage, database, networking, serverless, etc.)
+- **LNCH-03**: Resource configurator — specify instance types, storage sizes, regions, quantities, and usage hours per selected service
+- **LNCH-04**: Cost calculation engine — compute monthly and yearly cost estimates from selected resources and configurations
+- **LNCH-05**: Estimation summary — display itemized cost breakdown with subtotals per service and grand total (monthly/yearly toggle)
+- **LNCH-06**: AI chat assistant — embedded chat window where user can describe needs and AI suggests services, instance types, and configurations
+- **LNCH-07**: AI-driven recalculation — AI suggestions can auto-populate the estimator and trigger cost recalculation
+- **LNCH-08**: Report export — download estimation report as PDF with provider, services, configurations, costs, and AI recommendations
+- **LNCH-09**: Estimation history — save and reload past estimations for comparison
+- **LNCH-10**: Multi-provider comparison — side-by-side cost comparison across AWS, GCP, and Azure for equivalent services
+
 ### PromptBuilder (PMPT)
 
 - **PMPT-01**: Create and edit prompt templates with variable placeholders
@@ -149,6 +162,16 @@
 | ARPA-04 | 5 | - | Planned |
 | ARPA-05 | 5 | - | Planned |
 | ARPA-06 | 5 | - | Planned |
+| LNCH-01 | 7 | - | Planned |
+| LNCH-02 | 7 | - | Planned |
+| LNCH-03 | 7 | - | Planned |
+| LNCH-04 | 7 | - | Planned |
+| LNCH-05 | 7 | - | Planned |
+| LNCH-06 | 7 | - | Planned |
+| LNCH-07 | 7 | - | Planned |
+| LNCH-08 | 7 | - | Planned |
+| LNCH-09 | 7 | - | Planned |
+| LNCH-10 | 7 | - | Planned |
 | PMPT-01 | 6 | - | Planned |
 | PMPT-02 | 6 | - | Planned |
 | PMPT-03 | 6 | - | Planned |

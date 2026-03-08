@@ -9,6 +9,7 @@
  */
 import React from 'react'
 import { Play, Loader2, AlertCircle } from 'lucide-react'
+import { highlightCode } from '../../lib/highlight'
 
 /** Shape returned by window.api.db.query */
 export interface QueryResult {
@@ -116,8 +117,11 @@ function CodeFenceBlock({
             </button>
           )}
         </div>
-        <pre className="overflow-x-auto rounded-b-lg border border-border bg-surface px-4 py-3 font-mono text-[12px] leading-relaxed text-accent">
-          {code}
+        <pre className="overflow-x-auto rounded-b-lg border border-border bg-surface px-4 py-3 font-mono text-[12px] leading-relaxed">
+          <code
+            className="hljs"
+            dangerouslySetInnerHTML={{ __html: highlightCode(trimmedCode, lang || undefined) }}
+          />
         </pre>
       </div>
 

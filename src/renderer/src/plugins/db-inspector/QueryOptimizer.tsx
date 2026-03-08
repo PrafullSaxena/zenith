@@ -29,6 +29,7 @@ import type {
   OptimizerTile
 } from '../../types/database'
 import MermaidRenderer from './MermaidRenderer'
+import { highlightCode } from '../../lib/highlight'
 
 interface QueryOptimizerProps {
   session: QueryOptimizationSession | null
@@ -529,8 +530,11 @@ function SuggestionCard({
               {sqlCopied ? 'Copied!' : 'Copy'}
             </button>
           </div>
-          <pre className="mt-1 overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-accent">
-            {suggestion.suggestedSQL}
+          <pre className="mt-1 overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed">
+            <code
+              className="hljs"
+              dangerouslySetInnerHTML={{ __html: highlightCode(suggestion.suggestedSQL, 'sql') }}
+            />
           </pre>
         </div>
       )}
@@ -573,8 +577,11 @@ function OptimizedQueryBlock({
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      <pre className="overflow-x-auto whitespace-pre-wrap px-3 py-3 font-mono text-[11px] leading-relaxed text-text-primary">
-        {query}
+      <pre className="overflow-x-auto whitespace-pre-wrap px-3 py-3 font-mono text-[11px] leading-relaxed">
+        <code
+          className="hljs"
+          dangerouslySetInnerHTML={{ __html: highlightCode(query, 'sql') }}
+        />
       </pre>
     </div>
   )

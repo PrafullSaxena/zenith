@@ -1,0 +1,116 @@
+/**
+ * hljs-zenith.css — Custom highlight.js theme for Zenith.
+ * Uses CSS custom properties so it automatically adapts to
+ * both Zenith Cyan and Portfolio Amber themes.
+ */
+
+.hljs {
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+/* Keywords, built-ins */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-name,
+.hljs-tag {
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+/* Strings, string-like */
+.hljs-string,
+.hljs-addition,
+.hljs-attribute,
+.hljs-template-tag,
+.hljs-template-variable {
+  color: oklch(72% 0.16 155); /* Teal green */
+}
+
+/* Numbers, literals */
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-symbol,
+.hljs-bullet {
+  color: oklch(72% 0.14 55); /* Soft orange */
+}
+
+/* Comments */
+.hljs-comment,
+.hljs-quote {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Meta / preprocessor */
+.hljs-meta,
+.hljs-meta .hljs-keyword {
+  color: oklch(65% 0.12 280); /* Muted purple */
+}
+
+/* Types, classes */
+.hljs-type,
+.hljs-class .hljs-title,
+.hljs-title.class_,
+.hljs-title {
+  color: oklch(74% 0.13 240); /* Blue-purple */
+}
+
+/* Functions */
+.hljs-title.function_,
+.hljs-section {
+  color: oklch(74% 0.13 240); /* Blue-purple */
+  font-weight: 500;
+}
+
+/* Deletions (diff) */
+.hljs-deletion {
+  color: oklch(65% 0.18 25); /* Red */
+}
+
+/* Emphasis */
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 700;
+}
+
+/* Selector (CSS) */
+.hljs-selector-id,
+.hljs-selector-class {
+  color: var(--color-accent);
+}
+
+/* Regex */
+.hljs-regexp {
+  color: oklch(72% 0.14 55); /* Soft orange */
+}
+
+/* Params */
+.hljs-params {
+  color: var(--color-text-primary);
+}
+
+/* Attr */
+.hljs-attr {
+  color: oklch(72% 0.14 55); /* Soft orange */
+}
+
+/* Punctuation */
+.hljs-punctuation {
+  color: var(--color-text-secondary);
+}
+
+/* Operator */
+.hljs-operator {
+  color: var(--color-accent);
+}
+
+/* Property */
+.hljs-property {
+  color: oklch(72% 0.16 155); /* Teal green */
+}
