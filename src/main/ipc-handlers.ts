@@ -3,8 +3,10 @@ import Store from 'electron-store'
 import { getSettings, getSetting, setSetting, resetSettings } from './settings-store'
 import { TokenManager } from './bitbucket/token-manager'
 import { listOpenPRs, getPRDiff, postInlineComment, postTopLevelComment, getDiffstatCount, testCredentials, basicAuthHeader } from './bitbucket/api'
-import { streamReview, cancelSdkReview } from './ai/stream'
-import { streamCliReview, cancelCliReview, probeCliBinary } from './ai/cli-stream'
+import { streamReview, cancelSdkReview, streamAnalysis } from './ai/stream'
+import { streamCliReview, cancelCliReview, streamCliAnalysis, probeCliBinary } from './ai/cli-stream'
+import { PostgresConnectionManager } from './db/postgres'
+import { buildSchemaContext, buildQueryOptimizationContext, buildTableDDL } from './db/introspection'
 
 /**
  * Separate electron-store instance for credentials.
@@ -14,6 +16,9 @@ const credentialsStore = new Store({ name: 'zenith-credentials' })
 
 /** Module-level credential manager for Bitbucket App Password auth. */
 const tokenManager = new TokenManager()
+
+/** Module-level PostgreSQL connection manager for DbInspector. */
+const dbManager = new PostgresConnectionManager()
 
 /**
  * Registers all IPC handlers for settings, credentials, and app channels.
@@ -196,5 +201,185 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('app:openExternal', async (_event, url: string) => {
     await shell.openExternal(url)
+  })
+
+  // --- Database channels ---
+  ipcMain.handle(
+    'db:testConnection',
+    async (
+      _event,
+      params: { host: string; port: number; username: string; password: string }
+    ) => {
+      return dbManager.testConnection(params)
+    }
+  )
+
+  ipcMain.handle(
+    'db:connect',
+    async (
+      _event,
+      id: string,
+      name: string,
+      host: string,
+      port: number,
+      username: string,
+      password: string,
+      database: string,
+      defaultSchema: string,
+      readStrategy: 'read-only' | 'read-write'
+    ) => {
+      await dbManager.connect({
+        id,
+        name,
+        host,
+        port,
+        username,
+        password,
+        database,
+        defaultSchema,
+        readStrategy
+      })
+    }
+  )
+
+  ipcMain.handle('db:disconnect', async (_event, connectionId: string) => {
+    await dbManager.disconnect(connectionId)
+  })
+
+  ipcMain.handle('db:getConnections', () => {
+    return dbManager.getActiveConnections()
+  })
+
+  ipcMain.handle('db:isConnected', (_event, connectionId: string) => {
+    return dbManager.isConnected(connectionId)
+  })
+
+  ipcMain.handle('db:getDatabases', async (_event, connectionId: string) => {
+    return dbManager.getDatabases(connectionId)
+  })
+
+  ipcMain.handle(
+    'db:switchDatabase',
+    async (_event, connectionId: string, database: string) => {
+      await dbManager.switchDatabase(connectionId, database)
+    }
+  )
+
+  ipcMain.handle('db:getSchemas', async (_event, connectionId: string) => {
+    return dbManager.getSchemas(connectionId)
+  })
+
+  ipcMain.handle('db:getTables', async (_event, connectionId: string, schema: string) => {
+    return dbManager.getTables(connectionId, schema)
+  })
+
+  ipcMain.handle(
+    'db:getColumns',
+    async (_event, connectionId: string, schema: string, table: string) => {
+      return dbManager.getColumns(connectionId, schema, table)
+    }
+  )
+
+  ipcMain.handle(
+    'db:getTableDDL',
+    async (_event, connectionId: string, schema: string, table: string) => {
+      return buildTableDDL(dbManager, connectionId, schema, table)
+    }
+  )
+
+  ipcMain.handle('db:getForeignKeys', async (_event, connectionId: string, schema: string) => {
+    return dbManager.getForeignKeys(connectionId, schema)
+  })
+
+  ipcMain.handle(
+    'db:getIndexes',
+    async (_event, connectionId: string, schema: string, table: string) => {
+      return dbManager.getIndexes(connectionId, schema, table)
+    }
+  )
+
+  ipcMain.handle(
+    'db:getTableStats',
+    async (_event, connectionId: string, schema: string, table: string) => {
+      return dbManager.getTableStats(connectionId, schema, table)
+    }
+  )
+
+  ipcMain.handle('db:query', async (_event, connectionId: string, sql: string) => {
+    const result = await dbManager.query(connectionId, sql)
+    return {
+      rows: result.rows,
+      fields: result.fields.map((f) => ({ name: f.name, dataTypeID: f.dataTypeID })),
+      rowCount: result.rowCount ?? 0,
+      command: result.command
+    }
+  })
+
+  ipcMain.handle('db:explain', async (_event, connectionId: string, sql: string) => {
+    return dbManager.explain(connectionId, sql)
+  })
+
+  ipcMain.handle(
+    'db:buildSchemaContext',
+    async (_event, connectionId: string, schema: string, tables?: string[]) => {
+      return buildSchemaContext(dbManager, connectionId, schema, tables)
+    }
+  )
+
+  ipcMain.handle(
+    'db:buildOptimizationContext',
+    async (_event, connectionId: string, schema: string, sql: string) => {
+      return buildQueryOptimizationContext(dbManager, connectionId, schema, sql)
+    }
+  )
+
+  ipcMain.handle(
+    'db:storeCredentials',
+    (_event, connectionId: string, password: string) => {
+      if (!safeStorage.isEncryptionAvailable()) {
+        throw new Error('Encryption is not available on this system')
+      }
+      const encrypted = safeStorage.encryptString(password)
+      credentialsStore.set(`db:${connectionId}`, encrypted.toString('base64'))
+    }
+  )
+
+  ipcMain.handle('db:getCredentials', (_event, connectionId: string) => {
+    const encrypted = credentialsStore.get(`db:${connectionId}`) as string | undefined
+    if (!encrypted) return null
+    return safeStorage.decryptString(Buffer.from(encrypted, 'base64'))
+  })
+
+  // --- AI analysis channels (generic, reusable for any plugin) ---
+  ipcMain.handle(
+    'ai:startAnalysis',
+    async (
+      _event,
+      providerId: string,
+      modelName: string,
+      systemPrompt: string,
+      userPrompt: string,
+      sessionId: string,
+      command?: string
+    ) => {
+      const mainWindow =
+        BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      if (!mainWindow) {
+        throw new Error('No browser window available for streaming')
+      }
+
+      if (command) {
+        streamCliAnalysis({ mainWindow, systemPrompt, userPrompt, command, sessionId })
+      } else {
+        streamAnalysis({ mainWindow, systemPrompt, userPrompt, providerId, modelName, sessionId })
+      }
+
+      return { started: true, sessionId }
+    }
+  )
+
+  ipcMain.handle('ai:cancelAnalysis', (_event, sessionId: string) => {
+    cancelSdkReview(sessionId)
+    cancelCliReview(sessionId)
   })
 }

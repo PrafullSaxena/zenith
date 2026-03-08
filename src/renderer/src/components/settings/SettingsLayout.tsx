@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { PLUGINS } from '../../plugins/registry'
 import { GeneralSettings } from './GeneralSettings'
 import { PluginSettings } from './PluginSettings'
@@ -15,9 +16,12 @@ interface CategoryItem {
 /**
  * Settings view with left sidebar listing categories and right content panel.
  * Categories: General, AI Agents (placeholder), then one per plugin.
+ * Supports ?tab=<pluginId> URL parameter to open a specific settings section.
  */
 export function SettingsLayout(): React.JSX.Element {
-  const [activeCategory, setActiveCategory] = useState<SettingsCategory>('general')
+  const [searchParams] = useSearchParams()
+  const initialTab = searchParams.get('tab') as SettingsCategory | null
+  const [activeCategory, setActiveCategory] = useState<SettingsCategory>(initialTab ?? 'general')
 
   const categories: CategoryItem[] = [
     { id: 'general', label: 'General' },

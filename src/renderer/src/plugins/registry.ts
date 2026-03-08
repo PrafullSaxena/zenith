@@ -67,24 +67,15 @@ export const PLUGINS: readonly PluginDefinition[] = [
     description: 'Database inspection and query tooling',
     icon: 'Database',
     route: '/db-inspector',
-    component: React.lazy(() => import('./stubs/DbInspectorView')),
+    component: React.lazy(() => import('./db-inspector/DbInspectorView')),
     settingsSchema: [
       {
-        key: 'connectionString',
-        label: 'Connection String',
-        type: 'password',
-        description: 'Database connection string (stored securely)',
-        defaultValue: '',
-        required: true,
-        placeholder: 'postgresql://user:pass@host:5432/db'
-      },
-      {
-        key: 'defaultSchema',
-        label: 'Default Schema',
-        type: 'text',
-        description: 'Default schema to browse',
-        defaultValue: 'public',
-        placeholder: 'public'
+        key: 'connections',
+        label: 'Database Connections',
+        type: 'connection-list',
+        description: 'PostgreSQL database connections (managed in-app)',
+        defaultValue: [],
+        required: true
       }
     ],
     defaultAgent: null

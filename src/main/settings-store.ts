@@ -14,7 +14,9 @@ const DEFAULTS: Record<string, unknown> = {
       bitbucketUsername: '',
       bitbucketAppPassword: ''
     },
-    'db-inspector': {},
+    'db-inspector': {
+      connections: []
+    },
     'astro-patch': {},
     'prompt-builder': {}
   },

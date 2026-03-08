@@ -231,6 +231,73 @@ export function cancelCliReview(sessionId: string): void {
 }
 
 /**
+ * Stream a generic AI analysis using a local CLI tool.
+ * Unlike streamCliReview(), this accepts separate systemPrompt and userPrompt parameters
+ * making it reusable for Database Q&A, Query Optimization, and other future features.
+ */
+export function streamCliAnalysis(params: {
+  mainWindow: BrowserWindow
+  systemPrompt: string
+  userPrompt: string
+  command: string
+  sessionId: string
+}): void {
+  const { mainWindow, systemPrompt, userPrompt, command, sessionId } = params
+
+  const fullPrompt = `${systemPrompt}\n\n${userPrompt}`
+
+  const child = spawn(command, {
+    shell: true,
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env: getShellEnv()
+  })
+
+  activeCliSessions.set(sessionId, child)
+
+  child.stdin.write(fullPrompt)
+  child.stdin.end()
+
+  child.stdout.on('data', (data: Buffer) => {
+    if (mainWindow.isDestroyed()) {
+      child.kill()
+      return
+    }
+    mainWindow.webContents.send('ai:stream:chunk', {
+      sessionId,
+      chunk: data.toString()
+    })
+  })
+
+  child.stderr.on('data', (data: Buffer) => {
+    console.warn(`[cli-stream] ${command} stderr:`, data.toString().trim())
+  })
+
+  child.on('close', (code) => {
+    activeCliSessions.delete(sessionId)
+    if (mainWindow.isDestroyed()) return
+
+    if (code === 0 || code === null) {
+      mainWindow.webContents.send('ai:stream:done', { sessionId })
+    } else {
+      mainWindow.webContents.send('ai:stream:error', {
+        sessionId,
+        error: `CLI process exited with code ${code}`
+      })
+    }
+  })
+
+  child.on('error', (err) => {
+    activeCliSessions.delete(sessionId)
+    if (mainWindow.isDestroyed()) return
+
+    mainWindow.webContents.send('ai:stream:error', {
+      sessionId,
+      error: `Failed to start CLI: ${err.message}`
+    })
+  })
+}
+
+/**
  * Check if a CLI binary is available on the system PATH.
  * Extracts the binary name from the command and runs `which` (macOS/Linux)
  * or `where` (Windows) to check availability.

@@ -1,3 +1,14 @@
+import type {
+  TableInfo,
+  ColumnInfo,
+  ForeignKey,
+  IndexInfo,
+  TableStats,
+  QueryResult,
+  TestConnectionResult,
+  DbConnection
+} from './database'
+
 export interface PaginatedPRResult {
   prs: import('./bitbucket').PullRequest[]
   page: number
@@ -76,6 +87,79 @@ export interface ElectronAPI {
       cb: (data: { sessionId: string; error: string }) => void
     ) => void
     removeStreamListeners: () => void
+    startAnalysis: (
+      providerId: string,
+      modelName: string,
+      systemPrompt: string,
+      userPrompt: string,
+      sessionId: string,
+      command?: string
+    ) => Promise<{ started: boolean; sessionId: string }>
+    cancelAnalysis: (sessionId: string) => Promise<void>
+  }
+  db: {
+    testConnection: (params: {
+      host: string
+      port: number
+      username: string
+      password: string
+    }) => Promise<TestConnectionResult>
+    connect: (
+      id: string,
+      name: string,
+      host: string,
+      port: number,
+      username: string,
+      password: string,
+      database: string,
+      defaultSchema: string,
+      readStrategy: string
+    ) => Promise<void>
+    disconnect: (connectionId: string) => Promise<void>
+    getConnections: () => Promise<DbConnection[]>
+    isConnected: (connectionId: string) => Promise<boolean>
+    getDatabases: (connectionId: string) => Promise<string[]>
+    switchDatabase: (connectionId: string, database: string) => Promise<void>
+    getSchemas: (connectionId: string) => Promise<string[]>
+    getTables: (connectionId: string, schema: string) => Promise<TableInfo[]>
+    getColumns: (
+      connectionId: string,
+      schema: string,
+      table: string
+    ) => Promise<ColumnInfo[]>
+    getTableDDL: (
+      connectionId: string,
+      schema: string,
+      table: string
+    ) => Promise<string>
+    getForeignKeys: (
+      connectionId: string,
+      schema: string
+    ) => Promise<ForeignKey[]>
+    getIndexes: (
+      connectionId: string,
+      schema: string,
+      table: string
+    ) => Promise<IndexInfo[]>
+    getTableStats: (
+      connectionId: string,
+      schema: string,
+      table: string
+    ) => Promise<TableStats>
+    query: (connectionId: string, sql: string) => Promise<QueryResult>
+    explain: (connectionId: string, sql: string) => Promise<string>
+    buildSchemaContext: (
+      connectionId: string,
+      schema: string,
+      tables?: string[]
+    ) => Promise<string>
+    buildOptimizationContext: (
+      connectionId: string,
+      schema: string,
+      sql: string
+    ) => Promise<string>
+    storeCredentials: (connectionId: string, password: string) => Promise<void>
+    getCredentials: (connectionId: string) => Promise<string | null>
   }
 }
 

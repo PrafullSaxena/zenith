@@ -3,6 +3,8 @@ import { Eye, EyeOff } from 'lucide-react'
 import type { SettingsField as SettingsFieldType } from '../../types/plugin'
 import { RepoListEditor } from './RepoListEditor'
 import type { RepoEntry } from './RepoListEditor'
+import { ConnectionListEditor } from './ConnectionListEditor'
+import type { ConnectionEntry } from './ConnectionListEditor'
 
 interface SettingsFieldProps {
   field: SettingsFieldType
@@ -115,6 +117,14 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
           <RepoListEditor
             value={(value as RepoEntry[]) ?? []}
             onChange={(repos) => onChange(repos)}
+          />
+        )
+
+      case 'connection-list':
+        return (
+          <ConnectionListEditor
+            value={(value as ConnectionEntry[]) ?? []}
+            onChange={(connections) => onChange(connections)}
           />
         )
 

@@ -102,3 +102,54 @@ export function cancelSdkReview(sessionId: string): void {
     activeSdkSessions.delete(sessionId)
   }
 }
+
+/**
+ * Stream a generic AI analysis using the Vercel AI SDK.
+ * Unlike streamReview(), this accepts separate systemPrompt and userPrompt parameters
+ * making it reusable for Database Q&A, Query Optimization, and other future features.
+ */
+export async function streamAnalysis(params: {
+  mainWindow: BrowserWindow
+  systemPrompt: string
+  userPrompt: string
+  providerId: string
+  modelName: string
+  sessionId: string
+}): Promise<void> {
+  const { mainWindow, systemPrompt, userPrompt, providerId, modelName, sessionId } = params
+
+  const controller = new AbortController()
+  activeSdkSessions.set(sessionId, controller)
+
+  try {
+    const apiKey = await getApiKeyForProvider(providerId)
+    const model = createModel(providerId, modelName, apiKey)
+
+    const { textStream } = streamText({
+      model,
+      system: systemPrompt,
+      prompt: userPrompt,
+      abortSignal: controller.signal
+    })
+
+    for await (const chunk of textStream) {
+      if (mainWindow.isDestroyed()) break
+      mainWindow.webContents.send('ai:stream:chunk', { sessionId, chunk })
+    }
+
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('ai:stream:done', { sessionId })
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      return
+    }
+
+    if (!mainWindow.isDestroyed()) {
+      const message = err instanceof Error ? err.message : String(err)
+      mainWindow.webContents.send('ai:stream:error', { sessionId, error: message })
+    }
+  } finally {
+    activeSdkSessions.delete(sessionId)
+  }
+}

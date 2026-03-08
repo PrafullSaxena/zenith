@@ -32,8 +32,10 @@
     "electron-win-state": "^1.1.9",
     "framer-motion": "^12.5.0",
     "lucide-react": "^0.475.0",
+    "mermaid": "^11.12.3",
     "ollama-ai-provider": "^1.2.0",
     "parse-diff": "^0.11.1",
+    "pg": "^8.20.0",
     "react-router-dom": "^7.13.1",
     "tw-animate-css": "^1.2.5",
     "zustand": "^5.0.3"
@@ -46,6 +48,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.19.1",
+    "@types/pg": "^8.18.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
