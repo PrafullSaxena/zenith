@@ -5,6 +5,8 @@ set -euo pipefail
 #  Zenith — macOS Build Script
 #
 #  Builds Zenith.app as a .dmg installer for macOS.
+#  Handles ad-hoc code signing so the app runs on macOS
+#  Sequoia+ without a paid Apple Developer certificate.
 #
 #  Usage:
 #    ./scripts/build-mac.sh            # build for current arch (arm64 or x64)
@@ -83,7 +85,41 @@ info "Packaging ${APP_NAME}.app for macOS${ARCH:+ ($ARCH)}..."
 npx electron-builder --mac $ARCH
 ok "Packaging complete"
 
-# ── Step 5: Show output ──────────────────────────────────────
+# ── Step 5: Ad-hoc code signing ──────────────────────────────
+# macOS Sequoia+ requires all binaries in the .app bundle to
+# share a consistent code signature. electron-builder with
+# identity:null skips signing, so we ad-hoc sign everything
+# with a single consistent identity and remove quarantine.
+info "Signing app bundle (ad-hoc)..."
+
+# Find the .app bundle(s)
+APP_FOUND=0
+for app_dir in "$DIST_DIR"/mac-arm64 "$DIST_DIR"/mac-x64 "$DIST_DIR"/mac "$DIST_DIR"/mac-universal; do
+  APP_PATH="$app_dir/${APP_NAME}.app"
+  if [ -d "$APP_PATH" ]; then
+    APP_FOUND=1
+
+    # Remove quarantine attribute (Gatekeeper)
+    xattr -cr "$APP_PATH" 2>/dev/null || true
+
+    # Ad-hoc sign the entire bundle with consistent identity
+    codesign --force --deep --sign - "$APP_PATH" 2>/dev/null
+    ok "Signed: $APP_PATH"
+
+    # Verify the signature
+    if codesign --verify --deep --strict "$APP_PATH" 2>/dev/null; then
+      ok "Signature verified"
+    else
+      warn "Signature verification had warnings (app should still work)"
+    fi
+  fi
+done
+
+if [ "$APP_FOUND" -eq 0 ]; then
+  warn "No .app bundle found to sign — check build output above"
+fi
+
+# ── Step 6: Show output ──────────────────────────────────────
 echo ""
 echo -e "${GREEN}═══════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}  ✓ ${APP_NAME} build complete!${NC}"
@@ -96,21 +132,25 @@ echo ""
 if [ -d "$DIST_DIR" ]; then
   # Show .dmg files
   find "$DIST_DIR" -maxdepth 1 -name "*.dmg" -exec ls -lh {} \; 2>/dev/null | while read line; do
-    echo -e "  ${CYAN}📦 DMG:${NC}  $line"
+    echo -e "  ${CYAN}DMG:${NC}  $line"
   done
   # Show .app directories
   find "$DIST_DIR" -maxdepth 2 -name "*.app" -type d 2>/dev/null | while read app; do
     SIZE=$(du -sh "$app" 2>/dev/null | cut -f1)
-    echo -e "  ${CYAN}🍎 APP:${NC}  $app  ($SIZE)"
+    echo -e "  ${CYAN}APP:${NC}  $app  ($SIZE)"
   done
   # Show .zip files
   find "$DIST_DIR" -maxdepth 1 -name "*.zip" -exec ls -lh {} \; 2>/dev/null | while read line; do
-    echo -e "  ${CYAN}📁 ZIP:${NC}  $line"
+    echo -e "  ${CYAN}ZIP:${NC}  $line"
   done
 else
   warn "dist/ directory not found — check for errors above"
 fi
 
 echo ""
-info "To install: open the .dmg file and drag ${APP_NAME} to Applications"
-info "Or run directly: open \"$DIST_DIR/mac-arm64/${APP_NAME}.app\" 2>/dev/null || open \"$DIST_DIR/mac/${APP_NAME}.app\" 2>/dev/null"
+info "To install:"
+info "  1. Open the .dmg and drag ${APP_NAME} to Applications"
+info "  2. If macOS blocks the app: System Settings > Privacy & Security > Open Anyway"
+info ""
+info "Or run directly from the build:"
+info "  open \"$DIST_DIR/mac-arm64/${APP_NAME}.app\""
