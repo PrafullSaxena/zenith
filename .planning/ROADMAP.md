@@ -10,7 +10,7 @@
 | 4 | DbInspector Plugin | 5 | Planned | 0/5 |
 | 5 | AstroPatch Plugin | 7 | Planned | 0/7 |
 | 6 | Polish & Production | 3 | Planned | 0/3 |
-| 7 | Launchpad Plugin | 0 | Planned | 0/0 |
+| 7 | Launchpad Plugin | 4 | Planned | 0/4 |
 
 ## Phase 1: Foundation
 
@@ -65,6 +65,14 @@ Plans:
 **Goal:** Cloud cost estimation plugin: select AWS/GCP/Azure, configure services and resources, calculate monthly/yearly costs, chat with AI for recommendations, and export estimation reports.
 
 **Requirements:** [LNCH-01, LNCH-02, LNCH-03, LNCH-04, LNCH-05, LNCH-06, LNCH-07, LNCH-08, LNCH-09, LNCH-10]
+
+**Plans:** 4 plans
+
+Plans:
+- [ ] 07-01-PLAN.md -- Types, pricing catalogs (AWS/GCP/Azure), cost calculator, service equivalence map
+- [ ] 07-02-PLAN.md -- Zustand store, plugin registration, PDF generator + IPC handler + preload bridge
+- [ ] 07-03-PLAN.md -- Core estimator UI: LaunchpadView, ProviderSelector, ServiceCatalog, ResourceConfigurator, EstimationSummary
+- [ ] 07-04-PLAN.md -- AI Advisor, Estimation History, Comparison View, and visual verification
 
 ## Phase 6: Polish & Production
 
