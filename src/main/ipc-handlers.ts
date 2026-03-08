@@ -7,6 +7,7 @@ import { streamReview, cancelSdkReview, streamAnalysis } from './ai/stream'
 import { streamCliReview, cancelCliReview, streamCliAnalysis, probeCliBinary } from './ai/cli-stream'
 import { PostgresConnectionManager } from './db/postgres'
 import { buildSchemaContext, buildQueryOptimizationContext, buildTableDDL } from './db/introspection'
+import { exportDiagnosticZip } from './log-collector'
 
 /**
  * Separate electron-store instance for credentials.
@@ -201,6 +202,13 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('app:openExternal', async (_event, url: string) => {
     await shell.openExternal(url)
+  })
+
+  ipcMain.handle('app:exportDiagnosticLogs', async () => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (!win) return { filePath: '' }
+    const filePath = await exportDiagnosticZip(win)
+    return { filePath }
   })
 
   // --- Database channels ---

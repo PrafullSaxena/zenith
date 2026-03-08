@@ -3,9 +3,27 @@ import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
 import { getSetting } from './settings-store'
+import { installLogCollector } from './log-collector'
 import WinStateModule from 'electron-win-state'
 // CJS/ESM interop: electron-win-state uses module.exports = { default: Class }
 const WinState = (WinStateModule as { default?: typeof WinStateModule }).default || WinStateModule
+
+// Install log collector early so ALL console output is captured
+installLogCollector()
+
+// ── Global safety net for EPIPE / stream errors ─────────────────────
+// CLI-based AI streaming spawns child processes whose pipes can break
+// if the process exits unexpectedly. Without a handler these bubble up
+// as uncaught exceptions and crash the app. We log them and move on.
+process.on('uncaughtException', (err) => {
+  if (err && 'code' in err && (err as NodeJS.ErrnoException).code === 'EPIPE') {
+    console.warn('[main] Suppressed EPIPE error (broken pipe):', err.message)
+    return // Swallow — the stream cleanup handlers will take care of the rest
+  }
+  // For non-EPIPE errors, log and re-throw so they surface normally
+  console.error('[main] Uncaught exception:', err)
+  throw err
+})
 
 // Set app name early so macOS menu bar, dock tooltip, and About dialog show "Zenith"
 // (In production electron-builder handles this, but dev mode defaults to "Electron")

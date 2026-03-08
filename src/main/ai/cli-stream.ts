@@ -14,6 +14,23 @@ import { spawn, execFileSync, type ChildProcess } from 'child_process'
 import { existsSync, readdirSync } from 'fs'
 import { join } from 'path'
 
+/**
+ * Safely send an IPC message to the renderer.
+ * Guards against the window being destroyed between the check and the send
+ * (race condition), and swallows any resulting errors so the main process
+ * doesn't crash with EPIPE / ERR_IPC_CHANNEL_CLOSED.
+ */
+function safeSend(win: BrowserWindow, channel: string, data: unknown): boolean {
+  try {
+    if (win.isDestroyed() || !win.webContents) return false
+    win.webContents.send(channel, data)
+    return true
+  } catch {
+    // Window was destroyed between the check and the send — ignore.
+    return false
+  }
+}
+
 /** Active CLI sessions keyed by sessionId, used for cancellation. */
 const activeCliSessions = new Map<string, ChildProcess>()
 
@@ -170,12 +187,29 @@ export function streamCliReview(params: {
 
   activeCliSessions.set(sessionId, child)
 
-  // Write prompt to stdin, then close to signal EOF
-  child.stdin.write(fullPrompt)
-  child.stdin.end()
+  // Attach error handlers to ALL child stdio streams to prevent
+  // unhandled EPIPE / stream errors from crashing the main process.
+  child.stdin.on('error', (err) => {
+    console.warn(`[cli-stream] stdin error (${sessionId}):`, err.message)
+  })
+  child.stdout.on('error', (err) => {
+    console.warn(`[cli-stream] stdout error (${sessionId}):`, err.message)
+  })
+  child.stderr.on('error', (err) => {
+    console.warn(`[cli-stream] stderr error (${sessionId}):`, err.message)
+  })
 
-  // Accumulate full text for token estimation
+  // Write prompt to stdin with backpressure handling, then close to signal EOF
+  const canContinue = child.stdin.write(fullPrompt)
+  if (!canContinue) {
+    child.stdin.once('drain', () => child.stdin.end())
+  } else {
+    child.stdin.end()
+  }
+
+  // Accumulate full text for token estimation and stderr for error reporting
   let fullText = ''
+  let stderrText = ''
 
   // Stream stdout chunks to renderer
   child.stdout.on('data', (data: Buffer) => {
@@ -185,42 +219,41 @@ export function streamCliReview(params: {
     }
     const chunk = data.toString()
     fullText += chunk
-    mainWindow.webContents.send('ai:stream:chunk', { sessionId, chunk })
+    safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk })
   })
 
-  // Log stderr for debugging (some CLI tools output progress info here)
+  // Accumulate stderr so we can include it in the error message if the process fails.
+  // Some CLI tools output progress info here, so we also log it for debugging.
   child.stderr.on('data', (data: Buffer) => {
-    console.warn(`[cli-stream] ${command} stderr:`, data.toString().trim())
+    const text = data.toString().trim()
+    stderrText += text + '\n'
+    console.warn(`[cli-stream] ${command} stderr:`, text)
   })
 
   child.on('close', (code) => {
     activeCliSessions.delete(sessionId)
 
-    if (mainWindow.isDestroyed()) return
-
     if (code === 0 || code === null) {
       // Estimate tokens from output length (~4 chars per token)
       const estimatedTokens = Math.ceil(fullText.length / 4)
-      mainWindow.webContents.send('ai:stream:done', {
+      safeSend(mainWindow, 'ai:stream:done', {
         sessionId,
         usage: estimatedTokens > 0
           ? { totalTokens: estimatedTokens, isEstimated: true }
           : undefined
       })
     } else {
-      mainWindow.webContents.send('ai:stream:error', {
-        sessionId,
-        error: `CLI process exited with code ${code}`
-      })
+      const detail = stderrText.trim()
+      const errorMsg = detail
+        ? `CLI process exited with code ${code}:\n${detail}`
+        : `CLI process exited with code ${code}`
+      safeSend(mainWindow, 'ai:stream:error', { sessionId, error: errorMsg })
     }
   })
 
   child.on('error', (err) => {
     activeCliSessions.delete(sessionId)
-
-    if (mainWindow.isDestroyed()) return
-
-    mainWindow.webContents.send('ai:stream:error', {
+    safeSend(mainWindow, 'ai:stream:error', {
       sessionId,
       error: `Failed to start CLI: ${err.message}`
     })
@@ -263,11 +296,28 @@ export function streamCliAnalysis(params: {
 
   activeCliSessions.set(sessionId, child)
 
-  child.stdin.write(fullPrompt)
-  child.stdin.end()
+  // Attach error handlers to ALL child stdio streams
+  child.stdin.on('error', (err) => {
+    console.warn(`[cli-stream] stdin error (${sessionId}):`, err.message)
+  })
+  child.stdout.on('error', (err) => {
+    console.warn(`[cli-stream] stdout error (${sessionId}):`, err.message)
+  })
+  child.stderr.on('error', (err) => {
+    console.warn(`[cli-stream] stderr error (${sessionId}):`, err.message)
+  })
 
-  // Accumulate full text for token estimation
+  // Write prompt to stdin with backpressure handling
+  const canContinue = child.stdin.write(fullPrompt)
+  if (!canContinue) {
+    child.stdin.once('drain', () => child.stdin.end())
+  } else {
+    child.stdin.end()
+  }
+
+  // Accumulate full text for token estimation and stderr for error reporting
   let fullText = ''
+  let stderrText = ''
 
   child.stdout.on('data', (data: Buffer) => {
     if (mainWindow.isDestroyed()) {
@@ -276,39 +326,39 @@ export function streamCliAnalysis(params: {
     }
     const chunk = data.toString()
     fullText += chunk
-    mainWindow.webContents.send('ai:stream:chunk', { sessionId, chunk })
+    safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk })
   })
 
+  // Accumulate stderr for error reporting
   child.stderr.on('data', (data: Buffer) => {
-    console.warn(`[cli-stream] ${command} stderr:`, data.toString().trim())
+    const text = data.toString().trim()
+    stderrText += text + '\n'
+    console.warn(`[cli-stream] ${command} stderr:`, text)
   })
 
   child.on('close', (code) => {
     activeCliSessions.delete(sessionId)
-    if (mainWindow.isDestroyed()) return
 
     if (code === 0 || code === null) {
-      // Estimate tokens from output length (~4 chars per token)
       const estimatedTokens = Math.ceil(fullText.length / 4)
-      mainWindow.webContents.send('ai:stream:done', {
+      safeSend(mainWindow, 'ai:stream:done', {
         sessionId,
         usage: estimatedTokens > 0
           ? { totalTokens: estimatedTokens, isEstimated: true }
           : undefined
       })
     } else {
-      mainWindow.webContents.send('ai:stream:error', {
-        sessionId,
-        error: `CLI process exited with code ${code}`
-      })
+      const detail = stderrText.trim()
+      const errorMsg = detail
+        ? `CLI process exited with code ${code}:\n${detail}`
+        : `CLI process exited with code ${code}`
+      safeSend(mainWindow, 'ai:stream:error', { sessionId, error: errorMsg })
     }
   })
 
   child.on('error', (err) => {
     activeCliSessions.delete(sessionId)
-    if (mainWindow.isDestroyed()) return
-
-    mainWindow.webContents.send('ai:stream:error', {
+    safeSend(mainWindow, 'ai:stream:error', {
       sessionId,
       error: `Failed to start CLI: ${err.message}`
     })

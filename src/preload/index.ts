@@ -25,6 +25,8 @@ const api = {
       ipcRenderer.invoke('app:probeCli', command),
     openExternal: (url: string): Promise<void> =>
       ipcRenderer.invoke('app:openExternal', url),
+    exportDiagnosticLogs: (): Promise<{ filePath: string }> =>
+      ipcRenderer.invoke('app:exportDiagnosticLogs'),
   },
   bitbucket: {
     connect: (): Promise<{ connected: boolean; displayName: string }> =>

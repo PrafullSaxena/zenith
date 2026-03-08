@@ -15,6 +15,22 @@ import type { BrowserWindow } from 'electron'
 import { streamText } from 'ai'
 import { createModel, getApiKeyForProvider } from './providers'
 
+/**
+ * Safely send an IPC message to the renderer.
+ * Guards against the window being destroyed between the check and the send
+ * (race condition), and swallows any resulting errors so the main process
+ * doesn't crash with EPIPE / ERR_IPC_CHANNEL_CLOSED.
+ */
+function safeSend(win: BrowserWindow, channel: string, data: unknown): boolean {
+  try {
+    if (win.isDestroyed() || !win.webContents) return false
+    win.webContents.send(channel, data)
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Active SDK review sessions keyed by sessionId, used for cancellation. */
 const activeSdkSessions = new Map<string, AbortController>()
 
@@ -70,33 +86,28 @@ RULES:
     })
 
     for await (const chunk of result.textStream) {
-      if (mainWindow.isDestroyed()) break
-      mainWindow.webContents.send('ai:stream:chunk', { sessionId, chunk })
+      if (!safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk })) break
     }
 
-    if (!mainWindow.isDestroyed()) {
-      // Capture token usage from the SDK (exact count)
-      let totalTokens = 0
-      try {
-        const usage = await result.usage
-        totalTokens = usage?.totalTokens ?? 0
-      } catch { /* usage not available — that's fine */ }
+    // Capture token usage from the SDK (exact count)
+    let totalTokens = 0
+    try {
+      const usage = await result.usage
+      totalTokens = usage?.totalTokens ?? 0
+    } catch { /* usage not available — that's fine */ }
 
-      mainWindow.webContents.send('ai:stream:done', {
-        sessionId,
-        usage: totalTokens > 0 ? { totalTokens, isEstimated: false } : undefined
-      })
-    }
+    safeSend(mainWindow, 'ai:stream:done', {
+      sessionId,
+      usage: totalTokens > 0 ? { totalTokens, isEstimated: false } : undefined
+    })
   } catch (err: unknown) {
     // AbortError is expected when the user cancels -- do not send as error
     if (err instanceof Error && err.name === 'AbortError') {
       return
     }
 
-    if (!mainWindow.isDestroyed()) {
-      const message = err instanceof Error ? err.message : String(err)
-      mainWindow.webContents.send('ai:stream:error', { sessionId, error: message })
-    }
+    const message = err instanceof Error ? err.message : String(err)
+    safeSend(mainWindow, 'ai:stream:error', { sessionId, error: message })
   } finally {
     activeSdkSessions.delete(sessionId)
   }
@@ -143,32 +154,27 @@ export async function streamAnalysis(params: {
     })
 
     for await (const chunk of result.textStream) {
-      if (mainWindow.isDestroyed()) break
-      mainWindow.webContents.send('ai:stream:chunk', { sessionId, chunk })
+      if (!safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk })) break
     }
 
-    if (!mainWindow.isDestroyed()) {
-      // Capture token usage from the SDK (exact count)
-      let totalTokens = 0
-      try {
-        const usage = await result.usage
-        totalTokens = usage?.totalTokens ?? 0
-      } catch { /* usage not available — that's fine */ }
+    // Capture token usage from the SDK (exact count)
+    let totalTokens = 0
+    try {
+      const usage = await result.usage
+      totalTokens = usage?.totalTokens ?? 0
+    } catch { /* usage not available — that's fine */ }
 
-      mainWindow.webContents.send('ai:stream:done', {
-        sessionId,
-        usage: totalTokens > 0 ? { totalTokens, isEstimated: false } : undefined
-      })
-    }
+    safeSend(mainWindow, 'ai:stream:done', {
+      sessionId,
+      usage: totalTokens > 0 ? { totalTokens, isEstimated: false } : undefined
+    })
   } catch (err: unknown) {
     if (err instanceof Error && err.name === 'AbortError') {
       return
     }
 
-    if (!mainWindow.isDestroyed()) {
-      const message = err instanceof Error ? err.message : String(err)
-      mainWindow.webContents.send('ai:stream:error', { sessionId, error: message })
-    }
+    const message = err instanceof Error ? err.message : String(err)
+    safeSend(mainWindow, 'ai:stream:error', { sessionId, error: message })
   } finally {
     activeSdkSessions.delete(sessionId)
   }

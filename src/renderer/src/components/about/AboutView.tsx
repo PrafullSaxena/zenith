@@ -2,6 +2,7 @@
  * About view — Application info, author details, and getting started guide.
  * Default-exported for React.lazy() compatibility in App.tsx.
  */
+import { useState } from 'react'
 import {
   User,
   Github,
@@ -14,7 +15,10 @@ import {
   MessageSquare,
   Wrench,
   Server,
-  BookOpen
+  BookOpen,
+  Download,
+  CheckCircle,
+  Loader2
 } from 'lucide-react'
 import zenithLogo from '../../assets/zenith-logo.png'
 
@@ -105,8 +109,25 @@ const GETTING_STARTED = [
 ]
 
 export default function AboutView(): React.JSX.Element {
+  const [exportState, setExportState] = useState<'idle' | 'exporting' | 'done'>('idle')
+
   const handleOpenExternal = (url: string): void => {
     window.api.app.openExternal(url)
+  }
+
+  const handleExportLogs = async (): Promise<void> => {
+    setExportState('exporting')
+    try {
+      const { filePath } = await window.api.app.exportDiagnosticLogs()
+      if (filePath) {
+        setExportState('done')
+        setTimeout(() => setExportState('idle'), 3000)
+      } else {
+        setExportState('idle') // user cancelled save dialog
+      }
+    } catch {
+      setExportState('idle')
+    }
   }
 
   return (
@@ -226,6 +247,51 @@ export default function AboutView(): React.JSX.Element {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Diagnostics ── */}
+      <section>
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-text-secondary">
+          <Wrench size={14} className="text-accent" />
+          Diagnostics
+        </h2>
+        <div className="rounded-xl border border-border bg-surface-elevated/30 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-semibold text-text-primary">
+                Export Diagnostic Logs
+              </h4>
+              <p className="mt-0.5 text-xs text-text-secondary">
+                Download a ZIP with app logs, system info, and settings (credentials redacted) for troubleshooting.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleExportLogs}
+              disabled={exportState !== 'idle'}
+              className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-accent/40 hover:text-accent disabled:opacity-50"
+            >
+              {exportState === 'exporting' && (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Exporting...
+                </>
+              )}
+              {exportState === 'done' && (
+                <>
+                  <CheckCircle size={14} className="text-green-400" />
+                  Saved!
+                </>
+              )}
+              {exportState === 'idle' && (
+                <>
+                  <Download size={14} />
+                  Download Logs
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </section>
 
