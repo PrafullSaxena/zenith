@@ -16,6 +16,7 @@ import {
   SEVERITY_CONFIG,
   KIND_CONFIG
 } from '../types/review'
+import { useTokenStore } from '../stores/token-store'
 
 interface ReviewStoreState {
   // Connection state
@@ -650,6 +651,19 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
 
       console.log(`[review-store] Parsed ${comments.length} findings → ${capped.length} after cap`)
       updateSession((s) => ({ ...s, status: 'complete', comments: capped, summary }))
+
+      // Capture token usage (fallback: estimate from rawText when main process doesn't send usage)
+      const tokensUsed = data.usage
+        ? data.usage.totalTokens
+        : Math.max(1, Math.ceil(existing.rawText.length / 4))
+      const isEstimated = data.usage ? data.usage.isEstimated : true
+      useTokenStore.getState().addEntry({
+        sessionId: data.sessionId,
+        providerId,
+        providerName: modelName,
+        tokensUsed,
+        isEstimated
+      })
 
       window.api.ai.removeStreamListeners()
     })

@@ -48,7 +48,7 @@ export interface ElectronAPI {
     ) => Promise<{ started: boolean; sessionId: string }>
     cancelReview: (sessionId: string) => Promise<void>
     onStreamChunk: (cb: (data: { sessionId: string; chunk: string }) => void) => void
-    onStreamDone: (cb: (data: { sessionId: string }) => void) => void
+    onStreamDone: (cb: (data: { sessionId: string; usage?: { totalTokens: number; isEstimated: boolean } }) => void) => void
     onStreamError: (cb: (data: { sessionId: string; error: string }) => void) => void
     removeStreamListeners: () => void
   }

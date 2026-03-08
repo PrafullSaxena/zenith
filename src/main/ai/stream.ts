@@ -62,20 +62,30 @@ RULES:
     const apiKey = await getApiKeyForProvider(providerId)
     const model = createModel(providerId, modelName, apiKey)
 
-    const { textStream } = streamText({
+    const result = streamText({
       model,
       system: systemPrompt,
       prompt: diff,
       abortSignal: controller.signal
     })
 
-    for await (const chunk of textStream) {
+    for await (const chunk of result.textStream) {
       if (mainWindow.isDestroyed()) break
       mainWindow.webContents.send('ai:stream:chunk', { sessionId, chunk })
     }
 
     if (!mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('ai:stream:done', { sessionId })
+      // Capture token usage from the SDK (exact count)
+      let totalTokens = 0
+      try {
+        const usage = await result.usage
+        totalTokens = usage?.totalTokens ?? 0
+      } catch { /* usage not available — that's fine */ }
+
+      mainWindow.webContents.send('ai:stream:done', {
+        sessionId,
+        usage: totalTokens > 0 ? { totalTokens, isEstimated: false } : undefined
+      })
     }
   } catch (err: unknown) {
     // AbortError is expected when the user cancels -- do not send as error
@@ -125,20 +135,30 @@ export async function streamAnalysis(params: {
     const apiKey = await getApiKeyForProvider(providerId)
     const model = createModel(providerId, modelName, apiKey)
 
-    const { textStream } = streamText({
+    const result = streamText({
       model,
       system: systemPrompt,
       prompt: userPrompt,
       abortSignal: controller.signal
     })
 
-    for await (const chunk of textStream) {
+    for await (const chunk of result.textStream) {
       if (mainWindow.isDestroyed()) break
       mainWindow.webContents.send('ai:stream:chunk', { sessionId, chunk })
     }
 
     if (!mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('ai:stream:done', { sessionId })
+      // Capture token usage from the SDK (exact count)
+      let totalTokens = 0
+      try {
+        const usage = await result.usage
+        totalTokens = usage?.totalTokens ?? 0
+      } catch { /* usage not available — that's fine */ }
+
+      mainWindow.webContents.send('ai:stream:done', {
+        sessionId,
+        usage: totalTokens > 0 ? { totalTokens, isEstimated: false } : undefined
+      })
     }
   } catch (err: unknown) {
     if (err instanceof Error && err.name === 'AbortError') {

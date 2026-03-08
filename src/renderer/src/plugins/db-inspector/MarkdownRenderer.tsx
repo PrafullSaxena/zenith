@@ -2,12 +2,36 @@
  * MarkdownRenderer — Renders common markdown elements:
  * code fences, headers, bold, italic, inline code, lists, paragraphs.
  * Lightweight — no external dependencies.
+ *
+ * Supports optional SQL query execution: when `onRunQuery` is provided,
+ * SQL code fences render a "▶ Run" button that executes read-only queries
+ * and displays results inline below the code block.
  */
 import React from 'react'
+import { Play, Loader2, AlertCircle } from 'lucide-react'
+
+/** Shape returned by window.api.db.query */
+export interface QueryResult {
+  rows: Record<string, unknown>[]
+  fields: { name: string; dataTypeID: number }[]
+  rowCount: number
+  command: string
+}
+
+/** State for a single query execution */
+export interface QueryExecState {
+  result?: QueryResult
+  isLoading: boolean
+  error?: string
+}
 
 interface MarkdownRendererProps {
   text: string
   className?: string
+  /** Called when user clicks "▶ Run" on a SQL code fence */
+  onRunQuery?: (sql: string) => void
+  /** Map of SQL → execution state (loading/result/error) */
+  queryResults?: Map<string, QueryExecState>
 }
 
 /**
@@ -16,7 +40,9 @@ interface MarkdownRendererProps {
  */
 export default function MarkdownRenderer({
   text,
-  className
+  className,
+  onRunQuery,
+  queryResults
 }: MarkdownRendererProps): React.JSX.Element {
   // Split by code fences first (``` ... ```)
   const blocks = text.split(/(```[\s\S]*?```)/g)
@@ -25,7 +51,14 @@ export default function MarkdownRenderer({
     <div className={`markdown-content ${className ?? ''}`}>
       {blocks.map((block, i) => {
         if (block.startsWith('```') && block.endsWith('```')) {
-          return <CodeFenceBlock key={i} raw={block} />
+          return (
+            <CodeFenceBlock
+              key={i}
+              raw={block}
+              onRunQuery={onRunQuery}
+              queryResults={queryResults}
+            />
+          )
         }
         if (!block.trim()) return null
         return <InlineMarkdownBlock key={i} text={block} />
@@ -34,23 +67,149 @@ export default function MarkdownRenderer({
   )
 }
 
-/** Render a ``` code fence block */
-function CodeFenceBlock({ raw }: { raw: string }): React.JSX.Element {
+/** Render a ``` code fence block with optional SQL run button */
+function CodeFenceBlock({
+  raw,
+  onRunQuery,
+  queryResults
+}: {
+  raw: string
+  onRunQuery?: (sql: string) => void
+  queryResults?: Map<string, QueryExecState>
+}): React.JSX.Element {
   const inner = raw.slice(3, -3)
   const newlineIdx = inner.indexOf('\n')
-  const lang = newlineIdx >= 0 ? inner.slice(0, newlineIdx).trim() : ''
+  const lang = newlineIdx >= 0 ? inner.slice(0, newlineIdx).trim().toLowerCase() : ''
   const code = newlineIdx >= 0 ? inner.slice(newlineIdx + 1) : inner
+  const trimmedCode = code.trim()
+
+  const isSql = lang === 'sql' || lang === 'postgresql' || lang === 'pgsql'
+  const canRun = isSql && !!onRunQuery && trimmedCode.length > 0
+  const execState = queryResults?.get(trimmedCode)
 
   return (
-    <div className="group relative my-3">
-      {lang && (
-        <div className="absolute right-2 top-1.5 rounded bg-surface-elevated/80 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-text-secondary/60">
-          {lang}
+    <div className="my-3">
+      <div className="group relative">
+        {/* Language label + Run button header */}
+        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-border bg-surface-elevated/60 px-3 py-1.5">
+          <span className="text-[9px] uppercase tracking-wider text-text-secondary/60">
+            {lang || 'code'}
+          </span>
+          {canRun && (
+            <button
+              type="button"
+              onClick={() => onRunQuery(trimmedCode)}
+              disabled={execState?.isLoading}
+              className="flex items-center gap-1 rounded bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent transition-colors hover:bg-accent/25 disabled:opacity-50"
+            >
+              {execState?.isLoading ? (
+                <>
+                  <Loader2 size={10} className="animate-spin" />
+                  Running…
+                </>
+              ) : (
+                <>
+                  <Play size={9} className="fill-current" />
+                  Run
+                </>
+              )}
+            </button>
+          )}
         </div>
+        <pre className="overflow-x-auto rounded-b-lg border border-border bg-surface px-4 py-3 font-mono text-[12px] leading-relaxed text-accent">
+          {code}
+        </pre>
+      </div>
+
+      {/* Inline query result */}
+      {execState && !execState.isLoading && (execState.result || execState.error) && (
+        <QueryResultTable execState={execState} />
       )}
-      <pre className="overflow-x-auto rounded-lg border border-border bg-surface px-4 py-3 font-mono text-[12px] leading-relaxed text-accent">
-        {code}
-      </pre>
+    </div>
+  )
+}
+
+/** Maximum rows to display in the result table */
+const MAX_DISPLAY_ROWS = 100
+
+/** Render query results or error inline below a SQL code fence */
+function QueryResultTable({ execState }: { execState: QueryExecState }): React.JSX.Element {
+  if (execState.error) {
+    return (
+      <div className="mt-1 flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2">
+        <AlertCircle size={13} className="mt-0.5 shrink-0 text-red-400" />
+        <div>
+          <p className="text-[11px] font-medium text-red-400">Query Error</p>
+          <p className="mt-0.5 font-mono text-[11px] text-red-400/80">{execState.error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  const { result } = execState
+  if (!result) return <></>
+
+  const { rows, fields, rowCount } = result
+  const displayRows = rows.slice(0, MAX_DISPLAY_ROWS)
+  const isTruncated = rows.length > MAX_DISPLAY_ROWS
+
+  if (fields.length === 0) {
+    return (
+      <div className="mt-1 rounded-lg border border-border bg-surface px-3 py-2 text-[11px] text-text-secondary">
+        Query executed successfully. {rowCount} row{rowCount !== 1 ? 's' : ''} affected.
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-1 rounded-lg border border-border bg-surface">
+      {/* Scrollable table */}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse font-mono text-[11px]">
+          <thead>
+            <tr className="border-b border-border bg-surface-elevated/50">
+              {fields.map((f, fi) => (
+                <th
+                  key={fi}
+                  className="whitespace-nowrap px-3 py-1.5 text-left font-semibold text-text-secondary"
+                >
+                  {f.name}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {displayRows.map((row, ri) => (
+              <tr
+                key={ri}
+                className="border-b border-border/50 last:border-b-0 hover:bg-surface-elevated/30"
+              >
+                {fields.map((f, fi) => {
+                  const val = row[f.name]
+                  return (
+                    <td key={fi} className="whitespace-nowrap px-3 py-1 text-text-primary">
+                      {val === null ? (
+                        <span className="text-text-secondary/40 italic">NULL</span>
+                      ) : typeof val === 'object' ? (
+                        JSON.stringify(val)
+                      ) : (
+                        String(val)
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-border px-3 py-1.5 text-[10px] text-text-secondary">
+        {isTruncated
+          ? `Showing ${MAX_DISPLAY_ROWS} of ${rows.length} rows`
+          : `${rowCount} row${rowCount !== 1 ? 's' : ''} returned`}
+      </div>
     </div>
   )
 }

@@ -7,6 +7,7 @@ import {
   Settings,
   LayoutDashboard,
   Activity,
+  Info,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PLUGINS } from '../plugins/registry'
@@ -23,6 +24,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Settings,
   LayoutDashboard,
   Activity,
+  Info,
 }
 
 function SidebarIcon({
@@ -78,7 +80,7 @@ export function Sidebar(): React.JSX.Element {
       {/* Navigation icons */}
       <nav className="flex flex-1 flex-col items-center gap-2 pt-1">
         {/* App-level navigation */}
-        <SidebarIcon iconName="LayoutDashboard" label="Mission Control" to="/dashboard" />
+        <SidebarIcon iconName="LayoutDashboard" label="Zenith" to="/dashboard" />
         <SidebarIcon iconName="Activity" label="Activity Log" to="/activity" />
 
         {/* Separator between app icons and plugin icons */}
@@ -95,8 +97,9 @@ export function Sidebar(): React.JSX.Element {
         ))}
       </nav>
 
-      {/* Settings gear at bottom */}
-      <div className="flex flex-col items-center pb-3">
+      {/* About + Settings at bottom */}
+      <div className="flex flex-col items-center gap-2 pb-3">
+        <SidebarIcon iconName="Info" label="About" to="/about" />
         <SidebarIcon iconName="Settings" label="Settings" to="/settings" />
       </div>
     </aside>

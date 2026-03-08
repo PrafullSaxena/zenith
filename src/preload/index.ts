@@ -85,7 +85,7 @@ const api = {
     onStreamChunk: (cb: (data: { sessionId: string; chunk: string }) => void): void => {
       ipcRenderer.on('ai:stream:chunk', (_e, data) => cb(data))
     },
-    onStreamDone: (cb: (data: { sessionId: string }) => void): void => {
+    onStreamDone: (cb: (data: { sessionId: string; usage?: { totalTokens: number; isEstimated: boolean } }) => void): void => {
       ipcRenderer.on('ai:stream:done', (_e, data) => cb(data))
     },
     onStreamError: (cb: (data: { sessionId: string; error: string }) => void): void => {

@@ -371,6 +371,7 @@ export default function DbInspectorView(): React.JSX.Element {
                 session={qaSession}
                 hasConnection={isConnected}
                 hasAgent={hasAgent}
+                activeConnectionId={isConnected ? activeConnectionId : null}
                 onStart={handleStartQA}
                 onCancel={cancelQA}
               />

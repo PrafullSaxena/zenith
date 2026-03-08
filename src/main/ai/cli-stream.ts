@@ -174,16 +174,18 @@ export function streamCliReview(params: {
   child.stdin.write(fullPrompt)
   child.stdin.end()
 
+  // Accumulate full text for token estimation
+  let fullText = ''
+
   // Stream stdout chunks to renderer
   child.stdout.on('data', (data: Buffer) => {
     if (mainWindow.isDestroyed()) {
       child.kill()
       return
     }
-    mainWindow.webContents.send('ai:stream:chunk', {
-      sessionId,
-      chunk: data.toString()
-    })
+    const chunk = data.toString()
+    fullText += chunk
+    mainWindow.webContents.send('ai:stream:chunk', { sessionId, chunk })
   })
 
   // Log stderr for debugging (some CLI tools output progress info here)
@@ -197,7 +199,14 @@ export function streamCliReview(params: {
     if (mainWindow.isDestroyed()) return
 
     if (code === 0 || code === null) {
-      mainWindow.webContents.send('ai:stream:done', { sessionId })
+      // Estimate tokens from output length (~4 chars per token)
+      const estimatedTokens = Math.ceil(fullText.length / 4)
+      mainWindow.webContents.send('ai:stream:done', {
+        sessionId,
+        usage: estimatedTokens > 0
+          ? { totalTokens: estimatedTokens, isEstimated: true }
+          : undefined
+      })
     } else {
       mainWindow.webContents.send('ai:stream:error', {
         sessionId,
@@ -257,15 +266,17 @@ export function streamCliAnalysis(params: {
   child.stdin.write(fullPrompt)
   child.stdin.end()
 
+  // Accumulate full text for token estimation
+  let fullText = ''
+
   child.stdout.on('data', (data: Buffer) => {
     if (mainWindow.isDestroyed()) {
       child.kill()
       return
     }
-    mainWindow.webContents.send('ai:stream:chunk', {
-      sessionId,
-      chunk: data.toString()
-    })
+    const chunk = data.toString()
+    fullText += chunk
+    mainWindow.webContents.send('ai:stream:chunk', { sessionId, chunk })
   })
 
   child.stderr.on('data', (data: Buffer) => {
@@ -277,7 +288,14 @@ export function streamCliAnalysis(params: {
     if (mainWindow.isDestroyed()) return
 
     if (code === 0 || code === null) {
-      mainWindow.webContents.send('ai:stream:done', { sessionId })
+      // Estimate tokens from output length (~4 chars per token)
+      const estimatedTokens = Math.ceil(fullText.length / 4)
+      mainWindow.webContents.send('ai:stream:done', {
+        sessionId,
+        usage: estimatedTokens > 0
+          ? { totalTokens: estimatedTokens, isEstimated: true }
+          : undefined
+      })
     } else {
       mainWindow.webContents.send('ai:stream:error', {
         sessionId,

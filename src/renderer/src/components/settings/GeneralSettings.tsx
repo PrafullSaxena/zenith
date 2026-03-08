@@ -31,7 +31,7 @@ export function GeneralSettings(): React.JSX.Element {
     description: 'The view to show when the app starts',
     defaultValue: 'dashboard',
     options: [
-      { label: 'Mission Control', value: 'dashboard' },
+      { label: 'Zenith', value: 'dashboard' },
       ...PLUGINS.map((p) => ({ label: p.name, value: p.id }))
     ]
   }

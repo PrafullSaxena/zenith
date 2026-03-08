@@ -1,6 +1,7 @@
 /**
  * AskAI — AI-powered database Q&A with chained follow-up discussions.
  * Renders markdown answers and supports multi-turn conversations.
+ * Supports running read-only SQL queries from AI-generated code blocks.
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import {
@@ -15,11 +16,14 @@ import {
 } from 'lucide-react'
 import type { DbQASession } from '../../types/database'
 import MarkdownRenderer from './MarkdownRenderer'
+import type { QueryExecState } from './MarkdownRenderer'
 
 interface AskAIProps {
   session: DbQASession | null
   hasConnection: boolean
   hasAgent: boolean
+  /** Active connection ID for running SQL queries from code blocks */
+  activeConnectionId: string | null
   onStart: (question: string) => void
   onCancel: () => void
 }
@@ -52,6 +56,7 @@ export default function AskAI({
   session,
   hasConnection,
   hasAgent,
+  activeConnectionId,
   onStart,
   onCancel
 }: AskAIProps): React.JSX.Element {
@@ -59,6 +64,7 @@ export default function AskAI({
   const [copied, setCopied] = useState(false)
   const [conversationHistory, setConversationHistory] = useState<ConversationTurn[]>([])
   const [isFollowUp, setIsFollowUp] = useState(false)
+  const [queryResults, setQueryResults] = useState<Map<string, QueryExecState>>(new Map())
   const responseRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const prevSessionIdRef = useRef<string | null>(null)
@@ -122,8 +128,39 @@ export default function AskAI({
     setConversationHistory([])
     setIsFollowUp(false)
     setQuestion('')
+    setQueryResults(new Map())
     prevSessionIdRef.current = null
   }, [])
+
+  const handleRunQuery = useCallback(
+    async (sql: string) => {
+      if (!activeConnectionId) return
+
+      // Set loading state
+      setQueryResults((prev) => {
+        const next = new Map(prev)
+        next.set(sql, { isLoading: true })
+        return next
+      })
+
+      try {
+        const result = await (window as unknown as { api: { db: { query: (id: string, sql: string) => Promise<unknown> } } }).api.db.query(activeConnectionId, sql)
+        setQueryResults((prev) => {
+          const next = new Map(prev)
+          next.set(sql, { isLoading: false, result: result as QueryExecState['result'] })
+          return next
+        })
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err)
+        setQueryResults((prev) => {
+          const next = new Map(prev)
+          next.set(sql, { isLoading: false, error: message })
+          return next
+        })
+      }
+    },
+    [activeConnectionId]
+  )
 
   const isStreaming = session?.status === 'streaming'
   const canAsk = hasConnection && hasAgent && !isStreaming
@@ -278,7 +315,11 @@ export default function AskAI({
               </div>
               <div className="mt-3">
                 {session.rawText ? (
-                  <MarkdownRenderer text={session.rawText} />
+                  <MarkdownRenderer
+                    text={session.rawText}
+                    onRunQuery={activeConnectionId ? handleRunQuery : undefined}
+                    queryResults={queryResults}
+                  />
                 ) : (
                   isStreaming && (
                     <div className="flex items-center gap-2 text-sm text-text-secondary/50">

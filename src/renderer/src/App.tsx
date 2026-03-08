@@ -7,6 +7,7 @@ import { SettingsLayout } from './components/settings/SettingsLayout'
 
 const MissionControl = React.lazy(() => import('./components/dashboard/MissionControl'))
 const ActivityLog = React.lazy(() => import('./components/activity/ActivityLog'))
+const AboutView = React.lazy(() => import('./components/about/AboutView'))
 
 function LoadingFallback(): React.JSX.Element {
   return (
@@ -34,7 +35,7 @@ function App(): React.JSX.Element {
               }
             />
           ))}
-          {/* Dashboard (Mission Control) */}
+          {/* Zenith Dashboard */}
           <Route
             path="/dashboard"
             element={
@@ -52,11 +53,20 @@ function App(): React.JSX.Element {
               </Suspense>
             }
           />
+          {/* About */}
+          <Route
+            path="/about"
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ErrorBoundary><AboutView /></ErrorBoundary>
+              </Suspense>
+            }
+          />
           <Route
             path="/settings"
             element={<SettingsLayout />}
           />
-          {/* Default redirect to Mission Control */}
+          {/* Default redirect to Zenith dashboard */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

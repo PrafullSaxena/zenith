@@ -4,9 +4,10 @@ import { PLUGINS } from '../../plugins/registry'
 import { GeneralSettings } from './GeneralSettings'
 import { PluginSettings } from './PluginSettings'
 import { AIAgentsSettings } from './AIAgentsSettings'
+import { MCPSettings } from './MCPSettings'
 import type { PluginId } from '../../types/plugin'
 
-type SettingsCategory = 'general' | 'ai-agents' | PluginId
+type SettingsCategory = 'general' | 'ai-agents' | 'mcp-servers' | PluginId
 
 interface CategoryItem {
   id: SettingsCategory
@@ -15,7 +16,7 @@ interface CategoryItem {
 
 /**
  * Settings view with left sidebar listing categories and right content panel.
- * Categories: General, AI Agents (placeholder), then one per plugin.
+ * Categories: General, AI Agents, MCP Servers, then one per plugin.
  * Supports ?tab=<pluginId> URL parameter to open a specific settings section.
  */
 export function SettingsLayout(): React.JSX.Element {
@@ -25,7 +26,8 @@ export function SettingsLayout(): React.JSX.Element {
 
   const categories: CategoryItem[] = [
     { id: 'general', label: 'General' },
-    { id: 'ai-agents', label: 'AI Agents' }
+    { id: 'ai-agents', label: 'AI Agents' },
+    { id: 'mcp-servers', label: 'MCP Servers' }
   ]
 
   const pluginCategories: CategoryItem[] = PLUGINS.map((p) => ({
@@ -39,6 +41,8 @@ export function SettingsLayout(): React.JSX.Element {
         return <GeneralSettings />
       case 'ai-agents':
         return <AIAgentsSettings />
+      case 'mcp-servers':
+        return <MCPSettings />
       default:
         return <PluginSettings pluginId={activeCategory as PluginId} />
     }
@@ -54,7 +58,7 @@ export function SettingsLayout(): React.JSX.Element {
           </span>
         </div>
 
-        {/* General + AI Agents */}
+        {/* General + AI Agents + MCP */}
         {categories.map((cat) => (
           <button
             key={cat.id}

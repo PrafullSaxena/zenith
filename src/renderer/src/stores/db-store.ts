@@ -31,6 +31,7 @@ import type {
   QueryResult
 } from '../types/database'
 import { buildDbQASystemPrompt, buildQueryOptimizerSystemPrompt } from './db-prompts-renderer'
+import { useTokenStore } from './token-store'
 
 // ── Constants ───────────────────────────────────────────────────────
 
@@ -669,6 +670,20 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
         const current = get().qaSession
         if (!current || current.sessionId !== data.sessionId) return
         set({ qaSession: { ...current, status: 'complete', answer: current.rawText } })
+
+        // Capture token usage (fallback: estimate from rawText when main process doesn't send usage)
+        const tokensUsed = data.usage
+          ? data.usage.totalTokens
+          : Math.max(1, Math.ceil(current.rawText.length / 4))
+        const isEstimated = data.usage ? data.usage.isEstimated : true
+        useTokenStore.getState().addEntry({
+          sessionId: data.sessionId,
+          providerId,
+          providerName: modelName,
+          tokensUsed,
+          isEstimated
+        })
+
         window.api.ai.removeStreamListeners()
       })
 
@@ -771,6 +786,20 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
         }
         const tiles = [tile, ...get().optimizerTiles].slice(0, MAX_OPTIMIZER_TILES)
         set({ optimizerSession: completed, optimizerTiles: tiles })
+
+        // Capture token usage (fallback: estimate from rawText when main process doesn't send usage)
+        const tokensUsed = data.usage
+          ? data.usage.totalTokens
+          : Math.max(1, Math.ceil(current.rawText.length / 4))
+        const isEstimated = data.usage ? data.usage.isEstimated : true
+        useTokenStore.getState().addEntry({
+          sessionId: data.sessionId,
+          providerId,
+          providerName: modelName,
+          tokensUsed,
+          isEstimated
+        })
+
         window.api.ai.removeStreamListeners()
       })
 
