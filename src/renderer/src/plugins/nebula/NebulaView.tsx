@@ -13,6 +13,7 @@
 import { useEffect } from 'react'
 import { BookOpen, FileText, Search, Share2 } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
+import KnowledgeGraph from './KnowledgeGraph'
 import type { NebulaTab } from '../../types/nebula'
 
 const TABS: { id: NebulaTab; label: string; icon: typeof FileText }[] = [
@@ -88,14 +89,7 @@ export default function NebulaView(): React.JSX.Element {
         )}
 
         {/* Knowledge tab */}
-        {activeTab === 'knowledge' && (
-          <div className="flex h-full items-center justify-center text-text-secondary">
-            <div className="text-center">
-              <Share2 size={32} className="mx-auto mb-2 opacity-40" />
-              <p className="text-sm">Knowledge graph will appear here</p>
-            </div>
-          </div>
-        )}
+        {activeTab === 'knowledge' && <KnowledgeGraph />}
       </div>
     </div>
   )
