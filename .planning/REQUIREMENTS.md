@@ -95,6 +95,21 @@
 - **LNCH-09**: Estimation history — save and reload past estimations for comparison
 - **LNCH-10**: Multi-provider comparison — side-by-side cost comparison across AWS, GCP, and Azure for equivalent services
 
+### Nebula — Notes & Knowledge (NEBL)
+
+- **NEBL-01**: Modern minimal text editor for note-taking with rich formatting support (headings, bold, italic, lists, code blocks)
+- **NEBL-02**: Drawing canvas integrated into notes using tldraw (lightweight, embeddable, MIT license)
+- **NEBL-03**: Notes stored locally on disk as structured files (not in-memory only)
+- **NEBL-04**: AI agent auto-summarization — spawns AI agent to generate summary when a note is saved/updated
+- **NEBL-05**: Knowledge graph — visualize summary titles and connections between notes (similar to Obsidian graph view)
+- **NEBL-06**: Search & Q&A — users can ask natural-language questions over their notes; AI retrieves answers from stored summaries and knowledge graph
+- **NEBL-07**: Voice recording — start/stop audio recording directly in the app
+- **NEBL-08**: Voice transcription — transcribe recorded audio to text with speaker diarization (tag different speakers)
+- **NEBL-09**: Transcription-to-knowledge pipeline — transcriptions are stored, summarized by AI, and added to the knowledge graph automatically
+- **NEBL-10**: Plugin settings managed through the standard plugin settings page (storage path, AI agent, voice input device, etc.)
+- **NEBL-11**: Three-tab UI layout — Note Taking, Search, Knowledge sections accessible via tabs
+- **NEBL-12**: Embedded database (SQLite via better-sqlite3) for indexing notes, summaries, and graph relationships — bundled with app, no external dependency
+
 ### PromptBuilder (PMPT)
 
 - **PMPT-01**: Create and edit prompt templates with variable placeholders
@@ -172,6 +187,18 @@
 | LNCH-08 | 7 | 02 | Complete |
 | LNCH-09 | 7 | 04 | Complete |
 | LNCH-10 | 7 | 04 | Complete |
+| NEBL-01 | 8 | - | Planned |
+| NEBL-02 | 8 | - | Planned |
+| NEBL-03 | 8 | - | Planned |
+| NEBL-04 | 8 | - | Planned |
+| NEBL-05 | 8 | - | Planned |
+| NEBL-06 | 8 | - | Planned |
+| NEBL-07 | 8 | - | Planned |
+| NEBL-08 | 8 | - | Planned |
+| NEBL-09 | 8 | - | Planned |
+| NEBL-10 | 8 | - | Planned |
+| NEBL-11 | 8 | - | Planned |
+| NEBL-12 | 8 | - | Planned |
 | PMPT-01 | 6 | - | Planned |
 | PMPT-02 | 6 | - | Planned |
 | PMPT-03 | 6 | - | Planned |
