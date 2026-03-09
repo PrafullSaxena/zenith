@@ -8,6 +8,7 @@ import { streamCliReview, cancelCliReview, streamCliAnalysis, probeCliBinary } f
 import { PostgresConnectionManager } from './db/postgres'
 import { buildSchemaContext, buildQueryOptimizationContext, buildTableDDL } from './db/introspection'
 import { exportDiagnosticZip } from './log-collector'
+import { exportEstimationPdf } from './launchpad/pdf-generator'
 
 /**
  * Separate electron-store instance for credentials.
@@ -389,5 +390,13 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('ai:cancelAnalysis', (_event, sessionId: string) => {
     cancelSdkReview(sessionId)
     cancelCliReview(sessionId)
+  })
+
+  // --- Launchpad channels ---
+  ipcMain.handle('launchpad:exportPdf', async (_event, estimation) => {
+    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+    if (!mainWindow) throw new Error('No window available for save dialog')
+    const filePath = await exportEstimationPdf(mainWindow, estimation)
+    return { filePath }
   })
 }

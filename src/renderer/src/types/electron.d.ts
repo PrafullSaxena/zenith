@@ -161,6 +161,9 @@ export interface ElectronAPI {
     storeCredentials: (connectionId: string, password: string) => Promise<void>
     getCredentials: (connectionId: string) => Promise<string | null>
   }
+  launchpad: {
+    exportPdf: (estimation: import('./launchpad').EstimationExport) => Promise<{ filePath: string | null }>
+  }
 }
 
 declare global {

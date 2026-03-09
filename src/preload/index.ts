@@ -162,6 +162,10 @@ const api = {
     getCredentials: (connectionId: string): Promise<string | null> =>
       ipcRenderer.invoke('db:getCredentials', connectionId),
   },
+  launchpad: {
+    exportPdf: (estimation: unknown): Promise<{ filePath: string | null }> =>
+      ipcRenderer.invoke('launchpad:exportPdf', estimation),
+  },
 }
 
 console.log('[preload] API namespaces:', Object.keys(api))
