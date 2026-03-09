@@ -135,6 +135,26 @@ export const PLUGINS: readonly PluginDefinition[] = [
     component: React.lazy(() => import('./launchpad/LaunchpadView')),
     settingsSchema: [],
     defaultAgent: null
+  },
+  {
+    id: 'nebula',
+    name: 'Nebula',
+    description: 'Notes & knowledge management with AI-powered summarization',
+    icon: 'BookOpen',
+    route: '/nebula',
+    component: React.lazy(() => import('./nebula/NebulaView')),
+    settingsSchema: [
+      {
+        key: 'storagePath',
+        label: 'Storage Directory',
+        type: 'directory',
+        description:
+          'Directory where notes and database are stored. Defaults to app data folder if empty.',
+        defaultValue: '',
+        placeholder: '/path/to/nebula-notes'
+      }
+    ],
+    defaultAgent: null
   }
 ] as const
 

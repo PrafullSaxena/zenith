@@ -9,6 +9,7 @@ import {
   Activity,
   Info,
   Rocket,
+  BookOpen,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PLUGINS } from '../plugins/registry'
@@ -27,6 +28,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Activity,
   Info,
   Rocket,
+  BookOpen,
 }
 
 function SidebarIcon({

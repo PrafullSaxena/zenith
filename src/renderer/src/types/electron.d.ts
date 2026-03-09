@@ -175,6 +175,16 @@ export interface ElectronAPI {
   launchpad: {
     exportPdf: (estimation: import('./launchpad').EstimationExport) => Promise<{ filePath: string | null }>
   }
+  nebula: {
+    saveNote: (note: unknown) => Promise<{ saved: boolean }>
+    loadNote: (id: string) => Promise<unknown>
+    listNotes: () => Promise<unknown[]>
+    deleteNote: (id: string) => Promise<void>
+    searchNotes: (query: string) => Promise<unknown[]>
+    getGraph: () => Promise<unknown>
+    transcribeAudio: (buffer: number[]) => Promise<unknown>
+    selectAudioFile: () => Promise<{ canceled: boolean; path: string }>
+  }
 }
 
 declare global {
