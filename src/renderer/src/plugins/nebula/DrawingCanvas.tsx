@@ -49,15 +49,15 @@ export default function DrawingCanvas({
     (editor: Editor) => {
       editorRef.current = editor
 
-      // Force dark mode to match app theme
-      editor.updateInstanceState({ isDarkMode: true })
+      // Force dark mode to match app theme (tldraw v4 uses user preferences)
+      editor.user.updateUserPreferences({ colorScheme: 'dark' })
 
       // Load previously saved snapshot if available
       if (snapshot && typeof snapshot === 'object' && 'document' in snapshot) {
         try {
           editor.loadSnapshot(snapshot as Parameters<Editor['loadSnapshot']>[0])
           // Re-apply dark mode after snapshot load (snapshot may override it)
-          editor.updateInstanceState({ isDarkMode: true })
+          editor.user.updateUserPreferences({ colorScheme: 'dark' })
         } catch {
           // Snapshot format mismatch — start fresh
         }
