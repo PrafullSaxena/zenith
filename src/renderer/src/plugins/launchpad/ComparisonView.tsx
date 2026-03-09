@@ -32,6 +32,10 @@ function getDefaultConfig(serviceId: string, provider: CloudProvider): Record<st
         for (const [key, field] of Object.entries(service.configSchema)) {
           if (field.default !== undefined) {
             config[key] = field.default
+          } else if (field.type === 'select' && field.options && field.options.length > 0) {
+            // For select fields with no explicit default, use the first option
+            // (full SelectOption object preserves pricePerHour for calculator)
+            config[key] = field.options[0]
           }
         }
         return config

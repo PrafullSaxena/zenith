@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Activity,
   Info,
+  Rocket,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PLUGINS } from '../plugins/registry'
@@ -25,6 +26,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   Activity,
   Info,
+  Rocket,
 }
 
 function SidebarIcon({

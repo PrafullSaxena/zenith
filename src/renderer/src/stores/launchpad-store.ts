@@ -174,6 +174,10 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
           for (const [key, field] of Object.entries(service.configSchema)) {
             if (field.default !== undefined) {
               defaultConfig[key] = field.default
+            } else if (field.type === 'select' && field.options && field.options.length > 0) {
+              // For select fields with no explicit default, use the first option
+              // (full SelectOption object preserves pricePerHour for calculator)
+              defaultConfig[key] = field.options[0]
             }
           }
           break
