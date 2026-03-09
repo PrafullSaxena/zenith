@@ -12,13 +12,13 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Current Phase:** 08
 **Current Phase Name:** Nebula Plugin
 **Total Phases:** 8
-**Current Plan:** 5
+**Current Plan:** 6
 **Total Plans in Phase:** 6
 **Status:** Ready to execute
 **Last Activity:** 2026-03-09
 **Last Activity Description:** Completed 08-02 — Nebula plugin registration, Zustand store, and 3-tab NebulaView shell
 
-**Progress:** [█████████░] 86%
+**Progress:** [█████████░] 91%
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 08-nebula-plugin P02 | 3min | 2 tasks | 7 files |
 | Phase 08 P01 | 5min | 2 tasks | 5 files |
 | Phase 08-nebula-plugin PP04 | 3min | 2 tasks | 4 files |
+| Phase 08-nebula-plugin P03 | 6min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,9 @@ Recent decisions affecting current work:
 - [Phase 08]: better-sqlite3 externalized from ASAR and rebuilt via electron-rebuild for Electron compatibility
 - [Phase 08-nebula-plugin]: Fire-and-forget AI summarization: note saves immediately, AI runs in background with session-scoped streaming listeners and updates note asynchronously
 - [Phase 08-nebula-plugin]: Knowledge graph edge inference uses keyword-overlap on NoteListItem title+summary for lightweight renderer-side matching
+- [Phase 08-nebula-plugin]: Lazy-init getNebulaInstances() pattern for database/file-storage in IPC handlers, matching TokenManager/PostgresConnectionManager singletons
+- [Phase 08-nebula-plugin]: tldraw inferDarkMode prop instead of manual colorScheme; props spread for snapshot union type workaround
+- [Phase 08-nebula-plugin]: Debounced saves: 500ms for content/title edits, 1000ms for drawing canvas auto-save
 
 ### Pending Todos
 
@@ -126,6 +130,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-09T18:41:01.223Z
-**Stopped at:** Completed 08-04-PLAN.md
+**Last session:** 2026-03-09T18:44:22.667Z
+**Stopped at:** Completed 08-03-PLAN.md
 **Resume file:** None
