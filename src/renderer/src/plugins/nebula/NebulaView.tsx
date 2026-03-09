@@ -4,15 +4,19 @@
  * Layout:
  *  - Header: plugin icon + title + subtitle
  *  - Tab bar: Notes / Search / Knowledge
- *  - Content area: conditional on active tab (placeholders for now)
+ *  - Notes tab: NoteList sidebar + NoteEditor + DrawingCanvas toggle
+ *  - Search / Knowledge tabs: placeholders for Plans 04 and 06
  *
  * Follows the same tab pattern as LaunchpadView.tsx.
  * Default-exported for React.lazy() compatibility in the plugin registry.
  */
 
-import { useEffect } from 'react'
-import { BookOpen, FileText, Search, Share2 } from 'lucide-react'
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { BookOpen, FileText, Search, Share2, PenTool } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
+import NoteList from './NoteList'
+import NoteEditor from './NoteEditor'
+import DrawingCanvas from './DrawingCanvas'
 import KnowledgeGraph from './KnowledgeGraph'
 import type { NebulaTab } from '../../types/nebula'
 
@@ -26,11 +30,62 @@ export default function NebulaView(): React.JSX.Element {
   const activeTab = useNebulaStore((s) => s.activeTab)
   const setActiveTab = useNebulaStore((s) => s.setActiveTab)
   const loadNotes = useNebulaStore((s) => s.loadNotes)
+  const activeNote = useNebulaStore((s) => s.activeNote)
+  const saveNote = useNebulaStore((s) => s.saveNote)
 
-  // Load notes on mount (gracefully fails if IPC not wired yet)
+  const [showDrawing, setShowDrawing] = useState(false)
+
+  // Debounce timer refs
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Load notes on mount
   useEffect(() => {
     loadNotes()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounced content save (500ms)
+  const handleContentUpdate = useCallback(
+    (json: object) => {
+      if (!activeNote) return
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = setTimeout(() => {
+        saveNote({
+          ...activeNote,
+          content: json,
+          updatedAt: new Date().toISOString()
+        })
+      }, 500)
+    },
+    [activeNote, saveNote]
+  )
+
+  // Title change: immediate store update + debounced save
+  const handleTitleChange = useCallback(
+    (title: string) => {
+      if (!activeNote) return
+      // Update the active note in store immediately for responsiveness
+      const updatedNote = { ...activeNote, title, updatedAt: new Date().toISOString() }
+      if (titleTimerRef.current) clearTimeout(titleTimerRef.current)
+      titleTimerRef.current = setTimeout(() => {
+        saveNote(updatedNote)
+      }, 500)
+    },
+    [activeNote, saveNote]
+  )
+
+  // Drawing save
+  const handleDrawingSave = useCallback(
+    (snapshot: object) => {
+      if (!activeNote) return
+      saveNote({
+        ...activeNote,
+        drawing: snapshot,
+        updatedAt: new Date().toISOString()
+      })
+    },
+    [activeNote, saveNote]
+  )
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
@@ -70,10 +125,43 @@ export default function NebulaView(): React.JSX.Element {
       <div key={activeTab} className="flex-1 overflow-hidden">
         {/* Notes tab */}
         {activeTab === 'notes' && (
-          <div className="flex h-full items-center justify-center text-text-secondary">
-            <div className="text-center">
-              <FileText size={32} className="mx-auto mb-2 opacity-40" />
-              <p className="text-sm">Note editor will appear here</p>
+          <div className="flex h-full overflow-hidden">
+            <NoteList />
+            <div className="flex flex-1 flex-col overflow-hidden">
+              {activeNote ? (
+                <>
+                  <NoteEditor
+                    content={activeNote.content}
+                    title={activeNote.title}
+                    onUpdate={handleContentUpdate}
+                    onTitleChange={handleTitleChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDrawing(!showDrawing)}
+                    className={`flex items-center gap-1.5 border-t border-border px-3 py-1.5 text-xs transition-colors ${
+                      showDrawing
+                        ? 'bg-accent/10 text-accent'
+                        : 'text-text-secondary hover:text-text-primary'
+                    }`}
+                  >
+                    <PenTool size={12} />
+                    {showDrawing ? 'Hide Drawing' : 'Show Drawing'}
+                  </button>
+                  <DrawingCanvas
+                    snapshot={activeNote.drawing}
+                    onSave={handleDrawingSave}
+                    visible={showDrawing}
+                  />
+                </>
+              ) : (
+                <div className="flex flex-1 items-center justify-center text-text-secondary">
+                  <div className="text-center">
+                    <FileText size={32} className="mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">Select a note or create a new one</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
