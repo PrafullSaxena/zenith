@@ -8,7 +8,7 @@
 | 2 | Mission Control & Activity Log | 3 | Planned | 0/3 |
 | 3 | CodeReviewBot Plugin | 4 | Planned | 0/4 |
 | 4 | DbInspector Plugin | 5 | Planned | 0/5 |
-| 5 | AstroPatch Plugin | 7 | 2/4 | In Progress|  | 6 | Polish & Production | 3 | Planned | 0/3 |
+| 5 | AstroPatch Plugin | 7 | 3/4 | In Progress|  | 6 | Polish & Production | 3 | Planned | 0/3 |
 | 7 | Launchpad Plugin | 4 | Planned | 0/4 |
 
 ## Phase 1: Foundation
@@ -65,7 +65,7 @@ Plans:
 
 **Requirements:** [LNCH-01, LNCH-02, LNCH-03, LNCH-04, LNCH-05, LNCH-06, LNCH-07, LNCH-08, LNCH-09, LNCH-10]
 
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 - [ ] 07-01-PLAN.md -- Types, pricing catalogs (AWS/GCP/Azure), cost calculator, service equivalence map
