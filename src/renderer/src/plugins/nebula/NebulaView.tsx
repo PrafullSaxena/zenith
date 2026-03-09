@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { BookOpen, FileText, Search, Share2, PenTool, Check } from 'lucide-react'
+import { BookOpen, FileText, Search, Share2, PenTool } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
@@ -46,23 +46,32 @@ export default function NebulaView(): React.JSX.Element {
   // Track pending (dirty) content that hasn't been saved yet
   const pendingContentRef = useRef<object | null>(null)
   const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wasSavingRef = useRef(false)
 
   // Load notes on mount
   useEffect(() => {
     loadNotes()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Show "Saved" indicator briefly after save completes
+  // Show "Saved" indicator briefly only after a real save completes (not on mount)
   useEffect(() => {
-    if (!isSaving && activeNote) {
+    if (wasSavingRef.current && !isSaving && activeNote) {
       setShowSaved(true)
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
       savedTimerRef.current = setTimeout(() => setShowSaved(false), 1500)
     }
+    wasSavingRef.current = isSaving
     return () => {
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
     }
   }, [isSaving]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clean up title debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (titleTimerRef.current) clearTimeout(titleTimerRef.current)
+    }
+  }, [])
 
   // Transcription-to-knowledge pipeline: when lastTranscript changes,
   // create a note from it and trigger summarization -> graph update
@@ -205,6 +214,7 @@ export default function NebulaView(): React.JSX.Element {
                       {showDrawing ? 'Hide Drawing' : 'Show Drawing'}
                     </button>
                     <DrawingCanvas
+                      key={activeNote.id}
                       snapshot={activeNote.drawing}
                       onSave={handleDrawingSave}
                       visible={showDrawing}

@@ -17,6 +17,29 @@ import { Search, MessageCircleQuestion, FileText, Loader2, X } from 'lucide-reac
 import { useNebulaStore } from '../../stores/nebula-store'
 import MarkdownRenderer from '../../components/MarkdownRenderer'
 
+// ── HTML sanitizer for FTS5 highlights ──────────────────────────────
+
+/**
+ * Sanitize FTS5 highlight output — only allow <mark> and </mark> tags.
+ * Escapes all other HTML to prevent XSS from user-generated content.
+ */
+function sanitizeHighlight(html: string): string {
+  // Temporarily replace valid <mark> tags with placeholders
+  const withPlaceholders = html
+    .replace(/<mark>/g, '\x00MARK_OPEN\x00')
+    .replace(/<\/mark>/g, '\x00MARK_CLOSE\x00')
+  // Escape remaining HTML entities
+  const escaped = withPlaceholders
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+  // Restore <mark> tags
+  return escaped
+    .replace(/\x00MARK_OPEN\x00/g, '<mark>')
+    .replace(/\x00MARK_CLOSE\x00/g, '</mark>')
+}
+
 // ── Relative time helper ────────────────────────────────────────────
 
 function relativeTime(isoDate: string): string {
@@ -152,7 +175,7 @@ export default function SearchView(): React.JSX.Element {
                 <h4 className="text-sm font-medium text-text-primary">
                   {result.titleHighlight ? (
                     <span
-                      dangerouslySetInnerHTML={{ __html: result.titleHighlight }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.titleHighlight) }}
                       className="[&>mark]:rounded [&>mark]:bg-accent/25 [&>mark]:px-0.5 [&>mark]:text-accent"
                     />
                   ) : (
@@ -165,7 +188,7 @@ export default function SearchView(): React.JSX.Element {
                   <div className="mt-1 line-clamp-2 text-xs text-text-secondary">
                     {result.summaryHighlight ? (
                       <span
-                        dangerouslySetInnerHTML={{ __html: result.summaryHighlight }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.summaryHighlight) }}
                         className="[&>mark]:rounded [&>mark]:bg-accent/25 [&>mark]:px-0.5 [&>mark]:text-accent"
                       />
                     ) : (

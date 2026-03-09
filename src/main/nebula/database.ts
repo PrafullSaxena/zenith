@@ -163,9 +163,17 @@ export class NebulaDatabase {
       )
       .get()
 
+    let needsRebuild = false
+
     if (existing && existing.sql && existing.sql.includes("content='notes'")) {
       // Old broken schema — drop and recreate
       this.db.exec(`DROP TABLE notes_fts`)
+      needsRebuild = true
+    }
+
+    if (!existing) {
+      // First-time creation — need to populate index
+      needsRebuild = true
     }
 
     // Create standalone FTS table (no content= directive)
@@ -175,8 +183,10 @@ export class NebulaDatabase {
       )
     `)
 
-    // Rebuild FTS index from existing notes (safe no-op when notes table is empty)
-    this.rebuildFtsIndex()
+    // Only rebuild FTS when migration or first creation occurred
+    if (needsRebuild) {
+      this.rebuildFtsIndex()
+    }
   }
 
   /**

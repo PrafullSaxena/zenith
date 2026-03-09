@@ -200,7 +200,7 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
     const note: NoteFile = {
       id,
       title: 'Untitled',
-      content: {},
+      content: { type: 'doc', content: [] },
       drawing: null,
       summary: null,
       topics: [],
@@ -251,10 +251,16 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       ...(isActive ? { activeNote: note } : {})
     })
 
-    // Fire-and-forget AI summarization for notes with meaningful content
+    // Fire-and-forget AI summarization — only when content actually changed
+    // (not on title-only or drawing-only saves) and not already summarizing
     const plainText = extractPlainText(note.content)
-    if (plainText.length > 20) {
-      get().triggerSummarization(note)
+    if (plainText.length > 20 && !get().isSummarizing) {
+      // Check if content actually changed since last summarization
+      const prev = get().activeNote
+      const prevText = prev ? extractPlainText(prev.content) : ''
+      if (prevText !== plainText) {
+        get().triggerSummarization(note)
+      }
     }
   },
 
@@ -275,6 +281,10 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
 
   setSearchQuery: (query) => {
     set({ searchQuery: query })
+    // Clear stale results when query is emptied
+    if (!query.trim()) {
+      set({ searchResults: [] })
+    }
   },
 
   searchNotes: async (query) => {
@@ -385,7 +395,7 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
           .join('\n\n')
 
         // If FTS search returned nothing, fall back to all notes with summaries
-        if (!contextString) {
+        if (topResults.length === 0) {
           const allNotes = get().notes.filter((n) => n.summary)
           contextString = allNotes
             .slice(0, 5)
