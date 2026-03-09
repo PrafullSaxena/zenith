@@ -133,6 +133,7 @@ interface NebulaStore {
   clearActiveNote: () => void
   askQuestion: (question: string) => void
   cancelQa: () => void
+  handleTranscription: (transcript: DiarizedTranscript) => Promise<void>
   triggerSummarization: (note: NoteFile) => void
   inferEdges: (noteId: string, topics: string[], connections: string[]) => void
   cleanup: () => void
@@ -436,6 +437,90 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       window.api.ai.removeStreamListeners()
       set({ qaSessionId: null })
     }
+  },
+
+  // ── Transcription-to-Knowledge Pipeline ──────────────────────────
+
+  handleTranscription: async (transcript: DiarizedTranscript) => {
+    const id = crypto.randomUUID()
+    const now = new Date().toISOString()
+    const timestamp = new Date().toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    })
+
+    // Build Tiptap JSON content from transcript segments
+    const paragraphs =
+      transcript.segments.length > 0
+        ? transcript.segments.map((seg) => ({
+            type: 'paragraph' as const,
+            content: [
+              {
+                type: 'text' as const,
+                text: `[${seg.speaker}]: ${seg.text}`
+              }
+            ]
+          }))
+        : [
+            {
+              type: 'paragraph' as const,
+              content: [{ type: 'text' as const, text: transcript.text }]
+            }
+          ]
+
+    const content = { type: 'doc', content: paragraphs }
+    const title = `Voice Note - ${timestamp}`
+
+    const note: NoteFile = {
+      id,
+      title,
+      content,
+      drawing: null,
+      summary: null,
+      topics: [],
+      createdAt: now,
+      updatedAt: now
+    }
+
+    // Save the note via IPC
+    try {
+      await window.api.nebula.saveNote(note)
+    } catch {
+      // Graceful fallback
+    }
+
+    // Save the transcription record via IPC
+    try {
+      await window.api.nebula.saveTranscription({
+        id: crypto.randomUUID(),
+        noteId: id,
+        audioPath: '',
+        transcript: transcript.text,
+        speakers: JSON.stringify(transcript.segments)
+      })
+    } catch {
+      // Graceful fallback
+    }
+
+    // Add to notes list and select the new note
+    const listItem: NoteListItem = {
+      id,
+      title,
+      summary: null,
+      updatedAt: now
+    }
+
+    set({
+      notes: [listItem, ...get().notes],
+      activeNoteId: id,
+      activeNote: note,
+      lastTranscript: null
+    })
+
+    // Trigger summarization -> knowledge graph pipeline (NEBL-09)
+    get().triggerSummarization(note)
   },
 
   // ── AI Summarization ──────────────────────────────────────────────

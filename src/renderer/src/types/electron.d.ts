@@ -184,6 +184,7 @@ export interface ElectronAPI {
     getGraph: () => Promise<unknown>
     updateEdges: (noteId: string, edges: { targetId: string; relationship: string; weight: number }[]) => Promise<void>
     transcribeAudio: (buffer: number[]) => Promise<unknown>
+    saveTranscription: (record: unknown) => Promise<{ saved: boolean }>
     selectAudioFile: () => Promise<{ canceled: boolean; path: string }>
   }
 }

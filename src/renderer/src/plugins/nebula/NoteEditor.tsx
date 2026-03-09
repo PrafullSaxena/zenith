@@ -13,6 +13,7 @@ import { useEffect } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import VoiceRecorder from './VoiceRecorder'
 
 interface NoteEditorProps {
   content: object | null
@@ -120,6 +121,9 @@ export default function NoteEditor({
           className="nebula-editor max-w-none px-4 py-3"
         />
       </div>
+
+      {/* Voice recorder */}
+      <VoiceRecorder />
     </div>
   )
 }

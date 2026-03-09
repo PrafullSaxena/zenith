@@ -34,6 +34,8 @@ export default function NebulaView(): React.JSX.Element {
   const loadNotes = useNebulaStore((s) => s.loadNotes)
   const activeNote = useNebulaStore((s) => s.activeNote)
   const saveNote = useNebulaStore((s) => s.saveNote)
+  const lastTranscript = useNebulaStore((s) => s.lastTranscript)
+  const handleTranscription = useNebulaStore((s) => s.handleTranscription)
 
   const [showDrawing, setShowDrawing] = useState(false)
 
@@ -45,6 +47,14 @@ export default function NebulaView(): React.JSX.Element {
   useEffect(() => {
     loadNotes()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Transcription-to-knowledge pipeline: when lastTranscript changes,
+  // create a note from it and trigger summarization -> graph update
+  useEffect(() => {
+    if (lastTranscript) {
+      handleTranscription(lastTranscript)
+    }
+  }, [lastTranscript]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounced content save (500ms)
   const handleContentUpdate = useCallback(
