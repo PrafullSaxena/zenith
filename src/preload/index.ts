@@ -187,6 +187,8 @@ const api = {
       ipcRenderer.invoke('nebula:updateEdges', sourceId, targets),
     transcribeAudio: (buffer: number[]): Promise<unknown> =>
       ipcRenderer.invoke('nebula:transcribeAudio', buffer),
+    saveTranscription: (record: unknown): Promise<{ saved: boolean }> =>
+      ipcRenderer.invoke('nebula:saveTranscription', record),
     selectAudioFile: (): Promise<{ canceled: boolean; path: string }> =>
       ipcRenderer.invoke('nebula:selectAudioFile'),
   },

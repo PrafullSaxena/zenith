@@ -11,6 +11,10 @@ import { exportDiagnosticZip } from './log-collector'
 import { exportEstimationPdf } from './launchpad/pdf-generator'
 import { NebulaDatabase } from './nebula/database'
 import { NoteFileStorage } from './nebula/file-storage'
+import { transcribeAudio } from './nebula/transcription'
+import { getApiKeyForProvider } from './ai/providers'
+import path from 'node:path'
+import fs from 'node:fs'
 
 /**
  * Separate electron-store instance for credentials.
@@ -487,10 +491,37 @@ export function registerIpcHandlers(): void {
     db.upsertEdges(sourceId, targets)
   })
 
-  ipcMain.handle('nebula:transcribeAudio', async (_event, _audioBuffer: number[]) => {
-    // Stub — transcription wired in Plan 05
-    throw new Error('Transcription not yet configured')
+  ipcMain.handle('nebula:transcribeAudio', async (_event, audioBuffer: number[]) => {
+    const tmpPath = path.join(app.getPath('temp'), `nebula-${Date.now()}.webm`)
+    try {
+      fs.writeFileSync(tmpPath, Buffer.from(audioBuffer))
+
+      // Get OpenAI API key using the same provider pattern as AI streaming
+      const apiKey = await getApiKeyForProvider('openai')
+      if (!apiKey) {
+        throw new Error('OpenAI API key not configured. Set it in Settings > AI Agents.')
+      }
+
+      const result = await transcribeAudio(tmpPath, apiKey)
+      return result
+    } finally {
+      // Cleanup temp file
+      try {
+        fs.unlinkSync(tmpPath)
+      } catch {
+        /* ignore cleanup errors */
+      }
+    }
   })
+
+  ipcMain.handle(
+    'nebula:saveTranscription',
+    async (_event, record: { id: string; noteId: string | null; audioPath: string; transcript: string; speakers: string }) => {
+      const { db } = getNebulaInstances()
+      db.saveTranscription(record)
+      return { saved: true }
+    }
+  )
 
   ipcMain.handle('nebula:selectAudioFile', async () => {
     const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
@@ -571,7 +602,6 @@ export function registerIpcHandlers(): void {
 
     const pdf = pdfmake.default.createPdf(docDefinition as Parameters<typeof pdfmake.default.createPdf>[0])
     const buffer = await pdf.getBuffer()
-    const fs = await import('fs')
     fs.writeFileSync(filePath, buffer)
 
     return { filePath }
