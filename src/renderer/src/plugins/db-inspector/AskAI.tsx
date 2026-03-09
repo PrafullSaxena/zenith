@@ -16,8 +16,8 @@ import {
   Clock
 } from 'lucide-react'
 import type { DbQASession } from '../../types/database'
-import MarkdownRenderer from './MarkdownRenderer'
-import type { QueryExecState } from './MarkdownRenderer'
+import MarkdownRenderer from '../../components/MarkdownRenderer'
+import type { QueryExecState } from '../../components/MarkdownRenderer'
 
 interface AskAIProps {
   session: DbQASession | null

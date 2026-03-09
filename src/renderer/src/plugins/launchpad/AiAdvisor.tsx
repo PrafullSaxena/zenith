@@ -12,6 +12,7 @@ import { Send, Loader2, Square, Sparkles, X } from 'lucide-react'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useSettingsStore } from '../../stores/settings-store'
+import MarkdownRenderer from '../../components/MarkdownRenderer'
 
 const EXAMPLE_PROMPTS = [
   'I need a simple web app with 2 servers, a database, and file storage',
@@ -33,7 +34,7 @@ export default function AiAdvisor(): React.JSX.Element {
   const dismissSuggestions = useLaunchpadStore((s) => s.dismissSuggestions)
   const setActiveTab = useLaunchpadStore((s) => s.setActiveTab)
 
-  // Agent selection
+  // Agent selection — default agent is configured in plugin settings page
   const providers = useAgentStore((s) => s.providers)
   const getSetting = useSettingsStore((s) => s.getSetting)
 
@@ -85,6 +86,9 @@ export default function AiAdvisor(): React.JSX.Element {
         <div className="flex items-center gap-2 mb-1">
           <Sparkles size={14} className="text-accent" />
           <h2 className="text-sm font-semibold text-text-primary">AI Cloud Advisor</h2>
+          {agent && (
+            <span className="ml-auto text-[10px] text-text-secondary/60">{agent.name}</span>
+          )}
         </div>
         <p className="text-xs text-text-secondary">
           Describe your infrastructure needs and get service recommendations with cost estimates
@@ -145,9 +149,12 @@ export default function AiAdvisor(): React.JSX.Element {
               </div>
 
               {aiSession.rawText ? (
-                <div className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed">
-                  {/* Strip the suggestions block from displayed text */}
-                  {aiSession.rawText.replace(/```suggestions[\s\S]*?```/g, '').trim()}
+                <div>
+                  {/* Render formatted markdown — strip suggestions block from display */}
+                  <MarkdownRenderer
+                    text={aiSession.rawText.replace(/```suggestions[\s\S]*?```/g, '').trim()}
+                    className="text-sm leading-relaxed"
+                  />
                   {isStreaming && (
                     <span className="inline-block h-3 w-0.5 bg-accent/60 animate-pulse ml-0.5 align-middle" />
                   )}
@@ -176,10 +183,14 @@ export default function AiAdvisor(): React.JSX.Element {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Sparkles size={13} className="text-accent" />
-                      <p className="text-xs font-semibold text-accent">AI has suggested a configuration</p>
+                      <p className="text-xs font-semibold text-accent">
+                        AI has suggested a configuration
+                      </p>
                     </div>
                     <p className="text-xs text-text-secondary">
-                      {pendingSuggestions.provider.toUpperCase()} — {pendingSuggestions.services.length} service{pendingSuggestions.services.length !== 1 ? 's' : ''} recommended
+                      {pendingSuggestions.provider.toUpperCase()} —{' '}
+                      {pendingSuggestions.services.length} service
+                      {pendingSuggestions.services.length !== 1 ? 's' : ''} recommended
                     </p>
                   </div>
                   <button

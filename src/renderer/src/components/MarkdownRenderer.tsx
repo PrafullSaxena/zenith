@@ -9,7 +9,7 @@
  */
 import React from 'react'
 import { Play, Loader2, AlertCircle } from 'lucide-react'
-import { highlightCode } from '../../lib/highlight'
+import { highlightCode } from '../lib/highlight'
 
 /** Shape returned by window.api.db.query */
 export interface QueryResult {
@@ -232,30 +232,21 @@ function InlineMarkdownBlock({ text }: { text: string }): React.JSX.Element {
         // Headers
         if (trimmed.startsWith('### ')) {
           return (
-            <h3
-              key={pi}
-              className="mb-2 mt-4 text-sm font-semibold text-text-primary first:mt-0"
-            >
+            <h3 key={pi} className="mb-2 mt-4 text-sm font-semibold text-text-primary first:mt-0">
               {renderInline(trimmed.slice(4))}
             </h3>
           )
         }
         if (trimmed.startsWith('## ')) {
           return (
-            <h2
-              key={pi}
-              className="mb-2 mt-4 text-[15px] font-bold text-text-primary first:mt-0"
-            >
+            <h2 key={pi} className="mb-2 mt-4 text-[15px] font-bold text-text-primary first:mt-0">
               {renderInline(trimmed.slice(3))}
             </h2>
           )
         }
         if (trimmed.startsWith('# ')) {
           return (
-            <h1
-              key={pi}
-              className="mb-3 mt-4 text-base font-bold text-text-primary first:mt-0"
-            >
+            <h1 key={pi} className="mb-3 mt-4 text-base font-bold text-text-primary first:mt-0">
               {renderInline(trimmed.slice(2))}
             </h1>
           )
@@ -263,12 +254,8 @@ function InlineMarkdownBlock({ text }: { text: string }): React.JSX.Element {
 
         // Check if this paragraph is a list
         const lines = trimmed.split('\n')
-        const isNumberedList = lines.every(
-          (l) => /^\d+[.)]\s/.test(l.trim()) || !l.trim()
-        )
-        const isBulletList = lines.every(
-          (l) => /^[-*•]\s/.test(l.trim()) || !l.trim()
-        )
+        const isNumberedList = lines.every((l) => /^\d+[.)]\s/.test(l.trim()) || !l.trim())
+        const isBulletList = lines.every((l) => /^[-*•]\s/.test(l.trim()) || !l.trim())
 
         if (isNumberedList && lines.some((l) => /^\d+[.)]\s/.test(l.trim()))) {
           return (
