@@ -196,8 +196,8 @@
 | NEBL-07 | 8 | - | Planned |
 | NEBL-08 | 8 | - | Planned |
 | NEBL-09 | 8 | - | Planned |
-| NEBL-10 | 8 | - | Planned |
-| NEBL-11 | 8 | - | Planned |
+| NEBL-10 | 8 | 02 | Complete |
+| NEBL-11 | 8 | 02 | Complete |
 | NEBL-12 | 8 | - | Planned |
 | PMPT-01 | 6 | - | Planned |
 | PMPT-02 | 6 | - | Planned |
