@@ -32,12 +32,14 @@ export default function KnowledgeGraph(): React.JSX.Element {
   const selectedGraphNodeId = useNebulaStore((s) => s.selectedGraphNodeId)
   const setSelectedGraphNode = useNebulaStore((s) => s.setSelectedGraphNode)
 
+  const loadNotes = useNebulaStore((s) => s.loadNotes)
+
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
 
-  // Load graph data on mount
+  // Load notes first (for fallback node generation), then graph data
   useEffect(() => {
-    loadGraphData()
+    loadNotes().then(() => loadGraphData())
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track container dimensions with ResizeObserver
@@ -149,13 +151,21 @@ export default function KnowledgeGraph(): React.JSX.Element {
         <div className="flex flex-1 items-center justify-center text-text-secondary">
           <div className="text-center">
             <Share2 size={40} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm font-medium">No notes summarized yet</p>
+            <p className="text-sm font-medium">No notes yet</p>
             <p className="mt-1 text-xs text-text-secondary/70">
-              Create and save notes to build your knowledge graph.
+              Create notes in the Notes tab to see them visualized here.
             </p>
             <p className="mt-1 text-xs text-text-secondary/70">
               AI will extract topics and reveal connections between your ideas.
             </p>
+            <button
+              type="button"
+              onClick={() => loadGraphData()}
+              className="mt-3 flex items-center gap-1.5 rounded bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25 mx-auto"
+            >
+              <RefreshCw size={12} />
+              Reload graph
+            </button>
           </div>
         </div>
       </div>

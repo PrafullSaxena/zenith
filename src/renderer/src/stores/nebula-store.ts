@@ -290,9 +290,38 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
   loadGraphData: async () => {
     try {
       const graphData = (await window.api.nebula.getGraph()) as GraphData
-      set({ graphData })
-    } catch {
-      set({ graphData: null })
+      // If graph query returned nodes, use them
+      if (graphData && graphData.nodes.length > 0) {
+        set({ graphData })
+      } else {
+        // Fallback: build nodes from the notes list so the graph is never empty
+        // when notes exist but have no AI-generated edges yet
+        const notes = get().notes
+        if (notes.length > 0) {
+          set({
+            graphData: {
+              nodes: notes.map((n) => ({ id: n.id, name: n.title, val: 1 })),
+              links: graphData?.links ?? []
+            }
+          })
+        } else {
+          set({ graphData })
+        }
+      }
+    } catch (err) {
+      console.error('[nebula-store] Failed to load graph data:', err)
+      // Fallback: build nodes from the in-memory notes list
+      const notes = get().notes
+      if (notes.length > 0) {
+        set({
+          graphData: {
+            nodes: notes.map((n) => ({ id: n.id, name: n.title, val: 1 })),
+            links: []
+          }
+        })
+      } else {
+        set({ graphData: null })
+      }
     }
   },
 
@@ -332,7 +361,10 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
   askQuestion: (question: string) => {
     const agent = getNebulaAgent()
     if (!agent) {
-      console.warn('[nebula-store] No AI agent configured for Q&A')
+      set({
+        qaAnswer:
+          'No AI agent configured. Go to **Settings → AI Agents** to add an API key for OpenAI, Anthropic, or another provider. Then set a default agent under **Settings → Nebula**.'
+      })
       return
     }
 
@@ -348,9 +380,18 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
         const searchResults = results as SearchResult[]
         // Build context from top 5 results
         const topResults = searchResults.slice(0, 5)
-        const contextString = topResults
+        let contextString = topResults
           .map((r, i) => `Note ${i + 1}: "${r.title}"\n${r.summary || 'No summary available'}`)
           .join('\n\n')
+
+        // If FTS search returned nothing, fall back to all notes with summaries
+        if (!contextString) {
+          const allNotes = get().notes.filter((n) => n.summary)
+          contextString = allNotes
+            .slice(0, 5)
+            .map((n, i) => `Note ${i + 1}: "${n.title}"\n${n.summary}`)
+            .join('\n\n')
+        }
 
         const userPrompt = contextString
           ? `Context from notes:\n\n${contextString}\n\nQuestion: ${question}`
@@ -534,7 +575,8 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
   triggerSummarization: (note: NoteFile) => {
     const agent = getNebulaAgent()
     if (!agent) {
-      console.warn('[nebula-store] No AI agent configured for summarization')
+      // Silently skip summarization when no agent is configured
+      // (Q&A will show a user-facing message; summarization is background-only)
       return
     }
 

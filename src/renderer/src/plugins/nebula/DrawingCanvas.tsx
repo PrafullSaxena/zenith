@@ -3,10 +3,15 @@
  *
  * Mounts the Excalidraw editor in dark mode, auto-saves on changes
  * via a debounced callback. Only renders when visible to save resources.
+ *
+ * Key config:
+ *  - Welcome screen disabled for instant drawing
+ *  - View-mode lock disabled (gridModeEnabled: false)
+ *  - Transparent background matching the app theme
  */
 
 import { useCallback, useRef, useState } from 'react'
-import { Excalidraw, MainMenu } from '@excalidraw/excalidraw'
+import { Excalidraw, MainMenu, WelcomeScreen } from '@excalidraw/excalidraw'
 import type { ExcalidrawImperativeAPI, ExcalidrawElement } from '@excalidraw/excalidraw/types'
 
 interface DrawingCanvasProps {
@@ -48,29 +53,46 @@ export default function DrawingCanvas({
       ? (snapshot as { elements: ExcalidrawElement[] })
       : undefined
 
+  const baseAppState = {
+    viewBackgroundColor: 'transparent',
+    theme: 'dark' as const,
+    // Disable the welcome/lock screen overlay
+    showWelcomeScreen: false,
+    // Ensure we're not in view-only mode
+    viewModeEnabled: false,
+    // Disable grid for cleaner look
+    gridModeEnabled: false
+  }
+
   return (
-    <div className="excalidraw-container relative" style={{ height: '50vh', minHeight: 300 }}>
+    <div
+      className="excalidraw-container relative"
+      style={{ height: '50vh', minHeight: 350 }}
+    >
       <Excalidraw
         excalidrawAPI={(api) => setExcalidrawAPI(api)}
         initialData={
           initialData
-            ? {
-                elements: initialData.elements,
-                appState: {
-                  viewBackgroundColor: 'transparent',
-                  theme: 'dark'
-                }
-              }
-            : {
-                appState: {
-                  viewBackgroundColor: 'transparent',
-                  theme: 'dark'
-                }
-              }
+            ? { elements: initialData.elements, appState: baseAppState }
+            : { elements: [], appState: baseAppState }
         }
         onChange={handleChange}
         theme="dark"
+        UIOptions={{
+          canvasActions: {
+            loadScene: false,
+            toggleTheme: false
+          }
+        }}
       >
+        {/* Empty WelcomeScreen to suppress the default one */}
+        <WelcomeScreen>
+          <WelcomeScreen.Center>
+            <WelcomeScreen.Center.Heading>
+              Draw freely
+            </WelcomeScreen.Center.Heading>
+          </WelcomeScreen.Center>
+        </WelcomeScreen>
         <MainMenu>
           <MainMenu.DefaultItems.Export />
           <MainMenu.DefaultItems.SaveAsImage />

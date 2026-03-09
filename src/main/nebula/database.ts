@@ -253,27 +253,47 @@ export class NebulaDatabase {
   /**
    * Full-text search using FTS5 with BM25 ranking and highlights.
    * Returns up to 20 results ordered by relevance.
+   *
+   * Supports prefix matching: typing "emp" will match "employee".
+   * Each token is quoted and suffixed with '*' for safe FTS5 prefix queries.
    */
   searchNotes(query: string): SearchRow[] {
     if (!query.trim()) return []
 
-    return this.db
-      .prepare<[string], SearchRow>(
-        `SELECT
-           n.id,
-           n.title,
-           highlight(notes_fts, 0, '<mark>', '</mark>') AS title_highlight,
-           highlight(notes_fts, 1, '<mark>', '</mark>') AS summary_highlight,
-           n.summary,
-           n.updated_at,
-           bm25(notes_fts) AS rank
-         FROM notes_fts
-         JOIN notes n ON notes_fts.rowid = n.rowid
-         WHERE notes_fts MATCH ?
-         ORDER BY rank
-         LIMIT 20`
-      )
-      .all(query)
+    // Sanitize input: extract alphanumeric tokens, quote each, and add '*' for prefix matching
+    const tokens = query
+      .trim()
+      .split(/\s+/)
+      .map((t) => t.replace(/[^a-zA-Z0-9]/g, ''))
+      .filter((t) => t.length > 0)
+
+    if (tokens.length === 0) return []
+
+    // Build FTS5 query: "emp"* "man"* → matches "employee management"
+    const ftsQuery = tokens.map((t) => `"${t}"*`).join(' ')
+
+    try {
+      return this.db
+        .prepare<[string], SearchRow>(
+          `SELECT
+             n.id,
+             n.title,
+             highlight(notes_fts, 0, '<mark>', '</mark>') AS title_highlight,
+             highlight(notes_fts, 1, '<mark>', '</mark>') AS summary_highlight,
+             n.summary,
+             n.updated_at,
+             bm25(notes_fts) AS rank
+           FROM notes_fts
+           JOIN notes n ON notes_fts.rowid = n.rowid
+           WHERE notes_fts MATCH ?
+           ORDER BY rank
+           LIMIT 20`
+        )
+        .all(ftsQuery)
+    } catch {
+      // FTS5 MATCH can throw on malformed queries — return empty gracefully
+      return []
+    }
   }
 
   // ── Knowledge Graph ─────────────────────────────────────────────────

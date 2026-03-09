@@ -31,6 +31,7 @@ import VoiceRecorder from './VoiceRecorder'
 interface NoteEditorProps {
   content: object | null
   onUpdate: (json: object) => void
+  onBlur?: () => void
   onTitleChange: (title: string) => void
   title: string
   isSummarizing?: boolean
@@ -41,6 +42,7 @@ interface NoteEditorProps {
 export default function NoteEditor({
   content,
   onUpdate,
+  onBlur,
   onTitleChange,
   title,
   isSummarizing,
@@ -59,6 +61,9 @@ export default function NoteEditor({
     content: content ?? undefined,
     onUpdate: ({ editor: ed }) => {
       onUpdate(ed.getJSON())
+    },
+    onBlur: () => {
+      onBlur?.()
     }
   })
 

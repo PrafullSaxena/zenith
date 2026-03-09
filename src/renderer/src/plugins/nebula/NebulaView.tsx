@@ -43,8 +43,8 @@ export default function NebulaView(): React.JSX.Element {
   const [showSaved, setShowSaved] = useState(false)
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Debounce timer refs
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Track pending (dirty) content that hasn't been saved yet
+  const pendingContentRef = useRef<object | null>(null)
   const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Load notes on mount
@@ -72,21 +72,26 @@ export default function NebulaView(): React.JSX.Element {
     }
   }, [lastTranscript]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Debounced content save (500ms)
+  // Content update: just track dirty content — actual save happens on blur
   const handleContentUpdate = useCallback(
     (json: object) => {
       if (!activeNote) return
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-      saveTimerRef.current = setTimeout(() => {
-        saveNote({
-          ...activeNote,
-          content: json,
-          updatedAt: new Date().toISOString()
-        })
-      }, 500)
+      pendingContentRef.current = json
     },
-    [activeNote, saveNote]
+    [activeNote]
   )
+
+  // Save pending content when user leaves the editor (blur)
+  const handleEditorBlur = useCallback(() => {
+    if (!activeNote || !pendingContentRef.current) return
+    const content = pendingContentRef.current
+    pendingContentRef.current = null
+    saveNote({
+      ...activeNote,
+      content,
+      updatedAt: new Date().toISOString()
+    })
+  }, [activeNote, saveNote])
 
   // Title change: update store immediately for responsiveness + debounced save
   const handleTitleChange = useCallback(
@@ -98,7 +103,7 @@ export default function NebulaView(): React.JSX.Element {
       if (titleTimerRef.current) clearTimeout(titleTimerRef.current)
       titleTimerRef.current = setTimeout(() => {
         saveNote(updatedNote)
-      }, 500)
+      }, 800)
     },
     [activeNote, saveNote]
   )
@@ -115,6 +120,21 @@ export default function NebulaView(): React.JSX.Element {
     },
     [activeNote, saveNote]
   )
+
+  // Flush pending content when switching notes or unmounting
+  useEffect(() => {
+    return () => {
+      if (pendingContentRef.current && activeNote) {
+        // Flush unsaved content on note switch / unmount
+        saveNote({
+          ...activeNote,
+          content: pendingContentRef.current,
+          updatedAt: new Date().toISOString()
+        })
+        pendingContentRef.current = null
+      }
+    }
+  }, [activeNote?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
@@ -163,6 +183,7 @@ export default function NebulaView(): React.JSX.Element {
                     content={activeNote.content}
                     title={activeNote.title}
                     onUpdate={handleContentUpdate}
+                    onBlur={handleEditorBlur}
                     onTitleChange={handleTitleChange}
                     isSummarizing={isSummarizing}
                     isSaving={isSaving}
