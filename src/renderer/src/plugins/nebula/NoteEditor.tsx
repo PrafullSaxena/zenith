@@ -22,7 +22,9 @@ import {
   List,
   ListOrdered,
   Code2,
-  Sparkles
+  Sparkles,
+  Check,
+  Loader2
 } from 'lucide-react'
 import VoiceRecorder from './VoiceRecorder'
 
@@ -32,6 +34,8 @@ interface NoteEditorProps {
   onTitleChange: (title: string) => void
   title: string
   isSummarizing?: boolean
+  isSaving?: boolean
+  showSaved?: boolean
 }
 
 export default function NoteEditor({
@@ -39,7 +43,9 @@ export default function NoteEditor({
   onUpdate,
   onTitleChange,
   title,
-  isSummarizing
+  isSummarizing,
+  isSaving,
+  showSaved
 }: NoteEditorProps): React.JSX.Element {
   const editor = useEditor({
     extensions: [
@@ -79,12 +85,26 @@ export default function NoteEditor({
           placeholder="Untitled"
           className="flex-1 border-none bg-transparent text-xl font-bold text-text-primary outline-none placeholder:text-text-secondary/40"
         />
-        {isSummarizing && (
-          <div className="flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-[10px] text-accent">
-            <Sparkles size={10} className="animate-pulse" />
-            Summarizing...
-          </div>
-        )}
+        <div className="flex items-center gap-1.5">
+          {isSaving && (
+            <div className="flex items-center gap-1 text-[10px] text-text-secondary">
+              <Loader2 size={10} className="animate-spin" />
+              Saving...
+            </div>
+          )}
+          {showSaved && !isSaving && (
+            <div className="flex items-center gap-1 text-[10px] text-green-400">
+              <Check size={10} />
+              Saved
+            </div>
+          )}
+          {isSummarizing && (
+            <div className="flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-[10px] text-accent">
+              <Sparkles size={10} className="animate-pulse" />
+              Summarizing...
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Toolbar */}

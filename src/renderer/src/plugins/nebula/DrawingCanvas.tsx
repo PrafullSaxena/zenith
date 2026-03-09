@@ -49,7 +49,7 @@ export default function DrawingCanvas({
       : undefined
 
   return (
-    <div style={{ height: 350 }} className="border-t border-border">
+    <div className="excalidraw-container relative" style={{ height: '50vh', minHeight: 300 }}>
       <Excalidraw
         excalidrawAPI={(api) => setExcalidrawAPI(api)}
         initialData={

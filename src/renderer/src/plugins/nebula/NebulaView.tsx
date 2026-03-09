@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { BookOpen, FileText, Search, Share2, PenTool } from 'lucide-react'
+import { BookOpen, FileText, Search, Share2, PenTool, Check } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
@@ -34,11 +34,14 @@ export default function NebulaView(): React.JSX.Element {
   const loadNotes = useNebulaStore((s) => s.loadNotes)
   const activeNote = useNebulaStore((s) => s.activeNote)
   const saveNote = useNebulaStore((s) => s.saveNote)
+  const isSaving = useNebulaStore((s) => s.isSaving)
   const isSummarizing = useNebulaStore((s) => s.isSummarizing)
   const lastTranscript = useNebulaStore((s) => s.lastTranscript)
   const handleTranscription = useNebulaStore((s) => s.handleTranscription)
 
   const [showDrawing, setShowDrawing] = useState(false)
+  const [showSaved, setShowSaved] = useState(false)
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Debounce timer refs
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -48,6 +51,18 @@ export default function NebulaView(): React.JSX.Element {
   useEffect(() => {
     loadNotes()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show "Saved" indicator briefly after save completes
+  useEffect(() => {
+    if (!isSaving && activeNote) {
+      setShowSaved(true)
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+      savedTimerRef.current = setTimeout(() => setShowSaved(false), 1500)
+    }
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }
+  }, [isSaving]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Transcription-to-knowledge pipeline: when lastTranscript changes,
   // create a note from it and trigger summarization -> graph update
@@ -150,6 +165,8 @@ export default function NebulaView(): React.JSX.Element {
                     onUpdate={handleContentUpdate}
                     onTitleChange={handleTitleChange}
                     isSummarizing={isSummarizing}
+                    isSaving={isSaving}
+                    showSaved={showSaved}
                   />
 
                   {/* Drawing toggle + canvas */}

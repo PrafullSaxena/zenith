@@ -287,3 +287,18 @@ body {
   border-top: 1px solid var(--color-border);
   margin: 1rem 0;
 }
+
+/* ── Excalidraw canvas overrides ──────────────────────────────────── */
+.excalidraw-container .excalidraw {
+  --color-primary: var(--color-accent) !important;
+}
+
+.excalidraw-container .excalidraw,
+.excalidraw-container .excalidraw .layer-ui__wrapper {
+  height: 100% !important;
+}
+
+/* Contain Excalidraw within its container */
+.excalidraw-container {
+  overflow: hidden;
+}

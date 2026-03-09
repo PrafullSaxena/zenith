@@ -467,7 +467,12 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('nebula:listNotes', async () => {
     const { db } = getNebulaInstances()
-    return db.listNotes()
+    return db.listNotes().map((row) => ({
+      id: row.id,
+      title: row.title,
+      summary: row.summary,
+      updatedAt: row.updated_at
+    }))
   })
 
   ipcMain.handle('nebula:deleteNote', async (_event, id: string) => {
@@ -478,12 +483,33 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('nebula:searchNotes', async (_event, query: string) => {
     const { db } = getNebulaInstances()
-    return db.searchNotes(query)
+    return db.searchNotes(query).map((row) => ({
+      id: row.id,
+      title: row.title,
+      titleHighlight: row.title_highlight,
+      summaryHighlight: row.summary_highlight,
+      summary: row.summary,
+      updatedAt: row.updated_at,
+      rank: row.rank
+    }))
   })
 
   ipcMain.handle('nebula:getGraph', async () => {
     const { db } = getNebulaInstances()
-    return db.getGraphData()
+    const raw = db.getGraphData()
+    return {
+      nodes: raw.nodes.map((n) => ({
+        id: n.id,
+        name: n.title,
+        val: n.connections
+      })),
+      links: raw.links.map((e) => ({
+        source: e.source_id,
+        target: e.target_id,
+        label: e.relationship,
+        weight: e.weight
+      }))
+    }
   })
 
   ipcMain.handle('nebula:updateEdges', async (_event, sourceId: string, targets: { targetId: string; relationship: string; weight: number }[]) => {
