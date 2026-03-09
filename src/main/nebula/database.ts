@@ -125,11 +125,6 @@ export class NebulaDatabase {
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
 
-      CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
-        title, summary, content_text,
-        content='notes', content_rowid='rowid'
-      );
-
       CREATE TABLE IF NOT EXISTS graph_edges (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         source_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
@@ -148,6 +143,96 @@ export class NebulaDatabase {
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
     `)
+
+    // FTS5 migration: the original schema used content='notes' which
+    // references a 'content_text' column that does not exist in the notes
+    // table, causing SQLITE_ERROR on every write.  Fix: recreate as a
+    // standalone FTS table (no content sync) so we manage the index manually.
+    this.migrateFts()
+  }
+
+  /**
+   * Ensure the notes_fts table is a standalone FTS5 table.
+   * Drops the old content-synced table if it exists and rebuilds.
+   */
+  private migrateFts(): void {
+    // Check if notes_fts already exists
+    const existing = this.db
+      .prepare<[], { sql: string }>(
+        `SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'notes_fts'`
+      )
+      .get()
+
+    if (existing && existing.sql && existing.sql.includes("content='notes'")) {
+      // Old broken schema — drop and recreate
+      this.db.exec(`DROP TABLE notes_fts`)
+    }
+
+    // Create standalone FTS table (no content= directive)
+    this.db.exec(`
+      CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
+        title, summary, content_text
+      )
+    `)
+
+    // Rebuild FTS index from existing notes (safe no-op when notes table is empty)
+    this.rebuildFtsIndex()
+  }
+
+  /**
+   * Rebuild the entire FTS index from the notes table.
+   * Called after migration or to repair a corrupted index.
+   */
+  private rebuildFtsIndex(): void {
+    interface ContentRow {
+      rowid: number
+      title: string
+      summary: string | null
+      content: string
+    }
+
+    const rows = this.db
+      .prepare<[], ContentRow>(
+        `SELECT rowid, title, summary, content FROM notes`
+      )
+      .all()
+
+    if (rows.length === 0) return
+
+    const deleteFts = this.db.prepare(`DELETE FROM notes_fts`)
+    const insertFts = this.db.prepare(
+      `INSERT INTO notes_fts(rowid, title, summary, content_text) VALUES (?, ?, ?, ?)`
+    )
+
+    const txn = this.db.transaction(() => {
+      deleteFts.run()
+      for (const row of rows) {
+        // Extract plain text from stored Tiptap JSON
+        let plainText = ''
+        try {
+          const parsed = JSON.parse(row.content)
+          plainText = this.extractText(parsed)
+        } catch {
+          plainText = ''
+        }
+        insertFts.run(row.rowid, row.title, row.summary ?? '', plainText)
+      }
+    })
+
+    txn()
+  }
+
+  /**
+   * Simple plain text extractor for Tiptap JSON documents.
+   */
+  private extractText(node: unknown): string {
+    if (!node || typeof node !== 'object') return ''
+    const n = node as Record<string, unknown>
+    if (n.type === 'text' && typeof n.text === 'string') return n.text
+    if (Array.isArray(n.content)) {
+      return n.content.map((child) => this.extractText(child)).join(' ')
+    }
+    return ''
   }
 
   // ── Notes CRUD ──────────────────────────────────────────────────────

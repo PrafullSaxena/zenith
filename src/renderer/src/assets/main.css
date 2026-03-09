@@ -288,35 +288,22 @@ body {
   margin: 1rem 0;
 }
 
-/* ── Excalidraw canvas overrides ──────────────────────────────────── */
+/* ── tldraw canvas overrides ─────────────────────────────────────── */
 
-/* Contain Excalidraw within its container */
-.excalidraw-container {
+/* Contain tldraw within its container */
+.tldraw-container {
   overflow: hidden;
   position: relative;
 }
 
-.excalidraw-container .excalidraw {
-  --color-primary: var(--color-accent) !important;
+/* Force dark theme and constrain to container */
+.tldraw-container .tl-container {
   height: 100% !important;
   width: 100% !important;
+  color-scheme: dark;
 }
 
-.excalidraw-container .excalidraw .layer-ui__wrapper {
-  height: 100% !important;
-}
-
-/* Ensure the canvas fills the container */
-.excalidraw-container .excalidraw .excalidraw__canvas-wrapper {
-  height: 100% !important;
-}
-
-/* Hide the welcome screen lock icon that shows on initial load */
-.excalidraw-container .excalidraw .welcome-screen-center {
-  display: none !important;
-}
-
-/* Fix toolbar visibility */
-.excalidraw-container .excalidraw .App-toolbar-container {
-  z-index: 10;
+/* Adjust tldraw background to match app theme */
+.tldraw-container .tl-background {
+  background-color: var(--color-surface) !important;
 }

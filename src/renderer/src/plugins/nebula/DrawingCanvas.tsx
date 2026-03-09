@@ -1,18 +1,19 @@
 /**
- * DrawingCanvas -- Excalidraw wrapper component for Nebula note drawings.
+ * DrawingCanvas -- tldraw wrapper component for Nebula note drawings.
  *
- * Mounts the Excalidraw editor in dark mode, auto-saves on changes
+ * Mounts the tldraw editor in dark mode, auto-saves on changes
  * via a debounced callback. Only renders when visible to save resources.
  *
  * Key config:
- *  - Welcome screen disabled for instant drawing
- *  - View-mode lock disabled (gridModeEnabled: false)
- *  - Transparent background matching the app theme
+ *  - Dark theme matching the app palette
+ *  - Snapshot persistence via editor.getSnapshot() / loadSnapshot()
+ *  - Debounced save (1s) to avoid excessive writes
  */
 
-import { useCallback, useRef, useState } from 'react'
-import { Excalidraw, MainMenu, WelcomeScreen } from '@excalidraw/excalidraw'
-import type { ExcalidrawImperativeAPI, ExcalidrawElement } from '@excalidraw/excalidraw/types'
+import { useCallback, useRef, useEffect } from 'react'
+import { Tldraw } from 'tldraw'
+import type { Editor } from 'tldraw'
+import 'tldraw/tldraw.css'
 
 interface DrawingCanvasProps {
   snapshot: object | null
@@ -25,80 +26,72 @@ export default function DrawingCanvas({
   onSave,
   visible
 }: DrawingCanvasProps): React.JSX.Element | null {
-  const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null)
+  const editorRef = useRef<Editor | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>()
 
-  // Debounced save on every change
-  const handleChange = useCallback(
-    (elements: readonly ExcalidrawElement[]) => {
-      if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(() => {
-        const state = excalidrawAPI?.getAppState()
-        onSave({
-          elements: JSON.parse(JSON.stringify(elements)),
-          appState: state
-            ? { viewBackgroundColor: state.viewBackgroundColor }
-            : {}
-        })
-      }, 1000)
+  // Debounced save: serialize snapshot from the editor
+  const scheduleSave = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      const editor = editorRef.current
+      if (!editor) return
+      try {
+        const snap = editor.getSnapshot()
+        onSave(snap)
+      } catch {
+        // Ignore serialization errors
+      }
+    }, 1000)
+  }, [onSave])
+
+  // When the editor mounts, load snapshot and subscribe to changes
+  const handleMount = useCallback(
+    (editor: Editor) => {
+      editorRef.current = editor
+
+      // Load previously saved snapshot if available
+      if (snapshot && typeof snapshot === 'object' && 'document' in snapshot) {
+        try {
+          editor.loadSnapshot(snapshot as Parameters<Editor['loadSnapshot']>[0])
+        } catch {
+          // Snapshot format mismatch — start fresh
+        }
+      }
+
+      // Listen for store changes and auto-save
+      const unsubscribe = editor.store.listen(
+        () => scheduleSave(),
+        { scope: 'document', source: 'user' }
+      )
+
+      return () => {
+        unsubscribe()
+        if (timerRef.current) clearTimeout(timerRef.current)
+      }
     },
-    [excalidrawAPI, onSave]
+    [snapshot, scheduleSave]
   )
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [])
 
   if (!visible) return null
 
-  // Parse initial data from snapshot
-  const initialData =
-    snapshot && typeof snapshot === 'object' && 'elements' in snapshot
-      ? (snapshot as { elements: ExcalidrawElement[] })
-      : undefined
-
-  const baseAppState = {
-    viewBackgroundColor: 'transparent',
-    theme: 'dark' as const,
-    // Disable the welcome/lock screen overlay
-    showWelcomeScreen: false,
-    // Ensure we're not in view-only mode
-    viewModeEnabled: false,
-    // Disable grid for cleaner look
-    gridModeEnabled: false
-  }
-
   return (
     <div
-      className="excalidraw-container relative"
+      className="tldraw-container relative"
       style={{ height: '50vh', minHeight: 350 }}
     >
-      <Excalidraw
-        excalidrawAPI={(api) => setExcalidrawAPI(api)}
-        initialData={
-          initialData
-            ? { elements: initialData.elements, appState: baseAppState }
-            : { elements: [], appState: baseAppState }
-        }
-        onChange={handleChange}
-        theme="dark"
-        UIOptions={{
-          canvasActions: {
-            loadScene: false,
-            toggleTheme: false
-          }
-        }}
-      >
-        {/* Empty WelcomeScreen to suppress the default one */}
-        <WelcomeScreen>
-          <WelcomeScreen.Center>
-            <WelcomeScreen.Center.Heading>
-              Draw freely
-            </WelcomeScreen.Center.Heading>
-          </WelcomeScreen.Center>
-        </WelcomeScreen>
-        <MainMenu>
-          <MainMenu.DefaultItems.Export />
-          <MainMenu.DefaultItems.SaveAsImage />
-          <MainMenu.DefaultItems.ClearCanvas />
-        </MainMenu>
-      </Excalidraw>
+      <Tldraw
+        onMount={handleMount}
+        forceMobile={false}
+        inferDarkMode={false}
+        options={{ maxPages: 1 }}
+      />
     </div>
   )
 }
