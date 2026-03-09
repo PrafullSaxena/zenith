@@ -5,7 +5,8 @@
  *  - Header: plugin icon + title + subtitle
  *  - Tab bar: Notes / Search / Knowledge
  *  - Notes tab: NoteList sidebar + NoteEditor + DrawingCanvas toggle
- *  - Search / Knowledge tabs: placeholders for Plans 04 and 06
+ *  - Search tab: SearchView with FTS5 search + AI Q&A
+ *  - Knowledge tab: KnowledgeGraph force-directed visualization
  *
  * Follows the same tab pattern as LaunchpadView.tsx.
  * Default-exported for React.lazy() compatibility in the plugin registry.
@@ -18,6 +19,7 @@ import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
 import DrawingCanvas from './DrawingCanvas'
 import KnowledgeGraph from './KnowledgeGraph'
+import SearchView from './SearchView'
 import type { NebulaTab } from '../../types/nebula'
 
 const TABS: { id: NebulaTab; label: string; icon: typeof FileText }[] = [
@@ -167,14 +169,7 @@ export default function NebulaView(): React.JSX.Element {
         )}
 
         {/* Search tab */}
-        {activeTab === 'search' && (
-          <div className="flex h-full items-center justify-center text-text-secondary">
-            <div className="text-center">
-              <Search size={32} className="mx-auto mb-2 opacity-40" />
-              <p className="text-sm">Search &amp; Q&amp;A will appear here</p>
-            </div>
-          </div>
-        )}
+        {activeTab === 'search' && <SearchView />}
 
         {/* Knowledge tab */}
         {activeTab === 'knowledge' && <KnowledgeGraph />}

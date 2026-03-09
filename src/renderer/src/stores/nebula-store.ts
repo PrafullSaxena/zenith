@@ -28,6 +28,8 @@ import { useTokenStore } from './token-store'
 
 // ── AI System Prompt ─────────────────────────────────────────────────
 
+const QA_SYSTEM_PROMPT = `You are a knowledgeable assistant. Answer the user's question using ONLY the provided note summaries as context. If the notes don't contain relevant information, say so. Be concise and cite which notes your answer is based on.`
+
 const SUMMARIZE_SYSTEM_PROMPT = `You are a knowledge assistant. Given a note's content, produce a JSON object with:
 1. "title": A concise title (max 10 words) capturing the note's main idea
 2. "summary": A 2-3 sentence summary of the key points
@@ -129,6 +131,8 @@ interface NebulaStore {
   setQaAnswer: (answer: string) => void
   setQaSessionId: (id: string | null) => void
   clearActiveNote: () => void
+  askQuestion: (question: string) => void
+  cancelQa: () => void
   triggerSummarization: (note: NoteFile) => void
   inferEdges: (noteId: string, topics: string[], connections: string[]) => void
   cleanup: () => void
@@ -316,6 +320,124 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
     set({ activeNoteId: null, activeNote: null })
   },
 
+  // ── AI Q&A ──────────────────────────────────────────────────────────
+
+  askQuestion: (question: string) => {
+    const agent = getNebulaAgent()
+    if (!agent) {
+      console.warn('[nebula-store] No AI agent configured for Q&A')
+      return
+    }
+
+    const sessionId = `nebula-qa-${Date.now()}`
+    let accumulated = ''
+
+    set({ qaSessionId: sessionId, qaAnswer: '', isSearching: true })
+
+    // First, search for relevant notes to build context
+    window.api.nebula
+      .searchNotes(question)
+      .then((results) => {
+        const searchResults = results as SearchResult[]
+        // Build context from top 5 results
+        const topResults = searchResults.slice(0, 5)
+        const contextString = topResults
+          .map((r, i) => `Note ${i + 1}: "${r.title}"\n${r.summary || 'No summary available'}`)
+          .join('\n\n')
+
+        const userPrompt = contextString
+          ? `Context from notes:\n\n${contextString}\n\nQuestion: ${question}`
+          : `No notes found matching the query. Question: ${question}`
+
+        set({ isSearching: false })
+
+        // Set up session-scoped IPC listeners (same pattern as summarization)
+        window.api.ai.onStreamChunk((data) => {
+          if (data.sessionId !== sessionId) return
+          accumulated += data.chunk
+          set({ qaAnswer: accumulated })
+        })
+
+        window.api.ai.onStreamDone((data) => {
+          if (data.sessionId !== sessionId) return
+
+          // Capture token usage
+          const tokensUsed = data.usage
+            ? data.usage.totalTokens
+            : Math.max(1, Math.ceil(accumulated.length / 4))
+          const isEstimated = data.usage ? data.usage.isEstimated : true
+          useTokenStore.getState().addEntry({
+            sessionId: data.sessionId,
+            providerId: agent.providerId,
+            providerName: agent.model,
+            tokensUsed,
+            isEstimated
+          })
+
+          set({ qaSessionId: null })
+          window.api.ai.removeStreamListeners()
+        })
+
+        window.api.ai.onStreamError((data) => {
+          if (data.sessionId !== sessionId) return
+          console.error('[nebula-store] Q&A error:', data.error)
+          set({ qaSessionId: null, qaAnswer: `Error: ${data.error}` })
+          window.api.ai.removeStreamListeners()
+        })
+
+        // Kick off AI analysis
+        window.api.ai
+          .startAnalysis(agent.providerId, agent.model, QA_SYSTEM_PROMPT, userPrompt, sessionId)
+          .catch((err) => {
+            console.error('[nebula-store] Failed to start Q&A:', err)
+            set({ qaSessionId: null, qaAnswer: 'Failed to start AI analysis.' })
+            window.api.ai.removeStreamListeners()
+          })
+      })
+      .catch(() => {
+        // Search failed — still try to answer without context
+        set({ isSearching: false })
+        const userPrompt = `No notes context available. Question: ${question}`
+
+        window.api.ai.onStreamChunk((data) => {
+          if (data.sessionId !== sessionId) return
+          accumulated += data.chunk
+          set({ qaAnswer: accumulated })
+        })
+
+        window.api.ai.onStreamDone((data) => {
+          if (data.sessionId !== sessionId) return
+          set({ qaSessionId: null })
+          window.api.ai.removeStreamListeners()
+        })
+
+        window.api.ai.onStreamError((data) => {
+          if (data.sessionId !== sessionId) return
+          set({ qaSessionId: null, qaAnswer: `Error: ${data.error}` })
+          window.api.ai.removeStreamListeners()
+        })
+
+        window.api.ai
+          .startAnalysis(agent.providerId, agent.model, QA_SYSTEM_PROMPT, userPrompt, sessionId)
+          .catch((err) => {
+            console.error('[nebula-store] Failed to start Q&A:', err)
+            set({ qaSessionId: null, qaAnswer: 'Failed to start AI analysis.' })
+            window.api.ai.removeStreamListeners()
+          })
+      })
+  },
+
+  cancelQa: () => {
+    const { qaSessionId } = get()
+    if (qaSessionId) {
+      window.api.ai.cancelAnalysis(qaSessionId).catch(() => {
+        // Ignore if cancel fails
+      })
+      window.api.ai.removeStreamListeners()
+      set({ qaSessionId: null })
+    }
+  },
+
   // ── AI Summarization ──────────────────────────────────────────────
 
   triggerSummarization: (note: NoteFile) => {
@@ -483,6 +605,6 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
     } catch {
       // Ignore if API not available
     }
-    set({ isSummarizing: false, summarizeSessionId: null })
+    set({ isSummarizing: false, summarizeSessionId: null, qaSessionId: null })
   }
 }))
