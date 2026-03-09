@@ -5,20 +5,20 @@
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** CodeReviewBot must work flawlessly — automated PR code review that connects to Bitbucket, fetches diffs, and posts inline AI-generated review comments
-**Current focus:** Phase 3 — CodeReviewBot Plugin
+**Current focus:** Phase 7 — Launchpad Plugin
 
 ## Current Position
 
-**Current Phase:** 03
-**Current Phase Name:** CodeReviewBot Plugin
-**Total Phases:** 6
-**Current Plan:** Not started
+**Current Phase:** 07
+**Current Phase Name:** Launchpad Plugin
+**Total Phases:** 7
+**Current Plan:** 02
 **Total Plans in Phase:** 4
-**Status:** Milestone complete
-**Last Activity:** 2026-03-06
-**Last Activity Description:** Phase 03 complete
+**Status:** In progress
+**Last Activity:** 2026-03-09
+**Last Activity Description:** Phase 07 Plan 01 complete — data foundation (types, catalogs, calculator, equivalences)
 
-**Progress:** [██████████] 100%
+**Progress:** [███░░░░░░░] 25%
 
 ## Performance Metrics
 
@@ -43,6 +43,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 03 P02 | 7min | 2 tasks | 2 files |
 | Phase 03 P03 | 3min | 2 tasks | 7 files |
 | Phase 03 P04 | 4min | 2 tasks | 7 files |
+| Phase 07 P01 | 5min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,10 @@ Recent decisions affecting current work:
 - [Phase 03]: Tab navigation with local useState for diff/review/history tabs rather than router-based sub-routes
 - [Phase 03]: Unified diff view with green/red line backgrounds; inline AI comment cards with severity-colored left borders
 - [Phase 03]: Agent fallback: if no defaultAgent configured, first provider with connected/hasApiKey status is used
+- [Phase 07]: Static curated pricing embedded as TypeScript constants — avoids AWS 300MB+ bulk JSON and network dependencies
+- [Phase 07]: HOURS_PER_MONTH = 730 exported from calculator.ts as single source of truth (AWS standard assumption)
+- [Phase 07]: pricePerHour encoded on SelectOption for compute tiers — keeps pricing co-located with display label
+- [Phase 07]: Azure fixed monthly prices stored as pricePerHour = monthlyPrice/730 for uniform calculation path
 
 ### Pending Todos
 
@@ -99,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-06T20:44:19.603Z
-**Stopped at:** Completed 03-04-PLAN.md
+**Last session:** 2026-03-09T01:46:12Z
+**Stopped at:** Completed 07-01-PLAN.md
 **Resume file:** None
