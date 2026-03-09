@@ -3,8 +3,9 @@
  *
  * Layout:
  *  - Header: plugin title + tab navigation
- *  - Estimator tab: ProviderSelector (no provider) or 2-col layout (provider set)
- *    - Left: ServiceCatalog + ResourceConfigurator (scrollable)
+ *  - Estimator tab: ProviderSelector (no provider) or 3-col layout (provider set)
+ *    - Left: ServiceCatalog with fuzzy search (narrow sidebar, scrollable)
+ *    - Center: ResourceConfigurator (main content, scrollable)
  *    - Right: EstimationSummary (sticky)
  *  - ai-advisor: AiAdvisor (chat + streaming + suggestion apply)
  *  - history: EstimationHistory (save/load/delete)
@@ -107,20 +108,20 @@ export default function LaunchpadView(): React.JSX.Element {
               // No provider selected — show full-width provider selector
               <ProviderSelector onSelect={handleProviderSelect} />
             ) : (
-              // Provider selected — two-column layout
+              // Provider selected — three-column layout
               <div className="flex h-full overflow-hidden">
-                {/* Left: ServiceCatalog + ResourceConfigurator (scrollable) */}
-                <div className="flex flex-1 flex-col overflow-hidden border-r border-border">
-                  <div className="flex-1 overflow-y-auto">
-                    <ServiceCatalog provider={provider} />
-                  </div>
-                  <div className="border-t border-border overflow-y-auto max-h-64">
-                    <ResourceConfigurator />
-                  </div>
+                {/* Left: ServiceCatalog (narrow sidebar with search) */}
+                <div className="w-64 shrink-0 overflow-y-auto border-r border-border">
+                  <ServiceCatalog provider={provider} />
+                </div>
+
+                {/* Center: ResourceConfigurator (main content area) */}
+                <div className="flex-1 overflow-y-auto">
+                  <ResourceConfigurator />
                 </div>
 
                 {/* Right: EstimationSummary (sticky) */}
-                <div className="w-80 shrink-0 overflow-y-auto">
+                <div className="w-72 shrink-0 overflow-y-auto border-l border-border">
                   <EstimationSummary />
                 </div>
               </div>

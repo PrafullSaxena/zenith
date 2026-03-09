@@ -94,6 +94,92 @@ export const AWS_CATALOG: ProviderCatalog = {
       ]
     },
     {
+      id: 'containers',
+      name: 'Containers',
+      services: [
+        {
+          id: 'eks',
+          name: 'EKS',
+          description: 'Elastic Kubernetes Service — managed Kubernetes control plane',
+          configSchema: {
+            clusters: {
+              type: 'number',
+              label: 'Number of clusters',
+              default: 1,
+              min: 1,
+              max: 100
+            },
+            nodeInstanceType: {
+              type: 'select',
+              label: 'Node Instance Type',
+              options: [
+                // As of 2026-01, EKS cluster: $0.10/hr + node EC2 costs
+                { label: 't3.medium (2 vCPU, 4 GB)  — $0.0416/hr', value: 't3.medium', pricePerHour: 0.0416 },
+                { label: 't3.large  (2 vCPU, 8 GB)  — $0.0832/hr', value: 't3.large',  pricePerHour: 0.0832 },
+                { label: 'm5.large  (2 vCPU, 8 GB)  — $0.096/hr',  value: 'm5.large',  pricePerHour: 0.096  },
+                { label: 'm5.xlarge (4 vCPU, 16 GB) — $0.192/hr',  value: 'm5.xlarge', pricePerHour: 0.192  },
+                { label: 'm5.2xlarge (8 vCPU, 32 GB) — $0.384/hr', value: 'm5.2xlarge', pricePerHour: 0.384 }
+              ]
+            },
+            nodeCount: {
+              type: 'number',
+              label: 'Worker nodes per cluster',
+              default: 3,
+              min: 1,
+              max: 500
+            }
+            // EKS control plane: $0.10/hr per cluster ($73/month)
+            // Node costs are EC2 on-demand prices
+          }
+        },
+        {
+          id: 'fargate',
+          name: 'Fargate',
+          description: 'Serverless compute for ECS/EKS — run containers without managing servers',
+          configSchema: {
+            tasks: {
+              type: 'number',
+              label: 'Number of tasks',
+              default: 5,
+              min: 1,
+              max: 10000
+            },
+            vcpu: {
+              type: 'select',
+              label: 'vCPU per task',
+              options: [
+                // As of 2026-01, source: https://aws.amazon.com/fargate/pricing/
+                { label: '0.25 vCPU — $0.04048/hr', value: '0.25', pricePerHour: 0.04048 },
+                { label: '0.50 vCPU — $0.04856/hr', value: '0.5',  pricePerHour: 0.04856 },
+                { label: '1 vCPU    — $0.04856/hr', value: '1',    pricePerHour: 0.04856 },
+                { label: '2 vCPU    — $0.09712/hr', value: '2',    pricePerHour: 0.09712 },
+                { label: '4 vCPU    — $0.19424/hr', value: '4',    pricePerHour: 0.19424 }
+              ]
+            },
+            memoryGb: {
+              type: 'select',
+              label: 'Memory per task (GB)',
+              options: [
+                { label: '0.5 GB — $0.004445/hr', value: '0.5', pricePerHour: 0.004445 },
+                { label: '1 GB   — $0.004445/hr', value: '1',   pricePerHour: 0.004445 },
+                { label: '2 GB   — $0.008890/hr', value: '2',   pricePerHour: 0.008890 },
+                { label: '4 GB   — $0.017780/hr', value: '4',   pricePerHour: 0.017780 },
+                { label: '8 GB   — $0.035560/hr', value: '8',   pricePerHour: 0.035560 }
+              ]
+            },
+            hoursPerMonth: {
+              type: 'number',
+              label: 'Hours running per month',
+              default: 730,
+              min: 1,
+              max: 744
+            }
+            // Fargate pricing: per-vCPU-hour + per-GB-memory-hour
+          }
+        }
+      ]
+    },
+    {
       id: 'storage',
       name: 'Storage',
       services: [

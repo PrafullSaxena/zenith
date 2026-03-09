@@ -85,6 +85,89 @@ export const AZURE_CATALOG: ProviderCatalog = {
       ]
     },
     {
+      id: 'containers',
+      name: 'Containers',
+      services: [
+        {
+          id: 'aks',
+          name: 'AKS',
+          description: 'Azure Kubernetes Service — managed Kubernetes with free control plane',
+          configSchema: {
+            clusters: {
+              type: 'number',
+              label: 'Number of clusters',
+              default: 1,
+              min: 1,
+              max: 100
+            },
+            nodeInstanceType: {
+              type: 'select',
+              label: 'Node VM Size',
+              options: [
+                // As of 2026-01, AKS control plane is free; node costs are Azure VM prices
+                { label: 'B2s   (2 vCPU, 4 GB)   — $0.042/hr', value: 'B2s',    pricePerHour: 0.042 },
+                { label: 'D2s_v3 (2 vCPU, 8 GB)  — $0.096/hr', value: 'D2s_v3', pricePerHour: 0.096 },
+                { label: 'D4s_v3 (4 vCPU, 16 GB) — $0.192/hr', value: 'D4s_v3', pricePerHour: 0.192 },
+                { label: 'D8s_v3 (8 vCPU, 32 GB) — $0.384/hr', value: 'D8s_v3', pricePerHour: 0.384 },
+                { label: 'F4s_v2 (4 vCPU, 8 GB)  — $0.170/hr', value: 'F4s_v2', pricePerHour: 0.170 }
+              ]
+            },
+            nodeCount: {
+              type: 'number',
+              label: 'Worker nodes per cluster',
+              default: 3,
+              min: 1,
+              max: 500
+            }
+            // AKS control plane: free for standard tier
+            // Node costs are Azure VM on-demand prices
+          }
+        },
+        {
+          id: 'azure-container-instances',
+          name: 'Azure Container Instances',
+          description: 'Serverless containers — run containers without managing VMs or orchestrators',
+          configSchema: {
+            tasks: {
+              type: 'number',
+              label: 'Number of container groups',
+              default: 5,
+              min: 1,
+              max: 10000
+            },
+            vcpu: {
+              type: 'select',
+              label: 'vCPU per container',
+              options: [
+                // As of 2026-01, source: https://azure.microsoft.com/pricing/details/container-instances/
+                { label: '1 vCPU  — $0.04850/hr', value: '1',  pricePerHour: 0.04850 },
+                { label: '2 vCPU  — $0.09700/hr', value: '2',  pricePerHour: 0.09700 },
+                { label: '4 vCPU  — $0.19400/hr', value: '4',  pricePerHour: 0.19400 }
+              ]
+            },
+            memoryGb: {
+              type: 'select',
+              label: 'Memory per container (GB)',
+              options: [
+                { label: '0.5 GB — $0.00265/hr', value: '0.5', pricePerHour: 0.00265 },
+                { label: '1 GB   — $0.00530/hr', value: '1',   pricePerHour: 0.00530 },
+                { label: '2 GB   — $0.01060/hr', value: '2',   pricePerHour: 0.01060 },
+                { label: '4 GB   — $0.02120/hr', value: '4',   pricePerHour: 0.02120 },
+                { label: '8 GB   — $0.04240/hr', value: '8',   pricePerHour: 0.04240 }
+              ]
+            },
+            hoursPerMonth: {
+              type: 'number',
+              label: 'Hours running per month',
+              default: 730,
+              min: 1,
+              max: 744
+            }
+          }
+        }
+      ]
+    },
+    {
       id: 'storage',
       name: 'Storage',
       services: [

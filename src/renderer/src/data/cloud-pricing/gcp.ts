@@ -85,6 +85,91 @@ export const GCP_CATALOG: ProviderCatalog = {
       ]
     },
     {
+      id: 'containers',
+      name: 'Containers',
+      services: [
+        {
+          id: 'gke',
+          name: 'GKE',
+          description: 'Google Kubernetes Engine — managed Kubernetes with Autopilot or Standard mode',
+          configSchema: {
+            clusters: {
+              type: 'number',
+              label: 'Number of clusters',
+              default: 1,
+              min: 1,
+              max: 100
+            },
+            nodeInstanceType: {
+              type: 'select',
+              label: 'Node Machine Type',
+              options: [
+                // As of 2026-01, GKE Standard cluster management: $0.10/hr ($73/month)
+                // Node costs are Compute Engine on-demand prices
+                { label: 'e2-standard-2 (2 vCPU, 8 GB)  — $0.067/hr', value: 'e2-standard-2', pricePerHour: 0.067 },
+                { label: 'e2-standard-4 (4 vCPU, 16 GB) — $0.134/hr', value: 'e2-standard-4', pricePerHour: 0.134 },
+                { label: 'n2-standard-2 (2 vCPU, 8 GB)  — $0.097/hr', value: 'n2-standard-2', pricePerHour: 0.097 },
+                { label: 'n2-standard-4 (4 vCPU, 16 GB) — $0.194/hr', value: 'n2-standard-4', pricePerHour: 0.194 },
+                { label: 'n2-standard-8 (8 vCPU, 32 GB) — $0.388/hr', value: 'n2-standard-8', pricePerHour: 0.388 }
+              ]
+            },
+            nodeCount: {
+              type: 'number',
+              label: 'Worker nodes per cluster',
+              default: 3,
+              min: 1,
+              max: 500
+            }
+            // GKE Standard cluster: $0.10/hr per cluster ($73/month)
+            // GKE Autopilot: per-pod pricing (vCPU + memory), simplified here as Standard
+          }
+        },
+        {
+          id: 'cloud-run-jobs',
+          name: 'Cloud Run (Containers)',
+          description: 'Serverless containers — deploy and run containers without cluster management',
+          configSchema: {
+            tasks: {
+              type: 'number',
+              label: 'Number of container instances',
+              default: 5,
+              min: 1,
+              max: 10000
+            },
+            vcpu: {
+              type: 'select',
+              label: 'vCPU per instance',
+              options: [
+                // As of 2026-01, source: https://cloud.google.com/run/pricing
+                { label: '1 vCPU  — $0.02400/hr', value: '1',  pricePerHour: 0.02400 },
+                { label: '2 vCPU  — $0.04800/hr', value: '2',  pricePerHour: 0.04800 },
+                { label: '4 vCPU  — $0.09600/hr', value: '4',  pricePerHour: 0.09600 },
+                { label: '8 vCPU  — $0.19200/hr', value: '8',  pricePerHour: 0.19200 }
+              ]
+            },
+            memoryGb: {
+              type: 'select',
+              label: 'Memory per instance (GB)',
+              options: [
+                { label: '0.5 GB — $0.00250/hr', value: '0.5', pricePerHour: 0.00250 },
+                { label: '1 GB   — $0.00250/hr', value: '1',   pricePerHour: 0.00250 },
+                { label: '2 GB   — $0.00500/hr', value: '2',   pricePerHour: 0.00500 },
+                { label: '4 GB   — $0.01000/hr', value: '4',   pricePerHour: 0.01000 },
+                { label: '8 GB   — $0.02000/hr', value: '8',   pricePerHour: 0.02000 }
+              ]
+            },
+            hoursPerMonth: {
+              type: 'number',
+              label: 'Hours running per month',
+              default: 730,
+              min: 1,
+              max: 744
+            }
+          }
+        }
+      ]
+    },
+    {
       id: 'storage',
       name: 'Storage',
       services: [

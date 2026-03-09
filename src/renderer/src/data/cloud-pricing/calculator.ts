@@ -366,6 +366,92 @@ function calcCosmosDb(config: ResourceConfig): ServiceCostResult {
   }
 }
 
+// ─── Kubernetes cluster pricing (control plane + worker nodes) ────────────────
+
+/**
+ * Managed Kubernetes: EKS / GKE / AKS
+ * Formula: (controlPlanePricePerHour * HOURS_PER_MONTH * clusters) + (nodePrice * HOURS_PER_MONTH * nodeCount * clusters)
+ * AKS control plane is free ($0.00), EKS/GKE: $0.10/hr
+ */
+function calcKubernetesCluster(config: ResourceConfig, nodeTypeKey: string, nodeCountKey: string, clusterCountKey: string, controlPlanePricePerHour: number): ServiceCostResult {
+  try {
+    const nodeTypeValue = config[nodeTypeKey]
+    const nodePricePerHour = (nodeTypeValue as SelectOption)?.pricePerHour ?? 0
+    const nodeCount = num(config[nodeCountKey], 3)
+    const clusters = num(config[clusterCountKey], 1)
+
+    const controlPlaneCost = controlPlanePricePerHour * HOURS_PER_MONTH * clusters
+    const nodeCost = nodePricePerHour * HOURS_PER_MONTH * nodeCount * clusters
+    const monthly = controlPlaneCost + nodeCost
+
+    const breakdown: CostLineItem[] = []
+    if (controlPlanePricePerHour > 0) {
+      breakdown.push({
+        label: `${clusters}x cluster control plane @ $${controlPlanePricePerHour}/hr × ${HOURS_PER_MONTH} hrs`,
+        unitPrice: controlPlanePricePerHour,
+        quantity: clusters,
+        monthly: controlPlaneCost
+      })
+    }
+    if (nodePricePerHour > 0) {
+      breakdown.push({
+        label: `${nodeCount * clusters} worker nodes @ $${nodePricePerHour.toFixed(4)}/hr × ${HOURS_PER_MONTH} hrs`,
+        unitPrice: nodePricePerHour,
+        quantity: nodeCount * clusters,
+        monthly: nodeCost
+      })
+    }
+
+    return { monthly, yearly: monthly * 12, breakdown }
+  } catch {
+    return zeroCost()
+  }
+}
+
+// ─── Serverless container pricing (vCPU + memory per task) ───────────────────
+
+/**
+ * Serverless containers: Fargate / Cloud Run containers / Azure Container Instances
+ * Formula: (vcpuPrice + memoryPrice) * hoursPerMonth * tasks
+ */
+function calcServerlessContainer(config: ResourceConfig): ServiceCostResult {
+  try {
+    const tasks = num(config['tasks'], 1)
+    const vcpuValue = config['vcpu']
+    const memoryValue = config['memoryGb']
+    const hoursPerMonth = num(config['hoursPerMonth'], HOURS_PER_MONTH)
+
+    const vcpuPricePerHour = (vcpuValue as SelectOption)?.pricePerHour ?? 0
+    const memoryPricePerHour = (memoryValue as SelectOption)?.pricePerHour ?? 0
+
+    const vcpuCost = vcpuPricePerHour * hoursPerMonth * tasks
+    const memoryCost = memoryPricePerHour * hoursPerMonth * tasks
+    const monthly = vcpuCost + memoryCost
+
+    const breakdown: CostLineItem[] = []
+    if (vcpuPricePerHour > 0) {
+      breakdown.push({
+        label: `${tasks} tasks × vCPU @ $${vcpuPricePerHour.toFixed(5)}/hr × ${hoursPerMonth} hrs`,
+        unitPrice: vcpuPricePerHour,
+        quantity: tasks,
+        monthly: vcpuCost
+      })
+    }
+    if (memoryPricePerHour > 0) {
+      breakdown.push({
+        label: `${tasks} tasks × memory @ $${memoryPricePerHour.toFixed(5)}/hr × ${hoursPerMonth} hrs`,
+        unitPrice: memoryPricePerHour,
+        quantity: tasks,
+        monthly: memoryCost
+      })
+    }
+
+    return { monthly, yearly: monthly * 12, breakdown }
+  } catch {
+    return zeroCost()
+  }
+}
+
 // ─── Main export: calculateServiceCost ───────────────────────────────────────
 
 /**
@@ -396,6 +482,14 @@ export function calculateServiceCost(
       case 'lambda':
         // $0.20 per 1M requests, $0.0000166667 per GB-second
         return calcServerlessFunction(config, 0.20, 0.0000166667)
+
+      // ── AWS Containers ───────────────────────────────────────────────────────
+      case 'eks':
+        // EKS control plane: $0.10/hr + worker node EC2 costs
+        return calcKubernetesCluster(config, 'nodeInstanceType', 'nodeCount', 'clusters', 0.10)
+
+      case 'fargate':
+        return calcServerlessContainer(config)
 
       // ── AWS Storage ─────────────────────────────────────────────────────────
       case 's3':
@@ -432,6 +526,14 @@ export function calculateServiceCost(
         // $0.40 per million invocations, $0.0000025 per GB-second
         return calcServerlessFunction(config, 0.40, 0.0000025)
 
+      // ── GCP Containers ───────────────────────────────────────────────────────
+      case 'gke':
+        // GKE Standard cluster: $0.10/hr per cluster + node Compute Engine costs
+        return calcKubernetesCluster(config, 'nodeInstanceType', 'nodeCount', 'clusters', 0.10)
+
+      case 'cloud-run-jobs':
+        return calcServerlessContainer(config)
+
       // ── GCP Storage ─────────────────────────────────────────────────────────
       case 'cloud-storage':
         // $0.020/GB storage, $0.08/GB egress
@@ -466,6 +568,14 @@ export function calculateServiceCost(
       case 'azure-functions':
         // $0.20 per million executions, $0.000016 per GB-second
         return calcServerlessFunction(config, 0.20, 0.000016)
+
+      // ── Azure Containers ─────────────────────────────────────────────────────
+      case 'aks':
+        // AKS control plane is free ($0.00/hr) + node Azure VM costs
+        return calcKubernetesCluster(config, 'nodeInstanceType', 'nodeCount', 'clusters', 0.00)
+
+      case 'azure-container-instances':
+        return calcServerlessContainer(config)
 
       // ── Azure Storage ────────────────────────────────────────────────────────
       case 'blob-storage':

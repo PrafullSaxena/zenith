@@ -21,7 +21,9 @@ export const SERVICE_EQUIVALENCES: Record<string, Record<CloudProvider, string>>
   ebs:           { aws: 'ebs',           gcp: 'persistent-disk', azure: 'managed-disk'     },
   cloudfront:    { aws: 'cloudfront',    gcp: 'cloud-cdn',       azure: 'azure-cdn'        },
   'data-transfer':{ aws: 'data-transfer', gcp: 'data-transfer',  azure: 'data-transfer'   },
-  'api-gateway': { aws: 'api-gateway',   gcp: 'cloud-run',       azure: 'app-service'      }
+  'api-gateway': { aws: 'api-gateway',   gcp: 'cloud-run',       azure: 'app-service'      },
+  eks:           { aws: 'eks',           gcp: 'gke',             azure: 'aks'              },
+  fargate:       { aws: 'fargate',       gcp: 'cloud-run-jobs',  azure: 'azure-container-instances' }
 }
 
 /**

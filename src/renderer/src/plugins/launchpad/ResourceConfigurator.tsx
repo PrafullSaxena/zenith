@@ -8,9 +8,80 @@
  *
  * Reads selected services from the store; writes config changes back via updateServiceConfig.
  */
+import { useState, useCallback, useEffect } from 'react'
+import { Settings2 } from 'lucide-react'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { getCatalog } from '../../data/cloud-pricing/index'
 import type { ResourceConfig, ConfigField, SelectOption } from '../../types/launchpad'
+
+/**
+ * NumberInput — controlled number field with local string state.
+ * Allows natural typing (clearing, decimal entry) while syncing
+ * the parsed numeric value to the store on change.
+ */
+function NumberInput({
+  value,
+  min,
+  max,
+  onChange
+}: {
+  value: number
+  min?: number
+  max?: number
+  onChange: (n: number) => void
+}): React.JSX.Element {
+  const [localValue, setLocalValue] = useState<string>(String(value))
+
+  // Sync external value changes (e.g., AI advisor applying suggestions)
+  useEffect(() => {
+    setLocalValue(String(value))
+  }, [value])
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value
+      setLocalValue(raw)
+
+      const parsed = parseFloat(raw)
+      if (!isNaN(parsed) && isFinite(parsed)) {
+        // Clamp to bounds if provided
+        let clamped = parsed
+        if (min !== undefined && clamped < min) clamped = min
+        if (max !== undefined && clamped > max) clamped = max
+        onChange(clamped)
+      }
+    },
+    [onChange, min, max]
+  )
+
+  const handleBlur = useCallback(() => {
+    // On blur, normalize the display value
+    const parsed = parseFloat(localValue)
+    if (isNaN(parsed) || !isFinite(parsed)) {
+      const fallback = min ?? 0
+      setLocalValue(String(fallback))
+      onChange(fallback)
+    } else {
+      let clamped = parsed
+      if (min !== undefined && clamped < min) clamped = min
+      if (max !== undefined && clamped > max) clamped = max
+      setLocalValue(String(clamped))
+      onChange(clamped)
+    }
+  }, [localValue, min, max, onChange])
+
+  return (
+    <input
+      type="number"
+      value={localValue}
+      min={min}
+      max={max}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      className="w-full rounded-md border border-border bg-bg-primary px-2.5 py-1.5 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+    />
+  )
+}
 
 export default function ResourceConfigurator(): React.JSX.Element {
   const provider = useLaunchpadStore((s) => s.provider)
@@ -19,10 +90,14 @@ export default function ResourceConfigurator(): React.JSX.Element {
 
   if (selectedServices.length === 0) {
     return (
-      <div className="flex items-center justify-center p-6">
-        <p className="text-xs text-text-secondary/60 italic">
-          Select services from the catalog to configure
-        </p>
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center max-w-xs">
+          <Settings2 size={28} className="mx-auto mb-3 text-text-secondary/20" />
+          <p className="text-sm text-text-secondary/60">No services selected</p>
+          <p className="mt-1 text-xs text-text-secondary/40">
+            Select services from the catalog on the left to configure their resources
+          </p>
+        </div>
       </div>
     )
   }
@@ -44,7 +119,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
     serviceId: string,
     currentConfig: ResourceConfig,
     fieldKey: string,
-    rawValue: string | SelectOption
+    rawValue: number | SelectOption
   ) => {
     updateServiceConfig(serviceId, { ...currentConfig, [fieldKey]: rawValue })
   }
@@ -55,7 +130,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
         Resource Configuration
       </p>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         {selectedServices.map((sel) => {
           const service = findService(sel.serviceId)
           if (!service) return null
@@ -68,10 +143,13 @@ export default function ResourceConfigurator(): React.JSX.Element {
               {/* Card header */}
               <p className="mb-3 text-sm font-semibold text-text-primary border-b border-border pb-2">
                 {service.name}
+                <span className="ml-2 text-xs font-normal text-text-secondary/50">
+                  {service.description}
+                </span>
               </p>
 
-              {/* Config fields */}
-              <div className="flex flex-col gap-3">
+              {/* Config fields — grid layout for better space usage */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {Object.entries(service.configSchema).map(([key, field]: [string, ConfigField]) => {
                   const currentValue = sel.config[key]
 
@@ -101,7 +179,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
                               sel.serviceId,
                               sel.config,
                               key,
-                              selectedOption ?? e.target.value
+                              selectedOption ?? ({ value: e.target.value, label: e.target.value } as SelectOption)
                             )
                           }}
                           className="w-full rounded-md border border-border bg-bg-primary px-2.5 py-1.5 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
@@ -131,20 +209,13 @@ export default function ResourceConfigurator(): React.JSX.Element {
                             {field.label}
                           </label>
                         )}
-                        <input
-                          type="number"
+                        <NumberInput
                           value={numValue}
                           min={field.min}
                           max={field.max}
-                          onChange={(e) =>
-                            handleFieldChange(
-                              sel.serviceId,
-                              sel.config,
-                              key,
-                              e.target.value
-                            )
+                          onChange={(n) =>
+                            handleFieldChange(sel.serviceId, sel.config, key, n)
                           }
-                          className="w-full rounded-md border border-border bg-bg-primary px-2.5 py-1.5 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                         />
                       </div>
                     )
