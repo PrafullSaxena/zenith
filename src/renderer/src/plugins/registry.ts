@@ -125,6 +125,16 @@ export const PLUGINS: readonly PluginDefinition[] = [
       }
     ],
     defaultAgent: null
+  },
+  {
+    id: 'launchpad',
+    name: 'Launchpad',
+    description: 'Cloud cost estimation with AI-powered recommendations',
+    icon: 'Rocket',
+    route: '/launchpad',
+    component: React.lazy(() => import('./launchpad/LaunchpadView')),
+    settingsSchema: [],
+    defaultAgent: null
   }
 ] as const
 

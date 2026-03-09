@@ -4,7 +4,7 @@ import type { ComponentType, LazyExoticComponent } from 'react'
  * String literal union of all compiled-in plugin identifiers.
  * Used to enforce type-safe plugin references throughout the app.
  */
-export type PluginId = 'code-review-bot' | 'db-inspector' | 'astro-patch' | 'prompt-builder'
+export type PluginId = 'code-review-bot' | 'db-inspector' | 'astro-patch' | 'prompt-builder' | 'launchpad'
 
 /**
  * Supported field types for plugin settings forms.
