@@ -1,10 +1,31 @@
 /**
  * ERDiagram — Select tables and generate Mermaid ER diagrams.
- * Features: fuzzy search, code/visual toggle, editable code mode.
+ * Features: fuzzy search, code/visual toggle, editable code mode,
+ * relationship inference (convention-based + AI-powered).
+ *
+ * All three modes (FK Only, Convention, AI Inferred) are generated once
+ * on "Generate ER Diagram". Switching modes swaps cached syntax instantly.
  */
-import React, { useState, useCallback, useMemo } from 'react'
-import { GitFork, Copy, Check, Loader2, Image, Code2, Search, RefreshCw } from 'lucide-react'
-import type { TableInfo, ERDiagramSession } from '../../types/database'
+import React, { useState, useCallback, useMemo, useRef } from 'react'
+import {
+  GitFork,
+  Copy,
+  Check,
+  Loader2,
+  Image,
+  Code2,
+  Search,
+  RefreshCw,
+  Sparkles,
+  Link2,
+  FileDown
+} from 'lucide-react'
+import type {
+  TableInfo,
+  ERDiagramSession,
+  RelationshipMode,
+  ERInferenceStatus
+} from '../../types/database'
 import MermaidRenderer from './MermaidRenderer'
 
 interface ERDiagramProps {
@@ -15,6 +36,13 @@ interface ERDiagramProps {
   onGenerate: () => Promise<void>
   session: ERDiagramSession | null
   hasConnection: boolean
+  hasAgent: boolean
+  inferenceStatus: ERInferenceStatus
+  relationshipMode: RelationshipMode
+  onModeChange: (mode: RelationshipMode) => void
+  inferredCount: number
+  connectionName?: string
+  schema?: string
 }
 
 /** Fuzzy match: every character in query appears in order in target. */
@@ -28,6 +56,12 @@ function fuzzyMatch(query: string, target: string): boolean {
   return qi === q.length
 }
 
+const MODES: { id: RelationshipMode; label: string; icon: typeof Link2; needsAgent?: boolean }[] = [
+  { id: 'fk-only', label: 'FK Only', icon: Link2 },
+  { id: 'convention', label: 'Convention', icon: GitFork },
+  { id: 'ai', label: 'AI Inferred', icon: Sparkles, needsAgent: true }
+]
+
 export default function ERDiagram({
   tables,
   selectedTables,
@@ -35,9 +69,18 @@ export default function ERDiagram({
   onSetTables,
   onGenerate,
   session,
-  hasConnection
+  hasConnection,
+  hasAgent,
+  inferenceStatus,
+  relationshipMode,
+  onModeChange,
+  inferredCount,
+  connectionName,
+  schema
 }: ERDiagramProps): React.JSX.Element {
+  const diagramRef = useRef<HTMLDivElement>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
   const [copied, setCopied] = useState(false)
   const [tableSearch, setTableSearch] = useState('')
   const [viewMode, setViewMode] = useState<'visual' | 'code'>('visual')
@@ -62,6 +105,15 @@ export default function ERDiagram({
     }
   }
 
+  /** Mode switch just swaps cached syntax — no re-generation. */
+  const handleModeChange = useCallback(
+    (newMode: RelationshipMode) => {
+      setEditedSyntax(null)
+      onModeChange(newMode)
+    },
+    [onModeChange]
+  )
+
   const handleCopy = useCallback(() => {
     if (currentSyntax) {
       navigator.clipboard.writeText(currentSyntax)
@@ -80,8 +132,77 @@ export default function ERDiagram({
     setViewMode('visual')
   }, [editableCode])
 
+  const handleExportPdf = useCallback(async () => {
+    const svgEl = diagramRef.current?.querySelector('svg')
+    if (!svgEl) return
+
+    setIsExporting(true)
+    try {
+      // Clone SVG and set explicit dimensions for canvas rendering
+      const clone = svgEl.cloneNode(true) as SVGSVGElement
+      const bbox = svgEl.getBBox()
+      const width = Math.ceil(bbox.width + bbox.x * 2) || svgEl.clientWidth || 800
+      const height = Math.ceil(bbox.height + bbox.y * 2) || svgEl.clientHeight || 600
+      clone.setAttribute('width', String(width))
+      clone.setAttribute('height', String(height))
+
+      // SVG → blob → Image → Canvas → PNG
+      const svgData = new XMLSerializer().serializeToString(clone)
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(svgBlob)
+
+      const img = new window.Image()
+      img.src = url
+      await new Promise<void>((res, rej) => {
+        img.onload = () => res()
+        img.onerror = rej
+      })
+
+      const scale = 2 // 2x for crisp PDF
+      const canvas = document.createElement('canvas')
+      canvas.width = width * scale
+      canvas.height = height * scale
+      const ctx = canvas.getContext('2d')!
+      ctx.fillStyle = '#0f172a'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.scale(scale, scale)
+      ctx.drawImage(img, 0, 0, width, height)
+      URL.revokeObjectURL(url)
+
+      const pngDataUrl = canvas.toDataURL('image/png')
+
+      await window.api.db.exportErDiagramPdf({
+        imageDataUrl: pngDataUrl,
+        width,
+        height,
+        connectionName: connectionName ?? 'Unknown',
+        schema: schema ?? '',
+        tableCount: selectedTables.length,
+        relationshipMode,
+        generatedAt: session?.generatedAt ?? new Date().toISOString()
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }, [connectionName, schema, selectedTables.length, relationshipMode, session?.generatedAt])
+
   const allSelected = tables.length > 0 && selectedTables.length === tables.length
   const noneSelected = selectedTables.length === 0
+  const isInferring = inferenceStatus === 'streaming' || inferenceStatus === 'inferring'
+
+  // Show AI loading indicator when AI mode selected but results not yet ready
+  const aiPending = relationshipMode === 'ai' && isInferring
+
+  // Count inferred by source
+  const inferredSummary = useMemo(() => {
+    if (!session?.inferredRelationships?.length) return null
+    const conv = session.inferredRelationships.filter((r) => r.source === 'convention').length
+    const ai = session.inferredRelationships.filter((r) => r.source === 'ai').length
+    const parts: string[] = []
+    if (conv > 0) parts.push(`${conv} convention`)
+    if (ai > 0) parts.push(`${ai} AI`)
+    return parts.join(', ')
+  }, [session?.inferredRelationships])
 
   return (
     <div className="flex h-full flex-col">
@@ -144,6 +265,43 @@ export default function ERDiagram({
           </>
         )}
 
+        {/* Relationship mode selector */}
+        {hasConnection && tables.length > 0 && (
+          <div className="mt-3 flex items-center gap-1.5">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-text-secondary mr-1">
+              Relationships:
+            </span>
+            <div className="flex rounded-lg border border-border overflow-hidden">
+              {MODES.map((mode) => {
+                const Icon = mode.icon
+                const isActive = relationshipMode === mode.id
+                const isDisabled = mode.needsAgent && !hasAgent
+                return (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => !isDisabled && handleModeChange(mode.id)}
+                    disabled={isDisabled}
+                    title={isDisabled ? 'Requires AI agent — configure in Settings' : undefined}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-[11px] transition-colors ${
+                      mode.id !== 'fk-only' ? 'border-l border-border' : ''
+                    } ${
+                      isActive
+                        ? 'bg-accent/15 text-accent'
+                        : isDisabled
+                          ? 'text-text-secondary/30 cursor-not-allowed'
+                          : 'text-text-secondary hover:text-text-primary'
+                    }`}
+                  >
+                    <Icon size={11} />
+                    {mode.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="mt-3 flex items-center gap-2">
           <button
             type="button"
@@ -167,6 +325,15 @@ export default function ERDiagram({
               >
                 {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
                 {copied ? 'Copied!' : 'Copy Mermaid'}
+              </button>
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                className="flex items-center gap-1 rounded-lg bg-surface-elevated px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary disabled:opacity-50"
+              >
+                {isExporting ? <Loader2 size={12} className="animate-spin" /> : <FileDown size={12} />}
+                Export PDF
               </button>
 
               {/* View mode toggle */}
@@ -199,6 +366,32 @@ export default function ERDiagram({
             </>
           )}
         </div>
+
+        {/* Inferred relationships badge */}
+        {inferredCount > 0 && inferredSummary && (
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-accent/80">
+            <Sparkles size={11} />
+            <span>
+              {inferredCount} inferred relationship{inferredCount !== 1 ? 's' : ''}
+              {' '}({inferredSummary})
+            </span>
+          </div>
+        )}
+
+        {/* AI inference streaming indicator */}
+        {aiPending && (
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-text-secondary">
+            <Loader2 size={11} className="animate-spin" />
+            <span>AI inference in progress… Convention results shown.</span>
+          </div>
+        )}
+
+        {/* AI inference error */}
+        {inferenceStatus === 'error' && (
+          <p className="mt-2 text-[11px] text-red-400">
+            AI inference failed. Convention-based results still shown.
+          </p>
+        )}
       </div>
 
       {/* Diagram render area */}
@@ -211,16 +404,42 @@ export default function ERDiagram({
               <p className="mt-1 text-xs">
                 Columns, primary keys, foreign keys, and relationships will be visualized
               </p>
+              <p className="mt-2 text-[11px] text-text-secondary/40">
+                All three modes (FK Only, Convention, AI Inferred) are generated at once.
+                Switch modes instantly after generating.
+              </p>
             </div>
           </div>
         )}
 
         {(session || editedSyntax) && viewMode === 'visual' && (
-          <MermaidRenderer
-            syntax={currentSyntax}
-            className="h-full"
-            interactive
-          />
+          <div ref={diagramRef}>
+            {/* Legend when inferred relationships are present */}
+            {inferredCount > 0 && (
+              <div className="mb-3 flex items-center gap-4 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-[10px] text-text-secondary">
+                <span className="font-medium uppercase tracking-wider">Legend:</span>
+                <span>
+                  <span className="font-semibold text-text-primary">fk_name</span> = FK constraint
+                </span>
+                <span>
+                  <span className="font-semibold text-accent">conv:</span> = Convention match
+                </span>
+                <span>
+                  <span className="font-semibold text-accent">shared:</span> = Shared column
+                </span>
+                {session?.inferredRelationships?.some((r) => r.source === 'ai') && (
+                  <span>
+                    <span className="font-semibold text-accent">ai:</span> = AI inferred
+                  </span>
+                )}
+              </div>
+            )}
+            <MermaidRenderer
+              syntax={currentSyntax}
+              className="h-full"
+              interactive
+            />
+          </div>
         )}
 
         {(session || editedSyntax) && viewMode === 'code' && (

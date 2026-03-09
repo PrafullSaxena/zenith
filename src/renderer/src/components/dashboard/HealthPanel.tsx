@@ -3,7 +3,7 @@
  * Groups by category (AI Agents, Databases, MCP Servers).
  * Extensible: renders whatever the health store provides.
  */
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, ShieldCheck } from 'lucide-react'
 import type { ResourceHealth, ResourceCategory, HealthStatus } from '../../types/health'
 
 interface HealthPanelProps {
@@ -25,6 +25,13 @@ const STATUS_LABEL: Record<HealthStatus, string> = {
   degraded: 'Degraded',
   unhealthy: 'Issues Detected',
   unknown: 'Unknown'
+}
+
+const STATUS_BADGE_STYLE: Record<HealthStatus, string> = {
+  healthy: 'bg-green-500/10 text-green-400',
+  degraded: 'bg-yellow-500/10 text-yellow-400',
+  unhealthy: 'bg-red-500/10 text-red-400',
+  unknown: 'bg-surface text-text-secondary'
 }
 
 const CATEGORY_LABELS: Record<ResourceCategory, string> = {
@@ -50,21 +57,23 @@ export function HealthPanel({
   })).filter((g) => g.items.length > 0)
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-border bg-surface-elevated p-4">
+    <div className="flex h-full flex-col rounded-xl border border-border/60 bg-surface-elevated/70 p-5">
       {/* Header */}
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
           <h3 className="text-sm font-semibold text-text-primary">System Health</h3>
-          <div className="flex items-center gap-1.5 rounded-full bg-surface px-2 py-0.5">
-            <span className={`h-2 w-2 rounded-full ${STATUS_DOT[overallStatus]}`} />
-            <span className="text-[10px] text-text-secondary">{STATUS_LABEL[overallStatus]}</span>
+          <div className="mt-1 flex items-center gap-1.5">
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE_STYLE[overallStatus]}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[overallStatus]}`} />
+              {STATUS_LABEL[overallStatus]}
+            </span>
           </div>
         </div>
         <button
           type="button"
           onClick={onRefresh}
           disabled={isLoading}
-          className="rounded p-1 text-text-secondary hover:text-text-primary hover:bg-surface transition-colors disabled:opacity-50"
+          className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-surface hover:text-text-primary disabled:opacity-50"
         >
           <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
         </button>
@@ -72,26 +81,34 @@ export function HealthPanel({
 
       {/* Resource groups */}
       {grouped.length === 0 ? (
-        <p className="py-4 text-center text-[11px] text-text-secondary/50">
-          No resources configured yet
-        </p>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.08]">
+              <ShieldCheck size={20} className="text-accent/40" />
+            </div>
+            <p className="text-sm font-medium text-text-secondary/60">No resources configured</p>
+            <p className="mt-1 text-[11px] text-text-secondary/40">
+              Connect AI agents or databases to monitor
+            </p>
+          </div>
+        </div>
       ) : (
         <div className="space-y-3">
           {grouped.map((group) => (
             <div key={group.category}>
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-text-secondary/60">
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-text-secondary/50">
                 {group.label}
               </p>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {group.items.map((res) => (
                   <div
                     key={res.id}
-                    className="flex items-center gap-2 rounded px-2 py-1 hover:bg-surface/50 transition-colors"
+                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface/50"
                   >
                     <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[res.status]}`} />
-                    <span className="flex-1 truncate text-xs text-text-primary">{res.name}</span>
+                    <span className="flex-1 truncate text-xs font-medium text-text-primary">{res.name}</span>
                     {res.detail && (
-                      <span className="truncate text-[10px] text-text-secondary/60 max-w-[120px]">
+                      <span className="max-w-[120px] truncate text-[10px] text-text-secondary/50">
                         {res.detail}
                       </span>
                     )}

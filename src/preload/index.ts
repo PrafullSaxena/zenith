@@ -27,6 +27,8 @@ const api = {
       ipcRenderer.invoke('app:openExternal', url),
     exportDiagnosticLogs: (): Promise<{ filePath: string }> =>
       ipcRenderer.invoke('app:exportDiagnosticLogs'),
+    selectDirectory: (currentPath?: string): Promise<{ canceled: boolean; path: string }> =>
+      ipcRenderer.invoke('app:selectDirectory', currentPath),
   },
   bitbucket: {
     connect: (): Promise<{ connected: boolean; displayName: string }> =>
@@ -161,6 +163,8 @@ const api = {
       ipcRenderer.invoke('db:storeCredentials', connectionId, password),
     getCredentials: (connectionId: string): Promise<string | null> =>
       ipcRenderer.invoke('db:getCredentials', connectionId),
+    exportErDiagramPdf: (data: unknown): Promise<{ filePath: string | null }> =>
+      ipcRenderer.invoke('db:exportErDiagramPdf', data),
   },
   launchpad: {
     exportPdf: (estimation: unknown): Promise<{ filePath: string | null }> =>

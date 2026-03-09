@@ -9,7 +9,7 @@ export type PluginId = 'code-review-bot' | 'db-inspector' | 'astro-patch' | 'pro
 /**
  * Supported field types for plugin settings forms.
  */
-export type SettingsFieldType = 'text' | 'number' | 'boolean' | 'select' | 'password' | 'repo-list' | 'connection-list' | 'textarea'
+export type SettingsFieldType = 'text' | 'number' | 'boolean' | 'select' | 'password' | 'repo-list' | 'connection-list' | 'textarea' | 'directory'
 
 /**
  * Describes a single settings field for plugin-specific configuration.

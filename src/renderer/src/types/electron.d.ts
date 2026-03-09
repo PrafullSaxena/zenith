@@ -33,6 +33,7 @@ export interface ElectronAPI {
     probeOllama: () => Promise<{ available: boolean; models: string[] }>
     probeCli: (command: string) => Promise<{ available: boolean }>
     openExternal: (url: string) => Promise<void>
+    selectDirectory: (currentPath?: string) => Promise<{ canceled: boolean; path: string }>
   }
   bitbucket: {
     connect: () => Promise<{ connected: boolean }>
@@ -160,6 +161,16 @@ export interface ElectronAPI {
     ) => Promise<string>
     storeCredentials: (connectionId: string, password: string) => Promise<void>
     getCredentials: (connectionId: string) => Promise<string | null>
+    exportErDiagramPdf: (data: {
+      imageDataUrl: string
+      width: number
+      height: number
+      connectionName: string
+      schema: string
+      tableCount: number
+      relationshipMode: string
+      generatedAt: string
+    }) => Promise<{ filePath: string | null }>
   }
   launchpad: {
     exportPdf: (estimation: import('./launchpad').EstimationExport) => Promise<{ filePath: string | null }>

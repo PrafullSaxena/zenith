@@ -64,6 +64,9 @@ export default function DbInspectorView(): React.JSX.Element {
     optimizerTiles,
     erSession,
     selectedTablesForER,
+    erRelationshipMode,
+    erInferenceStatus,
+    erInferredRelationships,
     history,
     isLoadingHistory,
     activeTab,
@@ -84,6 +87,8 @@ export default function DbInspectorView(): React.JSX.Element {
     setSelectedTablesForER,
     toggleTableForER,
     generateERDiagram,
+    switchERMode,
+    generateAllERModes,
     loadHistory,
     addHistoryEntry,
     restoreFromHistory,
@@ -195,7 +200,12 @@ export default function DbInspectorView(): React.JSX.Element {
   )
 
   const handleGenerateER = useCallback(async () => {
-    await generateERDiagram()
+    // Generate all 3 modes at once; pass agent info for AI inference
+    if (agent) {
+      await generateAllERModes(agent.id, agent.model ?? agent.id, agent.command)
+    } else {
+      await generateAllERModes()
+    }
 
     // Log to history + activity
     const sess = useDbStore.getState().erSession
@@ -218,7 +228,7 @@ export default function DbInspectorView(): React.JSX.Element {
         detail: `${conn?.name ?? ''} / ${sess.schema}`
       })
     }
-  }, [generateERDiagram, connections, addHistoryEntry, addActivity])
+  }, [generateAllERModes, agent, connections, addHistoryEntry, addActivity])
 
   const handleHistoryOpen = useCallback(
     (entry: DbHistoryEntry) => {
@@ -399,6 +409,13 @@ export default function DbInspectorView(): React.JSX.Element {
                 onGenerate={handleGenerateER}
                 session={erSession}
                 hasConnection={isConnected}
+                hasAgent={hasAgent}
+                inferenceStatus={erInferenceStatus}
+                relationshipMode={erRelationshipMode}
+                onModeChange={switchERMode}
+                inferredCount={erInferredRelationships.length}
+                connectionName={activeConnection?.name}
+                schema={activeSchema ?? ''}
               />
             )}
             {activeTab === 'history' && (

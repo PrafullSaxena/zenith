@@ -6,7 +6,9 @@ import {
   Wrench,
   MessageSquare,
   LayoutDashboard,
-  Activity
+  Activity,
+  Rocket,
+  ArrowRight
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { PluginDefinition } from '../../types/plugin'
@@ -22,7 +24,17 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Wrench,
   MessageSquare,
   LayoutDashboard,
-  Activity
+  Activity,
+  Rocket
+}
+
+/** Per-plugin accent palette for icon backgrounds */
+const PLUGIN_ACCENTS: Record<string, string> = {
+  'code-review-bot': 'from-blue-500/20 to-blue-600/10 text-blue-400',
+  'db-inspector': 'from-emerald-500/20 to-emerald-600/10 text-emerald-400',
+  'astro-patch': 'from-orange-500/20 to-orange-600/10 text-orange-400',
+  'prompt-builder': 'from-violet-500/20 to-violet-600/10 text-violet-400',
+  'launchpad': 'from-rose-500/20 to-rose-600/10 text-rose-400'
 }
 
 export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.Element {
@@ -38,23 +50,43 @@ export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.
     ).length
   }, [allEntries, plugin.id])
   const Icon = ICON_MAP[plugin.icon]
+  const accentClasses = PLUGIN_ACCENTS[plugin.id] ?? 'from-accent/20 to-accent/10 text-accent'
 
   return (
-    <div className="rounded-lg border border-border bg-surface-elevated p-4 hover:border-accent/30 transition-colors">
-      <div className="mb-3 flex items-center gap-3">
-        {Icon && <Icon size={20} className="text-accent" />}
-        <h3 className="text-sm font-semibold text-text-primary">{plugin.name}</h3>
+    <button
+      type="button"
+      onClick={() => navigate(plugin.route)}
+      className="group relative flex flex-col rounded-xl border border-border/60 bg-surface-elevated/70 p-4 text-left transition-all duration-200 hover:border-accent/30 hover:bg-surface-elevated hover:shadow-lg hover:shadow-accent/[0.03]"
+    >
+      {/* Subtle gradient overlay on hover */}
+      <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-br from-accent/[0.02] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+
+      <div className="relative flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          {/* Icon with per-plugin accent */}
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${accentClasses}`}>
+            {Icon && <Icon size={18} />}
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-text-primary">{plugin.name}</h3>
+            {recentCount > 0 && (
+              <span className="text-[10px] font-medium text-accent/70">
+                {recentCount} {recentCount === 1 ? 'op' : 'ops'} today
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Arrow indicator */}
+        <ArrowRight
+          size={14}
+          className="mt-1 shrink-0 text-text-secondary/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-accent"
+        />
       </div>
-      <p className="mb-4 text-xs text-text-secondary">{plugin.description}</p>
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-text-secondary">{recentCount} ops today</span>
-        <button
-          onClick={() => navigate(plugin.route)}
-          className="rounded bg-accent/10 px-3 py-1 text-xs font-medium text-accent hover:bg-accent/20 transition"
-        >
-          Open
-        </button>
-      </div>
-    </div>
+
+      <p className="relative mt-3 text-xs leading-relaxed text-text-secondary">
+        {plugin.description}
+      </p>
+    </button>
   )
 }

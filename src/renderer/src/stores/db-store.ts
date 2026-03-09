@@ -26,12 +26,26 @@ import type {
   OptimizationSuggestion,
   OptimizerTile,
   ERDiagramSession,
+  ERDiagramModeCache,
   DbHistoryEntry,
   DbInspectorTab,
-  QueryResult
+  QueryResult,
+  RelationshipMode,
+  ERInferenceStatus,
+  InferredRelationship,
+  Cardinality
 } from '../types/database'
-import { buildDbQASystemPrompt, buildQueryOptimizerSystemPrompt } from './db-prompts-renderer'
+import {
+  buildDbQASystemPrompt,
+  buildQueryOptimizerSystemPrompt,
+  buildRelationshipInferenceSystemPrompt
+} from './db-prompts-renderer'
 import { useTokenStore } from './token-store'
+import {
+  inferConventionRelationships,
+  deduplicateRelationships,
+  parseAIRelationshipOutput
+} from '../plugins/db-inspector/relationship-inference'
 
 // ── Constants ───────────────────────────────────────────────────────
 
@@ -220,6 +234,10 @@ interface DbStoreState {
   // ER Diagram
   erSession: ERDiagramSession | null
   selectedTablesForER: string[]
+  erRelationshipMode: RelationshipMode
+  erInferenceStatus: ERInferenceStatus
+  erInferredRelationships: InferredRelationship[]
+  erInferenceError: string | null
 
   // History
   history: DbHistoryEntry[]
@@ -287,6 +305,13 @@ interface DbStoreState {
   setSelectedTablesForER: (tables: string[]) => void
   toggleTableForER: (table: string) => void
   generateERDiagram: () => Promise<void>
+  switchERMode: (mode: RelationshipMode) => void
+  generateAllERModes: (
+    providerId?: string,
+    modelName?: string,
+    command?: string
+  ) => Promise<void>
+  cancelERInference: () => void
 
   // ── History actions ─────────────────────────────────────────────
 
@@ -331,6 +356,10 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
   optimizerTiles: [],
   erSession: null,
   selectedTablesForER: [],
+  erRelationshipMode: 'fk-only' as RelationshipMode,
+  erInferenceStatus: 'idle' as ERInferenceStatus,
+  erInferredRelationships: [],
+  erInferenceError: null,
 
   history: [],
   isLoadingHistory: false,
@@ -882,17 +911,12 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
     if (!activeConnectionId || !activeSchema || selectedTablesForER.length === 0) return
 
     try {
-      // Fetch columns for each selected table
       const tableData: { name: string; columns: ColumnInfo[] }[] = []
       for (const tableName of selectedTablesForER) {
         const cols = await window.api.db.getColumns(activeConnectionId, activeSchema, tableName)
         tableData.push({ name: tableName, columns: cols })
       }
-
-      // Fetch FK relationships
       const allFks = await window.api.db.getForeignKeys(activeConnectionId, activeSchema)
-
-      // Generate Mermaid syntax
       const mermaidSyntax = generateMermaidERD(tableData, allFks, selectedTablesForER)
 
       set({
@@ -901,12 +925,201 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
           schema: activeSchema,
           selectedTables: selectedTablesForER,
           mermaidSyntax,
-          generatedAt: new Date().toISOString()
+          generatedAt: new Date().toISOString(),
+          relationshipMode: 'fk-only',
+          inferredRelationships: [],
+          modeCache: { 'fk-only': mermaidSyntax, convention: '', ai: null },
+          conventionRelationships: [],
+          aiRelationships: []
         }
       })
     } catch (err) {
       console.error('[db-store] ER diagram generation failed:', err)
     }
+  },
+
+  /** Switch the active mode from cache — no regeneration needed. */
+  switchERMode: (mode) => {
+    const { erSession } = get()
+    if (!erSession) {
+      set({ erRelationshipMode: mode })
+      return
+    }
+    const cached = erSession.modeCache[mode]
+    // Pick the right inferred relationships for display
+    const inferred = mode === 'ai'
+      ? erSession.aiRelationships
+      : mode === 'convention'
+        ? erSession.conventionRelationships
+        : []
+
+    set({
+      erRelationshipMode: mode,
+      erInferredRelationships: inferred,
+      erSession: {
+        ...erSession,
+        mermaidSyntax: cached ?? erSession.modeCache.convention,
+        relationshipMode: mode,
+        inferredRelationships: inferred
+      }
+    })
+  },
+
+  /**
+   * Generate all 3 ERD modes in one call:
+   *  1. FK Only (instant)
+   *  2. Convention (instant — shared columns + naming patterns)
+   *  3. AI Inferred (streaming — only if agent available)
+   * Results are cached so switching modes is instant.
+   */
+  generateAllERModes: async (providerId, modelName, command) => {
+    const { activeConnectionId, activeSchema, selectedTablesForER, erRelationshipMode } = get()
+    if (!activeConnectionId || !activeSchema || selectedTablesForER.length === 0) return
+
+    set({ erInferenceError: null, erInferenceStatus: 'idle' })
+
+    try {
+      // Step 1: Fetch columns + real FKs
+      const tableData: { name: string; columns: ColumnInfo[] }[] = []
+      for (const tableName of selectedTablesForER) {
+        const cols = await window.api.db.getColumns(activeConnectionId, activeSchema, tableName)
+        tableData.push({ name: tableName, columns: cols })
+      }
+      const allFks = await window.api.db.getForeignKeys(activeConnectionId, activeSchema)
+
+      // Step 2: Generate FK-only ERD (instant)
+      const fkOnlySyntax = generateMermaidERD(tableData, allFks, selectedTablesForER)
+
+      // Step 3: Generate Convention ERD (instant — includes shared column matching)
+      const conventionInferred = inferConventionRelationships(tableData, selectedTablesForER)
+      const conventionDeduped = deduplicateRelationships(allFks, conventionInferred)
+      const conventionSyntax = generateMermaidERDWithInferred(
+        tableData, allFks, conventionDeduped, selectedTablesForER
+      )
+
+      // Build initial cache
+      const modeCache: ERDiagramModeCache = {
+        'fk-only': fkOnlySyntax,
+        convention: conventionSyntax,
+        ai: null
+      }
+
+      // Determine which syntax to show based on current mode
+      const activeMode = erRelationshipMode
+      const activeSyntax = activeMode === 'convention'
+        ? conventionSyntax
+        : activeMode === 'ai'
+          ? conventionSyntax // show convention while AI loads
+          : fkOnlySyntax
+      const activeInferred = activeMode === 'fk-only' ? [] : conventionDeduped
+
+      const now = new Date().toISOString()
+      set({
+        erInferredRelationships: activeInferred,
+        erSession: {
+          connectionId: activeConnectionId,
+          schema: activeSchema,
+          selectedTables: selectedTablesForER,
+          mermaidSyntax: activeSyntax,
+          generatedAt: now,
+          relationshipMode: activeMode,
+          inferredRelationships: activeInferred,
+          modeCache,
+          conventionRelationships: conventionDeduped,
+          aiRelationships: []
+        }
+      })
+
+      // Step 4: Run AI inference if agent is configured (async, non-blocking for UI)
+      if (providerId && modelName) {
+        set({ erInferenceStatus: 'inferring' })
+        const sessionId = `er-infer-${Date.now()}`
+        set({ erInferenceStatus: 'streaming' })
+
+        const schemaContext = await window.api.db.buildSchemaContext(
+          activeConnectionId, activeSchema, selectedTablesForER
+        )
+        const systemPrompt = buildRelationshipInferenceSystemPrompt(schemaContext)
+        const userPrompt = `Analyze these ${selectedTablesForER.length} tables and find ALL implicit foreign key relationships: ${selectedTablesForER.join(', ')}
+
+For each table, examine every non-PK column and check if it could reference a PK or unique column in any other table. Consider column names, data types, and domain semantics. Be thorough — output every plausible relationship.`
+
+        let rawText = ''
+
+        await new Promise<void>((resolve, reject) => {
+          window.api.ai.onStreamChunk((data) => {
+            if (data.sessionId !== sessionId) return
+            rawText += data.chunk
+          })
+
+          window.api.ai.onStreamDone((data) => {
+            if (data.sessionId !== sessionId) return
+            const aiInferred = parseAIRelationshipOutput(rawText)
+            const merged = deduplicateRelationships(allFks, [...conventionDeduped, ...aiInferred])
+
+            const tokensUsed = data.usage
+              ? data.usage.totalTokens
+              : Math.max(1, Math.ceil(rawText.length / 4))
+            useTokenStore.getState().addEntry({
+              sessionId,
+              providerId,
+              providerName: modelName,
+              tokensUsed,
+              isEstimated: !data.usage
+            })
+
+            const aiSyntax = generateMermaidERDWithInferred(
+              tableData, allFks, merged, selectedTablesForER
+            )
+
+            // Update cache with AI results
+            const currentSession = get().erSession
+            const currentMode = get().erRelationshipMode
+            const updatedCache: ERDiagramModeCache = {
+              ...currentSession!.modeCache,
+              ai: aiSyntax
+            }
+
+            // If user is currently viewing AI mode, show the new AI results
+            const showAi = currentMode === 'ai'
+            set({
+              erInferenceStatus: 'complete',
+              erInferredRelationships: showAi ? merged : get().erInferredRelationships,
+              erSession: {
+                ...currentSession!,
+                mermaidSyntax: showAi ? aiSyntax : currentSession!.mermaidSyntax,
+                relationshipMode: currentMode,
+                inferredRelationships: showAi ? merged : currentSession!.inferredRelationships,
+                modeCache: updatedCache,
+                aiRelationships: merged
+              }
+            })
+            window.api.ai.removeStreamListeners()
+            resolve()
+          })
+
+          window.api.ai.onStreamError((data) => {
+            if (data.sessionId !== sessionId) return
+            set({ erInferenceStatus: 'error', erInferenceError: data.error })
+            window.api.ai.removeStreamListeners()
+            reject(new Error(data.error))
+          })
+
+          window.api.ai.startAnalysis(providerId, modelName, systemPrompt, userPrompt, sessionId, command)
+        })
+      }
+    } catch (err) {
+      console.error('[db-store] ER diagram generation failed:', err)
+      set({
+        erInferenceStatus: 'error',
+        erInferenceError: err instanceof Error ? err.message : 'Generation failed'
+      })
+    }
+  },
+
+  cancelERInference: () => {
+    set({ erInferenceStatus: 'idle' })
+    window.api.ai.removeStreamListeners()
   },
 
   // ── History actions ─────────────────────────────────────────────
@@ -980,8 +1193,15 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
             schema: entry.schema,
             selectedTables: entry.selectedTables ?? [],
             mermaidSyntax: entry.mermaidSyntax ?? '',
-            generatedAt: entry.timestamp
+            generatedAt: entry.timestamp,
+            relationshipMode: 'fk-only',
+            inferredRelationships: [],
+            modeCache: { 'fk-only': entry.mermaidSyntax ?? '', convention: '', ai: null },
+            conventionRelationships: [],
+            aiRelationships: []
           },
+          erRelationshipMode: 'fk-only' as RelationshipMode,
+          erInferredRelationships: [],
           selectedTablesForER: entry.selectedTables ?? [],
           activeTab: 'er-diagram'
         })
@@ -1054,6 +1274,89 @@ function generateMermaidERD(
         lines.push(
           `    ${safeSrc} }|--|| ${safeTgt} : "${safeLabel}"`
         )
+      }
+    }
+  }
+
+  return lines.join('\n')
+}
+
+// ── Helper: Generate Mermaid ERD with inferred relationships ──────
+
+function mapCardinalityToMermaid(cardinality: Cardinality): string {
+  switch (cardinality) {
+    case 'one-to-one':   return '||--||'
+    case 'one-to-many':  return '||--|{'
+    case 'many-to-one':  return '}|--||'
+    case 'many-to-many': return '}|--|{'
+    default:             return '}|--||'
+  }
+}
+
+function generateMermaidERDWithInferred(
+  tables: { name: string; columns: ColumnInfo[] }[],
+  foreignKeys: ForeignKey[],
+  inferredRelationships: InferredRelationship[],
+  selectedTableNames: string[]
+): string {
+  const lines: string[] = ['erDiagram']
+
+  // Build set of inferred FK columns for FK markers
+  const inferredFkSet = new Set(
+    inferredRelationships.map((r) => `${r.sourceTable}|${r.sourceColumn}`)
+  )
+
+  // Table definitions
+  for (const table of tables) {
+    const safeName = sanitizeMermaidId(table.name)
+    lines.push(`    ${safeName} {`)
+    for (const col of table.columns) {
+      const pkMarker = col.isPrimaryKey ? ' PK' : ''
+      const fk = foreignKeys.find(
+        (f) => f.sourceTable === table.name && f.sourceColumn === col.name
+      )
+      const isInferredFk = inferredFkSet.has(`${table.name}|${col.name}`)
+      const fkMarker = fk || isInferredFk ? ' FK' : ''
+      const dtype = sanitizeMermaidType(col.dataType)
+      const colName = sanitizeMermaidId(col.name)
+      lines.push(`        ${dtype} ${colName}${pkMarker}${fkMarker}`)
+    }
+    lines.push('    }')
+  }
+
+  // Real FK relationships (solid)
+  const added = new Set<string>()
+  for (const fk of foreignKeys) {
+    const srcIn = selectedTableNames.includes(fk.sourceTable)
+    const tgtIn = selectedTableNames.includes(fk.targetTable)
+    if (srcIn && tgtIn) {
+      const key = `${fk.sourceTable}-${fk.targetTable}-${fk.sourceColumn}`
+      if (!added.has(key)) {
+        added.add(key)
+        const safeSrc = sanitizeMermaidId(fk.sourceTable)
+        const safeTgt = sanitizeMermaidId(fk.targetTable)
+        const safeLabel = (fk.constraintName || 'fk')
+          .replace(/"/g, '')
+          .replace(/[^a-zA-Z0-9_ -]/g, '_')
+        lines.push(`    ${safeSrc} }|--|| ${safeTgt} : "${safeLabel}"`)
+      }
+    }
+  }
+
+  // Inferred relationships (distinguished by label prefix)
+  for (const rel of inferredRelationships) {
+    const srcIn = selectedTableNames.includes(rel.sourceTable)
+    const tgtIn = selectedTableNames.includes(rel.targetTable)
+    if (srcIn && tgtIn) {
+      const key = `${rel.sourceTable}-${rel.targetTable}-${rel.sourceColumn}`
+      if (!added.has(key)) {
+        added.add(key)
+        const safeSrc = sanitizeMermaidId(rel.sourceTable)
+        const safeTgt = sanitizeMermaidId(rel.targetTable)
+        const notation = mapCardinalityToMermaid(rel.cardinality)
+        const prefix = rel.source === 'ai' ? 'ai' : 'conv'
+        const safeLabel = `${prefix}: ${rel.sourceColumn}`
+        lines.push(`    ${safeSrc} ${notation} ${safeTgt} : "${safeLabel}"`)
       }
     }
   }

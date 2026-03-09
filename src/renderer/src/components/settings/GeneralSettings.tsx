@@ -56,6 +56,15 @@ export function GeneralSettings(): React.JSX.Element {
     defaultValue: true
   }
 
+  const workingDirectoryField: SettingsFieldDef = {
+    key: 'workingDirectory',
+    label: 'Working Directory',
+    type: 'directory',
+    description: 'Default folder for exports and saved files. Leave empty to use OS Downloads folder.',
+    defaultValue: '',
+    placeholder: 'Default (OS Downloads folder)'
+  }
+
   return (
     <div>
       <h2 className="mb-6 text-lg font-semibold text-text-primary">General</h2>
@@ -76,6 +85,12 @@ export function GeneralSettings(): React.JSX.Element {
         field={showWelcomeField}
         value={getSetting('general.showWelcomeOnStart')}
         onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
+      />
+
+      <SettingsField
+        field={workingDirectoryField}
+        value={getSetting('general.workingDirectory')}
+        onChange={(value) => setSetting('general.workingDirectory', value)}
       />
     </div>
   )

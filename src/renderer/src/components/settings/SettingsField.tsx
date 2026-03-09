@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, FolderOpen, X } from 'lucide-react'
 import type { SettingsField as SettingsFieldType } from '../../types/plugin'
 import { RepoListEditor } from './RepoListEditor'
 import type { RepoEntry } from './RepoListEditor'
@@ -126,6 +126,42 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
             value={(value as ConnectionEntry[]) ?? []}
             onChange={(connections) => onChange(connections)}
           />
+        )
+
+      case 'directory':
+        return (
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              className={`${inputClass} flex-1`}
+              value={(value as string) ?? ''}
+              placeholder={field.placeholder ?? 'Default (OS Downloads folder)'}
+              readOnly
+            />
+            <button
+              type="button"
+              className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-secondary hover:text-text-primary transition"
+              onClick={async () => {
+                const result = await window.api.app.selectDirectory((value as string) || undefined)
+                if (!result.canceled && result.path) {
+                  onChange(result.path)
+                }
+              }}
+            >
+              <FolderOpen size={14} />
+              Browse
+            </button>
+            {value && (
+              <button
+                type="button"
+                className="rounded-md border border-border bg-surface-elevated px-2 py-2 text-sm text-text-secondary hover:text-red-400 transition"
+                onClick={() => onChange('')}
+                title="Reset to default"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
         )
 
       default:

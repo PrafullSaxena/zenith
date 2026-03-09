@@ -73,6 +73,32 @@ export interface ForeignKey {
   targetColumn: string
 }
 
+// ── Relationship inference types ──────────────────────────────────
+
+/** How a relationship was discovered. */
+export type RelationshipSource = 'fk' | 'convention' | 'ai'
+
+/** Cardinality label for inferred relationships. */
+export type Cardinality = 'one-to-one' | 'one-to-many' | 'many-to-one' | 'many-to-many'
+
+/** Relationship inference mode selector. */
+export type RelationshipMode = 'fk-only' | 'convention' | 'ai'
+
+/** Status of AI-powered relationship inference. */
+export type ERInferenceStatus = 'idle' | 'inferring' | 'streaming' | 'complete' | 'error'
+
+/** An inferred (non-FK) relationship between two tables. */
+export interface InferredRelationship {
+  source: RelationshipSource
+  sourceTable: string
+  sourceColumn: string
+  targetTable: string
+  targetColumn: string
+  cardinality: Cardinality
+  confidence: number  // 0.0–1.0
+  label: string       // human-readable, e.g. "user_id → users.id"
+}
+
 export interface IndexInfo {
   name: string
   columns: string[]
@@ -153,12 +179,26 @@ export interface OptimizerTile {
 
 // ── ER Diagram types ────────────────────────────────────────────────
 
+/** Cached mermaid syntax for each relationship mode, generated once on button click. */
+export interface ERDiagramModeCache {
+  'fk-only': string
+  convention: string
+  ai: string | null // null = not yet generated (AI pending/skipped)
+}
+
 export interface ERDiagramSession {
   connectionId: string
   schema: string
   selectedTables: string[]
   mermaidSyntax: string
   generatedAt: string
+  relationshipMode: RelationshipMode
+  inferredRelationships: InferredRelationship[]
+  modeCache: ERDiagramModeCache
+  /** Convention-only inferred relationships (subset used in convention mode). */
+  conventionRelationships: InferredRelationship[]
+  /** Merged convention + AI relationships (used in AI mode). */
+  aiRelationships: InferredRelationship[]
 }
 
 // ── History types ───────────────────────────────────────────────────

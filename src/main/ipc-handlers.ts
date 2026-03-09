@@ -1,4 +1,4 @@
-import { ipcMain, safeStorage, shell, BrowserWindow } from 'electron'
+import { ipcMain, safeStorage, shell, BrowserWindow, dialog, app } from 'electron'
 import Store from 'electron-store'
 import { getSettings, getSetting, setSetting, resetSettings } from './settings-store'
 import { TokenManager } from './bitbucket/token-manager'
@@ -212,6 +212,20 @@ export function registerIpcHandlers(): void {
     return { filePath }
   })
 
+  ipcMain.handle('app:selectDirectory', async (_event, currentPath?: string) => {
+    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+    if (!mainWindow) return { canceled: true, path: '' }
+
+    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select Working Directory',
+      defaultPath: currentPath || app.getPath('documents'),
+      properties: ['openDirectory', 'createDirectory']
+    })
+
+    if (canceled || filePaths.length === 0) return { canceled: true, path: '' }
+    return { canceled: false, path: filePaths[0] }
+  })
+
   // --- Database channels ---
   ipcMain.handle(
     'db:testConnection',
@@ -397,6 +411,77 @@ export function registerIpcHandlers(): void {
     const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
     if (!mainWindow) throw new Error('No window available for save dialog')
     const filePath = await exportEstimationPdf(mainWindow, estimation)
+    return { filePath }
+  })
+
+  // --- DbInspector ER Diagram PDF export ---
+  ipcMain.handle('db:exportErDiagramPdf', async (_event, data: {
+    imageDataUrl: string
+    width: number
+    height: number
+    connectionName: string
+    schema: string
+    tableCount: number
+    relationshipMode: string
+    generatedAt: string
+  }) => {
+    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+    if (!mainWindow) throw new Error('No window available for save dialog')
+
+    const workingDir = getSetting('general.workingDirectory') as string
+    const defaultDir = workingDir || app.getPath('downloads')
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    const schemaSlug = data.schema.replace(/\s+/g, '-') || 'schema'
+    const filename = `er-diagram-${schemaSlug}-${timestamp}.pdf`
+
+    const { filePath, canceled } = await dialog.showSaveDialog(mainWindow, {
+      title: 'Export ER Diagram as PDF',
+      defaultPath: `${defaultDir}/${filename}`,
+      filters: [{ name: 'PDF Document', extensions: ['pdf'] }]
+    })
+
+    if (canceled || !filePath) return { filePath: null }
+
+    // Strip data URL prefix to get raw base64
+    const base64 = data.imageDataUrl.replace(/^data:image\/png;base64,/, '')
+
+    const pdfmake = await import('pdfmake')
+    pdfmake.default.fonts = {
+      Helvetica: {
+        normal: 'Helvetica',
+        bold: 'Helvetica-Bold',
+        italics: 'Helvetica-Oblique',
+        bolditalics: 'Helvetica-BoldOblique'
+      }
+    }
+
+    const content: unknown[] = [
+      { text: 'ER Diagram', fontSize: 22, bold: true, color: '#111111', marginBottom: 4 },
+      { text: `${data.connectionName} / ${data.schema}`, fontSize: 14, color: '#666666', marginBottom: 4 },
+      {
+        text: `${data.tableCount} tables · ${data.relationshipMode} mode · Generated ${new Date(data.generatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+        fontSize: 10,
+        color: '#888888',
+        marginBottom: 20
+      },
+      {
+        image: `data:image/png;base64,${base64}`,
+        width: Math.min(data.width, 755) // landscape page width minus margins
+      }
+    ]
+
+    const docDefinition = {
+      defaultStyle: { font: 'Helvetica', fontSize: 11 },
+      pageOrientation: 'landscape' as const,
+      content,
+      pageMargins: [40, 40, 40, 40]
+    }
+
+    const pdf = pdfmake.default.createPdf(docDefinition as Parameters<typeof pdfmake.default.createPdf>[0])
+    const buffer = await pdf.getBuffer()
+    const fs = await import('fs')
+    fs.writeFileSync(filePath, buffer)
+
     return { filePath }
   })
 }
