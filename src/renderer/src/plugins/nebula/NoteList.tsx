@@ -56,22 +56,22 @@ export default function NoteList(): React.JSX.Element {
           notes.map((note) => {
             const isActive = activeNoteId === note.id
             return (
-              <button
+              <div
                 key={note.id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => selectNote(note.id)}
-                className={`group flex w-full items-start justify-between px-3 py-2 text-left transition-colors ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') selectNote(note.id)
+                }}
+                className={`group flex w-full cursor-pointer items-start justify-between px-3 py-2 text-left transition-colors ${
                   isActive
                     ? 'border-l-2 border-accent bg-surface-elevated'
                     : 'border-l-2 border-transparent hover:bg-surface-elevated'
                 }`}
               >
                 <div className="min-w-0 flex-1">
-                  <div
-                    className={`truncate text-sm ${
-                      isActive ? 'text-text-primary' : 'text-text-primary'
-                    }`}
-                  >
+                  <div className="truncate text-sm text-text-primary">
                     {note.title || 'Untitled'}
                   </div>
                   <div className="mt-0.5 text-[10px] text-text-secondary">
@@ -89,7 +89,7 @@ export default function NoteList(): React.JSX.Element {
                 >
                   <Trash2 size={12} />
                 </button>
-              </button>
+              </div>
             )
           })
         )}
