@@ -14,11 +14,11 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Total Phases:** 8
 **Current Plan:** 6
 **Total Plans in Phase:** 6
-**Status:** Ready to execute
+**Status:** Phase complete — ready for verification
 **Last Activity:** 2026-03-09
 **Last Activity Description:** Completed 08-02 — Nebula plugin registration, Zustand store, and 3-tab NebulaView shell
 
-**Progress:** [█████████░] 91%
+**Progress:** [██████████] 95%
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 08 P01 | 5min | 2 tasks | 5 files |
 | Phase 08-nebula-plugin PP04 | 3min | 2 tasks | 4 files |
 | Phase 08-nebula-plugin P03 | 6min | 2 tasks | 8 files |
+| Phase 08-nebula-plugin P06 | 3min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,8 @@ Recent decisions affecting current work:
 - [Phase 08-nebula-plugin]: Lazy-init getNebulaInstances() pattern for database/file-storage in IPC handlers, matching TokenManager/PostgresConnectionManager singletons
 - [Phase 08-nebula-plugin]: tldraw inferDarkMode prop instead of manual colorScheme; props spread for snapshot union type workaround
 - [Phase 08-nebula-plugin]: Debounced saves: 500ms for content/title edits, 1000ms for drawing canvas auto-save
+- [Phase 08-nebula-plugin]: AI Q&A searches notes first to build context string from top 5 results before sending to AI agent
+- [Phase 08-nebula-plugin]: FTS5 highlight <mark> tags rendered via dangerouslySetInnerHTML -- safe since data comes from our own SQLite
 
 ### Pending Todos
 
@@ -130,6 +133,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-09T18:44:22.667Z
-**Stopped at:** Completed 08-03-PLAN.md
+**Last session:** 2026-03-09T18:50:20.485Z
+**Stopped at:** Completed 08-06-PLAN.md (Task 2 human-verify checkpoint pending)
 **Resume file:** None
