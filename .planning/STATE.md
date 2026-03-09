@@ -18,7 +18,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Last Activity:** 2026-03-09
 **Last Activity Description:** Completed 08-02 — Nebula plugin registration, Zustand store, and 3-tab NebulaView shell
 
-**Progress:** [██████████] 95%
+**Progress:** [██████████] 100%
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 08-nebula-plugin PP04 | 3min | 2 tasks | 4 files |
 | Phase 08-nebula-plugin P03 | 6min | 2 tasks | 8 files |
 | Phase 08-nebula-plugin P06 | 3min | 1 tasks | 3 files |
+| Phase 08-nebula-plugin PP05 | 5min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,9 @@ Recent decisions affecting current work:
 - [Phase 08-nebula-plugin]: Debounced saves: 500ms for content/title edits, 1000ms for drawing canvas auto-save
 - [Phase 08-nebula-plugin]: AI Q&A searches notes first to build context string from top 5 results before sending to AI agent
 - [Phase 08-nebula-plugin]: FTS5 highlight <mark> tags rendered via dangerouslySetInnerHTML -- safe since data comes from our own SQLite
+- [Phase 08-nebula-plugin]: Use getApiKeyForProvider('openai') for transcription API key retrieval -- consistent with existing AI streaming pattern
+- [Phase 08-nebula-plugin]: Audio buffer as number[] across contextBridge (sandbox=true safety); temp file write/cleanup for OpenAI transcription
+- [Phase 08-nebula-plugin]: Transcription-to-knowledge pipeline: VoiceRecorder -> handleTranscription -> saveNote -> triggerSummarization -> inferEdges (full NEBL-09 automation)
 
 ### Pending Todos
 
@@ -133,6 +137,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-09T18:50:20.485Z
-**Stopped at:** Completed 08-06-PLAN.md (Task 2 human-verify checkpoint pending)
+**Last session:** 2026-03-09T18:53:20.962Z
+**Stopped at:** Completed 08-05-PLAN.md
 **Resume file:** None

@@ -80,15 +80,15 @@ Plans:
 
 **Requirements:** [NEBL-01, NEBL-02, NEBL-03, NEBL-04, NEBL-05, NEBL-06, NEBL-07, NEBL-08, NEBL-09, NEBL-10, NEBL-11, NEBL-12]
 
-**Plans:** 2/6 plans complete
+**Plans:** 6/6 plans complete
 
 Plans:
 - [x] 08-01-PLAN.md -- Install deps, Nebula types, SQLite database manager with FTS5, note file storage
 - [x] 08-02-PLAN.md -- Plugin registration, Zustand store, NebulaView 3-tab layout shell
-- [ ] 08-03-PLAN.md -- IPC handlers, preload bridge, Tiptap note editor, tldraw drawing canvas, note list CRUD
-- [ ] 08-04-PLAN.md -- AI summarization pipeline, knowledge graph edge inference, force-directed graph visualization
-- [ ] 08-05-PLAN.md -- Voice recording (MediaRecorder), OpenAI transcription with diarization, transcription-to-knowledge pipeline
-- [ ] 08-06-PLAN.md -- FTS5 search with highlights, AI Q&A over notes, visual verification checkpoint
+- [x] 08-03-PLAN.md -- IPC handlers, preload bridge, Tiptap note editor, tldraw drawing canvas, note list CRUD
+- [x] 08-04-PLAN.md -- AI summarization pipeline, knowledge graph edge inference, force-directed graph visualization
+- [x] 08-05-PLAN.md -- Voice recording (MediaRecorder), OpenAI transcription with diarization, transcription-to-knowledge pipeline
+- [x] 08-06-PLAN.md -- FTS5 search with highlights, AI Q&A over notes, visual verification checkpoint
 
 ## Phase 6: Polish & Production
 
