@@ -1,6 +1,6 @@
 import type { PullRequest } from '../../types/bitbucket'
 import { formatRelativeTime } from '../../components/dashboard/utils'
-import { RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, ExternalLink, Files } from 'lucide-react'
+import { RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, ExternalLink, Files, GitPullRequest } from 'lucide-react'
 
 interface PRListProps {
   pullRequests: PullRequest[]
@@ -45,7 +45,7 @@ export function PRList({
           type="button"
           onClick={onRefresh}
           disabled={isLoading}
-          className="rounded p-1 text-text-secondary transition hover:bg-surface-elevated hover:text-text-primary disabled:opacity-50"
+          className="rounded-lg p-1 text-text-secondary transition hover:bg-surface-elevated hover:text-text-primary disabled:opacity-50"
           title="Refresh PR list"
         >
           <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
@@ -55,9 +55,9 @@ export function PRList({
       {/* PR list */}
       <div className="flex-1 space-y-1 overflow-y-auto">
         {isLoading && (pullRequests?.length ?? 0) === 0 && (
-          <p className="py-8 text-center text-sm text-text-secondary">
-            Loading pull requests...
-          </p>
+          <div className="flex items-center justify-center py-8">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+          </div>
         )}
 
         {/* Error state */}
@@ -76,9 +76,15 @@ export function PRList({
         )}
 
         {!isLoading && !error && (pullRequests?.length ?? 0) === 0 && (
-          <p className="py-8 text-center text-sm text-text-secondary">
-            No open pull requests found
-          </p>
+          <div className="flex flex-col items-center justify-center py-10">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
+              <GitPullRequest size={20} className="text-accent/30" />
+            </div>
+            <p className="text-sm font-medium text-text-secondary/60">No open pull requests</p>
+            <p className="mt-1 text-[11px] text-text-secondary/40">
+              Pull requests will appear here once detected
+            </p>
+          </div>
         )}
 
         {(pullRequests ?? []).map((pr) => {
@@ -88,9 +94,9 @@ export function PRList({
               key={pr.id}
               type="button"
               onClick={() => onSelect(pr)}
-              className={`w-full rounded-md px-3 py-2.5 text-left transition-colors ${
+              className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
                 isSelected
-                  ? 'border border-accent bg-surface-elevated'
+                  ? 'border border-accent/60 bg-surface-elevated'
                   : 'border border-transparent hover:bg-surface-elevated'
               }`}
             >
@@ -118,7 +124,7 @@ export function PRList({
                   </span>
                 </div>
                 {fileCounts && fileCounts[pr.id] != null && (
-                  <span className="flex shrink-0 items-center gap-1 rounded bg-surface-elevated px-1.5 py-0.5 text-[11px] text-text-secondary">
+                  <span className="flex shrink-0 items-center gap-1 rounded-md bg-surface-elevated px-1.5 py-0.5 text-[11px] text-text-secondary">
                     <Files size={11} />
                     {fileCounts[pr.id]}
                   </span>

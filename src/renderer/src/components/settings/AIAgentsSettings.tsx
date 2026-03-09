@@ -22,13 +22,13 @@ export function AIAgentsSettings(): React.JSX.Element {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <span className="text-sm text-text-secondary">Loading providers...</span>
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
       </div>
     )
   }
 
   return (
-    <div>
+    <div className="stagger-children">
       <h2 className="mb-1 text-lg font-semibold text-text-primary">AI Agents</h2>
       <p className="mb-6 text-sm text-text-secondary">
         Configure AI providers for your plugins
@@ -73,7 +73,7 @@ export function AIAgentsSettings(): React.JSX.Element {
       ) : (
         <button
           onClick={() => setShowAddForm(true)}
-          className="mt-4 inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
         >
           <Plus size={14} />
           Add Custom Provider

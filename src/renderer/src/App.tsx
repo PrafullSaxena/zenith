@@ -13,7 +13,7 @@ const AboutView = React.lazy(() => import('./components/about/AboutView'))
 function LoadingFallback(): React.JSX.Element {
   return (
     <div className="flex h-full items-center justify-center">
-      <span className="text-sm text-text-secondary">Loading...</span>
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
     </div>
   )
 }

@@ -208,7 +208,7 @@ export default function AskAI({
             }
             disabled={!canAsk}
             rows={2}
-            className="flex-1 resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none disabled:opacity-50"
+            className="flex-1 resize-none rounded-lg border border-border/50 bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none disabled:opacity-50"
           />
           <div className="flex flex-col gap-1">
             {isStreaming ? (

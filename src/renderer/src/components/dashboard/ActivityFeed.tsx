@@ -61,7 +61,7 @@ export function ActivityFeed({
             return (
               <div
                 key={entry.id}
-                className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-surface/30"
+                className="flex items-center gap-3 px-4 py-2.5 transition-all duration-150 hover:bg-surface/30"
               >
                 {/* Plugin icon */}
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface text-text-secondary/70">

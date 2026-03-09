@@ -131,13 +131,13 @@ export default function AboutView(): React.JSX.Element {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="stagger-children mx-auto max-w-3xl space-y-8">
       {/* ── App Header ── */}
       <div className="text-center">
         <img
           src={zenithLogo}
           alt="Zenith"
-          className="mx-auto mb-4 h-20 w-20 shadow-lg shadow-accent/20"
+          className="mx-auto mb-4 h-20 w-20 shadow-lg shadow-accent/20 transition-transform duration-200 hover:scale-105"
         />
         <h1 className="text-2xl font-bold text-text-primary">Zenith</h1>
         <p className="mt-1 text-sm text-text-secondary">
@@ -160,7 +160,7 @@ export default function AboutView(): React.JSX.Element {
             return (
               <div
                 key={cap.title}
-                className="rounded-xl border border-border bg-surface-elevated/50 p-4 transition-colors hover:border-accent/30"
+                className="hover-lift rounded-xl border border-border/50 bg-surface-elevated/50 p-4 transition-colors hover:border-accent/30"
               >
                 <div className="mb-2 flex items-center gap-2">
                   <Icon size={16} className="shrink-0 text-accent" />
@@ -210,7 +210,7 @@ export default function AboutView(): React.JSX.Element {
                   key={link.label}
                   type="button"
                   onClick={() => handleOpenExternal(link.url)}
-                  className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-text-secondary transition-colors hover:border-accent/30 hover:text-accent"
+                  className="hover-lift flex items-center gap-1.5 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-xs text-text-secondary transition-colors hover:border-accent/30 hover:text-accent"
                 >
                   <Icon size={13} />
                   {link.label}
@@ -232,7 +232,7 @@ export default function AboutView(): React.JSX.Element {
           {GETTING_STARTED.map((item) => (
             <div
               key={item.step}
-              className="flex gap-4 rounded-xl border border-border bg-surface-elevated/30 p-4"
+              className="flex gap-4 rounded-xl border border-border/50 bg-surface-elevated/30 p-4 transition-colors hover:border-accent/20"
             >
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-bold text-accent">
                 {item.step}
@@ -256,7 +256,7 @@ export default function AboutView(): React.JSX.Element {
           <Wrench size={14} className="text-accent" />
           Diagnostics
         </h2>
-        <div className="rounded-xl border border-border bg-surface-elevated/30 p-4">
+        <div className="rounded-xl border border-border/50 bg-surface-elevated/30 p-4 transition-colors hover:border-accent/20">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-sm font-semibold text-text-primary">

@@ -59,7 +59,7 @@ export default function DbHistory({
         return (
           <div
             key={entry.id}
-            className="flex items-start gap-3 rounded-lg border border-border bg-surface p-3"
+            className="flex items-start gap-3 rounded-lg border border-border/50 bg-surface p-3"
           >
             {/* Type badge */}
             <span

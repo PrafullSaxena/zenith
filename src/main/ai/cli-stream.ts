@@ -211,6 +211,10 @@ export function streamCliReview(params: {
   let fullText = ''
   let stderrText = ''
 
+  // JSON event stream detection state (e.g. Codex CLI outputs JSON events)
+  let isJsonStream: boolean | null = null
+  let jsonBuffer = ''
+
   // Stream stdout chunks to renderer
   child.stdout.on('data', (data: Buffer) => {
     if (mainWindow.isDestroyed()) {
@@ -219,7 +223,25 @@ export function streamCliReview(params: {
     }
     const chunk = data.toString()
     fullText += chunk
-    safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk })
+
+    // Auto-detect format from the first non-whitespace character
+    if (isJsonStream === null) {
+      const combined = (jsonBuffer + chunk).trimStart()
+      if (combined.length > 0) {
+        isJsonStream = combined[0] === '{'
+      }
+    }
+
+    if (isJsonStream) {
+      jsonBuffer += chunk
+      const { text, remainder } = extractJsonEventText(jsonBuffer)
+      jsonBuffer = remainder
+      if (text) {
+        safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk: text })
+      }
+    } else {
+      safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk })
+    }
   })
 
   // Accumulate stderr so we can include it in the error message if the process fails.
@@ -232,6 +254,15 @@ export function streamCliReview(params: {
 
   child.on('close', (code) => {
     activeCliSessions.delete(sessionId)
+
+    // Flush any remaining JSON buffer
+    if (isJsonStream && jsonBuffer.trim()) {
+      const { text } = extractJsonEventText(jsonBuffer)
+      if (text) {
+        safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk: text })
+      }
+      jsonBuffer = ''
+    }
 
     if (code === 0 || code === null) {
       // Estimate tokens from output length (~4 chars per token)
@@ -273,9 +304,69 @@ export function cancelCliReview(sessionId: string): void {
 }
 
 /**
+ * Extract displayable text from a buffer of JSON event objects.
+ *
+ * Some CLI tools (e.g. Codex) output newline-/space-delimited JSON events
+ * instead of plain text. This function scans for complete JSON objects,
+ * extracts the human-readable text from agent_message items, and returns
+ * any remaining incomplete data so the caller can re-buffer it.
+ */
+function extractJsonEventText(buffer: string): { text: string; remainder: string } {
+  let text = ''
+  let pos = 0
+
+  while (pos < buffer.length) {
+    // Skip whitespace between JSON objects
+    while (pos < buffer.length && /\s/.test(buffer[pos])) pos++
+    if (pos >= buffer.length || buffer[pos] !== '{') break
+
+    // Walk the string tracking brace depth to find the closing '}'
+    let depth = 0
+    let inStr = false
+    let esc = false
+    let end = -1
+
+    for (let i = pos; i < buffer.length; i++) {
+      const ch = buffer[i]
+      if (esc) { esc = false; continue }
+      if (ch === '\\' && inStr) { esc = true; continue }
+      if (ch === '"') { inStr = !inStr; continue }
+      if (!inStr) {
+        if (ch === '{') depth++
+        else if (ch === '}') {
+          depth--
+          if (depth === 0) { end = i + 1; break }
+        }
+      }
+    }
+
+    if (end === -1) break // Incomplete JSON object — keep in buffer
+
+    try {
+      const event = JSON.parse(buffer.slice(pos, end))
+      // Extract text from completed agent messages (the actual AI response)
+      if (event.type === 'item.completed' && event.item) {
+        if (event.item.type === 'agent_message' && typeof event.item.text === 'string') {
+          text += event.item.text
+        }
+      }
+    } catch {
+      // Malformed JSON — skip this object
+    }
+
+    pos = end
+  }
+
+  return { text, remainder: buffer.slice(pos) }
+}
+
+/**
  * Stream a generic AI analysis using a local CLI tool.
  * Unlike streamCliReview(), this accepts separate systemPrompt and userPrompt parameters
  * making it reusable for Database Q&A, Query Optimization, and other future features.
+ *
+ * Automatically detects structured JSON event streams (e.g. Codex CLI) and
+ * extracts only the human-readable text. Plain-text CLI tools pass through unchanged.
  */
 export function streamCliAnalysis(params: {
   mainWindow: BrowserWindow
@@ -319,6 +410,11 @@ export function streamCliAnalysis(params: {
   let fullText = ''
   let stderrText = ''
 
+  // JSON event stream detection state
+  // null = haven't determined yet, true = JSON events, false = plain text
+  let isJsonStream: boolean | null = null
+  let jsonBuffer = ''
+
   child.stdout.on('data', (data: Buffer) => {
     if (mainWindow.isDestroyed()) {
       child.kill()
@@ -326,7 +422,27 @@ export function streamCliAnalysis(params: {
     }
     const chunk = data.toString()
     fullText += chunk
-    safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk })
+
+    // Auto-detect format from the first non-whitespace character
+    if (isJsonStream === null) {
+      const combined = (jsonBuffer + chunk).trimStart()
+      if (combined.length > 0) {
+        isJsonStream = combined[0] === '{'
+      }
+    }
+
+    if (isJsonStream) {
+      // Buffer and parse JSON events, forward only extracted text
+      jsonBuffer += chunk
+      const { text, remainder } = extractJsonEventText(jsonBuffer)
+      jsonBuffer = remainder
+      if (text) {
+        safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk: text })
+      }
+    } else {
+      // Plain text CLI — pass through unchanged
+      safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk })
+    }
   })
 
   // Accumulate stderr for error reporting
@@ -338,6 +454,15 @@ export function streamCliAnalysis(params: {
 
   child.on('close', (code) => {
     activeCliSessions.delete(sessionId)
+
+    // Flush any remaining JSON buffer
+    if (isJsonStream && jsonBuffer.trim()) {
+      const { text } = extractJsonEventText(jsonBuffer)
+      if (text) {
+        safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk: text })
+      }
+      jsonBuffer = ''
+    }
 
     if (code === 0 || code === null) {
       const estimatedTokens = Math.ceil(fullText.length / 4)

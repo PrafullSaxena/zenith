@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { Activity } from 'lucide-react'
 import { useActivityStore } from '../../stores/activity-store'
 import { ActivityFeed } from '../dashboard/ActivityFeed'
 import { PLUGINS } from '../../plugins/registry'
@@ -31,11 +32,11 @@ export default function ActivityLog(): React.JSX.Element {
   }, [entries, pluginFilter, statusFilter])
 
   return (
-    <div className="space-y-4">
+    <div className="stagger-children space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-text-primary">Activity Log</h1>
+          <h1 className="text-lg font-semibold text-text-primary">Activity Log</h1>
           <span className="rounded-full bg-surface-elevated px-2.5 py-0.5 text-xs font-medium text-text-secondary">
             {filteredEntries.length}
           </span>
@@ -53,7 +54,7 @@ export default function ActivityLog(): React.JSX.Element {
         <select
           value={pluginFilter}
           onChange={(e) => setPluginFilter(e.target.value)}
-          className="rounded border border-border bg-surface-elevated px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
+          className="rounded-lg border border-border/50 bg-surface-elevated px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
         >
           <option value="all">All Plugins</option>
           {PLUGINS.map((plugin) => (
@@ -66,7 +67,7 @@ export default function ActivityLog(): React.JSX.Element {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as ActivityStatus | 'all')}
-          className="rounded border border-border bg-surface-elevated px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
+          className="rounded-lg border border-border/50 bg-surface-elevated px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
         >
           <option value="all">All Statuses</option>
           <option value="success">Success</option>
@@ -77,11 +78,17 @@ export default function ActivityLog(): React.JSX.Element {
 
       {/* Activity list */}
       {isLoading ? (
-        <p className="py-8 text-center text-sm text-text-secondary">Loading activity...</p>
+        <div className="flex items-center justify-center py-8">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+        </div>
       ) : filteredEntries.length === 0 ? (
-        <p className="py-8 text-center text-sm text-text-secondary">
-          No activity entries match your filters
-        </p>
+        <div className="flex flex-col items-center justify-center py-10">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
+            <Activity size={20} className="text-accent/30" />
+          </div>
+          <p className="text-sm font-medium text-text-secondary/60">No activity entries match your filters</p>
+          <p className="mt-1 text-[11px] text-text-secondary/40">Try adjusting the plugin or status filter</p>
+        </div>
       ) : (
         <ActivityFeed entries={filteredEntries} />
       )}

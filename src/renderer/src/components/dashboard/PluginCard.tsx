@@ -56,7 +56,7 @@ export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.
     <button
       type="button"
       onClick={() => navigate(plugin.route)}
-      className="group relative flex flex-col rounded-xl border border-border/60 bg-surface-elevated/70 p-4 text-left transition-all duration-200 hover:border-accent/30 hover:bg-surface-elevated hover:shadow-lg hover:shadow-accent/[0.03]"
+      className="hover-lift group relative flex flex-col rounded-xl border border-border/60 bg-surface-elevated/70 p-4 text-left transition-all duration-200 hover:border-accent/30 hover:bg-surface-elevated hover:shadow-lg hover:shadow-accent/[0.03]"
     >
       {/* Subtle gradient overlay on hover */}
       <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-br from-accent/[0.02] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />

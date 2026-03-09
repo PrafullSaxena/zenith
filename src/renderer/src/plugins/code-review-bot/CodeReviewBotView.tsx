@@ -357,7 +357,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
                   activeTab === tab.key
                     ? 'border-b-2 border-accent text-accent'
                     : 'text-text-secondary hover:text-text-primary'
@@ -372,7 +372,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
           </div>
 
           {/* Tab content */}
-          <div className="flex-1 overflow-y-auto p-3">
+          <div key={activeTab} className="animate-tab-enter flex-1 overflow-y-auto p-3">
             {activeTab === 'diff' && (
               <PRDiffView
                 diffFiles={diffFiles}

@@ -1,4 +1,4 @@
-import { ExternalLink, Eye } from 'lucide-react'
+import { ExternalLink, Eye, Clock } from 'lucide-react'
 import type { ReviewHistoryEntry } from '../../types/review'
 import { formatRelativeTime } from '../../components/dashboard/utils'
 
@@ -26,17 +26,23 @@ export function ReviewHistory({
 }: ReviewHistoryProps): React.JSX.Element {
   if (isLoading) {
     return (
-      <p className="py-8 text-center text-sm text-text-secondary">
-        Loading history...
-      </p>
+      <div className="flex items-center justify-center py-8">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+      </div>
     )
   }
 
   if (!history || history.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-text-secondary">
-        No review history yet
-      </p>
+      <div className="flex flex-col items-center justify-center py-10">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
+          <Clock size={20} className="text-accent/30" />
+        </div>
+        <p className="text-sm font-medium text-text-secondary/60">No review history yet</p>
+        <p className="mt-1 text-[11px] text-text-secondary/40">
+          Completed reviews will appear here
+        </p>
+      </div>
     )
   }
 
@@ -45,7 +51,7 @@ export function ReviewHistory({
       {history.map((entry) => (
         <div
           key={entry.id}
-          className="flex items-center gap-3 rounded-md border border-border px-3 py-2.5 transition-colors hover:bg-surface-elevated"
+          className="flex items-center gap-3 rounded-lg border border-border/50 px-3 py-2.5 transition-colors hover:bg-surface-elevated"
         >
           {/* PR title with external link */}
           <div className="min-w-0 flex-1">
@@ -89,7 +95,7 @@ export function ReviewHistory({
             <button
               type="button"
               onClick={() => onOpen(entry)}
-              className="shrink-0 rounded px-2 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10"
+              className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10"
               title="Open review comments"
             >
               <Eye size={13} className="inline mr-1" />

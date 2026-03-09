@@ -76,13 +76,13 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
   const providerColorIndex: Record<string, number> = {}
   providerIds.forEach((pid, i) => { providerColorIndex[pid] = i })
 
-  // Chart SVG dimensions
-  const W = 320
-  const H = 150
-  const PAD_L = 36
-  const PAD_R = 8
-  const PAD_T = 8
-  const PAD_B = 22
+  // Chart SVG dimensions — viewBox sized close to rendered px so font sizes stay proportional
+  const W = 640
+  const H = 220
+  const PAD_L = 48
+  const PAD_R = 12
+  const PAD_T = 12
+  const PAD_B = 28
   const chartW = W - PAD_L - PAD_R
   const chartH = H - PAD_T - PAD_B
 
@@ -169,9 +169,9 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
                 <line
                   x1={PAD_L} y1={yl.y} x2={W - PAD_R} y2={yl.y}
                   stroke="currentColor" className="text-border/40"
-                  strokeDasharray={i === 0 ? undefined : '2,4'} strokeWidth={0.5}
+                  strokeDasharray={i === 0 ? undefined : '3,5'} strokeWidth={0.6}
                 />
-                <text x={PAD_L - 4} y={yl.y + 3} textAnchor="end" className="fill-text-secondary/50" fontSize={8}>
+                <text x={PAD_L - 6} y={yl.y + 4} textAnchor="end" className="fill-text-secondary/50" fontSize={10}>
                   {yl.label}
                 </text>
               </g>
@@ -181,7 +181,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
             {buckets.map((b, bi) => (
               <text
                 key={bi} x={PAD_L + bi * xStep} y={H - 5}
-                textAnchor="middle" className="fill-text-secondary/50" fontSize={8}
+                textAnchor="middle" className="fill-text-secondary/50" fontSize={10}
               >
                 {b.label}
               </text>
@@ -197,12 +197,12 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
               <g key={line.pid}>
                 <polyline
                   points={line.linePoints} fill="none" stroke={line.color}
-                  strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
+                  strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
                 />
                 {line.points.map((p, bi) => {
                   const val = buckets[bi].byProvider[line.pid] || 0
                   if (val === 0) return null
-                  return <circle key={bi} cx={p.x} cy={p.y} r={2} fill={line.color} />
+                  return <circle key={bi} cx={p.x} cy={p.y} r={2.5} fill={line.color} />
                 })}
               </g>
             ))}

@@ -18,7 +18,7 @@ export function GeneralSettings(): React.JSX.Element {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <span className="text-sm text-text-secondary">Loading settings...</span>
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
       </div>
     )
   }
@@ -66,7 +66,7 @@ export function GeneralSettings(): React.JSX.Element {
   }
 
   return (
-    <div>
+    <div className="stagger-children">
       <h2 className="mb-6 text-lg font-semibold text-text-primary">General</h2>
 
       <SettingsField

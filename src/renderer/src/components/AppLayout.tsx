@@ -1,7 +1,9 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 
 export function AppLayout(): React.JSX.Element {
+  const location = useLocation()
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
       {/* Sidebar — fixed 56px width, never collapses */}
@@ -12,9 +14,11 @@ export function AppLayout(): React.JSX.Element {
         {/* Drag region for custom titlebar — transparent, just for dragging */}
         <div className="drag-region h-8 w-full flex-shrink-0" />
 
-        {/* Main content — fills remaining height */}
+        {/* Main content — fills remaining height, route transitions via key */}
         <main className="min-h-0 flex-1 overflow-y-auto p-4">
-          <Outlet />
+          <div key={location.pathname} className="animate-page-enter h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

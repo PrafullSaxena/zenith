@@ -291,6 +291,60 @@ function InlineMarkdownBlock({ text }: { text: string }): React.JSX.Element {
           )
         }
 
+        // Markdown table — lines with | separators and a ---+| divider row
+        const isTable =
+          lines.length >= 2 &&
+          lines[0].includes('|') &&
+          /^\|?\s*[-:\s|]+\s*\|?$/.test(lines[1].trim()) &&
+          lines[1].includes('-')
+        if (isTable) {
+          const parseRow = (line: string): string[] =>
+            line
+              .trim()
+              .replace(/^\||\|$/g, '')
+              .split('|')
+              .map((cell) => cell.trim())
+
+          const headers = parseRow(lines[0])
+          const bodyRows = lines
+            .slice(2)
+            .filter((l) => l.trim() && l.includes('|'))
+            .map(parseRow)
+
+          return (
+            <div key={pi} className="my-3 overflow-x-auto rounded-lg border border-border">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-surface-elevated/50">
+                    {headers.map((h, hi) => (
+                      <th
+                        key={hi}
+                        className="whitespace-nowrap px-3 py-2 text-left font-semibold text-text-primary"
+                      >
+                        {renderInline(h)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {bodyRows.map((row, ri) => (
+                    <tr
+                      key={ri}
+                      className="border-b border-border/50 last:border-b-0 hover:bg-surface-elevated/30"
+                    >
+                      {headers.map((_, ci) => (
+                        <td key={ci} className="px-3 py-1.5 text-text-primary">
+                          {renderInline(row[ci] ?? '')}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        }
+
         // Regular paragraph
         return (
           <p key={pi} className="my-1.5 text-sm leading-relaxed text-text-primary">

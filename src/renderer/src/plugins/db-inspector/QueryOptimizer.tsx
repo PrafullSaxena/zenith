@@ -122,7 +122,7 @@ export default function QueryOptimizer({
           }
           disabled={!canAnalyze}
           rows={4}
-          className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 font-mono text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none disabled:opacity-50"
+          className="w-full resize-none rounded-lg border border-border/50 bg-surface px-3 py-2 font-mono text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none disabled:opacity-50"
         />
         <div className="mt-2 flex items-center gap-2">
           {isActive ? (
@@ -249,7 +249,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
   ).length
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-border/50 bg-surface shadow-sm">
       {/* Tile header */}
       <button
         type="button"

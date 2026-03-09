@@ -105,7 +105,7 @@ export function ReviewPanel({
           type="button"
           disabled={!canStart}
           onClick={onStart}
-          className={`rounded-md px-6 py-2.5 text-sm font-medium transition-colors ${
+          className={`rounded-lg px-6 py-2.5 text-sm font-medium transition-colors ${
             canStart
               ? 'bg-accent text-background hover:bg-accent/90'
               : 'cursor-not-allowed bg-surface-elevated text-text-secondary'

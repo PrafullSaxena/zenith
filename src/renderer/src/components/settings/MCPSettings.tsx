@@ -80,13 +80,13 @@ export function MCPSettings(): React.JSX.Element {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <span className="text-sm text-text-secondary">Loading settings...</span>
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
       </div>
     )
   }
 
   return (
-    <div>
+    <div className="stagger-children">
       <h2 className="mb-1 text-lg font-semibold text-text-primary">MCP Servers</h2>
       <p className="mb-6 text-xs text-text-secondary">
         Configure Model Context Protocol servers for enhanced AI capabilities and tool
@@ -105,7 +105,7 @@ export function MCPSettings(): React.JSX.Element {
       )}
 
       {servers.length > 0 && (
-        <div className="mb-4 divide-y divide-border rounded-lg border border-border">
+        <div className="mb-4 divide-y divide-border/30 rounded-xl border border-border/50">
           {servers.map((server) => (
             <div
               key={server.id}

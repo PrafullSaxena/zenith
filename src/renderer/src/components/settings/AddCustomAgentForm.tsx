@@ -62,7 +62,7 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
     'w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition'
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 rounded-lg border border-border bg-surface p-4">
+    <form onSubmit={handleSubmit} className="mt-4 rounded-xl border border-border/50 bg-surface p-4">
       <h3 className="mb-3 text-sm font-semibold text-text-primary">Add Custom Provider</h3>
 
       {/* Provider type toggle */}
@@ -173,7 +173,7 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
       <div className="mt-4 flex items-center gap-2">
         <button
           type="submit"
-          className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-background transition hover:bg-accent/90"
+          className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-background transition hover:bg-accent/90"
         >
           Add Provider
         </button>

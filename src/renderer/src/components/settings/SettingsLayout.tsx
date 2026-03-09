@@ -63,9 +63,9 @@ export function SettingsLayout(): React.JSX.Element {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`w-full px-3 py-1.5 text-left text-sm transition ${
+            className={`w-full rounded-r-lg px-3 py-2 text-left text-sm transition-colors ${
               activeCategory === cat.id
-                ? 'bg-surface-elevated text-text-primary font-medium'
+                ? 'border-l-2 border-accent bg-surface-elevated text-text-primary font-medium'
                 : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/50'
             }`}
           >
@@ -74,7 +74,7 @@ export function SettingsLayout(): React.JSX.Element {
         ))}
 
         {/* Divider */}
-        <div className="mx-3 my-2 border-t border-border" />
+        <div className="mx-3 my-2 border-t border-border/30" />
 
         <div className="px-3 mb-1">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
@@ -87,9 +87,9 @@ export function SettingsLayout(): React.JSX.Element {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`w-full px-3 py-1.5 text-left text-sm transition ${
+            className={`w-full rounded-r-lg px-3 py-2 text-left text-sm transition-colors ${
               activeCategory === cat.id
-                ? 'bg-surface-elevated text-text-primary font-medium'
+                ? 'border-l-2 border-accent bg-surface-elevated text-text-primary font-medium'
                 : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/50'
             }`}
           >
@@ -98,9 +98,11 @@ export function SettingsLayout(): React.JSX.Element {
         ))}
       </div>
 
-      {/* Right content panel */}
+      {/* Right content panel — animate on category switch */}
       <div className="flex-1 overflow-y-auto p-6">
-        {renderContent()}
+        <div key={activeCategory} className="animate-tab-enter">
+          {renderContent()}
+        </div>
       </div>
     </div>
   )

@@ -87,7 +87,7 @@ export default function SchemaExplorer({
           <select
             value={activeDatabase ?? ''}
             onChange={(e) => onDatabaseChange(e.target.value)}
-            className="w-full rounded border border-border bg-surface px-2 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none"
+            className="w-full rounded-lg border border-border/50 bg-surface px-2 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none"
           >
             <option value="" disabled>
               Select database…
@@ -110,7 +110,7 @@ export default function SchemaExplorer({
           value={activeSchema ?? ''}
           onChange={(e) => onSchemaChange(e.target.value)}
           disabled={!activeDatabase}
-          className="w-full rounded border border-border bg-surface px-2 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none disabled:opacity-50"
+          className="w-full rounded-lg border border-border/50 bg-surface px-2 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none disabled:opacity-50"
         >
           <option value="" disabled>
             Select schema…
@@ -132,7 +132,7 @@ export default function SchemaExplorer({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={`Search ${tables.length} tables…`}
-            className="w-full rounded border border-border bg-surface pl-7 pr-2 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none"
+            className="w-full rounded-lg border border-border/50 bg-surface pl-7 pr-2 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none"
           />
         </div>
       )}

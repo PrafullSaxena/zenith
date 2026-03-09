@@ -59,12 +59,12 @@ export function AgentRow({
   }
 
   return (
-    <tr className="border-b border-border">
+    <tr className="border-b border-border transition-colors hover:bg-surface-elevated/30">
       {/* Provider name + type badge */}
       <td className="py-3 pr-4">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-text-primary">{provider.name}</span>
-          <span className="rounded bg-surface-elevated px-1.5 py-0.5 text-xs text-text-secondary">
+          <span className="rounded-md bg-surface-elevated px-1.5 py-0.5 text-xs text-text-secondary">
             {typeLabels[provider.type] ?? provider.type}
           </span>
         </div>
@@ -95,7 +95,7 @@ export function AgentRow({
                 />
                 <button
                   onClick={handleSaveKey}
-                  className="rounded bg-accent px-2 py-1 text-xs font-medium text-background transition hover:bg-accent/90"
+                  className="rounded-lg bg-accent px-2.5 py-1 text-xs font-medium text-background transition hover:bg-accent/90"
                 >
                   Save
                 </button>
@@ -118,7 +118,7 @@ export function AgentRow({
                 )}
                 <button
                   onClick={() => setIsEditingKey(true)}
-                  className="rounded border border-border px-2 py-1 text-xs text-text-secondary transition hover:border-accent hover:text-accent"
+                  className="rounded-lg border border-border px-2.5 py-1 text-xs text-text-secondary transition hover:border-accent hover:text-accent"
                 >
                   {provider.hasApiKey ? 'Update' : 'Set'}
                 </button>
@@ -136,7 +136,7 @@ export function AgentRow({
           <button
             onClick={onTestConnection}
             disabled={isTesting}
-            className="inline-flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs text-text-secondary transition hover:border-accent hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1 text-xs text-text-secondary transition hover:border-accent hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isTesting && <Loader2 size={12} className="animate-spin" />}
             Test

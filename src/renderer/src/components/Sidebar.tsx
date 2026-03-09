@@ -47,24 +47,24 @@ function SidebarIcon({
     >
       {({ isActive }) => (
         <>
-          {/* Active indicator — left accent border */}
+          {/* Active indicator — left accent bar */}
           <div
-            className={`absolute left-0 h-6 w-0.5 rounded-r transition-opacity ${
+            className={`absolute left-0 h-6 w-[3px] rounded-r transition-all duration-200 ${
               isActive ? 'bg-accent opacity-100' : 'opacity-0'
             }`}
           />
           {/* Icon button */}
           <div
-            className={`mx-auto flex h-10 w-10 items-center justify-center rounded transition ${
+            className={`mx-auto flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200 ${
               isActive
-                ? 'text-accent'
-                : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+                ? 'text-accent shadow-[0_0_8px_var(--color-accent-glow)]'
+                : 'text-text-secondary hover:scale-105 hover:bg-surface-elevated hover:text-text-primary'
             }`}
           >
             {Icon ? <Icon size={20} /> : <span className="text-xs">{iconName}</span>}
           </div>
           {/* Tooltip */}
-          <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded bg-surface-elevated px-2 py-1 text-xs text-text-primary opacity-0 transition group-hover:opacity-100">
+          <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-lg border border-border/30 bg-surface-elevated/95 px-2.5 py-1 text-xs text-text-primary opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100">
             {label}
           </span>
         </>
@@ -86,7 +86,7 @@ export function Sidebar(): React.JSX.Element {
         <SidebarIcon iconName="Activity" label="Activity Log" to="/activity" />
 
         {/* Separator between app icons and plugin icons */}
-        <div className="mx-auto my-1 h-px w-6 bg-border" />
+        <div className="mx-auto my-1 h-px w-7 bg-border/40" />
 
         {/* Plugin icons */}
         {PLUGINS.map((plugin) => (
