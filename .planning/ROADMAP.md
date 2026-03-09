@@ -9,7 +9,7 @@
 | 3 | CodeReviewBot Plugin | 4 | Planned | 0/4 |
 | 4 | DbInspector Plugin | 5 | Planned | 0/5 |
 | 5 | AstroPatch Plugin | 7 | 4/4 | Complete   | 2026-03-09 | 6 | Polish & Production | 3 | Planned | 0/3 |
-| 7 | Launchpad Plugin | 4 | Planned | 0/4 |
+| 7 | Launchpad Plugin | 4 | Complete | 4/4 |
 
 ## Phase 1: Foundation
 
@@ -68,10 +68,10 @@ Plans:
 **Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 07-01-PLAN.md -- Types, pricing catalogs (AWS/GCP/Azure), cost calculator, service equivalence map
-- [ ] 07-02-PLAN.md -- Zustand store, plugin registration, PDF generator + IPC handler + preload bridge
-- [ ] 07-03-PLAN.md -- Core estimator UI: LaunchpadView, ProviderSelector, ServiceCatalog, ResourceConfigurator, EstimationSummary
-- [ ] 07-04-PLAN.md -- AI Advisor, Estimation History, Comparison View, and visual verification
+- [x] 07-01-PLAN.md -- Types, pricing catalogs (AWS/GCP/Azure), cost calculator, service equivalence map
+- [x] 07-02-PLAN.md -- Zustand store, plugin registration, PDF generator + IPC handler + preload bridge
+- [x] 07-03-PLAN.md -- Core estimator UI: LaunchpadView, ProviderSelector, ServiceCatalog, ResourceConfigurator, EstimationSummary
+- [x] 07-04-PLAN.md -- AI Advisor, Estimation History, Comparison View, and visual verification
 
 ## Phase 6: Polish & Production
 
