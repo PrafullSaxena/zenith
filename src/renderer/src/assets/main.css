@@ -296,14 +296,8 @@ body {
   position: relative;
 }
 
-/* Force dark theme and constrain to container */
+/* Ensure tldraw fills its container */
 .tldraw-container .tl-container {
   height: 100% !important;
   width: 100% !important;
-  color-scheme: dark;
-}
-
-/* Adjust tldraw background to match app theme */
-.tldraw-container .tl-background {
-  background-color: var(--color-surface) !important;
 }

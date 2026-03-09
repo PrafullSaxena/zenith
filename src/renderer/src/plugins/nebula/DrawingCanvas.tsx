@@ -49,10 +49,15 @@ export default function DrawingCanvas({
     (editor: Editor) => {
       editorRef.current = editor
 
+      // Force dark mode to match app theme
+      editor.updateInstanceState({ isDarkMode: true })
+
       // Load previously saved snapshot if available
       if (snapshot && typeof snapshot === 'object' && 'document' in snapshot) {
         try {
           editor.loadSnapshot(snapshot as Parameters<Editor['loadSnapshot']>[0])
+          // Re-apply dark mode after snapshot load (snapshot may override it)
+          editor.updateInstanceState({ isDarkMode: true })
         } catch {
           // Snapshot format mismatch — start fresh
         }
