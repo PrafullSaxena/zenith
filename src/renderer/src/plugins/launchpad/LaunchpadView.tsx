@@ -6,7 +6,9 @@
  *  - Estimator tab: ProviderSelector (no provider) or 2-col layout (provider set)
  *    - Left: ServiceCatalog + ResourceConfigurator (scrollable)
  *    - Right: EstimationSummary (sticky)
- *  - ai-advisor, history, compare: placeholder divs (built in Plan 04)
+ *  - ai-advisor: AiAdvisor (chat + streaming + suggestion apply)
+ *  - history: EstimationHistory (save/load/delete)
+ *  - compare: ComparisonView (cross-provider side-by-side costs)
  *
  * Default-exported for React.lazy() compatibility in the plugin registry.
  */
@@ -19,6 +21,9 @@ import ProviderSelector from './ProviderSelector'
 import ServiceCatalog from './ServiceCatalog'
 import ResourceConfigurator from './ResourceConfigurator'
 import EstimationSummary from './EstimationSummary'
+import AiAdvisor from './AiAdvisor'
+import EstimationHistory from './EstimationHistory'
+import ComparisonView from './ComparisonView'
 
 const TABS: { id: LaunchpadTab; label: string; icon: typeof Calculator }[] = [
   { id: 'estimator', label: 'Estimator', icon: Calculator },
@@ -123,38 +128,14 @@ export default function LaunchpadView(): React.JSX.Element {
           </>
         )}
 
-        {/* AI Advisor tab — placeholder (Plan 04) */}
-        {activeTab === 'ai-advisor' && (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-center">
-              <MessageSquare size={32} className="mx-auto mb-3 text-text-secondary/40" />
-              <p className="text-sm text-text-secondary">AI Advisor</p>
-              <p className="text-xs text-text-secondary/60 mt-1">Coming in Plan 04</p>
-            </div>
-          </div>
-        )}
+        {/* AI Advisor tab */}
+        {activeTab === 'ai-advisor' && <AiAdvisor />}
 
-        {/* History tab — placeholder (Plan 04) */}
-        {activeTab === 'history' && (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-center">
-              <History size={32} className="mx-auto mb-3 text-text-secondary/40" />
-              <p className="text-sm text-text-secondary">History</p>
-              <p className="text-xs text-text-secondary/60 mt-1">Coming in Plan 04</p>
-            </div>
-          </div>
-        )}
+        {/* History tab */}
+        {activeTab === 'history' && <EstimationHistory />}
 
-        {/* Compare tab — placeholder (Plan 04) */}
-        {activeTab === 'compare' && (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-center">
-              <GitCompare size={32} className="mx-auto mb-3 text-text-secondary/40" />
-              <p className="text-sm text-text-secondary">Compare</p>
-              <p className="text-xs text-text-secondary/60 mt-1">Coming in Plan 04</p>
-            </div>
-          </div>
-        )}
+        {/* Compare tab */}
+        {activeTab === 'compare' && <ComparisonView />}
       </div>
     </div>
   )
