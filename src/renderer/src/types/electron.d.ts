@@ -83,7 +83,7 @@ export interface ElectronAPI {
     onStreamChunk: (
       cb: (data: { sessionId: string; chunk: string }) => void
     ) => void
-    onStreamDone: (cb: (data: { sessionId: string }) => void) => void
+    onStreamDone: (cb: (data: { sessionId: string; usage?: { totalTokens: number; isEstimated: boolean } }) => void) => void
     onStreamError: (
       cb: (data: { sessionId: string; error: string }) => void
     ) => void
@@ -182,6 +182,7 @@ export interface ElectronAPI {
     deleteNote: (id: string) => Promise<void>
     searchNotes: (query: string) => Promise<unknown[]>
     getGraph: () => Promise<unknown>
+    updateEdges: (noteId: string, edges: { targetId: string; relationship: string; weight: number }[]) => Promise<void>
     transcribeAudio: (buffer: number[]) => Promise<unknown>
     selectAudioFile: () => Promise<{ canceled: boolean; path: string }>
   }
