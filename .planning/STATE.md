@@ -12,13 +12,13 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Current Phase:** 08
 **Current Phase Name:** Nebula Plugin
 **Total Phases:** 8
-**Current Plan:** 4
+**Current Plan:** 5
 **Total Plans in Phase:** 6
 **Status:** Ready to execute
 **Last Activity:** 2026-03-09
 **Last Activity Description:** Completed 08-02 — Nebula plugin registration, Zustand store, and 3-tab NebulaView shell
 
-**Progress:** [████████░░] 82%
+**Progress:** [█████████░] 86%
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 07-launchpad-plugin P04 | 3min | 2 tasks | 4 files |
 | Phase 08-nebula-plugin P02 | 3min | 2 tasks | 7 files |
 | Phase 08 P01 | 5min | 2 tasks | 5 files |
+| Phase 08-nebula-plugin PP04 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,8 @@ Recent decisions affecting current work:
 - [Phase 08]: FTS5 with external content table synced via manual INSERT/DELETE in CRUD methods for explicit control
 - [Phase 08]: Note shape duplicated in file-storage.ts to avoid renderer type imports in main process
 - [Phase 08]: better-sqlite3 externalized from ASAR and rebuilt via electron-rebuild for Electron compatibility
+- [Phase 08-nebula-plugin]: Fire-and-forget AI summarization: note saves immediately, AI runs in background with session-scoped streaming listeners and updates note asynchronously
+- [Phase 08-nebula-plugin]: Knowledge graph edge inference uses keyword-overlap on NoteListItem title+summary for lightweight renderer-side matching
 
 ### Pending Todos
 
@@ -123,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-09T18:31:14.239Z
-**Stopped at:** Completed 08-01-PLAN.md
+**Last session:** 2026-03-09T18:41:01.223Z
+**Stopped at:** Completed 08-04-PLAN.md
 **Resume file:** None
