@@ -10,7 +10,7 @@
 | 4 | DbInspector Plugin | 5 | Planned | 0/5 |
 | 5 | AstroPatch Plugin | 7 | 4/4 | Complete   | 2026-03-09 | 6 | Polish & Production | 3 | Planned | 0/3 |
 | 7 | Launchpad Plugin | 4 | Complete | 4/4 |
-| 8 | Nebula Plugin | 6 | Planned | 0/6 |
+| 8 | Nebula Plugin | 6 | In Progress | 2/6 |
 
 ## Phase 1: Foundation
 
@@ -80,11 +80,11 @@ Plans:
 
 **Requirements:** [NEBL-01, NEBL-02, NEBL-03, NEBL-04, NEBL-05, NEBL-06, NEBL-07, NEBL-08, NEBL-09, NEBL-10, NEBL-11, NEBL-12]
 
-**Plans:** 6 plans
+**Plans:** 2/6 plans complete
 
 Plans:
-- [ ] 08-01-PLAN.md -- Install deps, Nebula types, SQLite database manager with FTS5, note file storage
-- [ ] 08-02-PLAN.md -- Plugin registration, Zustand store, NebulaView 3-tab layout shell
+- [x] 08-01-PLAN.md -- Install deps, Nebula types, SQLite database manager with FTS5, note file storage
+- [x] 08-02-PLAN.md -- Plugin registration, Zustand store, NebulaView 3-tab layout shell
 - [ ] 08-03-PLAN.md -- IPC handlers, preload bridge, Tiptap note editor, tldraw drawing canvas, note list CRUD
 - [ ] 08-04-PLAN.md -- AI summarization pipeline, knowledge graph edge inference, force-directed graph visualization
 - [ ] 08-05-PLAN.md -- Voice recording (MediaRecorder), OpenAI transcription with diarization, transcription-to-knowledge pipeline
