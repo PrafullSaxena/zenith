@@ -34,6 +34,7 @@ export default function NebulaView(): React.JSX.Element {
   const loadNotes = useNebulaStore((s) => s.loadNotes)
   const activeNote = useNebulaStore((s) => s.activeNote)
   const saveNote = useNebulaStore((s) => s.saveNote)
+  const isSummarizing = useNebulaStore((s) => s.isSummarizing)
   const lastTranscript = useNebulaStore((s) => s.lastTranscript)
   const handleTranscription = useNebulaStore((s) => s.handleTranscription)
 
@@ -72,12 +73,13 @@ export default function NebulaView(): React.JSX.Element {
     [activeNote, saveNote]
   )
 
-  // Title change: immediate store update + debounced save
+  // Title change: update store immediately for responsiveness + debounced save
   const handleTitleChange = useCallback(
     (title: string) => {
       if (!activeNote) return
-      // Update the active note in store immediately for responsiveness
       const updatedNote = { ...activeNote, title, updatedAt: new Date().toISOString() }
+      // Immediately reflect title in UI
+      useNebulaStore.setState({ activeNote: updatedNote })
       if (titleTimerRef.current) clearTimeout(titleTimerRef.current)
       titleTimerRef.current = setTimeout(() => {
         saveNote(updatedNote)
@@ -134,7 +136,7 @@ export default function NebulaView(): React.JSX.Element {
       </div>
 
       {/* Tab content */}
-      <div key={activeTab} className="flex-1 overflow-hidden">
+      <div key={activeTab} className="flex-1 overflow-hidden animate-tab-enter">
         {/* Notes tab */}
         {activeTab === 'notes' && (
           <div className="flex h-full overflow-hidden">
@@ -147,30 +149,38 @@ export default function NebulaView(): React.JSX.Element {
                     title={activeNote.title}
                     onUpdate={handleContentUpdate}
                     onTitleChange={handleTitleChange}
+                    isSummarizing={isSummarizing}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowDrawing(!showDrawing)}
-                    className={`flex items-center gap-1.5 border-t border-border px-3 py-1.5 text-xs transition-colors ${
-                      showDrawing
-                        ? 'bg-accent/10 text-accent'
-                        : 'text-text-secondary hover:text-text-primary'
-                    }`}
-                  >
-                    <PenTool size={12} />
-                    {showDrawing ? 'Hide Drawing' : 'Show Drawing'}
-                  </button>
-                  <DrawingCanvas
-                    snapshot={activeNote.drawing}
-                    onSave={handleDrawingSave}
-                    visible={showDrawing}
-                  />
+
+                  {/* Drawing toggle + canvas */}
+                  <div className="border-t border-border">
+                    <button
+                      type="button"
+                      onClick={() => setShowDrawing(!showDrawing)}
+                      className={`flex w-full items-center gap-1.5 px-3 py-1.5 text-xs transition-colors ${
+                        showDrawing
+                          ? 'bg-accent/10 text-accent'
+                          : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+                      }`}
+                    >
+                      <PenTool size={12} />
+                      {showDrawing ? 'Hide Drawing' : 'Show Drawing'}
+                    </button>
+                    <DrawingCanvas
+                      snapshot={activeNote.drawing}
+                      onSave={handleDrawingSave}
+                      visible={showDrawing}
+                    />
+                  </div>
                 </>
               ) : (
                 <div className="flex flex-1 items-center justify-center text-text-secondary">
                   <div className="text-center">
-                    <FileText size={32} className="mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">Select a note or create a new one</p>
+                    <FileText size={36} className="mx-auto mb-3 opacity-30" />
+                    <p className="text-sm font-medium">No note selected</p>
+                    <p className="mt-1 text-xs text-text-secondary/60">
+                      Select a note from the sidebar or create a new one
+                    </p>
                   </div>
                 </div>
               )}

@@ -3,7 +3,7 @@
  *
  * Features:
  *  - Title input with placeholder
- *  - Toolbar: Bold, Italic, H1, H2, H3, Bullet List, Ordered List, Code Block
+ *  - Toolbar with lucide icons: Bold, Italic, H1, H2, H3, Bullet List, Ordered List, Code Block
  *  - ProseMirror editor via Tiptap useEditor with StarterKit + Placeholder
  *  - JSON content persistence via onUpdate callback
  *  - Content sync when switching between notes
@@ -13,6 +13,17 @@ import { useEffect } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import {
+  Bold,
+  Italic,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Code2,
+  Sparkles
+} from 'lucide-react'
 import VoiceRecorder from './VoiceRecorder'
 
 interface NoteEditorProps {
@@ -20,13 +31,15 @@ interface NoteEditorProps {
   onUpdate: (json: object) => void
   onTitleChange: (title: string) => void
   title: string
+  isSummarizing?: boolean
 }
 
 export default function NoteEditor({
   content,
   onUpdate,
   onTitleChange,
-  title
+  title,
+  isSummarizing
 }: NoteEditorProps): React.JSX.Element {
   const editor = useEditor({
     extensions: [
@@ -58,59 +71,73 @@ export default function NoteEditor({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Title input */}
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => onTitleChange(e.target.value)}
-        placeholder="Untitled"
-        className="w-full border-none bg-transparent px-4 pt-4 pb-1 text-2xl font-bold text-text-primary outline-none placeholder:text-text-secondary/50"
-      />
+      <div className="flex items-center gap-2 px-4 pt-4 pb-1">
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => onTitleChange(e.target.value)}
+          placeholder="Untitled"
+          className="flex-1 border-none bg-transparent text-xl font-bold text-text-primary outline-none placeholder:text-text-secondary/40"
+        />
+        {isSummarizing && (
+          <div className="flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-[10px] text-accent">
+            <Sparkles size={10} className="animate-pulse" />
+            Summarizing...
+          </div>
+        )}
+      </div>
 
       {/* Toolbar */}
-      <div className="flex gap-1 border-b border-border bg-surface px-3 py-1.5">
+      <div className="flex items-center gap-0.5 border-b border-border bg-surface px-3 py-1">
         <ToolbarButton
-          label="B"
+          icon={<Bold size={14} />}
           isActive={editor?.isActive('bold') ?? false}
           onClick={() => editor?.chain().focus().toggleBold().run()}
-          bold
+          title="Bold"
         />
         <ToolbarButton
-          label="I"
+          icon={<Italic size={14} />}
           isActive={editor?.isActive('italic') ?? false}
           onClick={() => editor?.chain().focus().toggleItalic().run()}
-          italic
+          title="Italic"
         />
-        <div className="mx-1 w-px bg-border" />
+        <div className="mx-1 h-4 w-px bg-border" />
         <ToolbarButton
-          label="H1"
+          icon={<Heading1 size={14} />}
           isActive={editor?.isActive('heading', { level: 1 }) ?? false}
           onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
+          title="Heading 1"
         />
         <ToolbarButton
-          label="H2"
+          icon={<Heading2 size={14} />}
           isActive={editor?.isActive('heading', { level: 2 }) ?? false}
           onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+          title="Heading 2"
         />
         <ToolbarButton
-          label="H3"
+          icon={<Heading3 size={14} />}
           isActive={editor?.isActive('heading', { level: 3 }) ?? false}
           onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+          title="Heading 3"
         />
-        <div className="mx-1 w-px bg-border" />
+        <div className="mx-1 h-4 w-px bg-border" />
         <ToolbarButton
-          label="UL"
+          icon={<List size={14} />}
           isActive={editor?.isActive('bulletList') ?? false}
           onClick={() => editor?.chain().focus().toggleBulletList().run()}
+          title="Bullet List"
         />
         <ToolbarButton
-          label="OL"
+          icon={<ListOrdered size={14} />}
           isActive={editor?.isActive('orderedList') ?? false}
           onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+          title="Ordered List"
         />
         <ToolbarButton
-          label="<>"
+          icon={<Code2 size={14} />}
           isActive={editor?.isActive('codeBlock') ?? false}
           onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+          title="Code Block"
         />
       </div>
 
@@ -131,29 +158,28 @@ export default function NoteEditor({
 // ── Toolbar button ──────────────────────────────────────────────────
 
 function ToolbarButton({
-  label,
+  icon,
   isActive,
   onClick,
-  bold,
-  italic
+  title
 }: {
-  label: string
+  icon: React.ReactNode
   isActive: boolean
   onClick: () => void
-  bold?: boolean
-  italic?: boolean
+  title: string
 }): React.JSX.Element {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded px-2 py-0.5 text-xs transition-colors ${
+      title={title}
+      className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
         isActive
           ? 'bg-accent/15 text-accent'
-          : 'text-text-secondary hover:text-text-primary'
-      } ${bold ? 'font-bold' : ''} ${italic ? 'italic' : ''}`}
+          : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+      }`}
     >
-      {label}
+      {icon}
     </button>
   )
 }

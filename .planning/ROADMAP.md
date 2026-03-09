@@ -10,7 +10,7 @@
 | 4 | DbInspector Plugin | 5 | Planned | 0/5 |
 | 5 | AstroPatch Plugin | 7 | 4/4 | Complete   | 2026-03-09 | 6 | Polish & Production | 3 | Planned | 0/3 |
 | 7 | Launchpad Plugin | 4 | Complete | 4/4 |
-| 8 | Nebula Plugin | 6 | In Progress | 2/6 |
+| 8 | Nebula Plugin | 6 | Complete | 6/6 |
 
 ## Phase 1: Foundation
 

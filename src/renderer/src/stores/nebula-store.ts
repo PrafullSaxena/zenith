@@ -243,7 +243,13 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
         : n
     )
 
-    set({ isSaving: false, notes: updatedNotes })
+    // Also update activeNote to keep state fresh for subsequent saves
+    const isActive = get().activeNoteId === note.id
+    set({
+      isSaving: false,
+      notes: updatedNotes,
+      ...(isActive ? { activeNote: note } : {})
+    })
 
     // Fire-and-forget AI summarization for notes with meaningful content
     const plainText = extractPlainText(note.content)
