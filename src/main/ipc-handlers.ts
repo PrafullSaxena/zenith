@@ -9,6 +9,8 @@ import { PostgresConnectionManager } from './db/postgres'
 import { buildSchemaContext, buildQueryOptimizationContext, buildTableDDL } from './db/introspection'
 import { exportDiagnosticZip } from './log-collector'
 import { exportEstimationPdf } from './launchpad/pdf-generator'
+import { NebulaDatabase } from './nebula/database'
+import { NoteFileStorage } from './nebula/file-storage'
 
 /**
  * Separate electron-store instance for credentials.
@@ -21,6 +23,20 @@ const tokenManager = new TokenManager()
 
 /** Module-level PostgreSQL connection manager for DbInspector. */
 const dbManager = new PostgresConnectionManager()
+
+/** Lazy-initialized Nebula database and file storage instances. */
+let nebulaDb: NebulaDatabase | null = null
+let nebulaFs: NoteFileStorage | null = null
+
+function getNebulaInstances(): { db: NebulaDatabase; fs: NoteFileStorage } {
+  if (!nebulaDb || !nebulaFs) {
+    const storagePath =
+      (getSetting('plugins.nebula.storagePath') as string) || app.getPath('userData')
+    nebulaDb = new NebulaDatabase(storagePath)
+    nebulaFs = new NoteFileStorage(storagePath)
+  }
+  return { db: nebulaDb, fs: nebulaFs }
+}
 
 /**
  * Registers all IPC handlers for settings, credentials, and app channels.
@@ -412,6 +428,82 @@ export function registerIpcHandlers(): void {
     if (!mainWindow) throw new Error('No window available for save dialog')
     const filePath = await exportEstimationPdf(mainWindow, estimation)
     return { filePath }
+  })
+
+  // --- Nebula channels ---
+  ipcMain.handle('nebula:saveNote', async (_event, note: {
+    id: string
+    title: string
+    content: object
+    drawing: object | null
+    summary: string | null
+    topics: string[]
+    createdAt: string
+    updatedAt: string
+  }) => {
+    const { db, fs: noteFs } = getNebulaInstances()
+    noteFs.writeNote(note)
+    const contentText = noteFs.extractPlainText(note.content)
+    db.upsertNote({
+      id: note.id,
+      title: note.title,
+      content: JSON.stringify(note.content),
+      drawing: note.drawing ? JSON.stringify(note.drawing) : null,
+      summary: note.summary,
+      topics: note.topics,
+      contentText
+    })
+    return { saved: true }
+  })
+
+  ipcMain.handle('nebula:loadNote', async (_event, id: string) => {
+    const { fs: noteFs } = getNebulaInstances()
+    return noteFs.readNote(id)
+  })
+
+  ipcMain.handle('nebula:listNotes', async () => {
+    const { db } = getNebulaInstances()
+    return db.listNotes()
+  })
+
+  ipcMain.handle('nebula:deleteNote', async (_event, id: string) => {
+    const { db, fs: noteFs } = getNebulaInstances()
+    db.deleteNote(id)
+    noteFs.deleteNote(id)
+  })
+
+  ipcMain.handle('nebula:searchNotes', async (_event, query: string) => {
+    const { db } = getNebulaInstances()
+    return db.searchNotes(query)
+  })
+
+  ipcMain.handle('nebula:getGraph', async () => {
+    const { db } = getNebulaInstances()
+    return db.getGraphData()
+  })
+
+  ipcMain.handle('nebula:updateEdges', async (_event, sourceId: string, targets: { targetId: string; relationship: string; weight: number }[]) => {
+    const { db } = getNebulaInstances()
+    db.upsertEdges(sourceId, targets)
+  })
+
+  ipcMain.handle('nebula:transcribeAudio', async (_event, _audioBuffer: number[]) => {
+    // Stub — transcription wired in Plan 05
+    throw new Error('Transcription not yet configured')
+  })
+
+  ipcMain.handle('nebula:selectAudioFile', async () => {
+    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+    if (!mainWindow) return { canceled: true, path: '' }
+
+    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select Audio File',
+      filters: [{ name: 'Audio Files', extensions: ['mp3', 'wav', 'm4a', 'webm', 'ogg'] }],
+      properties: ['openFile']
+    })
+
+    if (canceled || filePaths.length === 0) return { canceled: true, path: '' }
+    return { canceled: false, path: filePaths[0] }
   })
 
   // --- DbInspector ER Diagram PDF export ---

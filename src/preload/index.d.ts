@@ -52,6 +52,20 @@ export interface ElectronAPI {
     onStreamError: (cb: (data: { sessionId: string; error: string }) => void) => void
     removeStreamListeners: () => void
   }
+  launchpad: {
+    exportPdf: (estimation: unknown) => Promise<{ filePath: string | null }>
+  }
+  nebula: {
+    saveNote: (note: unknown) => Promise<{ saved: boolean }>
+    loadNote: (id: string) => Promise<unknown>
+    listNotes: () => Promise<unknown[]>
+    deleteNote: (id: string) => Promise<void>
+    searchNotes: (query: string) => Promise<unknown[]>
+    getGraph: () => Promise<unknown>
+    updateEdges: (sourceId: string, targets: unknown[]) => Promise<void>
+    transcribeAudio: (buffer: number[]) => Promise<unknown>
+    selectAudioFile: () => Promise<{ canceled: boolean; path: string }>
+  }
 }
 
 declare global {

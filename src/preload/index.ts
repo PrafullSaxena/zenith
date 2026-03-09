@@ -170,6 +170,26 @@ const api = {
     exportPdf: (estimation: unknown): Promise<{ filePath: string | null }> =>
       ipcRenderer.invoke('launchpad:exportPdf', estimation),
   },
+  nebula: {
+    saveNote: (note: unknown): Promise<{ saved: boolean }> =>
+      ipcRenderer.invoke('nebula:saveNote', note),
+    loadNote: (id: string): Promise<unknown> =>
+      ipcRenderer.invoke('nebula:loadNote', id),
+    listNotes: (): Promise<unknown[]> =>
+      ipcRenderer.invoke('nebula:listNotes'),
+    deleteNote: (id: string): Promise<void> =>
+      ipcRenderer.invoke('nebula:deleteNote', id),
+    searchNotes: (query: string): Promise<unknown[]> =>
+      ipcRenderer.invoke('nebula:searchNotes', query),
+    getGraph: (): Promise<unknown> =>
+      ipcRenderer.invoke('nebula:getGraph'),
+    updateEdges: (sourceId: string, targets: unknown[]): Promise<void> =>
+      ipcRenderer.invoke('nebula:updateEdges', sourceId, targets),
+    transcribeAudio: (buffer: number[]): Promise<unknown> =>
+      ipcRenderer.invoke('nebula:transcribeAudio', buffer),
+    selectAudioFile: (): Promise<{ canceled: boolean; path: string }> =>
+      ipcRenderer.invoke('nebula:selectAudioFile'),
+  },
 }
 
 console.log('[preload] API namespaces:', Object.keys(api))
