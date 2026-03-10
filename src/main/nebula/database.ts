@@ -183,7 +183,20 @@ export class NebulaDatabase {
       )
     `)
 
-    // Only rebuild FTS when migration or first creation occurred
+    // Also check: FTS table exists but is empty while notes table has data
+    // (can happen after incomplete migration from a previous session)
+    if (!needsRebuild) {
+      const ftsCount = this.db
+        .prepare<[], { cnt: number }>(`SELECT COUNT(*) AS cnt FROM notes_fts`)
+        .get()
+      const notesCount = this.db
+        .prepare<[], { cnt: number }>(`SELECT COUNT(*) AS cnt FROM notes`)
+        .get()
+      if ((ftsCount?.cnt ?? 0) === 0 && (notesCount?.cnt ?? 0) > 0) {
+        needsRebuild = true
+      }
+    }
+
     if (needsRebuild) {
       this.rebuildFtsIndex()
     }

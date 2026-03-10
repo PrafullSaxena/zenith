@@ -290,14 +290,10 @@ body {
 
 /* ── tldraw canvas overrides ─────────────────────────────────────── */
 
-/* Contain tldraw within its container */
-.tldraw-container {
-  overflow: hidden;
+/* tldraw fills its parent, which must have explicit dimensions.
+   Use the recommended tldraw__editor wrapper class for proper sizing. */
+.tldraw__editor {
   position: relative;
-}
-
-/* Ensure tldraw fills its container */
-.tldraw-container .tl-container {
-  height: 100% !important;
-  width: 100% !important;
+  width: 100%;
+  height: 100%;
 }

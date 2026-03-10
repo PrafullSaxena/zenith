@@ -91,16 +91,15 @@ export default function DrawingCanvas({
   const tldrawSnapshot = isValidSnapshot(snapshot) ? snapshot : undefined
 
   return (
-    <div
-      className="tldraw-container"
-      style={{ height: '50vh', minHeight: 350, position: 'relative' }}
-    >
-      <Tldraw
-        snapshot={tldrawSnapshot}
-        onMount={handleMount}
-        inferDarkMode={false}
-        options={{ maxPages: 1 }}
-      />
+    <div style={{ height: '50vh', minHeight: 350 }}>
+      <div className="tldraw__editor">
+        <Tldraw
+          snapshot={tldrawSnapshot}
+          onMount={handleMount}
+          inferDarkMode={false}
+          options={{ maxPages: 1 }}
+        />
+      </div>
     </div>
   )
 }
