@@ -5,20 +5,20 @@
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** CodeReviewBot must work flawlessly — automated PR code review that connects to Bitbucket, fetches diffs, and posts inline AI-generated review comments
-**Current focus:** Phase 9 — Nebula UX Polish
+**Current focus:** Phase 11 — Full UI/UX Revamp
 
 ## Current Position
 
-**Current Phase:** 09
-**Current Phase Name:** Nebula UX Polish
-**Total Phases:** 9
-**Current Plan:** 4
-**Total Plans in Phase:** 4
-**Status:** Complete
-**Last Activity:** 2026-03-10
-**Last Activity Description:** Phase 09 complete — all 4 plans executed with 3 additional bug fix commits. react-resizable-panels replaced with flexbox.
+**Current Phase:** 11
+**Current Phase Name:** Full UI/UX Revamp
+**Total Phases:** 11
+**Current Plan:** 2
+**Total Plans in Phase:** 3
+**Status:** In Progress
+**Last Activity:** 2026-03-11
+**Last Activity Description:** Phase 11 Plan 01 complete — semantic color tokens added to CSS theme, 18 broken Launchpad token references fixed.
 
-**Progress:** [██████████] 100%
+**Progress:** [████████░░] 84%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 09 P02 | 4min | 2 tasks | 7 files |
 | Phase 09 P03 | 6min | 2 tasks | 5 files |
 | Phase 09 P04 | 10min | 2 tasks + 3 fixes | 4 files |
+| Phase 11-full-ui-ux-revamp P01 | 2min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -143,6 +144,9 @@ Recent decisions affecting current work:
 - [Phase 09]: VoiceRecorder FAB: framer-motion AnimatePresence with idle/recording/processing states
 - [Phase 09]: TranscriptionBlock: colored speaker labels via hash-based color palette, editable names
 - [Phase 09]: ToastContainer: fixed bottom-right (above FAB), framer-motion spring animations, click-to-navigate
+- [Phase 11]: Semantic tokens use oklch() in @theme and hex/rgba in portfolio theme for consistency with existing pattern
+- [Phase 11]: bg-bg-primary mapped to bg-background (base layer), bg-bg-secondary mapped to bg-surface (elevation hierarchy)
+- [Phase 11]: Semantic color token naming: --color-{status} and --color-{status}-muted; diff naming: --color-diff-{add|del}
 
 ### Pending Todos
 
@@ -156,6 +160,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-10
-**Stopped at:** All Phase 09 plans executed. Awaiting visual verification.
+**Last session:** 2026-03-11
+**Stopped at:** Completed 11-01-PLAN.md
 **Resume file:** None
