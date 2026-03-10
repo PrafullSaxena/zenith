@@ -18,8 +18,6 @@ const DEFAULTS: Record<string, unknown> = {
     'db-inspector': {
       connections: []
     },
-    'astro-patch': {},
-    'prompt-builder': {}
   },
   agents: {},
   reviewHistory: []

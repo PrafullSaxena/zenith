@@ -81,52 +81,6 @@ export const PLUGINS: readonly PluginDefinition[] = [
     defaultAgent: null
   },
   {
-    id: 'astro-patch',
-    name: 'AstroPatch',
-    description: 'AI-powered patch generation with Jira integration',
-    icon: 'Wrench',
-    route: '/astro-patch',
-    component: React.lazy(() => import('./stubs/AstroPatchView')),
-    settingsSchema: [
-      {
-        key: 'jiraProjectKey',
-        label: 'Jira Project Key',
-        type: 'text',
-        description: 'Jira project key for issue linking',
-        defaultValue: '',
-        required: true,
-        placeholder: 'PROJ'
-      },
-      {
-        key: 'autoCreateBranch',
-        label: 'Auto-create Branch',
-        type: 'boolean',
-        description: 'Automatically create a Git branch for each patch',
-        defaultValue: false
-      }
-    ],
-    defaultAgent: null
-  },
-  {
-    id: 'prompt-builder',
-    name: 'PromptBuilder',
-    description: 'Prompt construction and template management',
-    icon: 'MessageSquare',
-    route: '/prompt-builder',
-    component: React.lazy(() => import('./stubs/PromptBuilderView')),
-    settingsSchema: [
-      {
-        key: 'templatesDirectory',
-        label: 'Templates Directory',
-        type: 'text',
-        description: 'Path to the prompt templates directory',
-        defaultValue: '',
-        placeholder: '/path/to/templates'
-      }
-    ],
-    defaultAgent: null
-  },
-  {
     id: 'launchpad',
     name: 'Launchpad',
     description: 'Cloud cost estimation with AI-powered recommendations',

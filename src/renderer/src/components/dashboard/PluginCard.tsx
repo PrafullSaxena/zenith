@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import {
   GitPullRequest,
   Database,
-  Wrench,
-  MessageSquare,
   LayoutDashboard,
   Activity,
   Rocket,
@@ -23,8 +21,6 @@ import { useActivityStore } from '../../stores/activity-store'
 const ICON_MAP: Record<string, LucideIcon> = {
   GitPullRequest,
   Database,
-  Wrench,
-  MessageSquare,
   LayoutDashboard,
   Activity,
   Rocket,
@@ -36,8 +32,6 @@ const ICON_MAP: Record<string, LucideIcon> = {
 const PLUGIN_ACCENTS: Record<string, string> = {
   'code-review-bot': 'from-blue-500/20 to-blue-600/10 text-blue-400',
   'db-inspector': 'from-emerald-500/20 to-emerald-600/10 text-emerald-400',
-  'astro-patch': 'from-orange-500/20 to-orange-600/10 text-orange-400',
-  'prompt-builder': 'from-violet-500/20 to-violet-600/10 text-violet-400',
   'launchpad': 'from-rose-500/20 to-rose-600/10 text-rose-400',
   'nebula': 'from-cyan-500/20 to-cyan-600/10 text-cyan-400',
   'textcraft': 'from-purple-500/20 to-purple-600/10 text-purple-400'
