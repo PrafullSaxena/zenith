@@ -14,6 +14,7 @@
 | 9 | Nebula UX Polish | 4 | Complete | 4/4 |
 | 10 | Settings UX Fix | 3 | Complete | 3/3 |
 | 11 | 3/3 | Complete    | 2026-03-10 | 0/3 |
+| 12 | TextCraft Plugin | 2 | Planned | 0/2 |
 
 ## Phase 1: Foundation
 
@@ -130,6 +131,18 @@ Plans:
 - [ ] 11-01-PLAN.md -- Add semantic color tokens to CSS theme and fix broken Launchpad token references
 - [ ] 11-02-PLAN.md -- Fix WCAG AA contrast violations and migrate to semantic colors across all views
 - [ ] 11-03-PLAN.md -- Add entrance animations, stagger effects, and hover micro-interactions
+
+## Phase 12: TextCraft Plugin
+
+**Goal:** AI-powered text refinement plugin: three-panel layout with input editor, tone/style controls, and AI-rewritten output. Supports email, one-pager, and technical writing use cases with grammar correction, tone adjustment, and format transformation via configured AI agents.
+
+**Requirements:** [TXCR-01, TXCR-02, TXCR-03, TXCR-04, TXCR-05, TXCR-06, TXCR-07, TXCR-08, TXCR-09, TXCR-10]
+
+**Plans:** 2 plans
+
+Plans:
+- [ ] 12-01-PLAN.md -- TextCraft types, Zustand store with AI streaming, plugin registration, sidebar icon
+- [ ] 12-02-PLAN.md -- Three-panel UI: InputPanel, ControlsPanel, OutputPanel with streaming and copy-to-clipboard
 
 ## Phase 6: Polish & Production
 

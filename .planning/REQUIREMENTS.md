@@ -110,6 +110,19 @@
 - **NEBL-11**: Three-tab UI layout — Note Taking, Search, Knowledge sections accessible via tabs
 - **NEBL-12**: Embedded database (SQLite via better-sqlite3) for indexing notes, summaries, and graph relationships — bundled with app, no external dependency
 
+### TextCraft — AI Text Refinement (TXCR)
+
+- **TXCR-01**: Plugin registered in compiled-in PLUGINS array with PenLine icon, /textcraft route, and settings schema
+- **TXCR-02**: PluginId union type includes 'textcraft' for type-safe references
+- **TXCR-03**: Zustand store managing input text, refinement options, AI streaming session, and history
+- **TXCR-04**: AI streaming via existing ai:startAnalysis IPC channel with session-scoped listener cleanup
+- **TXCR-05**: Refinement history persisted via electron-store with load/save and 50-entry cap
+- **TXCR-06**: Three-panel layout: input textarea (left), tone/format controls (middle), AI output (right)
+- **TXCR-07**: Tone selection from 5 options (professional, casual, technical, friendly, concise)
+- **TXCR-08**: Format selection from 4 options (email, one-pager, technical-doc, general)
+- **TXCR-09**: AI-streamed output rendered as markdown with copy-to-clipboard button
+- **TXCR-10**: Custom instructions field for per-refinement freeform instructions
+
 ### PromptBuilder (PMPT)
 
 - **PMPT-01**: Create and edit prompt templates with variable placeholders
@@ -199,6 +212,16 @@
 | NEBL-10 | 8 | 02 | Complete |
 | NEBL-11 | 8 | 02 | Complete |
 | NEBL-12 | 8 | 01 | Complete |
+| TXCR-01 | 12 | 12-01 | Planned |
+| TXCR-02 | 12 | 12-01 | Planned |
+| TXCR-03 | 12 | 12-01 | Planned |
+| TXCR-04 | 12 | 12-01 | Planned |
+| TXCR-05 | 12 | 12-01 | Planned |
+| TXCR-06 | 12 | 12-02 | Planned |
+| TXCR-07 | 12 | 12-02 | Planned |
+| TXCR-08 | 12 | 12-02 | Planned |
+| TXCR-09 | 12 | 12-02 | Planned |
+| TXCR-10 | 12 | 12-02 | Planned |
 | PMPT-01 | 6 | - | Planned |
 | PMPT-02 | 6 | - | Planned |
 | PMPT-03 | 6 | - | Planned |
