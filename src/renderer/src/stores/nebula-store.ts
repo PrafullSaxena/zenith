@@ -104,6 +104,8 @@ interface NebulaStore {
   isSearching: boolean
   qaAnswer: string
   qaSessionId: string | null
+  searchCollapsed: boolean
+  qaCollapsed: boolean
 
   // Knowledge graph
   graphData: GraphData | null
@@ -131,6 +133,8 @@ interface NebulaStore {
   saveNote: (note: NoteFile) => Promise<void>
   deleteNote: (id: string) => Promise<void>
   togglePin: (noteId: string) => Promise<void>
+  setSearchCollapsed: (collapsed: boolean) => void
+  setQaCollapsed: (collapsed: boolean) => void
   setSearchQuery: (query: string) => void
   searchNotes: (query: string) => Promise<void>
   loadGraphData: () => Promise<void>
@@ -170,6 +174,8 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
   isSearching: false,
   qaAnswer: '',
   qaSessionId: null,
+  searchCollapsed: false,
+  qaCollapsed: false,
 
   graphData: null,
   selectedGraphNodeId: null,
@@ -330,6 +336,14 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
     } catch {
       // IPC not wired yet -- gracefully ignore
     }
+  },
+
+  setSearchCollapsed: (collapsed) => {
+    set({ searchCollapsed: collapsed })
+  },
+
+  setQaCollapsed: (collapsed) => {
+    set({ qaCollapsed: collapsed })
   },
 
   setSearchQuery: (query) => {

@@ -95,10 +95,10 @@ export function MCPSettings(): React.JSX.Element {
 
       {/* Server list */}
       {servers.length === 0 && !showAddForm && (
-        <div className="mb-4 rounded-lg border border-border bg-surface-elevated/30 px-4 py-6 text-center">
+        <div className="mb-4 rounded-lg border border-dashed border-border/50 px-4 py-8 text-center">
           <Server size={24} className="mx-auto mb-2 text-text-secondary/30" />
           <p className="text-sm text-text-secondary">No MCP servers configured</p>
-          <p className="mt-1 text-xs text-text-secondary/60">
+          <p className="mt-1 text-xs text-text-secondary">
             Add a server to extend AI capabilities with custom tools and data sources.
           </p>
         </div>
@@ -109,7 +109,7 @@ export function MCPSettings(): React.JSX.Element {
           {servers.map((server) => (
             <div
               key={server.id}
-              className="flex items-center gap-3 px-4 py-3"
+              className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-elevated/30"
             >
               <Server
                 size={14}
@@ -128,27 +128,27 @@ export function MCPSettings(): React.JSX.Element {
                   {server.description ? ` — ${server.description}` : ''}
                 </p>
               </div>
-              <span className="shrink-0 rounded bg-surface-elevated px-1.5 py-0.5 text-[10px] text-text-secondary">
+              <span className="shrink-0 rounded-md bg-surface-elevated px-1.5 py-0.5 text-[10px] text-text-secondary">
                 {server.transport.toUpperCase()}
               </span>
               {/* Enable/Disable toggle */}
               <button
                 type="button"
                 onClick={() => handleToggle(server.id)}
-                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
-                  server.enabled ? 'bg-accent' : 'bg-surface-elevated'
+                className={`relative h-5 w-10 shrink-0 rounded-full transition-colors ${
+                  server.enabled ? 'bg-accent' : 'bg-surface-elevated border border-border'
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                    server.enabled ? 'translate-x-4' : 'translate-x-0.5'
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-text-primary shadow transition-transform ${
+                    server.enabled ? 'translate-x-5' : 'translate-x-0.5'
                   }`}
                 />
               </button>
               <button
                 type="button"
                 onClick={() => handleRemove(server.id)}
-                className="shrink-0 rounded p-1 text-text-secondary/40 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                className="shrink-0 rounded-lg p-1 text-text-secondary transition-colors hover:bg-red-500/10 hover:text-red-400"
                 title="Remove server"
               >
                 <Trash2 size={13} />
@@ -169,7 +169,7 @@ export function MCPSettings(): React.JSX.Element {
           Add MCP Server
         </button>
       ) : (
-        <div className="rounded-lg border border-accent/20 bg-accent/5 p-4">
+        <div className="rounded-xl border border-border/50 bg-surface-elevated/30 p-4">
           <button
             type="button"
             onClick={() => setShowAddForm(false)}
@@ -189,7 +189,7 @@ export function MCPSettings(): React.JSX.Element {
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
                 placeholder="My MCP Server"
-                className="w-full rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none"
+                className="w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
               />
             </div>
 
@@ -215,7 +215,7 @@ export function MCPSettings(): React.JSX.Element {
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 placeholder="What this server provides…"
-                className="w-full rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none"
+                className="w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
               />
             </div>
 
@@ -226,7 +226,7 @@ export function MCPSettings(): React.JSX.Element {
               <select
                 value={formTransport}
                 onChange={(e) => setFormTransport(e.target.value as MCPTransport)}
-                className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
+                className="rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
               >
                 <option value="stdio">stdio (local process)</option>
                 <option value="sse">SSE (remote URL)</option>

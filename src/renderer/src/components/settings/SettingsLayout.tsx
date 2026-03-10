@@ -63,7 +63,7 @@ export function SettingsLayout(): React.JSX.Element {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`w-full rounded-r-lg px-3 py-2 text-left text-sm transition-colors ${
+            className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
               activeCategory === cat.id
                 ? 'border-l-2 border-accent bg-surface-elevated text-text-primary font-medium'
                 : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/50'
@@ -87,7 +87,7 @@ export function SettingsLayout(): React.JSX.Element {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`w-full rounded-r-lg px-3 py-2 text-left text-sm transition-colors ${
+            className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
               activeCategory === cat.id
                 ? 'border-l-2 border-accent bg-surface-elevated text-text-primary font-medium'
                 : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/50'

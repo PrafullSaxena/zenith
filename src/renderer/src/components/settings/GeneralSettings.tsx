@@ -67,7 +67,8 @@ export function GeneralSettings(): React.JSX.Element {
 
   return (
     <div className="stagger-children">
-      <h2 className="mb-6 text-lg font-semibold text-text-primary">General</h2>
+      <h2 className="mb-1 text-lg font-semibold text-text-primary">General</h2>
+      <p className="mb-6 text-xs text-text-secondary">Application-wide preferences and defaults.</p>
 
       <SettingsField
         field={themeField}

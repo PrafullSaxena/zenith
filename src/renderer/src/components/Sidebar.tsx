@@ -66,7 +66,7 @@ function SidebarIcon({
             {Icon ? <Icon size={20} /> : <span className="text-xs">{iconName}</span>}
           </div>
           {/* Tooltip */}
-          <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-lg border border-border/30 bg-surface-elevated/95 px-2.5 py-1 text-xs text-text-primary opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100">
+          <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg border border-border/30 bg-surface-elevated/95 px-2.5 py-1 text-xs text-text-primary opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100">
             {label}
           </span>
         </>
@@ -77,7 +77,7 @@ function SidebarIcon({
 
 export function Sidebar(): React.JSX.Element {
   return (
-    <aside className="flex h-full w-14 flex-shrink-0 flex-col border-r border-border bg-surface">
+    <aside className="relative z-10 flex h-full w-14 flex-shrink-0 flex-col border-r border-border bg-surface">
       {/* Drag region for macOS traffic lights */}
       <div className="drag-region h-8 w-full" />
 

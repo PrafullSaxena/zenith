@@ -59,10 +59,10 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
   }
 
   const inputClass =
-    'w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition'
+    'w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition'
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 rounded-xl border border-border/50 bg-surface p-4">
+    <form onSubmit={handleSubmit} className="mt-4 rounded-xl border border-border/50 bg-surface-elevated/30 p-4">
       <h3 className="mb-3 text-sm font-semibold text-text-primary">Add Custom Provider</h3>
 
       {/* Provider type toggle */}
@@ -70,10 +70,10 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
         <button
           type="button"
           onClick={() => setProviderType('cli')}
-          className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
             providerType === 'cli'
               ? 'bg-accent text-background'
-              : 'border border-border text-text-secondary hover:border-accent hover:text-accent'
+              : 'border border-border/50 text-text-secondary hover:border-accent hover:text-accent'
           }`}
         >
           CLI Agent
@@ -81,10 +81,10 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
         <button
           type="button"
           onClick={() => setProviderType('custom')}
-          className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
             providerType === 'custom'
               ? 'bg-accent text-background'
-              : 'border border-border text-text-secondary hover:border-accent hover:text-accent'
+              : 'border border-border/50 text-text-secondary hover:border-accent hover:text-accent'
           }`}
         >
           API Provider

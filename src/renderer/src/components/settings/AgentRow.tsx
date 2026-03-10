@@ -64,7 +64,7 @@ export function AgentRow({
       <td className="py-3 pr-4">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-text-primary">{provider.name}</span>
-          <span className="rounded-md bg-surface-elevated px-1.5 py-0.5 text-xs text-text-secondary">
+          <span className="rounded-md bg-surface-elevated px-1.5 py-0.5 text-[10px] text-text-secondary">
             {typeLabels[provider.type] ?? provider.type}
           </span>
         </div>
@@ -90,7 +90,7 @@ export function AgentRow({
                   onChange={(e) => setApiKeyInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Enter API key"
-                  className="w-48 rounded border border-border bg-surface-elevated px-2 py-1 text-sm text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-48 rounded-lg border border-border/50 bg-surface px-2 py-1 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
                   autoFocus
                 />
                 <button
@@ -144,7 +144,7 @@ export function AgentRow({
           {provider.isCustom && onRemove && (
             <button
               onClick={onRemove}
-              className="px-2 py-1 text-xs text-red-400 transition hover:text-red-300"
+              className="rounded-lg px-2 py-1 text-xs text-text-secondary transition hover:text-red-400 hover:bg-red-500/10"
             >
               Remove
             </button>

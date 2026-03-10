@@ -7,7 +7,8 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  Database
 } from 'lucide-react'
 import type { DbConnection, ReadStrategy } from '../../types/database'
 
@@ -29,10 +30,10 @@ interface ConnectionListEditorProps {
 }
 
 const inputClass =
-  'w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition'
+  'w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition'
 
 const selectClass =
-  'w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition appearance-none'
+  'w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition appearance-none'
 
 /**
  * Editable list of PostgreSQL database connections.
@@ -154,7 +155,7 @@ export function ConnectionListEditor({
     <div className="space-y-3">
       {/* Existing connections list */}
       {connections.length > 0 && (
-        <div className="rounded-md border border-border overflow-hidden">
+        <div className="rounded-lg border border-border/50 overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-elevated/50">
@@ -177,7 +178,7 @@ export function ConnectionListEditor({
               {connections.map((conn, index) => (
                 <tr
                   key={conn.id}
-                  className="border-b border-border last:border-b-0"
+                  className="border-b border-border/30 last:border-b-0 transition-colors hover:bg-surface-elevated/30"
                 >
                   <td className="px-3 py-2 text-text-primary font-medium">{conn.name}</td>
                   <td className="px-3 py-2 text-text-secondary truncate max-w-[200px]">
@@ -189,7 +190,7 @@ export function ConnectionListEditor({
                     <button
                       type="button"
                       onClick={() => handleRemove(index)}
-                      className="text-text-secondary transition hover:text-red-400"
+                      className="rounded-lg p-1 text-text-secondary transition-colors hover:text-red-400 hover:bg-red-500/10"
                       title="Remove connection"
                     >
                       <Trash2 size={14} />
@@ -204,14 +205,16 @@ export function ConnectionListEditor({
 
       {/* Empty state */}
       {connections.length === 0 && !showForm && (
-        <div className="rounded-md border border-dashed border-border px-4 py-3 text-center text-xs text-text-secondary">
-          No connections configured. Add one below.
+        <div className="rounded-lg border border-dashed border-border/50 px-4 py-8 text-center">
+          <Database size={24} className="mx-auto mb-2 text-text-secondary/30" />
+          <p className="text-sm text-text-secondary">No connections configured</p>
+          <p className="mt-1 text-xs text-text-secondary">Add one below to get started.</p>
         </div>
       )}
 
       {/* Add connection form */}
       {showForm && (
-        <div className="rounded-md border border-border bg-surface-elevated/30 p-4 space-y-3">
+        <div className="rounded-xl border border-border/50 bg-surface-elevated/30 p-4 space-y-3">
           <input
             type="text"
             className={inputClass}
@@ -325,7 +328,7 @@ export function ConnectionListEditor({
               type="button"
               onClick={handleTest}
               disabled={!host.trim() || !username.trim() || isTesting}
-              className="flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition disabled:opacity-50"
             >
               {isTesting ? (
                 <Loader2 size={13} className="animate-spin" />
@@ -338,7 +341,7 @@ export function ConnectionListEditor({
               type="button"
               onClick={handleAdd}
               disabled={!name.trim() || !host.trim() || !username.trim() || isAdding}
-              className="flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-background hover:bg-accent/90 transition disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-background hover:bg-accent/90 transition disabled:opacity-50"
             >
               {isAdding ? (
                 <Loader2 size={13} className="animate-spin" />
@@ -353,7 +356,7 @@ export function ConnectionListEditor({
                 resetForm()
                 setShowForm(false)
               }}
-              className="rounded-md px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary transition"
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary transition"
             >
               Cancel
             </button>
@@ -366,7 +369,7 @@ export function ConnectionListEditor({
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          className="flex h-[38px] items-center gap-1 rounded-md bg-accent px-3 text-sm font-medium text-background transition hover:bg-accent/90"
+          className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-background transition hover:bg-accent/90"
         >
           <Plus size={14} />
           Add Connection

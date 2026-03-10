@@ -16,7 +16,7 @@
  * deterministic CSS ordering and avoid code-split loading issues.
  */
 
-import { useCallback, useRef, useEffect } from 'react'
+import { useCallback, useRef, useEffect, memo } from 'react'
 import { Tldraw } from 'tldraw'
 import type { Editor, TLEditorSnapshot, TLStoreSnapshot } from 'tldraw'
 
@@ -41,7 +41,7 @@ function isValidSnapshot(
   return false
 }
 
-export default function DrawingCanvas({
+function DrawingCanvas({
   snapshot,
   onSave
 }: DrawingCanvasProps): React.JSX.Element {
@@ -106,3 +106,8 @@ export default function DrawingCanvas({
     </div>
   )
 }
+
+// Prevent re-renders from parent state changes (isSaving, showSaved, activeNote.drawing).
+// key={noteId} on the parent forces remount when switching notes.
+// snapshot is only for initial hydration; onSave updates via ref internally.
+export default memo(DrawingCanvas, () => true)

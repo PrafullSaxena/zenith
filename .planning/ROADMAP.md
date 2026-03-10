@@ -12,7 +12,7 @@
 | 7 | Launchpad Plugin | 4 | Complete | 4/4 |
 | 8 | Nebula Plugin | 6 | Complete | 6/6 |
 | 9 | Nebula UX Polish | 4 | Complete | 4/4 |
-| 10 | Settings UX Fix | 3 | Planned | 0/3 |
+| 10 | Settings UX Fix | 3 | Complete | 3/3 |
 
 ## Phase 1: Foundation
 
@@ -110,12 +110,12 @@ Plans:
 
 **Goal:** Unify the Settings UI with consistent design tokens — standardize all button radii, toggle switches, input focus styles, form containers, empty states, hover patterns, badges, and table rows across SettingsLayout, GeneralSettings, AIAgentsSettings, AgentRow, MCPSettings, AddCustomAgentForm, ConnectionListEditor, RepoListEditor, and PluginSettings. Visual-only — no logic changes.
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 10-01-PLAN.md -- Unify SettingsField.tsx design tokens (inputs, selects, toggle, buttons, password icon)
-- [ ] 10-02-PLAN.md -- Unify MCPSettings, AgentRow, AIAgentsSettings, AddCustomAgentForm styles
-- [ ] 10-03-PLAN.md -- Unify ConnectionListEditor, RepoListEditor, SettingsLayout, GeneralSettings, PluginSettings styles
+- [x] 10-01-PLAN.md -- Unify SettingsField.tsx design tokens (inputs, selects, toggle, buttons, password icon)
+- [x] 10-02-PLAN.md -- Unify MCPSettings, AgentRow, AIAgentsSettings, AddCustomAgentForm styles
+- [x] 10-03-PLAN.md -- Unify ConnectionListEditor, RepoListEditor, SettingsLayout, GeneralSettings, PluginSettings styles
 
 ## Phase 6: Polish & Production
 

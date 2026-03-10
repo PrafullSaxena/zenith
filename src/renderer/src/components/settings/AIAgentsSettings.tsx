@@ -30,12 +30,12 @@ export function AIAgentsSettings(): React.JSX.Element {
   return (
     <div className="stagger-children">
       <h2 className="mb-1 text-lg font-semibold text-text-primary">AI Agents</h2>
-      <p className="mb-6 text-sm text-text-secondary">
+      <p className="mb-6 text-xs text-text-secondary">
         Configure AI providers for your plugins
       </p>
 
       {/* Providers table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-lg border border-border/50">
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-border">

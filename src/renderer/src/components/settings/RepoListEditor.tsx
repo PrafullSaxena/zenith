@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, GitBranch } from 'lucide-react'
 
 /** A single workspace + repository slug pair. */
 export interface RepoEntry {
@@ -13,7 +13,7 @@ interface RepoListEditorProps {
 }
 
 const inputClass =
-  'w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition'
+  'w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition'
 
 /**
  * Editable list of Bitbucket workspace + repo slug pairs.
@@ -66,7 +66,7 @@ export function RepoListEditor({ value, onChange }: RepoListEditorProps): React.
     <div className="space-y-3">
       {/* Existing repos list */}
       {repos.length > 0 && (
-        <div className="rounded-md border border-border overflow-hidden">
+        <div className="rounded-lg border border-border/50 overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-elevated/50">
@@ -83,7 +83,7 @@ export function RepoListEditor({ value, onChange }: RepoListEditorProps): React.
               {repos.map((repo, index) => (
                 <tr
                   key={`${repo.workspace}/${repo.repoSlug}`}
-                  className="border-b border-border last:border-b-0"
+                  className="border-b border-border/30 last:border-b-0 transition-colors hover:bg-surface-elevated/30"
                 >
                   <td className="px-3 py-2 text-text-primary">{repo.workspace}</td>
                   <td className="px-3 py-2 text-text-primary">{repo.repoSlug}</td>
@@ -91,7 +91,7 @@ export function RepoListEditor({ value, onChange }: RepoListEditorProps): React.
                     <button
                       type="button"
                       onClick={() => handleRemove(index)}
-                      className="text-text-secondary transition hover:text-red-400"
+                      className="rounded-lg p-1 text-text-secondary transition-colors hover:text-red-400 hover:bg-red-500/10"
                       title="Remove repository"
                     >
                       <Trash2 size={14} />
@@ -106,8 +106,10 @@ export function RepoListEditor({ value, onChange }: RepoListEditorProps): React.
 
       {/* Empty state */}
       {repos.length === 0 && (
-        <div className="rounded-md border border-dashed border-border px-4 py-3 text-center text-xs text-text-secondary">
-          No repositories configured. Add one below.
+        <div className="rounded-lg border border-dashed border-border/50 px-4 py-8 text-center">
+          <GitBranch size={24} className="mx-auto mb-2 text-text-secondary/30" />
+          <p className="text-sm text-text-secondary">No repositories configured</p>
+          <p className="mt-1 text-xs text-text-secondary">Add one below to get started.</p>
         </div>
       )}
 
@@ -146,7 +148,7 @@ export function RepoListEditor({ value, onChange }: RepoListEditorProps): React.
         <button
           type="button"
           onClick={handleAdd}
-          className="flex h-[38px] items-center gap-1 rounded-md bg-accent px-3 text-sm font-medium text-background transition hover:bg-accent/90"
+          className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-background transition hover:bg-accent/90"
         >
           <Plus size={14} />
           Add

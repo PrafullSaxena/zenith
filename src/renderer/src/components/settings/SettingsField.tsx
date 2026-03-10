@@ -14,10 +14,10 @@ interface SettingsFieldProps {
 }
 
 const inputClass =
-  'w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition'
+  'w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition'
 
 const selectClass =
-  'w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition appearance-none'
+  'w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition appearance-none'
 
 export function SettingsField({ field, value, onChange, error }: SettingsFieldProps): React.JSX.Element {
   const [showPassword, setShowPassword] = useState(false)
@@ -51,7 +51,7 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
         )
@@ -73,14 +73,14 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
             type="button"
             role="switch"
             aria-checked={!!value}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+            className={`relative inline-flex h-5 w-10 items-center rounded-full transition ${
               value ? 'bg-accent' : 'bg-surface-elevated border border-border'
             }`}
             onClick={() => onChange(!value)}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-text-primary transition ${
-                value ? 'translate-x-6' : 'translate-x-1'
+                value ? 'translate-x-5' : 'translate-x-0.5'
               }`}
             />
           </button>
@@ -140,7 +140,7 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
             />
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-secondary hover:text-text-primary transition"
+              className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-secondary hover:text-text-primary transition"
               onClick={async () => {
                 const result = await window.api.app.selectDirectory((value as string) || undefined)
                 if (!result.canceled && result.path) {
@@ -154,7 +154,7 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
             {value && (
               <button
                 type="button"
-                className="rounded-md border border-border bg-surface-elevated px-2 py-2 text-sm text-text-secondary hover:text-red-400 transition"
+                className="rounded-lg border border-border/50 bg-surface px-2 py-1.5 text-sm text-text-secondary hover:text-red-400 hover:bg-red-500/10 transition"
                 onClick={() => onChange('')}
                 title="Reset to default"
               >

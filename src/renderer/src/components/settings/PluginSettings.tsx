@@ -70,7 +70,7 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
   return (
     <div>
       <h2 className="mb-2 text-lg font-semibold text-text-primary">{plugin.name}</h2>
-      <p className="mb-6 text-sm text-text-secondary">{plugin.description}</p>
+      <p className="mb-6 text-xs text-text-secondary">{plugin.description}</p>
 
       {plugin.settingsSchema.map((field) => (
         <SettingsField
@@ -88,7 +88,7 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
           Default AI Agent
         </label>
         <select
-          className="w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition appearance-none"
+          className="w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition appearance-none"
           value={
             (getSetting(`plugins.${pluginId}.defaultAgent`) as string) ?? ''
           }
