@@ -163,6 +163,44 @@ export const PLUGINS: readonly PluginDefinition[] = [
       }
     ],
     defaultAgent: null
+  },
+  {
+    id: 'textcraft',
+    name: 'TextCraft',
+    description: 'AI-powered text refinement with tone and format controls',
+    icon: 'PenLine',
+    route: '/textcraft',
+    component: React.lazy(() => import('./textcraft/TextCraftView')),
+    settingsSchema: [
+      {
+        key: 'defaultTone',
+        label: 'Default Tone',
+        type: 'select',
+        description: 'Default writing tone for new refinements',
+        defaultValue: 'professional',
+        options: [
+          { label: 'Professional', value: 'professional' },
+          { label: 'Casual', value: 'casual' },
+          { label: 'Technical', value: 'technical' },
+          { label: 'Friendly', value: 'friendly' },
+          { label: 'Concise', value: 'concise' }
+        ]
+      },
+      {
+        key: 'defaultFormat',
+        label: 'Default Format',
+        type: 'select',
+        description: 'Default output format for new refinements',
+        defaultValue: 'email',
+        options: [
+          { label: 'Email', value: 'email' },
+          { label: 'One-Pager', value: 'one-pager' },
+          { label: 'Technical Doc', value: 'technical-doc' },
+          { label: 'General', value: 'general' }
+        ]
+      }
+    ],
+    defaultAgent: null
   }
 ] as const
 
