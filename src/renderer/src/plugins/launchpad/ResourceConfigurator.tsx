@@ -78,7 +78,7 @@ function NumberInput({
       max={max}
       onChange={handleChange}
       onBlur={handleBlur}
-      className="w-full rounded-md border border-border bg-bg-primary px-2.5 py-1.5 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+      className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
     />
   )
 }
@@ -138,7 +138,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
           return (
             <div
               key={sel.serviceId}
-              className="rounded-lg border border-border bg-bg-secondary p-4"
+              className="rounded-lg border border-border bg-surface p-4"
             >
               {/* Card header */}
               <p className="mb-3 text-sm font-semibold text-text-primary border-b border-border pb-2">
@@ -182,7 +182,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
                               selectedOption ?? ({ value: e.target.value, label: e.target.value } as SelectOption)
                             )
                           }}
-                          className="w-full rounded-md border border-border bg-bg-primary px-2.5 py-1.5 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                          className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                         >
                           {field.options.map((opt: SelectOption) => (
                             <option key={opt.value} value={opt.value}>

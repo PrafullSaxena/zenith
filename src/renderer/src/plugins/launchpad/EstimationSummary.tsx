@@ -75,7 +75,7 @@ export default function EstimationSummary(): React.JSX.Element {
             className={`px-2.5 py-1 transition-colors ${
               displayMode === 'monthly'
                 ? 'bg-accent text-white'
-                : 'bg-bg-secondary text-text-secondary hover:text-text-primary'
+                : 'bg-surface text-text-secondary hover:text-text-primary'
             }`}
           >
             Monthly
@@ -86,7 +86,7 @@ export default function EstimationSummary(): React.JSX.Element {
             className={`px-2.5 py-1 transition-colors ${
               displayMode === 'yearly'
                 ? 'bg-accent text-white'
-                : 'bg-bg-secondary text-text-secondary hover:text-text-primary'
+                : 'bg-surface text-text-secondary hover:text-text-primary'
             }`}
           >
             Yearly
@@ -125,7 +125,7 @@ export default function EstimationSummary(): React.JSX.Element {
                 return (
                   <div
                     key={item.serviceId}
-                    className="flex items-start justify-between rounded-md px-2 py-2 hover:bg-bg-secondary/60 transition-colors"
+                    className="flex items-start justify-between rounded-md px-2 py-2 hover:bg-surface/60 transition-colors"
                   >
                     <div className="flex-1 min-w-0 pr-2">
                       <p className="text-xs font-medium text-text-primary truncate">
@@ -179,7 +179,7 @@ export default function EstimationSummary(): React.JSX.Element {
 
       {/* Save input (inline) */}
       {showSaveInput && (
-        <div className="border-t border-border px-4 py-3 bg-bg-secondary">
+        <div className="border-t border-border px-4 py-3 bg-surface">
           <p className="text-xs text-text-secondary mb-2">Name this estimation:</p>
           <div className="flex gap-2">
             <input
@@ -195,7 +195,7 @@ export default function EstimationSummary(): React.JSX.Element {
               }}
               placeholder="e.g. Production Setup"
               autoFocus
-              className="flex-1 rounded-md border border-border bg-bg-primary px-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
             />
             <button
               type="button"
@@ -226,7 +226,7 @@ export default function EstimationSummary(): React.JSX.Element {
             type="button"
             onClick={() => void handleExport()}
             disabled={isExporting || selectedServices.length === 0 || !provider}
-            className="flex flex-1 items-center justify-center gap-2 rounded-md border border-border bg-bg-secondary px-3 py-1.5 text-xs font-medium text-text-primary transition hover:border-accent/40 hover:bg-bg-secondary/80 disabled:opacity-40"
+            className="flex flex-1 items-center justify-center gap-2 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-primary transition hover:border-accent/40 hover:bg-surface/80 disabled:opacity-40"
           >
             <Download size={13} />
             {isExporting ? 'Exporting...' : 'Export PDF'}
@@ -235,7 +235,7 @@ export default function EstimationSummary(): React.JSX.Element {
           <button
             type="button"
             onClick={clearEstimation}
-            className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-bg-secondary px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:border-red-400/40 hover:text-red-400 disabled:opacity-40"
+            className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:border-red-400/40 hover:text-red-400 disabled:opacity-40"
           >
             <Trash2 size={13} />
             Clear

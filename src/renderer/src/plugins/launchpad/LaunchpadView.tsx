@@ -62,7 +62,7 @@ export default function LaunchpadView(): React.JSX.Element {
         {/* Provider badge when set */}
         {provider && (
           <div className="flex items-center gap-2 ml-2">
-            <span className="text-xs text-text-secondary bg-bg-secondary border border-border rounded-md px-2 py-0.5">
+            <span className="text-xs text-text-secondary bg-surface border border-border rounded-md px-2 py-0.5">
               {PROVIDER_INFO[provider].displayName}
             </span>
             <button

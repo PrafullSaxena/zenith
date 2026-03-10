@@ -106,7 +106,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search services..."
-            className="w-full rounded-md border border-border bg-bg-primary pl-7 pr-7 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/40 transition focus:outline-none focus:ring-1 focus:ring-accent focus:border-transparent"
+            className="w-full rounded-md border border-border bg-background pl-7 pr-7 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/40 transition focus:outline-none focus:ring-1 focus:ring-accent focus:border-transparent"
           />
           {searchQuery && (
             <button
@@ -138,7 +138,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                   <button
                     type="button"
                     onClick={() => toggleCategory(category.id)}
-                    className="flex w-full items-center justify-between bg-bg-secondary/50 px-2.5 py-1.5 text-left transition-colors hover:bg-bg-secondary/80"
+                    className="flex w-full items-center justify-between bg-surface/50 px-2.5 py-1.5 text-left transition-colors hover:bg-surface/80"
                   >
                     <div className="flex items-center gap-1.5">
                       {isOpen ? (
@@ -172,7 +172,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                             className={`flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors ${
                               selected
                                 ? 'border-l-2 border-l-accent bg-accent/5 hover:bg-accent/10'
-                                : 'hover:bg-bg-secondary/40'
+                                : 'hover:bg-surface/40'
                             }`}
                           >
                             {/* Checkbox visual */}
@@ -180,7 +180,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                               className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors ${
                                 selected
                                   ? 'border-accent bg-accent text-white'
-                                  : 'border-border bg-bg-primary'
+                                  : 'border-border bg-background'
                               }`}
                             >
                               {selected && (

@@ -63,14 +63,14 @@ export default function ProviderSelector({ onSelect }: ProviderSelectorProps): R
               type="button"
               onClick={() => onSelect(card.id)}
               className={`
-                flex flex-col items-start gap-4 rounded-xl border border-border bg-bg-secondary
+                flex flex-col items-start gap-4 rounded-xl border border-border bg-surface
                 p-6 text-left transition-all duration-150
                 hover:scale-[1.02] hover:shadow-lg
                 ${card.borderClass}
-                focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-bg-primary
+                focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-background
               `}
             >
-              <div className={`rounded-lg p-2.5 bg-bg-primary border border-border ${card.accentClass}`}>
+              <div className={`rounded-lg p-2.5 bg-background border border-border ${card.accentClass}`}>
                 <Icon size={24} />
               </div>
 
