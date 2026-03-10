@@ -13,7 +13,7 @@
 | 8 | Nebula Plugin | 6 | Complete | 6/6 |
 | 9 | Nebula UX Polish | 4 | Complete | 4/4 |
 | 10 | Settings UX Fix | 3 | Complete | 3/3 |
-| 11 | Full UI/UX Revamp | 0 | Planned | 0/0 |
+| 11 | Full UI/UX Revamp | 3 | Planned | 0/3 |
 
 ## Phase 1: Foundation
 
@@ -123,6 +123,13 @@ Plans:
 **Goal:** Comprehensive UI/UX overhaul across every screen — fix low text-to-background contrast, add purpose-driven color semantics (green/red for code diffs, status indicators, severity colors), introduce micro-interactions and entrance animations, and ensure every screen visually communicates its purpose. Covers Dashboard, CodeReviewBot, DbInspector, Launchpad, Nebula, Settings, Activity Log, About, sidebar, and stub plugins. Visual/animation only — no logic changes.
 
 **Requirements:** [SHELL-07]
+
+**Plans:** 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md -- Add semantic color tokens to CSS theme and fix broken Launchpad token references
+- [ ] 11-02-PLAN.md -- Fix WCAG AA contrast violations and migrate to semantic colors across all views
+- [ ] 11-03-PLAN.md -- Add entrance animations, stagger effects, and hover micro-interactions
 
 ## Phase 6: Polish & Production
 
