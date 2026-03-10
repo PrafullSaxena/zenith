@@ -9,6 +9,7 @@
  * to avoid conflicts with the FloatingToolbar BubbleMenu.
  */
 
+import { useEffect, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import {
   Plus,
@@ -26,6 +27,18 @@ interface TableControlsProps {
 }
 
 export default function TableControls({ editor }: TableControlsProps): React.JSX.Element | null {
+  // Force re-render on every editor transaction so isActive stays current.
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const handler = (): void => setTick((t) => t + 1)
+    editor.on('selectionUpdate', handler)
+    editor.on('update', handler)
+    return () => {
+      editor.off('selectionUpdate', handler)
+      editor.off('update', handler)
+    }
+  }, [editor])
+
   if (!editor.isActive('table')) return null
 
   return (

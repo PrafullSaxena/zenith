@@ -26,6 +26,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
   const voiceState = useNebulaStore((s) => s.voiceState)
   const setVoiceState = useNebulaStore((s) => s.setVoiceState)
   const setLastTranscript = useNebulaStore((s) => s.setLastTranscript)
+  const addToast = useNebulaStore((s) => s.addToast)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -105,6 +106,18 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
           setLastTranscript(result as DiarizedTranscript)
         } catch (err) {
           console.error('[VoiceRecorder] Transcription failed:', err)
+          const msg = err instanceof Error ? err.message : String(err)
+          if (msg.includes('API key')) {
+            addToast({
+              message: 'Transcription failed: OpenAI API key not configured. Set it in Settings → AI Agents.',
+              type: 'error'
+            })
+          } else {
+            addToast({
+              message: `Transcription failed: ${msg}`,
+              type: 'error'
+            })
+          }
         } finally {
           setVoiceState('idle')
         }
@@ -114,9 +127,21 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
       setVoiceState('recording')
     } catch (err) {
       console.error('[VoiceRecorder] Failed to start recording:', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('Permission') || msg.includes('NotAllowed')) {
+        addToast({
+          message: 'Microphone access denied. Allow microphone permission to record.',
+          type: 'error'
+        })
+      } else {
+        addToast({
+          message: `Recording failed: ${msg}`,
+          type: 'error'
+        })
+      }
       setVoiceState('idle')
     }
-  }, [setVoiceState, setLastTranscript, noteId])
+  }, [setVoiceState, setLastTranscript, noteId, addToast])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
