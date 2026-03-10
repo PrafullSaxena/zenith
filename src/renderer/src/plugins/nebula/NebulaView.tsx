@@ -20,7 +20,7 @@ import NoteEditor from './NoteEditor'
 import DrawingCanvas from './DrawingCanvas'
 import KnowledgeGraph from './KnowledgeGraph'
 import SearchView from './SearchView'
-import type { NebulaTab } from '../../types/nebula'
+import type { NebulaTab, NoteTag } from '../../types/nebula'
 
 const TABS: { id: NebulaTab; label: string; icon: typeof FileText }[] = [
   { id: 'notes', label: 'Notes', icon: FileText },
@@ -130,6 +130,17 @@ export default function NebulaView(): React.JSX.Element {
     [activeNote, saveNote]
   )
 
+  // Tags change: save the note with updated tags
+  const handleTagsChange = useCallback(
+    (tags: NoteTag[]) => {
+      if (!activeNote) return
+      const updatedNote = { ...activeNote, tags, updatedAt: new Date().toISOString() }
+      useNebulaStore.setState({ activeNote: updatedNote })
+      saveNote(updatedNote)
+    },
+    [activeNote, saveNote]
+  )
+
   // Flush pending content when switching notes or unmounting
   useEffect(() => {
     return () => {
@@ -191,6 +202,9 @@ export default function NebulaView(): React.JSX.Element {
                   <NoteEditor
                     content={activeNote.content}
                     title={activeNote.title}
+                    tags={activeNote.tags}
+                    onTagsChange={handleTagsChange}
+                    updatedAt={activeNote.updatedAt}
                     onUpdate={handleContentUpdate}
                     onBlur={handleEditorBlur}
                     onTitleChange={handleTitleChange}
