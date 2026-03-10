@@ -5,20 +5,20 @@
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** CodeReviewBot must work flawlessly — automated PR code review that connects to Bitbucket, fetches diffs, and posts inline AI-generated review comments
-**Current focus:** Phase 8 — Nebula Plugin
+**Current focus:** Phase 9 — Nebula UX Polish
 
 ## Current Position
 
-**Current Phase:** 08
-**Current Phase Name:** Nebula Plugin
-**Total Phases:** 8
-**Current Plan:** 6
-**Total Plans in Phase:** 6
-**Status:** All 6 plans executed — human verification checkpoint pending (08-06 Task 2)
+**Current Phase:** 09
+**Current Phase Name:** Nebula UX Polish
+**Total Phases:** 9
+**Current Plan:** 2
+**Total Plans in Phase:** 4
+**Status:** In progress
 **Last Activity:** 2026-03-10
-**Last Activity Description:** Completed all 6 Nebula plans (08-01 through 08-06) — full plugin with editor, drawings, AI summarization, knowledge graph, voice transcription, search & Q&A
+**Last Activity Description:** Completed 09-01 data layer foundation — pinned notes, content previews, audio IPC, toast state, 6 new npm packages
 
-**Progress:** [██████████] 100%
+**Progress:** [██--------] 25%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 08-nebula-plugin P03 | 6min | 2 tasks | 8 files |
 | Phase 08-nebula-plugin P06 | 3min | 1 tasks | 3 files |
 | Phase 08-nebula-plugin PP05 | 5min | 2 tasks | 9 files |
+| Phase 09 P01 | 7min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,10 @@ Recent decisions affecting current work:
 - [Phase 08-nebula-plugin]: Use getApiKeyForProvider('openai') for transcription API key retrieval -- consistent with existing AI streaming pattern
 - [Phase 08-nebula-plugin]: Audio buffer as number[] across contextBridge (sandbox=true safety); temp file write/cleanup for OpenAI transcription
 - [Phase 08-nebula-plugin]: Transcription-to-knowledge pipeline: VoiceRecorder -> handleTranscription -> saveNote -> triggerSummarization -> inferEdges (full NEBL-09 automation)
+- [Phase 09]: Idempotent ALTER TABLE migration: try/catch per column to handle re-run gracefully
+- [Phase 09]: Content preview auto-computed in upsertNote from Tiptap JSON (first 150 chars)
+- [Phase 09]: Notes sorted pinned-first at SQLite level and in-store after mutations
+- [Phase 09]: Toast auto-dismiss after 5s via setTimeout in addToast action
 
 ### Pending Todos
 
@@ -137,6 +142,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-10T12:36:46.087Z
-**Stopped at:** Phase 9 context gathered
-**Resume file:** .planning/phases/09-nebula-ux-polish/09-CONTEXT.md
+**Last session:** 2026-03-10T13:36:45.537Z
+**Stopped at:** Completed 09-01-PLAN.md
+**Resume file:** None
