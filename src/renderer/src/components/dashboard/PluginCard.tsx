@@ -9,6 +9,7 @@ import {
   Activity,
   Rocket,
   BookOpen,
+  PenLine,
   ArrowRight
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -27,7 +28,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   Activity,
   Rocket,
-  BookOpen
+  BookOpen,
+  PenLine
 }
 
 /** Per-plugin accent palette for icon backgrounds */
@@ -37,7 +39,8 @@ const PLUGIN_ACCENTS: Record<string, string> = {
   'astro-patch': 'from-orange-500/20 to-orange-600/10 text-orange-400',
   'prompt-builder': 'from-violet-500/20 to-violet-600/10 text-violet-400',
   'launchpad': 'from-rose-500/20 to-rose-600/10 text-rose-400',
-  'nebula': 'from-cyan-500/20 to-cyan-600/10 text-cyan-400'
+  'nebula': 'from-cyan-500/20 to-cyan-600/10 text-cyan-400',
+  'textcraft': 'from-purple-500/20 to-purple-600/10 text-purple-400'
 }
 
 export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.Element {

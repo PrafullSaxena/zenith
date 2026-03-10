@@ -10,13 +10,11 @@
  * Default-exported for React.lazy() compatibility in App.tsx.
  */
 import { useEffect, useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
   Zap,
   Database,
   Activity,
-  Shield,
-  ArrowRight
+  Shield
 } from 'lucide-react'
 import { PLUGINS } from '../../plugins/registry'
 import zenithLogo from '../../assets/zenith-logo.png'
@@ -27,7 +25,6 @@ import { useDbStore } from '../../stores/db-store'
 import { TokenChart } from './TokenChart'
 import { HealthPanel } from './HealthPanel'
 import { PluginCard } from './PluginCard'
-import { ActivityFeed } from './ActivityFeed'
 
 // ── Greeting based on time of day ──────────────────────────────────────────
 
@@ -77,7 +74,6 @@ function QuickStat({
 
 export default function MissionControl(): React.JSX.Element {
   const entries = useActivityStore((s) => s.entries)
-  const isLoadingActivity = useActivityStore((s) => s.isLoading)
   const loadActivityEntries = useActivityStore((s) => s.loadEntries)
 
   const tokenEntries = useTokenStore((s) => s.entries)
@@ -90,8 +86,6 @@ export default function MissionControl(): React.JSX.Element {
 
   const connections = useDbStore((s) => s.connections)
   const connectionStatuses = useDbStore((s) => s.connectionStatuses)
-
-  const navigate = useNavigate()
 
   // Load all data on mount
   useEffect(() => {
@@ -229,32 +223,6 @@ export default function MissionControl(): React.JSX.Element {
         </div>
       </div>
 
-      {/* ── Recent Activity ──────────────────────────────────────── */}
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">
-            Recent Activity
-          </h2>
-          {entries.length > 0 && (
-            <button
-              onClick={() => navigate('/activity')}
-              className="flex items-center gap-1 text-[11px] font-medium text-accent transition-colors hover:text-accent/80"
-            >
-              View all <ArrowRight size={12} />
-            </button>
-          )}
-        </div>
-        {isLoadingActivity ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
-          </div>
-        ) : (
-          <ActivityFeed
-            entries={entries.slice(0, 15)}
-            showViewAll={false}
-          />
-        )}
-      </div>
     </div>
   )
 }
