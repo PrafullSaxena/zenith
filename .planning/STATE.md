@@ -12,13 +12,13 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Current Phase:** 09
 **Current Phase Name:** Nebula UX Polish
 **Total Phases:** 9
-**Current Plan:** 3
+**Current Plan:** 4
 **Total Plans in Phase:** 4
 **Status:** Ready to execute
 **Last Activity:** 2026-03-10
 **Last Activity Description:** Completed 09-01 data layer foundation — pinned notes, content previews, audio IPC, toast state, 6 new npm packages
 
-**Progress:** [█████████░] 92%
+**Progress:** [██████████] 96%
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 08-nebula-plugin PP05 | 5min | 2 tasks | 9 files |
 | Phase 09 P01 | 7min | 2 tasks | 9 files |
 | Phase 09 P02 | 4min | 2 tasks | 7 files |
+| Phase 09 P03 | 6min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -134,6 +135,9 @@ Recent decisions affecting current work:
 - [Phase 09]: Auto-save dot: 4-state machine (synced/unsaved/saving/just-saved) with 1.5s green flash timeout
 - [Phase 09]: VoiceRecorder removed from NoteEditor; Plan 04 relocates as FAB in NebulaView
 - [Phase 09]: TableControls as conditional bar (not second BubbleMenu) to avoid floating menu conflicts
+- [Phase 09]: react-resizable-panels v4 API: Group/Panel/Separator with useDefaultLayout hook for persistence (adapted from plan's v2 assumptions)
+- [Phase 09]: Drawing panel collapsed by default with side rail tab; visibility controlled by panel collapse state
+- [Phase 09]: Custom event nebula:focus-title for Cmd+N cross-component title focus signaling
 
 ### Pending Todos
 
@@ -147,6 +151,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-10T13:44:29.322Z
-**Stopped at:** Completed 09-02-PLAN.md
+**Last session:** 2026-03-10T13:46:09.820Z
+**Stopped at:** Completed 09-03-PLAN.md
 **Resume file:** None
