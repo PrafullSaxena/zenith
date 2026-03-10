@@ -35,6 +35,9 @@ import TranscriptionBlock from './TranscriptionBlock'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 
+/** Stable empty array to avoid Zustand re-render loops from `?? []` in selectors. */
+const EMPTY_SEGMENTS: { speaker: string; text: string; start?: number; end?: number }[] = []
+
 // ── Props ────────────────────────────────────────────────────────────
 
 interface NoteEditorProps {
@@ -86,7 +89,9 @@ export default function NoteEditor({
   showSaved
 }: NoteEditorProps): React.JSX.Element {
   // Transcription segments for inline block display
-  const transcriptionSegments = useNebulaStore((s) => s.transcriptionSegments[noteId] ?? [])
+  // IMPORTANT: Use a stable constant for the fallback to avoid Zustand re-render loop.
+  // `?? []` creates a new array reference each call → Object.is fails → infinite re-renders.
+  const transcriptionSegments = useNebulaStore((s) => s.transcriptionSegments[noteId]) ?? EMPTY_SEGMENTS
   // Link dialog state
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [linkPosition, setLinkPosition] = useState({ x: 0, y: 0 })
