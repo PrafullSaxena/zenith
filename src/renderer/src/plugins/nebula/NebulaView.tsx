@@ -26,7 +26,6 @@ import {
   Group,
   Panel,
   Separator,
-  useDefaultLayout,
   usePanelRef
 } from 'react-resizable-panels'
 import { useNebulaStore } from '../../stores/nebula-store'
@@ -77,16 +76,8 @@ export default function NebulaView(): React.JSX.Element {
   const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wasSavingRef = useRef(false)
 
-  // Layout persistence via useDefaultLayout
-  const sidebarLayout = useDefaultLayout({
-    id: 'nebula-sidebar',
-    storage: localStorage
-  })
-
-  const editorLayout = useDefaultLayout({
-    id: 'nebula-editor-split',
-    storage: localStorage
-  })
+  // NOTE: useDefaultLayout removed — it returned unstable references that caused
+  // infinite re-render loops. Layout persistence is handled via Group id + localStorage.
 
   // Load notes on mount
   useEffect(() => {
@@ -207,14 +198,16 @@ export default function NebulaView(): React.JSX.Element {
 
   // Toggle drawing panel open/closed
   const handleToggleDrawing = useCallback(() => {
-    if (drawingOpen) {
-      drawingPanelRef.current?.collapse()
-      setDrawingOpen(false)
-    } else {
-      drawingPanelRef.current?.expand()
-      setDrawingOpen(true)
-    }
-  }, [drawingOpen, drawingPanelRef])
+    setDrawingOpen((prev) => {
+      if (prev) {
+        drawingPanelRef.current?.collapse()
+        return false
+      } else {
+        drawingPanelRef.current?.expand()
+        return true
+      }
+    })
+  }, [drawingPanelRef])
 
   // Double-click inner divider to reset to 60/40 split
   const handleDividerDoubleClick = useCallback(() => {
@@ -230,25 +223,22 @@ export default function NebulaView(): React.JSX.Element {
   }, [drawingPanelRef])
 
   // Track sidebar collapse state from panel resize events
+  // Uses functional setState to avoid depending on own state (prevents re-render loops)
   const handleSidebarResize = useCallback(
     (panelSize: { asPercentage: number }) => {
       const collapsed = panelSize.asPercentage < 5
-      if (collapsed !== sidebarCollapsed) {
-        setSidebarCollapsed(collapsed)
-      }
+      setSidebarCollapsed((prev) => (prev === collapsed ? prev : collapsed))
     },
-    [sidebarCollapsed]
+    []
   )
 
   // Track drawing panel collapse/expand
   const handleDrawingResize = useCallback(
     (panelSize: { asPercentage: number }) => {
       const isOpen = panelSize.asPercentage > 2
-      if (isOpen !== drawingOpen) {
-        setDrawingOpen(isOpen)
-      }
+      setDrawingOpen((prev) => (prev === isOpen ? prev : isOpen))
     },
-    [drawingOpen]
+    []
   )
 
   return (
@@ -295,9 +285,6 @@ export default function NebulaView(): React.JSX.Element {
           <Group
             orientation="horizontal"
             id="nebula-sidebar"
-            defaultLayout={sidebarLayout.defaultLayout}
-            onLayoutChange={sidebarLayout.onLayoutChange}
-            onLayoutChanged={sidebarLayout.onLayoutChanged}
             className="h-full"
           >
             {/* Sidebar panel -- collapsible NoteList */}
@@ -341,9 +328,6 @@ export default function NebulaView(): React.JSX.Element {
                   <Group
                     orientation="horizontal"
                     id="nebula-editor-split"
-                    defaultLayout={editorLayout.defaultLayout}
-                    onLayoutChange={editorLayout.onLayoutChange}
-                    onLayoutChanged={editorLayout.onLayoutChanged}
                     className="h-full w-full"
                   >
                     {/* Editor panel */}
