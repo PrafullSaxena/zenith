@@ -11,6 +11,7 @@
 | 5 | AstroPatch Plugin | 7 | 4/4 | Complete   | 2026-03-09 | 6 | Polish & Production | 3 | Planned | 0/3 |
 | 7 | Launchpad Plugin | 4 | Complete | 4/4 |
 | 8 | Nebula Plugin | 6 | Complete | 6/6 |
+| 9 | Nebula UX Polish | 0 | Planned | 0/0 |
 
 ## Phase 1: Foundation
 
@@ -89,6 +90,17 @@ Plans:
 - [x] 08-04-PLAN.md -- AI summarization pipeline, knowledge graph edge inference, force-directed graph visualization
 - [x] 08-05-PLAN.md -- Voice recording (MediaRecorder), OpenAI transcription with diarization, transcription-to-knowledge pipeline
 - [x] 08-06-PLAN.md -- FTS5 search with highlights, AI Q&A over notes, visual verification checkpoint
+
+## Phase 9: Nebula UX Polish
+
+**Goal:** Improve the UX of the Nebula Notes section — enhance text notes editor, drawing canvas, and voice notes experience with better interactions, visual feedback, and usability refinements.
+
+**Requirements:** [NEBL-01, NEBL-02, NEBL-03, NEBL-06, NEBL-07, NEBL-08]
+
+**Plans:** 0 plans
+
+Plans:
+(none yet)
 
 ## Phase 6: Polish & Production
 
