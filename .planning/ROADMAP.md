@@ -14,7 +14,7 @@
 | 9 | Nebula UX Polish | 4 | Complete | 4/4 |
 | 10 | Settings UX Fix | 3 | Complete | 3/3 |
 | 11 | 3/3 | Complete    | 2026-03-10 | 0/3 |
-| 12 | 1/2 | In Progress|  | 0/2 |
+| 12 | TextCraft Plugin | 2 | Complete | 2/2 |
 
 ## Phase 1: Foundation
 
@@ -138,11 +138,11 @@ Plans:
 
 **Requirements:** [TXCR-01, TXCR-02, TXCR-03, TXCR-04, TXCR-05, TXCR-06, TXCR-07, TXCR-08, TXCR-09, TXCR-10]
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 12-01-PLAN.md -- TextCraft types, Zustand store with AI streaming, plugin registration, sidebar icon
-- [ ] 12-02-PLAN.md -- Three-panel UI: InputPanel, ControlsPanel, OutputPanel with streaming and copy-to-clipboard
+- [x] 12-01-PLAN.md -- TextCraft types, Zustand store with AI streaming, plugin registration, sidebar icon
+- [x] 12-02-PLAN.md -- Three-panel UI: InputPanel, ControlsPanel, OutputPanel with streaming and copy-to-clipboard
 
 ## Phase 6: Polish & Production
 
