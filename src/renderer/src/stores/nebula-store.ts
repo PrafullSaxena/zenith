@@ -682,10 +682,14 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
           .trim()
         const result = JSON.parse(cleaned) as SummarizationResult
 
+        // Check if auto-generate title is enabled in settings (default: true)
+        const autoTitle = useSettingsStore.getState().getSetting('plugins.nebula.autoGenerateTitle')
+        const shouldAutoTitle = autoTitle !== false
+
         // Update the note with AI-extracted metadata
         const updatedNote: NoteFile = {
           ...note,
-          title: result.title || note.title,
+          title: shouldAutoTitle ? (result.title || note.title) : note.title,
           summary: result.summary || note.summary,
           topics: Array.isArray(result.topics) ? result.topics : note.topics,
           updatedAt: new Date().toISOString()

@@ -71,8 +71,8 @@ function createWindow(): void {
   // CSP header: strict in production, relaxed in dev for Vite HMR
   mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
     const csp = is.dev
-      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ws://localhost:*"
-      : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
+      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.tldraw.com; font-src 'self' data: https://cdn.tldraw.com; connect-src 'self' ws://localhost:* https://cdn.tldraw.com"
+      : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.tldraw.com; font-src 'self' data: https://cdn.tldraw.com; connect-src 'self' https://cdn.tldraw.com"
     callback({
       responseHeaders: {
         ...details.responseHeaders,

@@ -152,6 +152,14 @@ export const PLUGINS: readonly PluginDefinition[] = [
           'Directory where notes and database are stored. Defaults to app data folder if empty.',
         defaultValue: '',
         placeholder: '/path/to/nebula-notes'
+      },
+      {
+        key: 'autoGenerateTitle',
+        label: 'Auto-generate Note Title',
+        type: 'boolean',
+        description:
+          'When enabled, the AI agent automatically generates a note title from the content during summarization.',
+        defaultValue: true
       }
     ],
     defaultAgent: null

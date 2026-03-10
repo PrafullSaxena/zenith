@@ -16,7 +16,18 @@
  */
 
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { BookOpen, FileText, Search, Share2, Pencil, PanelLeftClose, PanelLeft } from 'lucide-react'
+import {
+  BookOpen,
+  FileText,
+  Search,
+  Share2,
+  Pencil,
+  PanelLeftClose,
+  PanelLeft,
+  X,
+  Maximize2,
+  Minimize2
+} from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
@@ -47,6 +58,8 @@ export default function NebulaView(): React.JSX.Element {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [drawingOpen, setDrawingOpen] = useState(false)
+  const [drawingFullscreen, setDrawingFullscreen] = useState(false)
+  const [drawingWidthPct, setDrawingWidthPct] = useState(40) // percentage of content area
   const [showSaved, setShowSaved] = useState(false)
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -54,6 +67,7 @@ export default function NebulaView(): React.JSX.Element {
   const pendingContentRef = useRef<object | null>(null)
   const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wasSavingRef = useRef(false)
+  const contentAreaRef = useRef<HTMLDivElement>(null)
 
   // Load notes on mount
   useEffect(() => {
@@ -172,7 +186,50 @@ export default function NebulaView(): React.JSX.Element {
   // Toggle drawing panel
   const handleToggleDrawing = useCallback(() => {
     setDrawingOpen((prev) => !prev)
+    setDrawingFullscreen(false)
   }, [])
+
+  // Toggle fullscreen for drawing panel
+  const handleToggleFullscreen = useCallback(() => {
+    setDrawingFullscreen((prev) => !prev)
+  }, [])
+
+  // Close drawing panel
+  const handleCloseDrawing = useCallback(() => {
+    setDrawingOpen(false)
+    setDrawingFullscreen(false)
+  }, [])
+
+  // Draggable resize handle between editor and drawing
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      const contentEl = contentAreaRef.current
+      if (!contentEl) return
+
+      const handleMouseMove = (ev: MouseEvent): void => {
+        const rect = contentEl.getBoundingClientRect()
+        const mouseX = ev.clientX - rect.left
+        const totalW = rect.width
+        const editorPct = (mouseX / totalW) * 100
+        // Clamp: drawing between 20% and 70%
+        const newDrawingPct = Math.max(20, Math.min(70, 100 - editorPct))
+        setDrawingWidthPct(newDrawingPct)
+      }
+      const handleMouseUp = (): void => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
+
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    },
+    []
+  )
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
@@ -246,36 +303,83 @@ export default function NebulaView(): React.JSX.Element {
             )}
 
             {/* Content area */}
-            <div className="relative flex flex-1 overflow-hidden">
+            <div ref={contentAreaRef} className="relative flex flex-1 overflow-hidden">
               {activeNote ? (
                 <div className="flex h-full w-full">
-                  {/* Editor */}
-                  <div className={`flex flex-col overflow-hidden ${drawingOpen ? 'w-3/5' : 'flex-1'}`}>
-                    <NoteEditor
-                      key={activeNote.id}
-                      noteId={activeNote.id}
-                      content={activeNote.content}
-                      title={activeNote.title}
-                      tags={activeNote.tags ?? []}
-                      onTagsChange={handleTagsChange}
-                      updatedAt={activeNote.updatedAt}
-                      onUpdate={handleContentUpdate}
-                      onBlur={handleEditorBlur}
-                      onTitleChange={handleTitleChange}
-                      isSummarizing={isSummarizing}
-                      isSaving={isSaving}
-                      showSaved={showSaved}
-                    />
-                  </div>
+                  {/* Editor -- hidden when drawing is fullscreen */}
+                  {!drawingFullscreen && (
+                    <div
+                      className="flex flex-col overflow-hidden"
+                      style={drawingOpen ? { width: `${100 - drawingWidthPct}%` } : { flex: 1 }}
+                    >
+                      <NoteEditor
+                        key={activeNote.id}
+                        noteId={activeNote.id}
+                        content={activeNote.content}
+                        title={activeNote.title}
+                        tags={activeNote.tags ?? []}
+                        onTagsChange={handleTagsChange}
+                        updatedAt={activeNote.updatedAt}
+                        onUpdate={handleContentUpdate}
+                        onBlur={handleEditorBlur}
+                        onTitleChange={handleTitleChange}
+                        isSummarizing={isSummarizing}
+                        isSaving={isSaving}
+                        showSaved={showSaved}
+                      />
+                    </div>
+                  )}
+
+                  {/* Resize handle between editor and drawing */}
+                  {drawingOpen && !drawingFullscreen && (
+                    <div
+                      onMouseDown={handleResizeStart}
+                      className="group flex w-1.5 shrink-0 cursor-col-resize items-center justify-center hover:bg-accent/20 transition-colors"
+                      title="Drag to resize"
+                    >
+                      <div className="h-8 w-0.5 rounded-full bg-border group-hover:bg-accent transition-colors" />
+                    </div>
+                  )}
 
                   {/* Drawing panel */}
                   {drawingOpen && (
-                    <div className="flex w-2/5 border-l border-border">
-                      <DrawingCanvas
-                        key={activeNote.id}
-                        snapshot={activeNote.drawing}
-                        onSave={handleDrawingSave}
-                      />
+                    <div
+                      className="flex flex-col border-l border-border"
+                      style={drawingFullscreen ? { width: '100%' } : { width: `${drawingWidthPct}%` }}
+                    >
+                      {/* Drawing panel header */}
+                      <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-1.5">
+                        <span className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
+                          <Pencil size={12} />
+                          Drawing
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={handleToggleFullscreen}
+                            className="flex h-6 w-6 items-center justify-center rounded text-text-secondary/60 transition-colors hover:bg-accent/10 hover:text-text-primary"
+                            title={drawingFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                          >
+                            {drawingFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleCloseDrawing}
+                            className="flex h-6 w-6 items-center justify-center rounded text-text-secondary/60 transition-colors hover:bg-accent/10 hover:text-text-primary"
+                            title="Close drawing panel"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      </div>
+                      {/* Canvas */}
+                      <div className="flex-1">
+                        <DrawingCanvas
+                          key={activeNote.id}
+                          snapshot={activeNote.drawing}
+                          onSave={handleDrawingSave}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -306,8 +410,8 @@ export default function NebulaView(): React.JSX.Element {
                 </button>
               )}
 
-              {/* Voice Recorder FAB */}
-              <VoiceRecorder noteId={activeNote?.id ?? null} />
+              {/* Voice Recorder FAB -- hidden when drawing is fullscreen */}
+              {!drawingFullscreen && <VoiceRecorder noteId={activeNote?.id ?? null} />}
             </div>
           </div>
         )}
