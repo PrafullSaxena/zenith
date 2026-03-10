@@ -1,8 +1,9 @@
 /**
  * DrawingCanvas -- tldraw v4 wrapper component for Nebula note drawings.
  *
- * Mounts the tldraw editor in dark mode, auto-saves on changes
- * via a debounced callback. Only renders when visible to save resources.
+ * Always-mounted inside the resizable drawing panel. The panel's
+ * collapse/expand state controls visibility -- this component no longer
+ * has a `visible` prop.
  *
  * Key design:
  *  - Uses `snapshot` prop on <Tldraw> for initial data hydration
@@ -22,7 +23,6 @@ import type { Editor, TLEditorSnapshot, TLStoreSnapshot } from 'tldraw'
 interface DrawingCanvasProps {
   snapshot: object | null
   onSave: (snapshot: object) => void
-  visible: boolean
 }
 
 /**
@@ -43,9 +43,8 @@ function isValidSnapshot(
 
 export default function DrawingCanvas({
   snapshot,
-  onSave,
-  visible
-}: DrawingCanvasProps): React.JSX.Element | null {
+  onSave
+}: DrawingCanvasProps): React.JSX.Element {
   const editorRef = useRef<Editor | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   // Use a ref for onSave to avoid stale closures in the store listener
@@ -91,14 +90,12 @@ export default function DrawingCanvas({
     }
   }, [])
 
-  if (!visible) return null
-
   // Parse snapshot for tldraw — pass undefined if null or invalid
   const tldrawSnapshot = isValidSnapshot(snapshot) ? snapshot : undefined
 
   return (
-    <div style={{ height: '50vh', minHeight: 350 }}>
-      <div className="tldraw__editor">
+    <div className="h-full w-full">
+      <div className="tldraw__editor h-full">
         <Tldraw
           snapshot={tldrawSnapshot}
           onMount={handleMount}

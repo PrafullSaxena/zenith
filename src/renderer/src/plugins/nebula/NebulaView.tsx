@@ -4,16 +4,31 @@
  * Layout:
  *  - Header: plugin icon + title + subtitle
  *  - Tab bar: Notes / Search / Knowledge
- *  - Notes tab: NoteList sidebar + NoteEditor + DrawingCanvas toggle
+ *  - Notes tab: resizable sidebar (NoteList) | content area (NoteEditor + DrawingCanvas split)
  *  - Search tab: SearchView with FTS5 search + AI Q&A
  *  - Knowledge tab: KnowledgeGraph force-directed visualization
+ *
+ * Uses react-resizable-panels v4 (Group/Panel/Separator) for:
+ *  1. Outer split: sidebar | content (persisted as "nebula-sidebar")
+ *  2. Inner split: editor | drawing (persisted as "nebula-editor-split")
+ *
+ * Drawing panel is collapsed by default, expandable via side rail "Draw" tab.
+ * Double-clicking the inner divider resets to 60/40 split.
+ * Sidebar collapses to just an expand button.
  *
  * Follows the same tab pattern as LaunchpadView.tsx.
  * Default-exported for React.lazy() compatibility in the plugin registry.
  */
 
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { BookOpen, FileText, Search, Share2, PenTool } from 'lucide-react'
+import { BookOpen, FileText, Search, Share2, Pencil, ChevronRight } from 'lucide-react'
+import {
+  Group,
+  Panel,
+  Separator,
+  useDefaultLayout,
+  usePanelRef
+} from 'react-resizable-panels'
 import { useNebulaStore } from '../../stores/nebula-store'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
@@ -28,6 +43,12 @@ const TABS: { id: NebulaTab; label: string; icon: typeof FileText }[] = [
   { id: 'knowledge', label: 'Knowledge', icon: Share2 }
 ]
 
+// Panel IDs for react-resizable-panels layout persistence
+const SIDEBAR_PANEL_ID = 'sidebar'
+const CONTENT_PANEL_ID = 'content'
+const EDITOR_PANEL_ID = 'editor'
+const DRAWING_PANEL_ID = 'drawing'
+
 export default function NebulaView(): React.JSX.Element {
   const activeTab = useNebulaStore((s) => s.activeTab)
   const setActiveTab = useNebulaStore((s) => s.setActiveTab)
@@ -39,14 +60,30 @@ export default function NebulaView(): React.JSX.Element {
   const lastTranscript = useNebulaStore((s) => s.lastTranscript)
   const handleTranscription = useNebulaStore((s) => s.handleTranscription)
 
-  const [showDrawing, setShowDrawing] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [drawingOpen, setDrawingOpen] = useState(false)
   const [showSaved, setShowSaved] = useState(false)
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Panel imperative refs
+  const sidebarPanelRef = usePanelRef()
+  const drawingPanelRef = usePanelRef()
 
   // Track pending (dirty) content that hasn't been saved yet
   const pendingContentRef = useRef<object | null>(null)
   const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wasSavingRef = useRef(false)
+
+  // Layout persistence via useDefaultLayout
+  const sidebarLayout = useDefaultLayout({
+    id: 'nebula-sidebar',
+    storage: localStorage
+  })
+
+  const editorLayout = useDefaultLayout({
+    id: 'nebula-editor-split',
+    storage: localStorage
+  })
 
   // Load notes on mount
   useEffect(() => {
@@ -81,7 +118,7 @@ export default function NebulaView(): React.JSX.Element {
     }
   }, [lastTranscript]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Content update: just track dirty content — actual save happens on blur
+  // Content update: just track dirty content -- actual save happens on blur
   const handleContentUpdate = useCallback(
     (json: object) => {
       if (!activeNote) return
@@ -156,6 +193,52 @@ export default function NebulaView(): React.JSX.Element {
     }
   }, [activeNote?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Toggle drawing panel open/closed
+  const handleToggleDrawing = useCallback(() => {
+    if (drawingOpen) {
+      drawingPanelRef.current?.collapse()
+      setDrawingOpen(false)
+    } else {
+      drawingPanelRef.current?.expand()
+      setDrawingOpen(true)
+    }
+  }, [drawingOpen, drawingPanelRef])
+
+  // Double-click inner divider to reset to 60/40 split
+  const handleDividerDoubleClick = useCallback(() => {
+    // Clear persisted editor split layout to reset to defaults
+    try {
+      localStorage.removeItem('react-resizable-panels:nebula-editor-split')
+    } catch {
+      // Ignore storage errors
+    }
+    // Force both panels to target sizes
+    drawingPanelRef.current?.resize('40%')
+    setDrawingOpen(true)
+  }, [drawingPanelRef])
+
+  // Track sidebar collapse state from panel resize events
+  const handleSidebarResize = useCallback(
+    (panelSize: { asPercentage: number }) => {
+      const collapsed = panelSize.asPercentage < 5
+      if (collapsed !== sidebarCollapsed) {
+        setSidebarCollapsed(collapsed)
+      }
+    },
+    [sidebarCollapsed]
+  )
+
+  // Track drawing panel collapse/expand
+  const handleDrawingResize = useCallback(
+    (panelSize: { asPercentage: number }) => {
+      const isOpen = panelSize.asPercentage > 2
+      if (isOpen !== drawingOpen) {
+        setDrawingOpen(isOpen)
+      }
+    },
+    [drawingOpen]
+  )
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
       {/* Header */}
@@ -192,62 +275,141 @@ export default function NebulaView(): React.JSX.Element {
 
       {/* Tab content */}
       <div key={activeTab} className="flex-1 overflow-hidden animate-tab-enter">
-        {/* Notes tab */}
+        {/* Notes tab with resizable panels */}
         {activeTab === 'notes' && (
-          <div className="flex h-full overflow-hidden">
-            <NoteList />
-            <div className="flex flex-1 flex-col overflow-hidden">
-              {activeNote ? (
-                <>
-                  <NoteEditor
-                    content={activeNote.content}
-                    title={activeNote.title}
-                    tags={activeNote.tags}
-                    onTagsChange={handleTagsChange}
-                    updatedAt={activeNote.updatedAt}
-                    onUpdate={handleContentUpdate}
-                    onBlur={handleEditorBlur}
-                    onTitleChange={handleTitleChange}
-                    isSummarizing={isSummarizing}
-                    isSaving={isSaving}
-                    showSaved={showSaved}
-                  />
-
-                  {/* Drawing toggle + canvas */}
-                  <div className="border-t border-border">
-                    <button
-                      type="button"
-                      onClick={() => setShowDrawing(!showDrawing)}
-                      className={`flex w-full items-center gap-1.5 px-3 py-1.5 text-xs transition-colors ${
-                        showDrawing
-                          ? 'bg-accent/10 text-accent'
-                          : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
-                      }`}
-                    >
-                      <PenTool size={12} />
-                      {showDrawing ? 'Hide Drawing' : 'Show Drawing'}
-                    </button>
-                    <DrawingCanvas
-                      key={activeNote.id}
-                      snapshot={activeNote.drawing}
-                      onSave={handleDrawingSave}
-                      visible={showDrawing}
-                    />
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-1 items-center justify-center text-text-secondary">
-                  <div className="text-center">
-                    <FileText size={36} className="mx-auto mb-3 opacity-30" />
-                    <p className="text-sm font-medium">No note selected</p>
-                    <p className="mt-1 text-xs text-text-secondary/60">
-                      Select a note from the sidebar or create a new one
-                    </p>
-                  </div>
+          <Group
+            orientation="horizontal"
+            id="nebula-sidebar"
+            defaultLayout={sidebarLayout.defaultLayout}
+            onLayoutChange={sidebarLayout.onLayoutChange}
+            onLayoutChanged={sidebarLayout.onLayoutChanged}
+            className="h-full"
+          >
+            {/* Sidebar panel -- collapsible NoteList */}
+            <Panel
+              id={SIDEBAR_PANEL_ID}
+              defaultSize="22%"
+              minSize="5%"
+              maxSize="40%"
+              collapsible
+              collapsedSize="0%"
+              panelRef={sidebarPanelRef}
+              onResize={handleSidebarResize}
+              className="overflow-hidden"
+            >
+              {sidebarCollapsed ? (
+                <div className="flex h-full w-full items-start justify-center pt-3 bg-surface">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sidebarPanelRef.current?.expand()
+                      setSidebarCollapsed(false)
+                    }}
+                    className="flex h-7 w-7 items-center justify-center rounded text-text-secondary transition-colors hover:bg-accent/15 hover:text-accent"
+                    title="Expand sidebar"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
+              ) : (
+                <NoteList />
               )}
-            </div>
-          </div>
+            </Panel>
+
+            {/* Sidebar resize handle */}
+            <Separator className="w-1 bg-border hover:bg-accent/30 transition-colors cursor-col-resize" />
+
+            {/* Content panel */}
+            <Panel id={CONTENT_PANEL_ID} defaultSize="78%" className="overflow-hidden">
+              <div className="relative flex h-full overflow-hidden">
+                {activeNote ? (
+                  <Group
+                    orientation="horizontal"
+                    id="nebula-editor-split"
+                    defaultLayout={editorLayout.defaultLayout}
+                    onLayoutChange={editorLayout.onLayoutChange}
+                    onLayoutChanged={editorLayout.onLayoutChanged}
+                    className="h-full w-full"
+                  >
+                    {/* Editor panel */}
+                    <Panel
+                      id={EDITOR_PANEL_ID}
+                      defaultSize={drawingOpen ? '60%' : '100%'}
+                      minSize="30%"
+                      className="overflow-hidden"
+                    >
+                      <NoteEditor
+                        content={activeNote.content}
+                        title={activeNote.title}
+                        tags={activeNote.tags}
+                        onTagsChange={handleTagsChange}
+                        updatedAt={activeNote.updatedAt}
+                        onUpdate={handleContentUpdate}
+                        onBlur={handleEditorBlur}
+                        onTitleChange={handleTitleChange}
+                        isSummarizing={isSummarizing}
+                        isSaving={isSaving}
+                        showSaved={showSaved}
+                      />
+                    </Panel>
+
+                    {/* Editor/drawing resize handle -- only when drawing is open */}
+                    {drawingOpen && (
+                      <Separator
+                        className="w-1.5 bg-border hover:bg-accent/50 transition-colors cursor-col-resize"
+                        onDoubleClick={handleDividerDoubleClick}
+                      />
+                    )}
+
+                    {/* Drawing panel -- collapsed by default, expandable via side rail */}
+                    <Panel
+                      id={DRAWING_PANEL_ID}
+                      defaultSize={drawingOpen ? '40%' : '0%'}
+                      minSize="0%"
+                      collapsible
+                      collapsedSize="0%"
+                      panelRef={drawingPanelRef}
+                      onResize={handleDrawingResize}
+                      className="overflow-hidden"
+                    >
+                      {drawingOpen && (
+                        <DrawingCanvas
+                          key={activeNote.id}
+                          snapshot={activeNote.drawing}
+                          onSave={handleDrawingSave}
+                        />
+                      )}
+                    </Panel>
+                  </Group>
+                ) : (
+                  <div className="flex flex-1 items-center justify-center text-text-secondary">
+                    <div className="text-center">
+                      <FileText size={36} className="mx-auto mb-3 opacity-30" />
+                      <p className="text-sm font-medium">No note selected</p>
+                      <p className="mt-1 text-xs text-text-secondary/60">
+                        Select a note from the sidebar or create a new one
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Side rail "Draw" tab -- visible when drawing panel is closed */}
+                {activeNote && !drawingOpen && (
+                  <button
+                    type="button"
+                    onClick={handleToggleDrawing}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 rounded-l-lg border border-r-0 border-border bg-surface-elevated px-1.5 py-3 text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent shadow-sm"
+                    title="Open drawing panel"
+                  >
+                    <Pencil size={14} />
+                    <span className="text-[9px] font-medium [writing-mode:vertical-lr]">
+                      Draw
+                    </span>
+                  </button>
+                )}
+              </div>
+            </Panel>
+          </Group>
         )}
 
         {/* Search tab */}
