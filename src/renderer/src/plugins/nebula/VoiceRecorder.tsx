@@ -1,22 +1,28 @@
 /**
- * VoiceRecorder -- MediaRecorder-based audio capture with transcription trigger.
+ * VoiceRecorder -- Floating Action Button (FAB) with animated expansion for voice recording.
  *
  * Features:
- *  - Start/stop audio recording via MediaRecorder API
- *  - Compact bar at the bottom of the note editor area
- *  - Red pulsing dot + elapsed time counter during recording
- *  - Processing state with spinner while transcription runs
- *  - Sends captured audio to main process for OpenAI transcription via IPC
+ *  - Round FAB in bottom-right corner with Mic icon (idle state)
+ *  - Expands into recording card with animated equalizer bars, timer, and stop button
+ *  - Processing state with spinner while transcription runs in the background
+ *  - Background transcription: user can continue editing while transcription processes
+ *  - Saves audio via IPC for later playback in TranscriptionBlock
  *
+ * Uses framer-motion AnimatePresence for smooth FAB <-> card transitions.
  * Security: Audio buffer sent as number[] array across contextBridge (sandbox=true).
  */
 
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { Mic, Square, Loader2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNebulaStore } from '../../stores/nebula-store'
 import type { DiarizedTranscript } from '../../types/nebula'
 
-export default function VoiceRecorder(): React.JSX.Element {
+interface VoiceRecorderProps {
+  noteId: string | null
+}
+
+export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX.Element | null {
   const voiceState = useNebulaStore((s) => s.voiceState)
   const setVoiceState = useNebulaStore((s) => s.setVoiceState)
   const setLastTranscript = useNebulaStore((s) => s.setLastTranscript)
@@ -24,6 +30,7 @@ export default function VoiceRecorder(): React.JSX.Element {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const streamRef = useRef<MediaStream | null>(null)
+  const mimeTypeRef = useRef<string>('audio/webm')
 
   // Elapsed time counter
   const [elapsed, setElapsed] = useState(0)
@@ -54,7 +61,7 @@ export default function VoiceRecorder(): React.JSX.Element {
   const formatTime = (seconds: number): string => {
     const m = Math.floor(seconds / 60)
     const s = seconds % 60
-    return `${m}:${s.toString().padStart(2, '0')}`
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
   }
 
   const startRecording = useCallback(async () => {
@@ -67,6 +74,7 @@ export default function VoiceRecorder(): React.JSX.Element {
         ? 'audio/webm;codecs=opus'
         : 'audio/webm'
 
+      mimeTypeRef.current = mimeType
       const recorder = new MediaRecorder(stream, { mimeType })
       mediaRecorderRef.current = recorder
       chunksRef.current = []
@@ -83,9 +91,17 @@ export default function VoiceRecorder(): React.JSX.Element {
         try {
           const blob = new Blob(chunksRef.current, { type: mimeType })
           const buffer = await blob.arrayBuffer()
-          const result = await window.api.nebula.transcribeAudio(
-            Array.from(new Uint8Array(buffer))
-          )
+          const audioArray = Array.from(new Uint8Array(buffer))
+
+          // Save audio for later playback (fire-and-forget)
+          if (noteId) {
+            window.api.nebula.saveAudio(noteId, audioArray).catch((err) => {
+              console.error('[VoiceRecorder] Failed to save audio:', err)
+            })
+          }
+
+          // Send for transcription (background processing)
+          const result = await window.api.nebula.transcribeAudio(audioArray)
           setLastTranscript(result as DiarizedTranscript)
         } catch (err) {
           console.error('[VoiceRecorder] Transcription failed:', err)
@@ -100,7 +116,7 @@ export default function VoiceRecorder(): React.JSX.Element {
       console.error('[VoiceRecorder] Failed to start recording:', err)
       setVoiceState('idle')
     }
-  }, [setVoiceState, setLastTranscript])
+  }, [setVoiceState, setLastTranscript, noteId])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -112,52 +128,88 @@ export default function VoiceRecorder(): React.JSX.Element {
     }
   }, [])
 
+  // Don't render FAB when no note is selected
+  if (!noteId) return null
+
   return (
-    <div className="flex items-center gap-2 border-t border-border bg-surface px-3 py-2">
-      {/* Idle state: show mic button */}
-      {voiceState === 'idle' && (
-        <button
-          type="button"
-          onClick={startRecording}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-accent transition-colors hover:bg-accent/20"
-          title="Start voice recording"
-        >
-          <Mic size={14} />
-        </button>
-      )}
-
-      {/* Recording state: show stop button + pulsing dot + timer */}
-      {voiceState === 'recording' && (
-        <>
-          <button
+    <div className="absolute bottom-6 right-6 z-40">
+      <AnimatePresence mode="wait">
+        {/* Idle state: Round FAB button */}
+        {voiceState === 'idle' && (
+          <motion.button
+            key="fab-idle"
             type="button"
-            onClick={stopRecording}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/20 text-red-400 transition-colors hover:bg-red-500/30"
-            title="Stop recording"
+            onClick={startRecording}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-accent shadow-lg transition-colors hover:bg-accent/90"
+            title="Start voice recording"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
-            <Square size={12} />
-          </button>
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
-          </span>
-          <span className="text-xs tabular-nums text-red-400">{formatTime(elapsed)}</span>
-          <span className="text-xs text-text-secondary">Recording...</span>
-        </>
-      )}
+            <Mic size={20} className="text-surface" />
+          </motion.button>
+        )}
 
-      {/* Processing state: show spinner */}
-      {voiceState === 'processing' && (
-        <>
-          <Loader2 size={16} className="animate-spin text-accent" />
-          <span className="text-xs text-text-secondary">Transcribing...</span>
-        </>
-      )}
+        {/* Recording state: Expanded card */}
+        {voiceState === 'recording' && (
+          <motion.div
+            key="fab-recording"
+            className="flex items-center gap-3 rounded-2xl bg-surface-elevated border border-border px-4 shadow-xl"
+            initial={{ width: 48, height: 48, borderRadius: 24 }}
+            animate={{ width: 280, height: 80, borderRadius: 16 }}
+            exit={{ width: 48, height: 48, borderRadius: 24, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 250, damping: 25 }}
+          >
+            {/* Equalizer bars */}
+            <div className="flex items-end gap-[3px] h-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="w-[3px] rounded-full bg-accent"
+                  style={{
+                    animation: `equalizer-${i} ${0.4 + i * 0.1}s ease-in-out infinite`,
+                    height: '8px'
+                  }}
+                />
+              ))}
+            </div>
 
-      {/* Label when idle */}
-      {voiceState === 'idle' && (
-        <span className="text-xs text-text-secondary">Voice note</span>
-      )}
+            {/* Timer */}
+            <span className="text-sm font-medium tabular-nums text-text-primary min-w-[48px]">
+              {formatTime(elapsed)}
+            </span>
+
+            {/* Recording label */}
+            <span className="text-xs text-red-400 flex-1">Recording...</span>
+
+            {/* Stop button */}
+            <button
+              type="button"
+              onClick={stopRecording}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/20 text-red-400 transition-colors hover:bg-red-500/30"
+              title="Stop recording"
+            >
+              <Square size={14} />
+            </button>
+          </motion.div>
+        )}
+
+        {/* Processing state: Compact card with spinner */}
+        {voiceState === 'processing' && (
+          <motion.div
+            key="fab-processing"
+            className="flex items-center gap-3 rounded-2xl bg-surface-elevated border border-border px-4 shadow-xl"
+            initial={{ width: 280, height: 80, borderRadius: 16 }}
+            animate={{ width: 220, height: 56, borderRadius: 16 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 250, damping: 25 }}
+          >
+            <Loader2 size={16} className="animate-spin text-accent" />
+            <span className="text-xs text-text-secondary">Transcribing...</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
