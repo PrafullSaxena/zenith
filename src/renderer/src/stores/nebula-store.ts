@@ -68,8 +68,9 @@ function extractPlainText(content: object): string {
 /**
  * Get the configured AI agent for the nebula plugin.
  * Falls back to first provider with connected/hasApiKey status.
+ * Returns command for CLI-type agents (gemini, claude, etc.).
  */
-function getNebulaAgent(): { providerId: string; model: string } | null {
+function getNebulaAgent(): { providerId: string; model: string; command?: string } | null {
   const defaultAgentId = useSettingsStore.getState().getSetting('plugins.nebula.defaultAgent') as
     | string
     | undefined
@@ -80,7 +81,7 @@ function getNebulaAgent(): { providerId: string; model: string } | null {
     : providers.find((p) => p.status === 'connected' || p.hasApiKey)
 
   if (!agent) return null
-  return { providerId: agent.id, model: agent.model }
+  return { providerId: agent.id, model: agent.model ?? agent.id, command: agent.command }
 }
 
 // ── Store interface ──────────────────────────────────────────────────
@@ -445,7 +446,7 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
 
         // Kick off AI analysis
         window.api.ai
-          .startAnalysis(agent.providerId, agent.model, QA_SYSTEM_PROMPT, userPrompt, sessionId)
+          .startAnalysis(agent.providerId, agent.model, QA_SYSTEM_PROMPT, userPrompt, sessionId, agent.command)
           .catch((err) => {
             console.error('[nebula-store] Failed to start Q&A:', err)
             set({ qaSessionId: null, qaAnswer: 'Failed to start AI analysis.' })
@@ -476,7 +477,7 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
         })
 
         window.api.ai
-          .startAnalysis(agent.providerId, agent.model, QA_SYSTEM_PROMPT, userPrompt, sessionId)
+          .startAnalysis(agent.providerId, agent.model, QA_SYSTEM_PROMPT, userPrompt, sessionId, agent.command)
           .catch((err) => {
             console.error('[nebula-store] Failed to start Q&A:', err)
             set({ qaSessionId: null, qaAnswer: 'Failed to start AI analysis.' })
@@ -686,7 +687,8 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       agent.model,
       SUMMARIZE_SYSTEM_PROMPT,
       plainText,
-      sessionId
+      sessionId,
+      agent.command
     ).catch((err) => {
       console.error('[nebula-store] Failed to start summarization:', err)
       set({ isSummarizing: false, summarizeSessionId: null })

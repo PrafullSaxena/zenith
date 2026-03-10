@@ -6,15 +6,18 @@
  *
  * Key design:
  *  - Uses `snapshot` prop on <Tldraw> for initial data hydration
- *  - Dark mode via editor.user.updateUserPreferences in onMount
+ *  - Dark mode: CSS safety net in main.css forces dark theme variables,
+ *    onMount sets full dark mode via user preferences API
  *  - onMount returns a cleanup function (tldraw v4 supports this)
  *  - Parent passes key={noteId} to force remount when switching notes
+ *
+ * Note: tldraw CSS is imported in main.css (after Tailwind) to ensure
+ * deterministic CSS ordering and avoid code-split loading issues.
  */
 
 import { useCallback, useRef, useEffect } from 'react'
 import { Tldraw } from 'tldraw'
 import type { Editor, TLEditorSnapshot, TLStoreSnapshot } from 'tldraw'
-import 'tldraw/tldraw.css'
 
 interface DrawingCanvasProps {
   snapshot: object | null
@@ -28,12 +31,13 @@ interface DrawingCanvasProps {
  */
 function isValidSnapshot(
   snap: unknown
-): snap is Partial<TLEditorSnapshot> | TLStoreSnapshot {
+): snap is TLEditorSnapshot | TLStoreSnapshot {
   if (!snap || typeof snap !== 'object') return false
-  // TLEditorSnapshot shape (from editor.getSnapshot())
-  if ('document' in snap) return true
-  // TLStoreSnapshot shape (from store.getSnapshot())
-  if ('store' in snap) return true
+  const obj = snap as Record<string, unknown>
+  // TLEditorSnapshot shape (from editor.getSnapshot()) — must have document
+  if ('document' in obj && obj.document && typeof obj.document === 'object') return true
+  // TLStoreSnapshot shape (from store.getSnapshot()) — must have store
+  if ('store' in obj && obj.store && typeof obj.store === 'object') return true
   return false
 }
 
@@ -43,7 +47,7 @@ export default function DrawingCanvas({
   visible
 }: DrawingCanvasProps): React.JSX.Element | null {
   const editorRef = useRef<Editor | null>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   // Use a ref for onSave to avoid stale closures in the store listener
   const onSaveRef = useRef(onSave)
   onSaveRef.current = onSave
@@ -52,7 +56,9 @@ export default function DrawingCanvas({
   const handleMount = useCallback((editor: Editor) => {
     editorRef.current = editor
 
-    // Force dark mode to match app theme
+    // Force dark mode to match app theme.
+    // CSS safety net in main.css ensures icons are visible immediately;
+    // this call applies the full .tl-theme__dark class for all theme variables.
     editor.user.updateUserPreferences({ colorScheme: 'dark' })
 
     // Subscribe to user document changes for auto-save
