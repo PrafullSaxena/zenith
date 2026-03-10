@@ -5,20 +5,20 @@
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** CodeReviewBot must work flawlessly — automated PR code review that connects to Bitbucket, fetches diffs, and posts inline AI-generated review comments
-**Current focus:** Phase 11 — Full UI/UX Revamp
+**Current focus:** Phase 12 — TextCraft Plugin
 
 ## Current Position
 
-**Current Phase:** 11
-**Current Phase Name:** Full UI/UX Revamp
-**Total Phases:** 11
-**Current Plan:** Not started
-**Total Plans in Phase:** 3
-**Status:** Milestone complete
-**Last Activity:** 2026-03-10
-**Last Activity Description:** Phase 11 complete
+**Current Phase:** 12
+**Current Phase Name:** TextCraft Plugin
+**Total Phases:** 12
+**Current Plan:** 2
+**Total Plans in Phase:** 2
+**Status:** In progress
+**Last Activity:** 2026-03-11
+**Last Activity Description:** Completed 12-01 (TextCraft foundation)
 
-**Progress:** [█████████░] 91%
+**Progress:** [█████████░] 88%
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 11-full-ui-ux-revamp P01 | 2min | 2 tasks | 6 files |
 | Phase 11-full-ui-ux-revamp P03 | 3min | 2 tasks | 9 files |
 | Phase 11 P02 | 4min | 2 tasks | 17 files |
+| Phase 12 P01 | 2min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -155,6 +156,9 @@ Recent decisions affecting current work:
 - [Phase 11]: PRDiffView file addition/deletion counts use text-diff-add-text/text-diff-del-text for semantic consistency
 - [Phase 11]: ConnectionManager connecting state uses bg-warning + animate-status-pulse for visual pending feedback
 - [Phase 11]: PluginCard arrow icon opacity raised from /30 to /50 (decorative, not body text)
+- [Phase 12]: buildSystemPrompt uses tone description map and format instruction map for clear AI directives
+- [Phase 12]: History auto-saved on stream completion (onStreamDone) with 50-entry cap
+- [Phase 12]: loadFromHistory creates completed session for immediate re-viewing of past refinements
 
 ### Pending Todos
 
@@ -168,6 +172,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-10T19:53:47.193Z
-**Stopped at:** Completed 11-02-PLAN.md
+**Last session:** 2026-03-10T21:22:11.918Z
+**Stopped at:** Completed 12-01-PLAN.md
 **Resume file:** None
