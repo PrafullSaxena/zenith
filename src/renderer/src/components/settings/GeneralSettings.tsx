@@ -44,7 +44,47 @@ export function GeneralSettings(): React.JSX.Element {
     defaultValue: 'zenith',
     options: [
       { label: 'Zenith (Cyan)', value: 'zenith' },
-      { label: 'Portfolio (Amber)', value: 'portfolio' }
+      { label: 'Portfolio (Amber)', value: 'portfolio' },
+      { label: 'Nord Aurora (Blue)', value: 'nord' },
+      { label: 'Rosé Pine (Rose)', value: 'rose-pine' },
+      { label: 'Dracula (Purple)', value: 'dracula' },
+      { label: 'Gruvbox (Orange)', value: 'gruvbox' },
+      { label: 'Tokyo Night (Indigo)', value: 'tokyo-night' },
+      { label: 'Synthwave \'84 (Pink)', value: 'synthwave' },
+      { label: 'Catppuccin (Lavender)', value: 'catppuccin' },
+      { label: 'Emerald Matrix (Green)', value: 'emerald' },
+      { label: 'Solarized Dark (Teal)', value: 'solarized' },
+      { label: 'Crimson Night (Red)', value: 'crimson' }
+    ]
+  }
+
+  const hljsThemeField: SettingsFieldDef = {
+    key: 'hljsTheme',
+    label: 'Code Highlight Theme',
+    type: 'select',
+    description: 'Syntax highlighting theme for code blocks and diffs',
+    defaultValue: 'zenith',
+    options: [
+      { label: 'Zenith (Default)', value: 'zenith' },
+      { label: 'GitHub Dark', value: 'github-dark' },
+      { label: 'GitHub Dark Dimmed', value: 'github-dark-dimmed' },
+      { label: 'Atom One Dark', value: 'atom-one-dark' },
+      { label: 'Monokai', value: 'monokai' },
+      { label: 'Monokai Sublime', value: 'monokai-sublime' },
+      { label: 'Nord', value: 'nord' },
+      { label: 'Tokyo Night', value: 'tokyo-night-dark' },
+      { label: 'Night Owl', value: 'night-owl' },
+      { label: 'Dracula / Obsidian', value: 'obsidian' },
+      { label: 'VS 2015', value: 'vs2015' },
+      { label: 'Rose Pine', value: 'rose-pine' },
+      { label: 'Rose Pine Moon', value: 'rose-pine-moon' },
+      { label: 'Panda Syntax', value: 'panda-syntax-dark' },
+      { label: 'Shades of Purple', value: 'shades-of-purple' },
+      { label: 'A11y Dark', value: 'a11y-dark' },
+      { label: 'Agate', value: 'agate' },
+      { label: 'An Old Hope', value: 'an-old-hope' },
+      { label: 'Tomorrow Night Bright', value: 'tomorrow-night-bright' },
+      { label: 'Srcery', value: 'srcery' }
     ]
   }
 
@@ -74,6 +114,12 @@ export function GeneralSettings(): React.JSX.Element {
         field={themeField}
         value={getSetting('general.theme')}
         onChange={(value) => setSetting('general.theme', value)}
+      />
+
+      <SettingsField
+        field={hljsThemeField}
+        value={getSetting('general.hljsTheme')}
+        onChange={(value) => setSetting('general.hljsTheme', value)}
       />
 
       <SettingsField

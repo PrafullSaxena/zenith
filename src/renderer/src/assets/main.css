@@ -88,6 +88,246 @@
   --color-diff-del-text: #f87171;
 }
 
+/* ── Theme: Nord Aurora (frost blue on polar night) ────────────── */
+[data-theme="nord"] {
+  --color-background: oklch(16% 0.02 240);
+  --color-surface: oklch(20% 0.02 240);
+  --color-surface-elevated: oklch(24% 0.02 240);
+  --color-border: oklch(30% 0.02 240);
+  --color-accent: oklch(72% 0.12 220);
+  --color-accent-glow: oklch(72% 0.12 220 / 0.2);
+  --color-text-primary: oklch(92% 0.01 230);
+  --color-text-secondary: oklch(58% 0.02 230);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.18 25);
+  --color-error-muted: oklch(65% 0.18 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.12 220);
+  --color-info-muted: oklch(70% 0.12 220 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.18 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+}
+
+/* ── Theme: Rosé Pine (dusty rose on warm dark) ────────────────── */
+[data-theme="rose-pine"] {
+  --color-background: oklch(14% 0.02 280);
+  --color-surface: oklch(18% 0.02 280);
+  --color-surface-elevated: oklch(22% 0.02 280);
+  --color-border: oklch(28% 0.03 280);
+  --color-accent: oklch(68% 0.14 350);
+  --color-accent-glow: oklch(68% 0.14 350 / 0.2);
+  --color-text-primary: oklch(88% 0.02 280);
+  --color-text-secondary: oklch(55% 0.03 280);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.18 25);
+  --color-error-muted: oklch(65% 0.18 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.14 250);
+  --color-info-muted: oklch(70% 0.14 250 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.18 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+}
+
+/* ── Theme: Dracula (purple on cool charcoal) ──────────────────── */
+[data-theme="dracula"] {
+  --color-background: oklch(16% 0.02 270);
+  --color-surface: oklch(20% 0.02 270);
+  --color-surface-elevated: oklch(24% 0.02 270);
+  --color-border: oklch(30% 0.02 270);
+  --color-accent: oklch(65% 0.18 290);
+  --color-accent-glow: oklch(65% 0.18 290 / 0.2);
+  --color-text-primary: oklch(92% 0.01 270);
+  --color-text-secondary: oklch(58% 0.03 270);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(68% 0.2 0);
+  --color-error-muted: oklch(68% 0.2 0 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(65% 0.18 290);
+  --color-info-muted: oklch(65% 0.18 290 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(68% 0.2 0 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+}
+
+/* ── Theme: Gruvbox (warm orange on earthy brown) ──────────────── */
+[data-theme="gruvbox"] {
+  --color-background: oklch(15% 0.02 60);
+  --color-surface: oklch(19% 0.02 60);
+  --color-surface-elevated: oklch(23% 0.02 60);
+  --color-border: oklch(30% 0.03 60);
+  --color-accent: oklch(72% 0.16 60);
+  --color-accent-glow: oklch(72% 0.16 60 / 0.2);
+  --color-text-primary: oklch(88% 0.03 80);
+  --color-text-secondary: oklch(55% 0.04 70);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.2 25);
+  --color-error-muted: oklch(65% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.12 220);
+  --color-info-muted: oklch(70% 0.12 220 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+}
+
+/* ── Theme: Tokyo Night (indigo on deep navy) ──────────────────── */
+[data-theme="tokyo-night"] {
+  --color-background: oklch(13% 0.03 260);
+  --color-surface: oklch(17% 0.03 260);
+  --color-surface-elevated: oklch(21% 0.03 260);
+  --color-border: oklch(27% 0.03 260);
+  --color-accent: oklch(68% 0.16 265);
+  --color-accent-glow: oklch(68% 0.16 265 / 0.2);
+  --color-text-primary: oklch(90% 0.01 260);
+  --color-text-secondary: oklch(55% 0.03 260);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(68% 0.2 15);
+  --color-error-muted: oklch(68% 0.2 15 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(68% 0.16 265);
+  --color-info-muted: oklch(68% 0.16 265 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(68% 0.2 15 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+}
+
+/* ── Theme: Synthwave '84 (hot pink on deep purple) ────────────── */
+[data-theme="synthwave"] {
+  --color-background: oklch(12% 0.04 300);
+  --color-surface: oklch(16% 0.04 300);
+  --color-surface-elevated: oklch(20% 0.04 300);
+  --color-border: oklch(26% 0.04 300);
+  --color-accent: oklch(68% 0.22 340);
+  --color-accent-glow: oklch(68% 0.22 340 / 0.25);
+  --color-text-primary: oklch(90% 0.02 300);
+  --color-text-secondary: oklch(55% 0.04 300);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(68% 0.22 340);
+  --color-error-muted: oklch(68% 0.22 340 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(65% 0.16 280);
+  --color-info-muted: oklch(65% 0.16 280 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(68% 0.22 340 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 350);
+}
+
+/* ── Theme: Catppuccin Mocha (lavender on warm charcoal) ───────── */
+[data-theme="catppuccin"] {
+  --color-background: oklch(15% 0.01 260);
+  --color-surface: oklch(19% 0.01 260);
+  --color-surface-elevated: oklch(23% 0.01 260);
+  --color-border: oklch(28% 0.02 260);
+  --color-accent: oklch(72% 0.12 280);
+  --color-accent-glow: oklch(72% 0.12 280 / 0.2);
+  --color-text-primary: oklch(90% 0.01 270);
+  --color-text-secondary: oklch(58% 0.02 260);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.18 20);
+  --color-error-muted: oklch(65% 0.18 20 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(72% 0.12 280);
+  --color-info-muted: oklch(72% 0.12 280 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.18 20 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+}
+
+/* ── Theme: Emerald Matrix (green on true dark) ────────────────── */
+[data-theme="emerald"] {
+  --color-background: oklch(10% 0.01 155);
+  --color-surface: oklch(14% 0.01 155);
+  --color-surface-elevated: oklch(18% 0.01 155);
+  --color-border: oklch(22% 0.02 155);
+  --color-accent: oklch(72% 0.18 155);
+  --color-accent-glow: oklch(72% 0.18 155 / 0.2);
+  --color-text-primary: oklch(90% 0.01 155);
+  --color-text-secondary: oklch(52% 0.02 155);
+  --color-success: oklch(72% 0.18 155);
+  --color-success-muted: oklch(72% 0.18 155 / 0.15);
+  --color-error: oklch(65% 0.2 25);
+  --color-error-muted: oklch(65% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.15 195);
+  --color-info-muted: oklch(70% 0.15 195 / 0.15);
+  --color-diff-add: oklch(72% 0.18 155 / 0.12);
+  --color-diff-del: oklch(65% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+}
+
+/* ── Theme: Solarized Dark (teal on blue-green) ────────────────── */
+[data-theme="solarized"] {
+  --color-background: oklch(15% 0.03 210);
+  --color-surface: oklch(19% 0.03 210);
+  --color-surface-elevated: oklch(23% 0.03 210);
+  --color-border: oklch(30% 0.03 210);
+  --color-accent: oklch(65% 0.12 205);
+  --color-accent-glow: oklch(65% 0.12 205 / 0.2);
+  --color-text-primary: oklch(85% 0.02 80);
+  --color-text-secondary: oklch(55% 0.03 200);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(60% 0.2 25);
+  --color-error-muted: oklch(60% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(65% 0.12 205);
+  --color-info-muted: oklch(65% 0.12 205 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(60% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+}
+
+/* ── Theme: Crimson Night (red on warm dark) ───────────────────── */
+[data-theme="crimson"] {
+  --color-background: oklch(11% 0.01 15);
+  --color-surface: oklch(15% 0.01 15);
+  --color-surface-elevated: oklch(19% 0.01 15);
+  --color-border: oklch(24% 0.02 15);
+  --color-accent: oklch(62% 0.2 25);
+  --color-accent-glow: oklch(62% 0.2 25 / 0.2);
+  --color-text-primary: oklch(90% 0.01 30);
+  --color-text-secondary: oklch(55% 0.02 20);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(62% 0.2 25);
+  --color-error-muted: oklch(62% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.15 250);
+  --color-info-muted: oklch(70% 0.15 250 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(62% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+}
+
 /* Force dark mode unconditionally — no class toggling */
 :root {
   color-scheme: dark;

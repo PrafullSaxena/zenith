@@ -3,6 +3,19 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import type { DiffFile, DiffChange } from '../../types/bitbucket'
 import type { ReviewComment } from '../../types/review'
 import { SEVERITY_CONFIG, KIND_CONFIG } from '../../types/review'
+import { highlightCode } from '../../lib/highlight'
+
+const EXT_TO_LANG: Record<string, string> = {
+  ts: 'typescript', tsx: 'typescript', js: 'javascript', jsx: 'javascript',
+  py: 'python', sql: 'sql', json: 'json', yaml: 'yaml', yml: 'yaml',
+  sh: 'bash', bash: 'bash', css: 'css', html: 'xml', xml: 'xml',
+  md: 'markdown', diff: 'diff'
+}
+
+function getLang(filePath: string): string | undefined {
+  const ext = filePath.split('.').pop()?.toLowerCase() ?? ''
+  return EXT_TO_LANG[ext]
+}
 
 interface PRDiffViewProps {
   diffFiles: DiffFile[]
@@ -112,15 +125,24 @@ export function PRDiffView({
                             <span className="inline-block w-12 shrink-0 select-none px-2 text-right text-xs leading-6 text-text-secondary">
                               {lineNum ?? ''}
                             </span>
-                            {/* Change prefix and content */}
+                            {/* Change prefix */}
                             <span className="whitespace-pre leading-6">
                               {change.type === 'add'
                                 ? '+'
                                 : change.type === 'del'
                                   ? '-'
                                   : ' '}
-                              {change.content.replace(/^[+-]/, '')}
                             </span>
+                            {/* Syntax-highlighted content */}
+                            <span
+                              className="whitespace-pre leading-6"
+                              dangerouslySetInnerHTML={{
+                                __html: highlightCode(
+                                  change.content.replace(/^[+-]/, ''),
+                                  getLang(filePath)
+                                )
+                              }}
+                            />
                           </div>
 
                           {/* Inline AI comment cards */}

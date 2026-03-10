@@ -5,6 +5,7 @@ import { AppLayout } from './components/AppLayout'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { SettingsLayout } from './components/settings/SettingsLayout'
 import { useSettingsStore } from './stores/settings-store'
+import { HLJS_THEME_CSS } from './lib/hljs-themes'
 
 const MissionControl = React.lazy(() => import('./components/dashboard/MissionControl'))
 const ActivityLog = React.lazy(() => import('./components/activity/ActivityLog'))
@@ -20,6 +21,7 @@ function LoadingFallback(): React.JSX.Element {
 
 function App(): React.JSX.Element {
   const theme = useSettingsStore((s) => s.getSetting('general.theme')) as string | undefined
+  const hljsTheme = useSettingsStore((s) => s.getSetting('general.hljsTheme')) as string | undefined
 
   // Apply data-theme attribute to <html> so CSS variable overrides take effect
   useEffect(() => {
@@ -29,6 +31,22 @@ function App(): React.JSX.Element {
       document.documentElement.removeAttribute('data-theme')
     }
   }, [theme])
+
+  // Dynamically swap highlight.js theme stylesheet
+  useEffect(() => {
+    const STYLE_ID = 'hljs-theme-override'
+    document.getElementById(STYLE_ID)?.remove()
+
+    if (!hljsTheme || hljsTheme === 'zenith') return
+
+    const css = HLJS_THEME_CSS[hljsTheme]
+    if (!css) return
+
+    const style = document.createElement('style')
+    style.id = STYLE_ID
+    style.textContent = css
+    document.head.appendChild(style)
+  }, [hljsTheme])
 
   return (
     <HashRouter>
