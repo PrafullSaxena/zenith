@@ -39,10 +39,13 @@ interface TiptapNode {
 
 export class NoteFileStorage {
   private notesDir: string
+  private audioDir: string
 
   constructor(storagePath: string) {
     this.notesDir = path.join(storagePath, 'notes')
+    this.audioDir = path.join(storagePath, 'audio')
     fs.mkdirSync(this.notesDir, { recursive: true })
+    fs.mkdirSync(this.audioDir, { recursive: true })
   }
 
   /**
@@ -97,6 +100,48 @@ export class NoteFileStorage {
       return []
     }
   }
+
+  // ── Audio file I/O ───────────────────────────────────────────────────
+
+  /**
+   * Save an audio buffer to disk as `{storagePath}/audio/{noteId}.webm`.
+   * Creates the audio subdirectory if needed. Returns the file path.
+   */
+  saveAudio(noteId: string, audioBuffer: Buffer): string {
+    fs.mkdirSync(this.audioDir, { recursive: true })
+    const filePath = path.join(this.audioDir, `${noteId}.webm`)
+    fs.writeFileSync(filePath, audioBuffer)
+    return filePath
+  }
+
+  /**
+   * Load an audio file from disk by note ID.
+   * Returns null if the file does not exist.
+   */
+  loadAudio(noteId: string): Buffer | null {
+    const filePath = path.join(this.audioDir, `${noteId}.webm`)
+    if (!fs.existsSync(filePath)) return null
+    try {
+      return fs.readFileSync(filePath)
+    } catch {
+      console.warn(`[NoteFileStorage] Failed to read audio for note ${noteId}`)
+      return null
+    }
+  }
+
+  /**
+   * Delete an audio file from disk. Silently ignores if the file does not exist.
+   */
+  deleteAudio(noteId: string): void {
+    const filePath = path.join(this.audioDir, `${noteId}.webm`)
+    try {
+      fs.unlinkSync(filePath)
+    } catch {
+      // File doesn't exist or already deleted -- ignore
+    }
+  }
+
+  // ── Plain text extraction ───────────────────────────────────────────
 
   /**
    * Recursively extract plain text from a Tiptap JSON document.

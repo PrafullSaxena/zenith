@@ -8,6 +8,11 @@
 // ── Note types ──────────────────────────────────────────────────────
 
 /**
+ * Tag attached to a note for categorization.
+ */
+export type NoteTag = { id: string; label: string; color: string }
+
+/**
  * Full note file shape — matches the JSON structure persisted on disk.
  */
 export interface NoteFile {
@@ -17,6 +22,7 @@ export interface NoteFile {
   drawing: object | null // tldraw snapshot
   summary: string | null // AI-generated summary
   topics: string[]
+  tags: NoteTag[]
   createdAt: string
   updatedAt: string
 }
@@ -28,7 +34,32 @@ export interface NoteListItem {
   id: string
   title: string
   summary: string | null
+  pinned: boolean
+  hasDrawing: boolean
+  contentPreview: string | null
+  audioPath: string | null
   updatedAt: string
+}
+
+// ── Layout / Toast types ────────────────────────────────────────────
+
+/**
+ * Panel layout sizes for the Nebula resizable panel layout.
+ */
+export type PanelLayout = {
+  sidebarSize: number
+  editorSize: number
+  drawingCollapsed: boolean
+}
+
+/**
+ * Toast notification message displayed temporarily in the UI.
+ */
+export type ToastMessage = {
+  id: string
+  message: string
+  noteId?: string
+  type: 'info' | 'success'
 }
 
 // ── Knowledge graph types ───────────────────────────────────────────

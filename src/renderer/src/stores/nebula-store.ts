@@ -205,6 +205,7 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       drawing: null,
       summary: null,
       topics: [],
+      tags: [],
       createdAt: now,
       updatedAt: now
     }
@@ -219,6 +220,10 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       id,
       title: note.title,
       summary: null,
+      pinned: false,
+      hasDrawing: false,
+      contentPreview: null,
+      audioPath: null,
       updatedAt: now
     }
 
@@ -240,7 +245,7 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
     // Update notes list item
     const updatedNotes = get().notes.map((n) =>
       n.id === note.id
-        ? { id: n.id, title: note.title, summary: note.summary, updatedAt: note.updatedAt }
+        ? { ...n, title: note.title, summary: note.summary, updatedAt: note.updatedAt }
         : n
     )
 
@@ -541,6 +546,7 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       drawing: null,
       summary: null,
       topics: [],
+      tags: [],
       createdAt: now,
       updatedAt: now
     }
@@ -570,6 +576,10 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       id,
       title,
       summary: null,
+      pinned: false,
+      hasDrawing: false,
+      contentPreview: null,
+      audioPath: null,
       updatedAt: now
     }
 
@@ -634,7 +644,7 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
         const updatedNotes = get().notes.map((n) =>
           n.id === note.id
             ? {
-                id: n.id,
+                ...n,
                 title: updatedNote.title,
                 summary: updatedNote.summary,
                 updatedAt: updatedNote.updatedAt

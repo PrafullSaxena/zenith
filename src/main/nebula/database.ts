@@ -29,6 +29,9 @@ interface NoteListRow {
   id: string
   title: string
   summary: string | null
+  pinned: number
+  content_preview: string | null
+  drawing: string | null
   updated_at: string
 }
 
@@ -174,6 +177,9 @@ export class NebulaDatabase {
     // table, causing SQLITE_ERROR on every write.  Fix: recreate as a
     // standalone FTS table (no content sync) so we manage the index manually.
     this.migrateFts()
+
+    // Phase 09: Add pinned and content_preview columns (idempotent migration)
+    this.migratePhase09Columns()
   }
 
   /**
@@ -283,21 +289,63 @@ export class NebulaDatabase {
     return ''
   }
 
+  /**
+   * Phase 09 migration: add `pinned` and `content_preview` columns.
+   * Wrapped in try/catch per column to handle "duplicate column" gracefully.
+   */
+  private migratePhase09Columns(): void {
+    try {
+      this.db.exec(`ALTER TABLE notes ADD COLUMN pinned INTEGER DEFAULT 0`)
+    } catch {
+      // Column already exists — ignore
+    }
+    try {
+      this.db.exec(`ALTER TABLE notes ADD COLUMN content_preview TEXT DEFAULT ''`)
+    } catch {
+      // Column already exists — ignore
+    }
+  }
+
+  /**
+   * Toggle the pinned state of a note.
+   */
+  togglePin(noteId: string, pinned: boolean): void {
+    this.db
+      .prepare(`UPDATE notes SET pinned = ? WHERE id = ?`)
+      .run(pinned ? 1 : 0, noteId)
+  }
+
+  /**
+   * Extract first ~150 chars of plain text from Tiptap JSON for content preview.
+   */
+  getContentPreview(content: unknown): string {
+    const text = this.extractText(content)
+    return text.length > 150 ? text.slice(0, 150) + '...' : text
+  }
+
   // ── Notes CRUD ──────────────────────────────────────────────────────
 
   /**
    * Insert or replace a note. Also updates the FTS5 index manually.
+   * Stores content_preview alongside other fields.
    */
   upsertNote(note: UpsertNoteInput): void {
+    const contentPreview = this.getContentPreview(
+      (() => {
+        try { return JSON.parse(note.content) } catch { return {} }
+      })()
+    )
+
     const upsertStmt = this.db.prepare(`
-      INSERT INTO notes (id, title, content, drawing, summary, topics, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+      INSERT INTO notes (id, title, content, drawing, summary, topics, content_preview, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
         title = excluded.title,
         content = excluded.content,
         drawing = excluded.drawing,
         summary = excluded.summary,
         topics = excluded.topics,
+        content_preview = excluded.content_preview,
         updated_at = datetime('now')
     `)
 
@@ -320,7 +368,8 @@ export class NebulaDatabase {
         note.content,
         note.drawing ?? null,
         note.summary ?? null,
-        JSON.stringify(note.topics ?? [])
+        JSON.stringify(note.topics ?? []),
+        contentPreview
       )
 
       // Sync FTS: delete old entry if exists, then insert fresh
@@ -370,13 +419,15 @@ export class NebulaDatabase {
   }
 
   /**
-   * List all notes (lightweight: id, title, summary, updated_at).
-   * Ordered by most recently updated first.
+   * List all notes (lightweight metadata for list display).
+   * Ordered by pinned first (most recently updated), then unpinned by updated_at.
    */
   listNotes(): NoteListRow[] {
     return this.db
       .prepare<[], NoteListRow>(
-        `SELECT id, title, summary, updated_at FROM notes ORDER BY updated_at DESC`
+        `SELECT id, title, summary, pinned, content_preview, drawing, updated_at
+         FROM notes
+         ORDER BY pinned DESC, updated_at DESC`
       )
       .all()
   }
