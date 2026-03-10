@@ -70,10 +70,10 @@ export function PRDiffView({
               <span className="min-w-0 flex-1 truncate font-mono text-sm text-text-primary">
                 {filePath}
               </span>
-              <span className="shrink-0 text-xs text-green-400">
+              <span className="shrink-0 text-xs text-diff-add-text">
                 +{file.additions}
               </span>
-              <span className="shrink-0 text-xs text-red-400">
+              <span className="shrink-0 text-xs text-diff-del-text">
                 -{file.deletions}
               </span>
             </button>
@@ -102,9 +102,9 @@ export function PRDiffView({
                           <div
                             className={`flex font-mono text-sm ${
                               change.type === 'add'
-                                ? 'bg-green-950/30'
+                                ? 'bg-diff-add'
                                 : change.type === 'del'
-                                  ? 'bg-red-950/30'
+                                  ? 'bg-diff-del'
                                   : ''
                             }`}
                           >
@@ -155,8 +155,8 @@ export function PRDiffView({
 
                                 {/* Suggested fix */}
                                 {comment.suggestedFix && (
-                                  <div className="mt-1.5 rounded bg-green-500/5 border border-green-500/10 px-2 py-1">
-                                    <p className="text-xs text-green-400">
+                                  <div className="mt-1.5 rounded bg-success-muted border border-success/10 px-2 py-1">
+                                    <p className="text-xs text-success">
                                       <span className="font-semibold">Fix: </span>
                                       {comment.suggestedFix}
                                     </p>
@@ -175,7 +175,7 @@ export function PRDiffView({
                                     </button>
                                   )}
                                   {comment.posted && (
-                                    <span className="text-xs text-green-400">
+                                    <span className="text-xs text-success">
                                       Posted
                                     </span>
                                   )}

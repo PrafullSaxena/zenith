@@ -80,8 +80,8 @@ export function PRList({
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
               <GitPullRequest size={20} className="text-accent/30" />
             </div>
-            <p className="text-sm font-medium text-text-secondary/60">No open pull requests</p>
-            <p className="mt-1 text-[11px] text-text-secondary/40">
+            <p className="text-sm font-medium text-text-secondary/70">No open pull requests</p>
+            <p className="mt-1 text-[11px] text-text-secondary/60">
               Pull requests will appear here once detected
             </p>
           </div>
@@ -117,7 +117,7 @@ export function PRList({
                         window.api?.app?.openExternal?.(pr.links.html.href)
                       }
                     }}
-                    className="shrink-0 text-text-secondary/50 transition-colors hover:text-accent"
+                    className="shrink-0 text-text-secondary/60 transition-colors hover:text-accent"
                     title="Open in Bitbucket"
                   >
                     <ExternalLink size={12} />

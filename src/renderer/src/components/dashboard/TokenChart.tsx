@@ -125,8 +125,8 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.08]">
               <BarChart3 size={20} className="text-accent/40" />
             </div>
-            <p className="text-sm font-medium text-text-secondary/60">No usage data yet</p>
-            <p className="mt-1 max-w-[200px] text-[11px] leading-relaxed text-text-secondary/40">
+            <p className="text-sm font-medium text-text-secondary/70">No usage data yet</p>
+            <p className="mt-1 max-w-[200px] text-[11px] leading-relaxed text-text-secondary/60">
               Token consumption will appear here after you run AI-powered queries
             </p>
           </div>

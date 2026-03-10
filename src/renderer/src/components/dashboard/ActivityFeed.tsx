@@ -42,8 +42,8 @@ export function ActivityFeed({
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
           <Inbox size={20} className="text-accent/30" />
         </div>
-        <p className="text-sm font-medium text-text-secondary/50">No recent activity</p>
-        <p className="mt-1 text-[11px] text-text-secondary/30">
+        <p className="text-sm font-medium text-text-secondary/70">No recent activity</p>
+        <p className="mt-1 text-[11px] text-text-secondary/60">
           Operations from plugins will appear here
         </p>
       </div>
@@ -92,7 +92,7 @@ export function ActivityFeed({
                 )}
 
                 {/* Relative timestamp */}
-                <span className="shrink-0 text-[11px] text-text-secondary/50">
+                <span className="shrink-0 text-[11px] text-text-secondary/60">
                   {formatRelativeTime(entry.timestamp)}
                 </span>
               </div>

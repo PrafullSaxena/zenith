@@ -280,7 +280,7 @@ export default function AboutView(): React.JSX.Element {
               )}
               {exportState === 'done' && (
                 <>
-                  <CheckCircle size={14} className="text-green-400" />
+                  <CheckCircle size={14} className="text-success" />
                   Saved!
                 </>
               )}
@@ -297,7 +297,7 @@ export default function AboutView(): React.JSX.Element {
 
       {/* Footer */}
       <div className="border-t border-border pt-4 text-center">
-        <p className="text-[11px] text-text-secondary/50">
+        <p className="text-[11px] text-text-secondary/70">
           Built with Electron · React · TypeScript · Tailwind CSS
         </p>
       </div>

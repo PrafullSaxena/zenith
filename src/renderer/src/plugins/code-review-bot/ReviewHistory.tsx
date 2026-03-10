@@ -10,9 +10,9 @@ interface ReviewHistoryProps {
 
 /** Map history status to badge styling. */
 const STATUS_STYLES: Record<ReviewHistoryEntry['status'], string> = {
-  success: 'bg-green-500/10 text-green-400',
-  partial: 'bg-yellow-500/10 text-yellow-400',
-  error: 'bg-red-500/10 text-red-400'
+  success: 'bg-success-muted text-success',
+  partial: 'bg-warning-muted text-warning',
+  error: 'bg-error-muted text-error'
 }
 
 /**
@@ -38,8 +38,8 @@ export function ReviewHistory({
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
           <Clock size={20} className="text-accent/30" />
         </div>
-        <p className="text-sm font-medium text-text-secondary/60">No review history yet</p>
-        <p className="mt-1 text-[11px] text-text-secondary/40">
+        <p className="text-sm font-medium text-text-secondary/70">No review history yet</p>
+        <p className="mt-1 text-[11px] text-text-secondary/60">
           Completed reviews will appear here
         </p>
       </div>

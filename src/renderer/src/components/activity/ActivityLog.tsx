@@ -86,8 +86,8 @@ export default function ActivityLog(): React.JSX.Element {
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
             <Activity size={20} className="text-accent/30" />
           </div>
-          <p className="text-sm font-medium text-text-secondary/60">No activity entries match your filters</p>
-          <p className="mt-1 text-[11px] text-text-secondary/40">Try adjusting the plugin or status filter</p>
+          <p className="text-sm font-medium text-text-secondary/70">No activity entries match your filters</p>
+          <p className="mt-1 text-[11px] text-text-secondary/60">Try adjusting the plugin or status filter</p>
         </div>
       ) : (
         <ActivityFeed entries={filteredEntries} />

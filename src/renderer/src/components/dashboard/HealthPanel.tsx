@@ -14,9 +14,9 @@ interface HealthPanelProps {
 }
 
 const STATUS_DOT: Record<HealthStatus, string> = {
-  healthy: 'bg-green-400',
-  degraded: 'bg-yellow-400',
-  unhealthy: 'bg-red-400',
+  healthy: 'bg-success',
+  degraded: 'bg-warning',
+  unhealthy: 'bg-error',
   unknown: 'bg-gray-400'
 }
 
@@ -28,9 +28,9 @@ const STATUS_LABEL: Record<HealthStatus, string> = {
 }
 
 const STATUS_BADGE_STYLE: Record<HealthStatus, string> = {
-  healthy: 'bg-green-500/10 text-green-400',
-  degraded: 'bg-yellow-500/10 text-yellow-400',
-  unhealthy: 'bg-red-500/10 text-red-400',
+  healthy: 'bg-success-muted text-success',
+  degraded: 'bg-warning-muted text-warning',
+  unhealthy: 'bg-error-muted text-error',
   unknown: 'bg-surface text-text-secondary'
 }
 
@@ -86,8 +86,8 @@ export function HealthPanel({
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.08]">
               <ShieldCheck size={20} className="text-accent/40" />
             </div>
-            <p className="text-sm font-medium text-text-secondary/60">No resources configured</p>
-            <p className="mt-1 text-[11px] text-text-secondary/40">
+            <p className="text-sm font-medium text-text-secondary/70">No resources configured</p>
+            <p className="mt-1 text-[11px] text-text-secondary/60">
               Connect AI agents or databases to monitor
             </p>
           </div>
@@ -96,7 +96,7 @@ export function HealthPanel({
         <div className="space-y-3">
           {grouped.map((group) => (
             <div key={group.category}>
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-text-secondary/50">
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-text-secondary/70">
                 {group.label}
               </p>
               <div className="space-y-0.5">
@@ -108,7 +108,7 @@ export function HealthPanel({
                     <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[res.status]}`} />
                     <span className="flex-1 truncate text-xs font-medium text-text-primary">{res.name}</span>
                     {res.detail && (
-                      <span className="max-w-[120px] truncate text-[10px] text-text-secondary/50">
+                      <span className="max-w-[120px] truncate text-[10px] text-text-secondary/70">
                         {res.detail}
                       </span>
                     )}

@@ -61,7 +61,7 @@ function QuickStat({
   accent: string
 }): React.JSX.Element {
   return (
-    <div className="group relative flex items-center gap-3 rounded-xl border border-border/60 bg-surface-elevated/60 px-4 py-3 backdrop-blur-sm transition-all duration-200 hover:border-border hover:bg-surface-elevated">
+    <div className="hover-lift group relative flex items-center gap-3 rounded-xl border border-border/60 bg-surface-elevated/60 px-4 py-3 backdrop-blur-sm transition-all duration-200 hover:border-border hover:bg-surface-elevated">
       <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${accent}`}>
         <Icon size={16} />
       </div>
@@ -220,7 +220,7 @@ export default function MissionControl(): React.JSX.Element {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">
             Plugins
           </h2>
-          <span className="text-[11px] text-text-secondary/50">{PLUGINS.length} available</span>
+          <span className="text-[11px] text-text-secondary/70">{PLUGINS.length} available</span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {PLUGINS.map((plugin) => (

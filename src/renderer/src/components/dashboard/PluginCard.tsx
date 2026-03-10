@@ -83,7 +83,7 @@ export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.
         {/* Arrow indicator */}
         <ArrowRight
           size={14}
-          className="mt-1 shrink-0 text-text-secondary/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-accent"
+          className="mt-1 shrink-0 text-text-secondary/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-accent"
         />
       </div>
 

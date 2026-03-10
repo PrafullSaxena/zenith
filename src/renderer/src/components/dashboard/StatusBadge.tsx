@@ -1,9 +1,9 @@
 import type { ActivityStatus } from '../../types/activity'
 
 const STATUS_STYLES: Record<ActivityStatus, string> = {
-  success: 'bg-green-500/10 text-green-400',
-  failure: 'bg-red-500/10 text-red-400',
-  pending: 'bg-yellow-500/10 text-yellow-400'
+  success: 'bg-success-muted text-success',
+  failure: 'bg-error-muted text-error',
+  pending: 'bg-warning-muted text-warning'
 }
 
 export function StatusBadge({ status }: { status: ActivityStatus }): React.JSX.Element {
