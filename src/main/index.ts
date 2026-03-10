@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, nativeImage } from 'electron'
+import { app, BrowserWindow, Menu, nativeImage, systemPreferences } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
@@ -119,6 +119,13 @@ app.whenReady().then(() => {
   if (process.platform === 'darwin' && is.dev) {
     const dockIcon = nativeImage.createFromPath(join(__dirname, '../../resources/icon.png'))
     if (!dockIcon.isEmpty()) app.dock.setIcon(dockIcon)
+  }
+
+  // Request microphone permission on macOS (triggers system dialog on first use)
+  if (process.platform === 'darwin') {
+    systemPreferences.askForMediaAccess('microphone').catch(() => {
+      console.warn('[main] Microphone permission request failed or denied')
+    })
   }
 
   registerIpcHandlers()
