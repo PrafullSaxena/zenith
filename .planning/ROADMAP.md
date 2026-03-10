@@ -13,6 +13,7 @@
 | 8 | Nebula Plugin | 6 | Complete | 6/6 |
 | 9 | Nebula UX Polish | 4 | Complete | 4/4 |
 | 10 | Settings UX Fix | 3 | Complete | 3/3 |
+| 11 | Full UI/UX Revamp | 0 | Planned | 0/0 |
 
 ## Phase 1: Foundation
 
@@ -116,6 +117,12 @@ Plans:
 - [x] 10-01-PLAN.md -- Unify SettingsField.tsx design tokens (inputs, selects, toggle, buttons, password icon)
 - [x] 10-02-PLAN.md -- Unify MCPSettings, AgentRow, AIAgentsSettings, AddCustomAgentForm styles
 - [x] 10-03-PLAN.md -- Unify ConnectionListEditor, RepoListEditor, SettingsLayout, GeneralSettings, PluginSettings styles
+
+## Phase 11: Full UI/UX Revamp
+
+**Goal:** Comprehensive UI/UX overhaul across every screen — fix low text-to-background contrast, add purpose-driven color semantics (green/red for code diffs, status indicators, severity colors), introduce micro-interactions and entrance animations, and ensure every screen visually communicates its purpose. Covers Dashboard, CodeReviewBot, DbInspector, Launchpad, Nebula, Settings, Activity Log, About, sidebar, and stub plugins. Visual/animation only — no logic changes.
+
+**Requirements:** [SHELL-07]
 
 ## Phase 6: Polish & Production
 

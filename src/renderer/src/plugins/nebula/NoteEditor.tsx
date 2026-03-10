@@ -442,13 +442,13 @@ export default function NoteEditor({
                 }
               }}
               placeholder="Add tag..."
-              className="w-20 rounded-full border border-border bg-transparent px-2 py-0.5 text-xs text-text-primary outline-none placeholder:text-text-secondary/40 focus:border-accent"
+              className="w-20 rounded-full border border-border/50 bg-transparent px-2 py-0.5 text-xs text-text-primary outline-none placeholder:text-text-secondary/40 focus:border-accent"
             />
           ) : (
             <button
               type="button"
               onClick={() => setShowTagInput(true)}
-              className="flex items-center gap-0.5 rounded-full border border-dashed border-border px-1.5 py-0.5 text-[10px] text-text-secondary/50 transition-colors hover:border-accent/40 hover:text-accent/60"
+              className="flex items-center gap-0.5 rounded-full border border-dashed border-border/50 px-1.5 py-0.5 text-[10px] text-text-secondary/50 transition-colors hover:border-accent/40 hover:text-accent/60"
             >
               <Plus size={10} />
             </button>
@@ -464,11 +464,11 @@ export default function NoteEditor({
 
       {/* Insert table button (subtle, below title/tags area) */}
       {editor && !editor.isActive('table') && (
-        <div className="flex items-center border-b border-border px-4 py-1">
+        <div className="flex items-center border-b border-border/50 px-4 py-1">
           <button
             type="button"
             onClick={handleInsertTable}
-            className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-text-secondary/40 transition-colors hover:bg-surface-elevated hover:text-text-secondary"
+            className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-text-secondary/40 transition-colors hover:bg-surface-elevated/50 hover:text-text-secondary"
             title="Insert table"
           >
             <TableIcon size={10} />

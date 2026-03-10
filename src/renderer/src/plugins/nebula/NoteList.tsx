@@ -181,9 +181,9 @@ export default function NoteList(): React.JSX.Element {
   const hasPinnedNotes = pinnedNotes.length > 0
 
   return (
-    <div className="flex h-full flex-col bg-surface">
+    <div className="flex h-full flex-col">
       {/* Header with New Note button */}
-      <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+      <div className="flex items-center justify-between border-b border-border/50 px-3 py-2.5">
         <span className="text-xs font-semibold tracking-wide text-text-secondary uppercase">
           Notes
         </span>

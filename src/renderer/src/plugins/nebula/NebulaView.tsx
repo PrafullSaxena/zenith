@@ -232,12 +232,12 @@ export default function NebulaView(): React.JSX.Element {
   )
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-gradient-to-br from-surface-elevated/40 via-background to-surface-elevated/20">
       {/* Toast notifications -- visible across all tabs */}
       <ToastContainer />
 
       {/* Header */}
-      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-border/50 px-4 py-3">
         <div className="flex items-center gap-2">
           <BookOpen size={18} className="text-accent" />
           <h1 className="text-lg font-semibold text-text-primary">Nebula</h1>
@@ -246,7 +246,7 @@ export default function NebulaView(): React.JSX.Element {
       </div>
 
       {/* Tab bar */}
-      <div className="flex border-b border-border">
+      <div className="flex border-b border-border/50">
         {TABS.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -275,7 +275,7 @@ export default function NebulaView(): React.JSX.Element {
           <div className="flex h-full">
             {/* Sidebar */}
             {sidebarCollapsed ? (
-              <div className="flex w-10 shrink-0 flex-col items-center border-r border-border bg-surface pt-3">
+              <div className="flex w-10 shrink-0 flex-col items-center border-r border-border/50 bg-surface/50 pt-3">
                 <button
                   type="button"
                   onClick={() => setSidebarCollapsed(false)}
@@ -286,7 +286,7 @@ export default function NebulaView(): React.JSX.Element {
                 </button>
               </div>
             ) : (
-              <div className="flex w-64 shrink-0 flex-col border-r border-border">
+              <div className="flex w-64 shrink-0 flex-col border-r border-border/50 bg-surface/30">
                 {/* Collapse button */}
                 <div className="flex justify-end px-1 pt-1">
                   <button
@@ -344,11 +344,11 @@ export default function NebulaView(): React.JSX.Element {
                   {/* Drawing panel */}
                   {drawingOpen && (
                     <div
-                      className="flex flex-col border-l border-border"
+                      className="flex flex-col border-l border-border/50"
                       style={drawingFullscreen ? { width: '100%' } : { width: `${drawingWidthPct}%` }}
                     >
                       {/* Drawing panel header */}
-                      <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-1.5">
+                      <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-3 py-1.5">
                         <span className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
                           <Pencil size={12} />
                           Drawing
@@ -400,7 +400,7 @@ export default function NebulaView(): React.JSX.Element {
                 <button
                   type="button"
                   onClick={handleToggleDrawing}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 rounded-l-lg border border-r-0 border-border bg-surface-elevated px-1.5 py-3 text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent shadow-sm"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 rounded-l-lg border border-r-0 border-border/50 bg-surface-elevated/80 px-1.5 py-3 text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent shadow-sm backdrop-blur-sm"
                   title="Open drawing panel"
                 >
                   <Pencil size={14} />
