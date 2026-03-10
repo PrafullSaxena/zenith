@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, nativeImage, systemPreferences } from 'electron'
+import { app, BrowserWindow, Menu, nativeImage, session, systemPreferences } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
@@ -127,6 +127,17 @@ app.whenReady().then(() => {
       console.warn('[main] Microphone permission request failed or denied')
     })
   }
+
+  // Allow microphone/camera permission requests from the renderer process.
+  // Without this, navigator.mediaDevices.getUserMedia() is denied by Electron.
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
+    const allowed = ['media', 'microphone', 'camera']
+    callback(allowed.includes(permission))
+  })
+  session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
+    const allowed = ['media', 'microphone', 'camera']
+    return allowed.includes(permission)
+  })
 
   registerIpcHandlers()
   createWindow()
