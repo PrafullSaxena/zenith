@@ -25,9 +25,11 @@ import TableHeader from '@tiptap/extension-table-header'
 import { Extension } from '@tiptap/core'
 import { Sparkles, Plus, X, Table as TableIcon } from 'lucide-react'
 import type { NoteTag } from '../../types/nebula'
+import { useNebulaStore } from '../../stores/nebula-store'
 import FloatingToolbar from './FloatingToolbar'
 import LinkDialog from './LinkDialog'
 import TableControls from './TableControls'
+import TranscriptionBlock from './TranscriptionBlock'
 
 // ── Constants ────────────────────────────────────────────────────────
 
@@ -36,6 +38,7 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 // ── Props ────────────────────────────────────────────────────────────
 
 interface NoteEditorProps {
+  noteId: string
   content: object | null
   onUpdate: (json: object) => void
   onBlur?: () => void
@@ -69,6 +72,7 @@ function relativeTime(isoDate: string): string {
 // ── Component ────────────────────────────────────────────────────────
 
 export default function NoteEditor({
+  noteId,
   content,
   onUpdate,
   onBlur,
@@ -81,6 +85,8 @@ export default function NoteEditor({
   isSaving,
   showSaved
 }: NoteEditorProps): React.JSX.Element {
+  // Transcription segments for inline block display
+  const transcriptionSegments = useNebulaStore((s) => s.transcriptionSegments[noteId] ?? [])
   // Link dialog state
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [linkPosition, setLinkPosition] = useState({ x: 0, y: 0 })
@@ -418,6 +424,14 @@ export default function NoteEditor({
           editor={editor}
           className="nebula-editor max-w-none px-4 py-3"
         />
+
+        {/* Transcription block -- shown when note has transcription data */}
+        {transcriptionSegments.length > 0 && (
+          <TranscriptionBlock
+            noteId={noteId}
+            segments={transcriptionSegments}
+          />
+        )}
       </div>
 
       {/* Floating toolbar (BubbleMenu) */}

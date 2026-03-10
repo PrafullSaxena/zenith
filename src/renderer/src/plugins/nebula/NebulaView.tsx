@@ -35,6 +35,8 @@ import NoteEditor from './NoteEditor'
 import DrawingCanvas from './DrawingCanvas'
 import KnowledgeGraph from './KnowledgeGraph'
 import SearchView from './SearchView'
+import VoiceRecorder from './VoiceRecorder'
+import ToastContainer from './ToastContainer'
 import type { NebulaTab, NoteTag } from '../../types/nebula'
 
 const TABS: { id: NebulaTab; label: string; icon: typeof FileText }[] = [
@@ -59,6 +61,7 @@ export default function NebulaView(): React.JSX.Element {
   const isSummarizing = useNebulaStore((s) => s.isSummarizing)
   const lastTranscript = useNebulaStore((s) => s.lastTranscript)
   const handleTranscription = useNebulaStore((s) => s.handleTranscription)
+  const addToast = useNebulaStore((s) => s.addToast)
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [drawingOpen, setDrawingOpen] = useState(false)
@@ -114,7 +117,16 @@ export default function NebulaView(): React.JSX.Element {
   // create a note from it and trigger summarization -> graph update
   useEffect(() => {
     if (lastTranscript) {
-      handleTranscription(lastTranscript)
+      handleTranscription(lastTranscript).then(() => {
+        // Fire a toast notification after transcription completes
+        const noteTitle = useNebulaStore.getState().activeNote?.title ?? 'Voice Note'
+        const noteId = useNebulaStore.getState().activeNoteId ?? undefined
+        addToast({
+          message: `Transcription added to "${noteTitle}"`,
+          noteId,
+          type: 'success'
+        })
+      })
     }
   }, [lastTranscript]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -241,6 +253,9 @@ export default function NebulaView(): React.JSX.Element {
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+      {/* Toast notifications -- visible across all tabs */}
+      <ToastContainer />
+
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
@@ -339,6 +354,7 @@ export default function NebulaView(): React.JSX.Element {
                       className="overflow-hidden"
                     >
                       <NoteEditor
+                        noteId={activeNote.id}
                         content={activeNote.content}
                         title={activeNote.title}
                         tags={activeNote.tags}
@@ -407,6 +423,9 @@ export default function NebulaView(): React.JSX.Element {
                     </span>
                   </button>
                 )}
+
+                {/* Voice Recorder FAB -- bottom-right of content area, visible when note selected */}
+                <VoiceRecorder noteId={activeNote?.id ?? null} />
               </div>
             </Panel>
           </Group>

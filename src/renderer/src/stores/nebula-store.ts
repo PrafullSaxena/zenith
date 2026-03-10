@@ -21,7 +21,8 @@ import type {
   SummarizationResult,
   VoiceRecordingState,
   DiarizedTranscript,
-  ToastMessage
+  ToastMessage,
+  TranscriptionSegment
 } from '../types/nebula'
 import { useAgentStore } from './agent-store'
 import { useSettingsStore } from './settings-store'
@@ -119,6 +120,9 @@ interface NebulaStore {
   // Toast state
   toasts: ToastMessage[]
 
+  // Transcription segments (keyed by noteId)
+  transcriptionSegments: Record<string, TranscriptionSegment[]>
+
   // Actions
   setActiveTab: (tab: NebulaTab) => void
   loadNotes: () => Promise<void>
@@ -144,6 +148,8 @@ interface NebulaStore {
   inferEdges: (noteId: string, topics: string[], connections: string[]) => void
   addToast: (toast: Omit<ToastMessage, 'id'>) => void
   removeToast: (id: string) => void
+  updateSpeakerName: (noteId: string, oldName: string, newName: string) => void
+  getTranscriptionSegments: (noteId: string) => TranscriptionSegment[]
   cleanup: () => void
 }
 
@@ -175,6 +181,8 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
   summarizeSessionId: null,
 
   toasts: [],
+
+  transcriptionSegments: {},
 
   // ── Actions ──────────────────────────────────────────────────────
 
@@ -622,11 +630,20 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       updatedAt: now
     }
 
+    // Store transcription segments for the TranscriptionBlock component
+    const segments = transcript.segments.length > 0
+      ? transcript.segments
+      : [{ speaker: 'Speaker', text: transcript.text, start: 0, end: 0 }]
+
     set({
       notes: [listItem, ...get().notes],
       activeNoteId: id,
       activeNote: note,
-      lastTranscript: null
+      lastTranscript: null,
+      transcriptionSegments: {
+        ...get().transcriptionSegments,
+        [id]: segments
+      }
     })
 
     // Trigger summarization -> knowledge graph pipeline (NEBL-09)
@@ -809,6 +826,28 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
 
   removeToast: (id) => {
     set({ toasts: get().toasts.filter((t) => t.id !== id) })
+  },
+
+  // ── Transcription Segments ───────────────────────────────────────
+
+  updateSpeakerName: (noteId: string, oldName: string, newName: string) => {
+    const segments = get().transcriptionSegments[noteId]
+    if (!segments) return
+
+    const updatedSegments = segments.map((seg) =>
+      seg.speaker === oldName ? { ...seg, speaker: newName } : seg
+    )
+
+    set({
+      transcriptionSegments: {
+        ...get().transcriptionSegments,
+        [noteId]: updatedSegments
+      }
+    })
+  },
+
+  getTranscriptionSegments: (noteId: string) => {
+    return get().transcriptionSegments[noteId] ?? []
   },
 
   // ── Cleanup ───────────────────────────────────────────────────────
