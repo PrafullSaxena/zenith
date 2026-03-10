@@ -126,13 +126,13 @@ export default function SchemaExplorer({
       {/* Table search */}
       {tables.length > 0 && (
         <div className="relative">
-          <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-text-secondary/50" />
+          <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-text-secondary/60" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={`Search ${tables.length} tables…`}
-            className="w-full rounded-lg border border-border/50 bg-surface pl-7 pr-2 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none"
+            className="w-full rounded-lg border border-border/50 bg-surface pl-7 pr-2 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/60 focus:border-accent focus:outline-none"
           />
         </div>
       )}
@@ -144,9 +144,9 @@ export default function SchemaExplorer({
           Loading tables…
         </div>
       ) : tables.length === 0 && activeSchema ? (
-        <p className="py-4 text-center text-xs text-text-secondary/50">No tables in this schema</p>
+        <p className="py-4 text-center text-xs text-text-secondary/70">No tables in this schema</p>
       ) : filteredTables.length === 0 && searchQuery ? (
-        <p className="py-4 text-center text-xs text-text-secondary/50">
+        <p className="py-4 text-center text-xs text-text-secondary/70">
           No tables matching &ldquo;{searchQuery}&rdquo;
         </p>
       ) : (

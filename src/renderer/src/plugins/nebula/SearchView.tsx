@@ -164,7 +164,7 @@ export default function SearchView(): React.JSX.Element {
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder="Search notes..."
-                  className="w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 pl-9 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition"
+                  className="w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 pl-9 text-sm text-text-primary placeholder:text-text-secondary/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition"
                 />
                 {isSearching && (
                   <Loader2
@@ -180,7 +180,7 @@ export default function SearchView(): React.JSX.Element {
               {searchQuery.trim() && searchResults.length === 0 && !isSearching ? (
                 <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/[0.06]">
-                    <Search size={20} className="text-text-secondary/40" />
+                    <Search size={20} className="text-text-secondary/60" />
                   </div>
                   <p className="text-sm font-medium">No results found</p>
                   <p className="mt-1 text-xs text-text-secondary/60">Try a different keyword or phrase</p>
@@ -188,7 +188,7 @@ export default function SearchView(): React.JSX.Element {
               ) : !searchQuery.trim() ? (
                 <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/[0.06]">
-                    <FileText size={20} className="text-text-secondary/40" />
+                    <FileText size={20} className="text-text-secondary/60" />
                   </div>
                   <p className="text-sm font-medium">Search your notes</p>
                   <p className="mt-1 text-xs text-text-secondary/60">Find notes by keyword or phrase</p>
@@ -199,7 +199,7 @@ export default function SearchView(): React.JSX.Element {
                     key={result.id}
                     type="button"
                     onClick={() => handleResultClick(result.id)}
-                    className="w-full cursor-pointer rounded-xl border border-border/50 bg-surface-elevated p-4 text-left transition-all hover:bg-accent/5 hover:border-accent/20"
+                    className="hover-lift w-full cursor-pointer rounded-xl border border-border/50 bg-surface-elevated p-4 text-left transition-all hover:bg-accent/5 hover:border-accent/20"
                   >
                     {/* Title with highlight */}
                     <h4 className="text-sm font-medium text-text-primary">
@@ -268,7 +268,7 @@ export default function SearchView(): React.JSX.Element {
                 onKeyDown={handleQuestionKeyDown}
                 placeholder="Ask a question about your notes..."
                 disabled={isStreaming}
-                className="flex-1 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
               />
               {isStreaming ? (
                 <button
@@ -312,7 +312,7 @@ export default function SearchView(): React.JSX.Element {
               ) : (
                 <div className="flex flex-col items-center justify-center py-8 text-text-secondary">
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/[0.06]">
-                    <MessageCircleQuestion size={20} className="text-text-secondary/40" />
+                    <MessageCircleQuestion size={20} className="text-text-secondary/60" />
                   </div>
                   <p className="text-sm font-medium">Ask your notes anything</p>
                   <p className="mt-1 text-center text-xs text-text-secondary/60">

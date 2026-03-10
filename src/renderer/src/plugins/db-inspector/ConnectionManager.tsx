@@ -62,7 +62,7 @@ export default function ConnectionManager({
       {/* Connection selector */}
       {connections.length === 0 ? (
         <div className="space-y-2">
-          <p className="py-2 text-center text-xs text-text-secondary/50">
+          <p className="py-2 text-center text-xs text-text-secondary/70">
             No connections configured
           </p>
           <button
@@ -103,10 +103,12 @@ export default function ConnectionManager({
                   <span
                     className={`h-2 w-2 shrink-0 rounded-full ${
                       isConnected
-                        ? 'bg-green-400'
+                        ? 'bg-success'
                         : activeStatus?.error
-                          ? 'bg-red-400'
-                          : 'bg-text-secondary/30'
+                          ? 'bg-error'
+                          : isConnecting
+                            ? 'bg-warning animate-status-pulse'
+                            : 'bg-text-secondary/30'
                     }`}
                   />
                   <span className="text-xs font-medium text-text-primary">

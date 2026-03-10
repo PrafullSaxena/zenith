@@ -208,7 +208,7 @@ export default function AskAI({
             }
             disabled={!canAsk}
             rows={2}
-            className="flex-1 resize-none rounded-lg border border-border/50 bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none disabled:opacity-50"
+            className="flex-1 resize-none rounded-lg border border-border/50 bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/60 focus:border-accent focus:outline-none disabled:opacity-50"
           />
           <div className="flex flex-col gap-1">
             {isStreaming ? (
@@ -255,7 +255,7 @@ export default function AskAI({
       {/* Response area */}
       <div ref={responseRef} className="flex-1 overflow-auto p-4">
         {!session && (
-          <div className="flex h-full flex-col items-center justify-center text-text-secondary/50">
+          <div className="flex h-full flex-col items-center justify-center text-text-secondary/70">
             <div className="text-center">
               <MessageSquare size={32} className="mx-auto mb-2 opacity-30" />
               <p className="text-sm">Ask a question about your database</p>
@@ -268,8 +268,8 @@ export default function AskAI({
             {questionHistory.length > 0 && (
               <div className="mt-6 w-full max-w-md">
                 <div className="mb-2 flex items-center gap-1.5">
-                  <Clock size={11} className="text-text-secondary/50" />
-                  <span className="text-[11px] font-medium text-text-secondary/60">Recent questions</span>
+                  <Clock size={11} className="text-text-secondary/60" />
+                  <span className="text-[11px] font-medium text-text-secondary/70">Recent questions</span>
                 </div>
                 <div className="space-y-1">
                   {questionHistory.map((q, i) => (
@@ -334,7 +334,7 @@ export default function AskAI({
                       className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-text-secondary transition-colors hover:bg-surface hover:text-text-primary"
                     >
                       {copied ? (
-                        <Check size={10} className="text-green-400" />
+                        <Check size={10} className="text-success" />
                       ) : (
                         <Copy size={10} />
                       )}
@@ -352,7 +352,7 @@ export default function AskAI({
                   />
                 ) : (
                   isStreaming && (
-                    <div className="flex items-center gap-2 text-sm text-text-secondary/50">
+                    <div className="flex items-center gap-2 text-sm text-text-secondary/70">
                       <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent/60" />
                       Thinking…
                     </div>
@@ -372,7 +372,7 @@ export default function AskAI({
                   <CornerDownRight size={12} />
                   Follow Up
                 </button>
-                <span className="text-[10px] text-text-secondary/50">
+                <span className="text-[10px] text-text-secondary/60">
                   Continue the conversation with context
                 </span>
               </div>

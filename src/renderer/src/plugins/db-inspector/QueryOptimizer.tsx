@@ -122,7 +122,7 @@ export default function QueryOptimizer({
           }
           disabled={!canAnalyze}
           rows={4}
-          className="w-full resize-none rounded-lg border border-border/50 bg-surface px-3 py-2 font-mono text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none disabled:opacity-50"
+          className="w-full resize-none rounded-lg border border-border/50 bg-surface px-3 py-2 font-mono text-sm text-text-primary placeholder:text-text-secondary/60 focus:border-accent focus:outline-none disabled:opacity-50"
         />
         <div className="mt-2 flex items-center gap-2">
           {isActive ? (
@@ -163,7 +163,7 @@ export default function QueryOptimizer({
       {/* Results area */}
       <div ref={streamRef} className="flex-1 overflow-auto p-4">
         {!session && tiles.length === 0 && (
-          <div className="flex h-full items-center justify-center text-text-secondary/50">
+          <div className="flex h-full items-center justify-center text-text-secondary/70">
             <div className="text-center">
               <Zap size={32} className="mx-auto mb-2 opacity-30" />
               <p className="text-sm">Paste a SQL query to analyze</p>
@@ -279,7 +279,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
               {sugCount} suggestion{sugCount !== 1 ? 's' : ''}
             </span>
           )}
-          <span className="flex items-center gap-1 text-[10px] text-text-secondary/60">
+          <span className="flex items-center gap-1 text-[10px] text-text-secondary/70">
             <Clock size={9} />
             {timeLabel}
           </span>
@@ -523,7 +523,7 @@ function SuggestionCard({
               className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-text-secondary transition-colors hover:text-text-primary"
             >
               {sqlCopied ? (
-                <Check size={9} className="text-green-400" />
+                <Check size={9} className="text-success" />
               ) : (
                 <Copy size={9} />
               )}
@@ -570,7 +570,7 @@ function OptimizedQueryBlock({
           className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-text-secondary transition-colors hover:bg-accent/10 hover:text-text-primary"
         >
           {copied ? (
-            <Check size={10} className="text-green-400" />
+            <Check size={10} className="text-success" />
           ) : (
             <Copy size={10} />
           )}

@@ -37,7 +37,7 @@ export default function DbHistory({
 
   if (history.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-text-secondary/50">
+      <div className="flex h-full items-center justify-center text-text-secondary/70">
         <div className="text-center">
           <Eye size={32} className="mx-auto mb-2 opacity-30" />
           <p className="text-sm">No history yet</p>
@@ -59,7 +59,7 @@ export default function DbHistory({
         return (
           <div
             key={entry.id}
-            className="flex items-start gap-3 rounded-lg border border-border/50 bg-surface p-3"
+            className="hover-lift flex items-start gap-3 rounded-lg border border-border/50 bg-surface p-3"
           >
             {/* Type badge */}
             <span
