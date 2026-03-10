@@ -185,8 +185,8 @@ const api = {
       ipcRenderer.invoke('nebula:getGraph'),
     updateEdges: (sourceId: string, targets: unknown[]): Promise<void> =>
       ipcRenderer.invoke('nebula:updateEdges', sourceId, targets),
-    transcribeAudio: (buffer: number[]): Promise<unknown> =>
-      ipcRenderer.invoke('nebula:transcribeAudio', buffer),
+    transcribeAudio: (buffer: number[], providerId?: string, command?: string): Promise<unknown> =>
+      ipcRenderer.invoke('nebula:transcribeAudio', buffer, providerId, command),
     saveTranscription: (record: unknown): Promise<{ saved: boolean }> =>
       ipcRenderer.invoke('nebula:saveTranscription', record),
     selectAudioFile: (): Promise<{ canceled: boolean; path: string }> =>

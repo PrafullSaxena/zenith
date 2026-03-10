@@ -522,28 +522,29 @@ export function registerIpcHandlers(): void {
     db.upsertEdges(sourceId, targets)
   })
 
-  ipcMain.handle('nebula:transcribeAudio', async (_event, audioBuffer: number[]) => {
-    const tmpPath = path.join(app.getPath('temp'), `nebula-${Date.now()}.webm`)
-    try {
-      fs.writeFileSync(tmpPath, Buffer.from(audioBuffer))
-
-      // Get OpenAI API key using the same provider pattern as AI streaming
-      const apiKey = await getApiKeyForProvider('openai')
-      if (!apiKey) {
-        throw new Error('OpenAI API key not configured. Set it in Settings > AI Agents.')
-      }
-
-      const result = await transcribeAudio(tmpPath, apiKey)
-      return result
-    } finally {
-      // Cleanup temp file
+  ipcMain.handle(
+    'nebula:transcribeAudio',
+    async (_event, audioBuffer: number[], providerId?: string, command?: string) => {
+      const tmpPath = path.join(app.getPath('temp'), `nebula-${Date.now()}.webm`)
       try {
-        fs.unlinkSync(tmpPath)
-      } catch {
-        /* ignore cleanup errors */
+        fs.writeFileSync(tmpPath, Buffer.from(audioBuffer))
+
+        // Use the configured provider (falls back to 'openai' if none specified)
+        const resolvedProvider = providerId || 'openai'
+        const apiKey = await getApiKeyForProvider(resolvedProvider)
+
+        const result = await transcribeAudio(tmpPath, resolvedProvider, apiKey, command)
+        return result
+      } finally {
+        // Cleanup temp file
+        try {
+          fs.unlinkSync(tmpPath)
+        } catch {
+          /* ignore cleanup errors */
+        }
       }
     }
-  })
+  )
 
   ipcMain.handle(
     'nebula:saveTranscription',

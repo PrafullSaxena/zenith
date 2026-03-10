@@ -72,7 +72,7 @@ function extractPlainText(content: object): string {
  * Falls back to first provider with connected/hasApiKey status.
  * Returns command for CLI-type agents (gemini, claude, etc.).
  */
-function getNebulaAgent(): { providerId: string; model: string; command?: string } | null {
+export function getNebulaAgent(): { providerId: string; model: string; command?: string } | null {
   const defaultAgentId = useSettingsStore.getState().getSetting('plugins.nebula.defaultAgent') as
     | string
     | undefined

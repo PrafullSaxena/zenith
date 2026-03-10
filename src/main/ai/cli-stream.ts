@@ -116,7 +116,7 @@ function getLoginShellPath(): string {
 /**
  * Build an env object with the full login-shell PATH merged in.
  */
-function getShellEnv(): NodeJS.ProcessEnv {
+export function getShellEnv(): NodeJS.ProcessEnv {
   return { ...process.env, PATH: getLoginShellPath() }
 }
 

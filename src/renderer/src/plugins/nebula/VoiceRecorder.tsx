@@ -15,7 +15,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { Mic, Square, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNebulaStore } from '../../stores/nebula-store'
+import { useNebulaStore, getNebulaAgent } from '../../stores/nebula-store'
 import type { DiarizedTranscript } from '../../types/nebula'
 
 interface VoiceRecorderProps {
@@ -101,23 +101,31 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
             })
           }
 
-          // Send for transcription (background processing)
-          const result = await window.api.nebula.transcribeAudio(audioArray)
+          // Resolve the configured AI agent for transcription
+          const agent = getNebulaAgent()
+          if (!agent) {
+            addToast({
+              message: 'No AI agent configured. Set one in Settings → AI Agents.',
+              type: 'error'
+            })
+            setVoiceState('idle')
+            return
+          }
+
+          // Send for transcription using the configured provider
+          const result = await window.api.nebula.transcribeAudio(
+            audioArray,
+            agent.providerId,
+            agent.command
+          )
           setLastTranscript(result as DiarizedTranscript)
         } catch (err) {
           console.error('[VoiceRecorder] Transcription failed:', err)
           const msg = err instanceof Error ? err.message : String(err)
-          if (msg.includes('API key')) {
-            addToast({
-              message: 'Transcription failed: OpenAI API key not configured. Set it in Settings → AI Agents.',
-              type: 'error'
-            })
-          } else {
-            addToast({
-              message: `Transcription failed: ${msg}`,
-              type: 'error'
-            })
-          }
+          addToast({
+            message: `Transcription failed: ${msg}`,
+            type: 'error'
+          })
         } finally {
           setVoiceState('idle')
         }

@@ -63,7 +63,7 @@ export interface ElectronAPI {
     searchNotes: (query: string) => Promise<unknown[]>
     getGraph: () => Promise<unknown>
     updateEdges: (sourceId: string, targets: unknown[]) => Promise<void>
-    transcribeAudio: (buffer: number[]) => Promise<unknown>
+    transcribeAudio: (buffer: number[], providerId?: string, command?: string) => Promise<unknown>
     saveTranscription: (record: unknown) => Promise<{ saved: boolean }>
     selectAudioFile: () => Promise<{ canceled: boolean; path: string }>
     togglePin: (noteId: string, pinned: boolean) => Promise<void>
