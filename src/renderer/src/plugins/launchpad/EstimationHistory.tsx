@@ -56,7 +56,7 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:border-border/80 hover:bg-surface/80">
+    <div className="hover-lift rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:border-border/80 hover:bg-surface/80">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">

@@ -298,7 +298,7 @@ export default function DbInspectorView(): React.JSX.Element {
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel — Connections (sticky) + Schema Explorer (scrollable) */}
-        <div className="w-64 shrink-0 flex flex-col border-r border-border">
+        <div className="stagger-children w-64 shrink-0 flex flex-col border-r border-border">
           <div className="shrink-0 border-b border-border p-3">
             <ConnectionManager
               connections={connections}

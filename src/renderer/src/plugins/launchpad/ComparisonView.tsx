@@ -248,7 +248,7 @@ export default function ComparisonView(): React.JSX.Element {
                 return (
                   <tr
                     key={row.serviceId}
-                    className={`border-b border-border/50 ${
+                    className={`border-b border-border/50 transition-colors hover:bg-surface-elevated/30 ${
                       idx % 2 === 0 ? 'bg-surface' : 'bg-surface-elevated/30'
                     }`}
                   >

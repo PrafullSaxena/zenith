@@ -118,7 +118,7 @@ export default function AiAdvisor(): React.JSX.Element {
                   type="button"
                   disabled={!hasAgent || isStreaming}
                   onClick={() => handleExamplePrompt(prompt)}
-                  className="w-full text-left rounded-lg border border-border/50 bg-surface/50 px-3 py-2 text-xs text-text-secondary transition-colors hover:border-accent/30 hover:text-text-primary hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full text-left rounded-lg border border-border/50 bg-surface/50 px-3 py-2 text-xs text-text-secondary transition-all duration-200 hover:border-accent/30 hover:text-text-primary hover:bg-surface hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {prompt}
                 </button>

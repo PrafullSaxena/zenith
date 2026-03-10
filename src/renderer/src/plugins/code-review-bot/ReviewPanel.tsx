@@ -266,7 +266,7 @@ export function ReviewPanel({
         </div>
 
         {/* Finding cards — rich format with collapsible details */}
-        <div className="flex-1 space-y-2 p-3">
+        <div className="animate-fade-in-up flex-1 space-y-2 p-3">
           {safeComments.map((comment, idx) => (
             <FindingCard
               key={idx}

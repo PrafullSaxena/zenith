@@ -52,7 +52,7 @@ export default function ProviderSelector({ onSelect }: ProviderSelectorProps): R
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
+      <div className="stagger-children grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
         {PROVIDER_CARDS.map((card) => {
           const Icon = card.icon
           const info = PROVIDER_INFO[card.id]
@@ -63,7 +63,7 @@ export default function ProviderSelector({ onSelect }: ProviderSelectorProps): R
               type="button"
               onClick={() => onSelect(card.id)}
               className={`
-                flex flex-col items-start gap-4 rounded-xl border border-border bg-surface
+                hover-lift flex flex-col items-start gap-4 rounded-xl border border-border bg-surface
                 p-6 text-left transition-all duration-150
                 hover:scale-[1.02] hover:shadow-lg
                 ${card.borderClass}

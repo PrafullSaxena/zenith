@@ -281,7 +281,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
   )
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="stagger-children flex h-full flex-col">
       {/* Header bar */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
