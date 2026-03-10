@@ -14,11 +14,11 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Total Phases:** 9
 **Current Plan:** 4
 **Total Plans in Phase:** 4
-**Status:** Ready to execute
+**Status:** Complete
 **Last Activity:** 2026-03-10
-**Last Activity Description:** Completed 09-01 data layer foundation — pinned notes, content previews, audio IPC, toast state, 6 new npm packages
+**Last Activity Description:** Phase 09 complete — all 4 plans executed with 3 additional bug fix commits. react-resizable-panels replaced with flexbox.
 
-**Progress:** [██████████] 96%
+**Progress:** [██████████] 100%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 09 P01 | 7min | 2 tasks | 9 files |
 | Phase 09 P02 | 4min | 2 tasks | 7 files |
 | Phase 09 P03 | 6min | 2 tasks | 5 files |
+| Phase 09 P04 | 10min | 2 tasks + 3 fixes | 4 files |
 
 ## Accumulated Context
 
@@ -135,9 +136,13 @@ Recent decisions affecting current work:
 - [Phase 09]: Auto-save dot: 4-state machine (synced/unsaved/saving/just-saved) with 1.5s green flash timeout
 - [Phase 09]: VoiceRecorder removed from NoteEditor; Plan 04 relocates as FAB in NebulaView
 - [Phase 09]: TableControls as conditional bar (not second BubbleMenu) to avoid floating menu conflicts
-- [Phase 09]: react-resizable-panels v4 API: Group/Panel/Separator with useDefaultLayout hook for persistence (adapted from plan's v2 assumptions)
-- [Phase 09]: Drawing panel collapsed by default with side rail tab; visibility controlled by panel collapse state
+- [Phase 09]: react-resizable-panels REMOVED — caused infinite re-render loops; replaced with plain flexbox (w-64 sidebar, w-3/5/w-2/5 splits)
+- [Phase 09]: Drawing panel collapsed by default with side rail tab; visibility controlled by simple state toggle
 - [Phase 09]: Custom event nebula:focus-title for Cmd+N cross-component title focus signaling
+- [Phase 09]: @tiptap/extension-table uses named exports only — import { Table } not default import
+- [Phase 09]: VoiceRecorder FAB: framer-motion AnimatePresence with idle/recording/processing states
+- [Phase 09]: TranscriptionBlock: colored speaker labels via hash-based color palette, editable names
+- [Phase 09]: ToastContainer: fixed bottom-right (above FAB), framer-motion spring animations, click-to-navigate
 
 ### Pending Todos
 
@@ -151,6 +156,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-10T13:46:09.820Z
-**Stopped at:** Completed 09-03-PLAN.md
+**Last session:** 2026-03-10
+**Stopped at:** All Phase 09 plans executed. Awaiting visual verification.
 **Resume file:** None

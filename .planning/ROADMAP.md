@@ -11,7 +11,7 @@
 | 5 | AstroPatch Plugin | 7 | 4/4 | Complete   | 2026-03-09 | 6 | Polish & Production | 3 | Planned | 0/3 |
 | 7 | Launchpad Plugin | 4 | Complete | 4/4 |
 | 8 | Nebula Plugin | 6 | Complete | 6/6 |
-| 9 | Nebula UX Polish | 4 | Planned | 0/4 |
+| 9 | Nebula UX Polish | 4 | Complete | 4/4 |
 
 ## Phase 1: Foundation
 
@@ -97,13 +97,13 @@ Plans:
 
 **Requirements:** [NEBL-01, NEBL-02, NEBL-03, NEBL-06, NEBL-07, NEBL-08]
 
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 09-01-PLAN.md -- Install deps, extend types/schema/IPC for pinning, content preview, and audio storage
-- [ ] 09-02-PLAN.md -- Rewrite NoteEditor with floating toolbar, inline title, tables, images, metadata, tags
-- [ ] 09-03-PLAN.md -- Split-view layout with react-resizable-panels, rewrite NoteList with pinning and context menus
-- [ ] 09-04-PLAN.md -- Voice FAB, transcription block with speaker labels, toast notifications, visual verification
+- [x] 09-01-PLAN.md -- Install deps, extend types/schema/IPC for pinning, content preview, and audio storage
+- [x] 09-02-PLAN.md -- Rewrite NoteEditor with floating toolbar, inline title, tables, images, metadata, tags
+- [x] 09-03-PLAN.md -- Split-view layout (flexbox), rewrite NoteList with pinning and context menus
+- [x] 09-04-PLAN.md -- Voice FAB, transcription block with speaker labels, toast notifications, bug fixes
 
 ## Phase 6: Polish & Production
 
