@@ -12,13 +12,13 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Current Phase:** 09
 **Current Phase Name:** Nebula UX Polish
 **Total Phases:** 9
-**Current Plan:** 2
+**Current Plan:** 3
 **Total Plans in Phase:** 4
-**Status:** In progress
+**Status:** Ready to execute
 **Last Activity:** 2026-03-10
 **Last Activity Description:** Completed 09-01 data layer foundation — pinned notes, content previews, audio IPC, toast state, 6 new npm packages
 
-**Progress:** [██--------] 25%
+**Progress:** [█████████░] 92%
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 08-nebula-plugin P06 | 3min | 1 tasks | 3 files |
 | Phase 08-nebula-plugin PP05 | 5min | 2 tasks | 9 files |
 | Phase 09 P01 | 7min | 2 tasks | 9 files |
+| Phase 09 P02 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -129,6 +130,10 @@ Recent decisions affecting current work:
 - [Phase 09]: Content preview auto-computed in upsertNote from Tiptap JSON (first 150 chars)
 - [Phase 09]: Notes sorted pinned-first at SQLite level and in-store after mutations
 - [Phase 09]: Toast auto-dismiss after 5s via setTimeout in addToast action
+- [Phase 09]: BubbleMenu from @tiptap/react/menus (not @tiptap/react) per Tiptap v3 requirement
+- [Phase 09]: Auto-save dot: 4-state machine (synced/unsaved/saving/just-saved) with 1.5s green flash timeout
+- [Phase 09]: VoiceRecorder removed from NoteEditor; Plan 04 relocates as FAB in NebulaView
+- [Phase 09]: TableControls as conditional bar (not second BubbleMenu) to avoid floating menu conflicts
 
 ### Pending Todos
 
@@ -142,6 +147,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-10T13:36:45.537Z
-**Stopped at:** Completed 09-01-PLAN.md
+**Last session:** 2026-03-10T13:44:29.322Z
+**Stopped at:** Completed 09-02-PLAN.md
 **Resume file:** None
