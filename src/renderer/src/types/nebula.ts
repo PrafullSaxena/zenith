@@ -103,6 +103,7 @@ export interface SearchResult {
   titleHighlight: string | null
   summaryHighlight: string | null
   summary: string | null
+  contentText: string | null
   updatedAt: string
   rank: number
 }

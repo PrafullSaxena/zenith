@@ -38,9 +38,34 @@ interface SearchRow {
   title_highlight: string | null
   summary_highlight: string | null
   summary: string | null
+  content_text: string | null
   updated_at: string
   rank: number
 }
+
+/**
+ * Common English stop words filtered from Q&A / search queries.
+ * FTS5 uses implicit AND — stop words that don't appear in notes
+ * cause the entire query to return zero results.
+ */
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'but', 'not', 'is', 'are', 'was', 'were',
+  'am', 'be', 'been', 'being', 'do', 'does', 'did', 'doing', 'have', 'has',
+  'had', 'having', 'will', 'would', 'shall', 'should', 'may', 'might',
+  'can', 'could', 'must', 'to', 'of', 'in', 'for', 'on', 'at', 'by',
+  'with', 'from', 'up', 'about', 'into', 'through', 'during', 'before',
+  'after', 'above', 'below', 'between', 'out', 'off', 'over', 'under',
+  'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where',
+  'why', 'how', 'what', 'which', 'who', 'whom', 'this', 'that', 'these',
+  'those', 'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves',
+  'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his',
+  'himself', 'she', 'her', 'hers', 'herself', 'it', 'its', 'itself',
+  'they', 'them', 'their', 'theirs', 'themselves', 'so', 'if', 'no',
+  'nor', 'too', 'very', 'just', 'also', 'than', 'now', 'tell', 'find',
+  'give', 'get', 'let', 'make', 'know', 'take', 'see', 'come', 'go',
+  'all', 'each', 'every', 'both', 'few', 'more', 'most', 'other', 'some',
+  'such', 'any', 'only', 'same', 'own'
+])
 
 interface GraphNodeRow {
   id: string
@@ -364,40 +389,62 @@ export class NebulaDatabase {
    *
    * Supports prefix matching: typing "emp" will match "employee".
    * Each token is quoted and suffixed with '*' for safe FTS5 prefix queries.
+   *
+   * Stop words (where, does, what, how, etc.) are filtered before the FTS5
+   * query to avoid false negatives from FTS5's implicit AND logic.
+   * If AND returns no results, falls back to OR for partial matches.
    */
   searchNotes(query: string): SearchRow[] {
     if (!query.trim()) return []
 
     // Sanitize input: extract alphanumeric tokens, quote each, and add '*' for prefix matching
-    const tokens = query
+    const allTokens = query
       .trim()
       .split(/\s+/)
       .map((t) => t.replace(/[^a-zA-Z0-9]/g, ''))
       .filter((t) => t.length > 0)
 
-    if (tokens.length === 0) return []
+    if (allTokens.length === 0) return []
 
-    // Build FTS5 query: "emp"* "man"* → matches "employee management"
-    const ftsQuery = tokens.map((t) => `"${t}"*`).join(' ')
+    // Filter out common stop words to prevent FTS5 AND failures.
+    // e.g. "Where does prafull works?" → ["prafull", "works"]
+    const meaningfulTokens = allTokens.filter((t) => !STOP_WORDS.has(t.toLowerCase()))
+
+    // If all tokens were stop words, use the original tokens as-is
+    const tokens = meaningfulTokens.length > 0 ? meaningfulTokens : allTokens
+
+    // Build FTS5 AND query: "prafull"* "works"* → matches notes containing both
+    const andQuery = tokens.map((t) => `"${t}"*`).join(' ')
+
+    const stmt = this.db.prepare<[string], SearchRow>(
+      `SELECT
+         n.id,
+         n.title,
+         highlight(notes_fts, 0, '<mark>', '</mark>') AS title_highlight,
+         highlight(notes_fts, 1, '<mark>', '</mark>') AS summary_highlight,
+         n.summary,
+         notes_fts.content_text,
+         n.updated_at,
+         bm25(notes_fts) AS rank
+       FROM notes_fts
+       JOIN notes n ON notes_fts.rowid = n.rowid
+       WHERE notes_fts MATCH ?
+       ORDER BY rank
+       LIMIT 20`
+    )
 
     try {
-      return this.db
-        .prepare<[string], SearchRow>(
-          `SELECT
-             n.id,
-             n.title,
-             highlight(notes_fts, 0, '<mark>', '</mark>') AS title_highlight,
-             highlight(notes_fts, 1, '<mark>', '</mark>') AS summary_highlight,
-             n.summary,
-             n.updated_at,
-             bm25(notes_fts) AS rank
-           FROM notes_fts
-           JOIN notes n ON notes_fts.rowid = n.rowid
-           WHERE notes_fts MATCH ?
-           ORDER BY rank
-           LIMIT 20`
-        )
-        .all(ftsQuery)
+      // Try AND first (all tokens must match)
+      const results = stmt.all(andQuery)
+      if (results.length > 0) return results
+
+      // Fallback: OR query (any token matches) — useful for natural language questions
+      if (tokens.length > 1) {
+        const orQuery = tokens.map((t) => `"${t}"*`).join(' OR ')
+        return stmt.all(orQuery)
+      }
+
+      return results
     } catch {
       // FTS5 MATCH can throw on malformed queries — return empty gracefully
       return []

@@ -389,18 +389,21 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       .searchNotes(question)
       .then((results) => {
         const searchResults = results as SearchResult[]
-        // Build context from top 5 results
+        // Build context from top 5 results — include actual content for best answers
         const topResults = searchResults.slice(0, 5)
         let contextString = topResults
-          .map((r, i) => `Note ${i + 1}: "${r.title}"\n${r.summary || 'No summary available'}`)
+          .map((r, i) => {
+            const body = r.contentText || r.summary || 'No content available'
+            return `Note ${i + 1}: "${r.title}"\n${body}`
+          })
           .join('\n\n')
 
-        // If FTS search returned nothing, fall back to all notes with summaries
+        // If FTS search returned nothing, fall back to all notes with any content
         if (topResults.length === 0) {
-          const allNotes = get().notes.filter((n) => n.summary)
+          const allNotes = get().notes
           contextString = allNotes
             .slice(0, 5)
-            .map((n, i) => `Note ${i + 1}: "${n.title}"\n${n.summary}`)
+            .map((n, i) => `Note ${i + 1}: "${n.title}"\n${n.summary || '(no summary)'}`)
             .join('\n\n')
         }
 

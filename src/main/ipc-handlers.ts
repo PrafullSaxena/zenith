@@ -489,6 +489,7 @@ export function registerIpcHandlers(): void {
       titleHighlight: row.title_highlight,
       summaryHighlight: row.summary_highlight,
       summary: row.summary,
+      contentText: row.content_text ?? null,
       updatedAt: row.updated_at,
       rank: row.rank
     }))
