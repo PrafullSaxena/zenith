@@ -250,17 +250,77 @@ body {
   margin: 0.15rem 0;
 }
 
+/* ── Code block styles ───────────────────────────────────────────────── */
+
 .nebula-editor .tiptap pre {
-  background: var(--color-surface);
+  position: relative;
+  margin: 0.75rem 0;
+  border-radius: 8px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 0.75rem 1rem;
-  margin: 0.5rem 0;
+  background: var(--color-surface);
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
   overflow-x: auto;
   font-family: var(--font-mono);
   font-size: 0.82rem;
-  line-height: 1.5;
+  line-height: 1.6;
+  animation: code-block-enter 0.3s ease-out;
 }
+
+/* Left accent bar */
+.nebula-editor .tiptap pre::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-accent);
+  opacity: 0.4;
+  transition: opacity 0.2s;
+  border-radius: 8px 0 0 8px;
+}
+
+.nebula-editor .tiptap pre:hover::before {
+  opacity: 0.8;
+}
+
+/* Language label in top-right corner */
+.nebula-editor .tiptap pre::after {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.35rem;
+  right: 0.5rem;
+  font-size: 0.6rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.4;
+  pointer-events: none;
+  font-family: var(--font-mono);
+}
+
+/* Code inside pre — reset inline code styles */
+.nebula-editor .tiptap pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Entrance animation */
+@keyframes code-block-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Inline code (not in code blocks) ────────────────────────────────── */
 
 .nebula-editor .tiptap code {
   background: var(--color-surface-elevated);
@@ -268,12 +328,6 @@ body {
   padding: 0.15rem 0.35rem;
   font-family: var(--font-mono);
   font-size: 0.85em;
-}
-
-.nebula-editor .tiptap pre code {
-  background: none;
-  padding: 0;
-  border-radius: 0;
 }
 
 .nebula-editor .tiptap blockquote {

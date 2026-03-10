@@ -22,8 +22,11 @@ import { Table } from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
-import { Extension } from '@tiptap/core'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { Extension, mergeAttributes } from '@tiptap/core'
 import { Sparkles, Plus, X, Table as TableIcon } from 'lucide-react'
+import { lowlight } from '../../lib/lowlight-setup'
+import CodeBlockControls from './CodeBlockControls'
 import type { NoteTag } from '../../types/nebula'
 import { useNebulaStore } from '../../stores/nebula-store'
 import FloatingToolbar from './FloatingToolbar'
@@ -161,7 +164,60 @@ export default function NoteEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3] }
+        heading: { levels: [1, 2, 3] },
+        codeBlock: false // Replaced by CodeBlockLowlight for syntax highlighting
+      }),
+      CodeBlockLowlight.extend({
+        renderHTML({ node, HTMLAttributes }) {
+          return [
+            'pre',
+            mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+              'data-language': node.attrs.language || 'plaintext'
+            }),
+            ['code', { class: `language-${node.attrs.language || 'plaintext'}` }, 0]
+          ]
+        },
+        addKeyboardShortcuts() {
+          return {
+            ...this.parent?.(),
+            Tab: () => {
+              if (this.editor.isActive('codeBlock')) {
+                const { state } = this.editor
+                const { from, to } = state.selection
+                this.editor.view.dispatch(state.tr.insertText('  ', from, to))
+                return true
+              }
+              return false
+            },
+            'Shift-Tab': () => {
+              if (this.editor.isActive('codeBlock')) {
+                const { state } = this.editor
+                const { $from } = state.selection
+                const blockStart = $from.start()
+                const posInBlock = $from.pos - blockStart
+                const fullText = $from.parent.textContent
+                const lastNL = fullText.lastIndexOf('\n', posInBlock - 1)
+                const lineStart = lastNL === -1 ? 0 : lastNL + 1
+                const lineText = fullText.substring(lineStart)
+                let spaces = 0
+                for (let i = 0; i < Math.min(2, lineText.length); i++) {
+                  if (lineText[i] === ' ') spaces++
+                  else break
+                }
+                if (spaces > 0) {
+                  const delFrom = blockStart + lineStart
+                  this.editor.view.dispatch(state.tr.delete(delFrom, delFrom + spaces))
+                }
+                return true
+              }
+              return false
+            }
+          }
+        }
+      }).configure({
+        lowlight,
+        defaultLanguage: 'plaintext',
+        HTMLAttributes: { class: 'hljs' }
       }),
       Placeholder.configure({
         placeholder: 'Start writing...'
@@ -402,6 +458,9 @@ export default function NoteEditor({
 
       {/* Table controls (shown when cursor is in a table) */}
       {editor && <TableControls editor={editor} />}
+
+      {/* Code block controls (shown when cursor is in a code block) */}
+      {editor && <CodeBlockControls editor={editor} />}
 
       {/* Insert table button (subtle, below title/tags area) */}
       {editor && !editor.isActive('table') && (
