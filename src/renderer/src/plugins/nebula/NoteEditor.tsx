@@ -215,16 +215,11 @@ export default function NoteEditor({
     }
   })
 
-  // Sync editor content when switching notes (content prop changes)
-  useEffect(() => {
-    if (!editor || !content) return
-
-    const currentJson = JSON.stringify(editor.getJSON())
-    const newJson = JSON.stringify(content)
-    if (currentJson !== newJson) {
-      editor.commands.setContent(content)
-    }
-  }, [content, editor])
+  // Content sync is handled by key={noteId} on <NoteEditor> in NebulaView.
+  // The key forces a full remount when switching notes, so useEditor receives
+  // the correct initial content and no manual setContent is needed.
+  // (A manual setContent + JSON comparison loop caused "Maximum update depth
+  // exceeded" because TipTap normalizes empty docs differently from the prop.)
 
   // Word count from editor content
   const wordCount = useMemo(() => {

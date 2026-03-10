@@ -252,6 +252,7 @@ export default function NebulaView(): React.JSX.Element {
                   {/* Editor */}
                   <div className={`flex flex-col overflow-hidden ${drawingOpen ? 'w-3/5' : 'flex-1'}`}>
                     <NoteEditor
+                      key={activeNote.id}
                       noteId={activeNote.id}
                       content={activeNote.content}
                       title={activeNote.title}
