@@ -191,6 +191,12 @@ const api = {
       ipcRenderer.invoke('nebula:saveTranscription', record),
     selectAudioFile: (): Promise<{ canceled: boolean; path: string }> =>
       ipcRenderer.invoke('nebula:selectAudioFile'),
+    togglePin: (noteId: string, pinned: boolean): Promise<void> =>
+      ipcRenderer.invoke('nebula:togglePin', noteId, pinned),
+    saveAudio: (noteId: string, audioBuffer: number[]): Promise<{ audioPath: string }> =>
+      ipcRenderer.invoke('nebula:saveAudio', noteId, audioBuffer),
+    loadAudio: (noteId: string): Promise<number[] | null> =>
+      ipcRenderer.invoke('nebula:loadAudio', noteId),
   },
 }
 

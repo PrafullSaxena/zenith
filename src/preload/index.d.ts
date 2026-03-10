@@ -66,6 +66,9 @@ export interface ElectronAPI {
     transcribeAudio: (buffer: number[]) => Promise<unknown>
     saveTranscription: (record: unknown) => Promise<{ saved: boolean }>
     selectAudioFile: () => Promise<{ canceled: boolean; path: string }>
+    togglePin: (noteId: string, pinned: boolean) => Promise<void>
+    saveAudio: (noteId: string, audioBuffer: number[]) => Promise<{ audioPath: string }>
+    loadAudio: (noteId: string) => Promise<number[] | null>
   }
 }
 

@@ -20,7 +20,8 @@ import type {
   SearchResult,
   SummarizationResult,
   VoiceRecordingState,
-  DiarizedTranscript
+  DiarizedTranscript,
+  ToastMessage
 } from '../types/nebula'
 import { useAgentStore } from './agent-store'
 import { useSettingsStore } from './settings-store'
@@ -115,6 +116,9 @@ interface NebulaStore {
   isSummarizing: boolean
   summarizeSessionId: string | null
 
+  // Toast state
+  toasts: ToastMessage[]
+
   // Actions
   setActiveTab: (tab: NebulaTab) => void
   loadNotes: () => Promise<void>
@@ -122,6 +126,7 @@ interface NebulaStore {
   createNote: () => Promise<void>
   saveNote: (note: NoteFile) => Promise<void>
   deleteNote: (id: string) => Promise<void>
+  togglePin: (noteId: string) => Promise<void>
   setSearchQuery: (query: string) => void
   searchNotes: (query: string) => Promise<void>
   loadGraphData: () => Promise<void>
@@ -137,6 +142,8 @@ interface NebulaStore {
   handleTranscription: (transcript: DiarizedTranscript) => Promise<void>
   triggerSummarization: (note: NoteFile) => void
   inferEdges: (noteId: string, topics: string[], connections: string[]) => void
+  addToast: (toast: Omit<ToastMessage, 'id'>) => void
+  removeToast: (id: string) => void
   cleanup: () => void
 }
 
@@ -166,6 +173,8 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
 
   isSummarizing: false,
   summarizeSessionId: null,
+
+  toasts: [],
 
   // ── Actions ──────────────────────────────────────────────────────
 
@@ -242,12 +251,17 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       // IPC not wired yet -- gracefully ignore
     }
 
-    // Update notes list item
-    const updatedNotes = get().notes.map((n) =>
-      n.id === note.id
-        ? { ...n, title: note.title, summary: note.summary, updatedAt: note.updatedAt }
-        : n
-    )
+    // Update notes list item, re-sort pinned first then by updatedAt
+    const updatedNotes = get()
+      .notes.map((n) =>
+        n.id === note.id
+          ? { ...n, title: note.title, summary: note.summary, updatedAt: note.updatedAt }
+          : n
+      )
+      .sort((a, b) => {
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      })
 
     // Also update activeNote to keep state fresh for subsequent saves
     const isActive = get().activeNoteId === note.id
@@ -283,6 +297,31 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
       activeNoteId: activeNoteId === id ? null : activeNoteId,
       activeNote: activeNoteId === id ? null : get().activeNote
     })
+  },
+
+  togglePin: async (noteId) => {
+    const notes = get().notes
+    const note = notes.find((n) => n.id === noteId)
+    if (!note) return
+
+    const newPinned = !note.pinned
+
+    // Optimistic update: flip pinned state and re-sort
+    const updatedNotes = notes
+      .map((n) => (n.id === noteId ? { ...n, pinned: newPinned } : n))
+      .sort((a, b) => {
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      })
+
+    set({ notes: updatedNotes })
+
+    // Persist via IPC
+    try {
+      await window.api.nebula.togglePin(noteId, newPinned)
+    } catch {
+      // IPC not wired yet -- gracefully ignore
+    }
   },
 
   setSearchQuery: (query) => {
@@ -755,6 +794,23 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
     }
   },
 
+  // ── Toast Management ─────────────────────────────────────────────
+
+  addToast: (toast) => {
+    const id = `toast-${Date.now()}`
+    const newToast: ToastMessage = { ...toast, id }
+    set({ toasts: [...get().toasts, newToast] })
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      set({ toasts: get().toasts.filter((t) => t.id !== id) })
+    }, 5000)
+  },
+
+  removeToast: (id) => {
+    set({ toasts: get().toasts.filter((t) => t.id !== id) })
+  },
+
   // ── Cleanup ───────────────────────────────────────────────────────
 
   cleanup: () => {
@@ -763,6 +819,6 @@ export const useNebulaStore = create<NebulaStore>((set, get) => ({
     } catch {
       // Ignore if API not available
     }
-    set({ isSummarizing: false, summarizeSessionId: null, qaSessionId: null })
+    set({ isSummarizing: false, summarizeSessionId: null, qaSessionId: null, toasts: [] })
   }
 }))

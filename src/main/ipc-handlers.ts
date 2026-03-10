@@ -471,6 +471,10 @@ export function registerIpcHandlers(): void {
       id: row.id,
       title: row.title,
       summary: row.summary,
+      pinned: row.pinned === 1,
+      hasDrawing: row.drawing !== null && row.drawing !== '',
+      contentPreview: row.content_preview || null,
+      audioPath: null,
       updatedAt: row.updated_at
     }))
   })
@@ -562,6 +566,25 @@ export function registerIpcHandlers(): void {
 
     if (canceled || filePaths.length === 0) return { canceled: true, path: '' }
     return { canceled: false, path: filePaths[0] }
+  })
+
+  ipcMain.handle('nebula:togglePin', async (_event, noteId: string, pinned: boolean) => {
+    const { db } = getNebulaInstances()
+    db.togglePin(noteId, pinned)
+  })
+
+  ipcMain.handle('nebula:saveAudio', async (_event, noteId: string, audioBuffer: number[]) => {
+    const { fs: noteFs } = getNebulaInstances()
+    const buffer = Buffer.from(audioBuffer)
+    const audioPath = noteFs.saveAudio(noteId, buffer)
+    return { audioPath }
+  })
+
+  ipcMain.handle('nebula:loadAudio', async (_event, noteId: string) => {
+    const { fs: noteFs } = getNebulaInstances()
+    const buffer = noteFs.loadAudio(noteId)
+    if (!buffer) return null
+    return Array.from(new Uint8Array(buffer))
   })
 
   // --- DbInspector ER Diagram PDF export ---
