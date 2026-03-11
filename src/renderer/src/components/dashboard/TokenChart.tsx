@@ -2,8 +2,13 @@
  * TokenChart — Compact SVG line chart showing token usage by provider over 7 days.
  * No external charting library — renders directly to SVG.
  *
+ * Features:
+ * - Smooth monotone cubic-spline curves (no jagged line segments)
+ * - Entry animations: line draw-in, area fade-in, dot pop-in
+ *
  * Layout: chart on the left, agent legend column on the right.
  */
+import { useMemo } from 'react'
 import { BarChart3 } from 'lucide-react'
 import type { TokenUsageEntry } from '../../stores/token-store'
 
@@ -28,11 +33,113 @@ interface DayBucket {
   total: number
 }
 
+interface Point {
+  x: number
+  y: number
+}
+
 function fmtTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
   return String(n)
 }
+
+// ────────────────────────────────────────────────────────────────
+// Monotone cubic Hermite spline — produces smooth curves that
+// never overshoot data points (same algorithm as d3.curveMonotoneX).
+// Returns an SVG <path> "d" string.
+// ────────────────────────────────────────────────────────────────
+
+function monotoneCurvePath(pts: Point[]): string {
+  if (pts.length === 0) return ''
+  if (pts.length === 1) return `M${pts[0].x},${pts[0].y}`
+  if (pts.length === 2) return `M${pts[0].x},${pts[0].y}L${pts[1].x},${pts[1].y}`
+
+  const n = pts.length
+
+  // 1. Compute slopes between consecutive points
+  const deltas: number[] = []
+  const slopes: number[] = []
+  for (let i = 0; i < n - 1; i++) {
+    const dx = pts[i + 1].x - pts[i].x
+    const dy = pts[i + 1].y - pts[i].y
+    deltas.push(dx)
+    slopes.push(dx === 0 ? 0 : dy / dx)
+  }
+
+  // 2. Compute tangent at each point (Fritsch–Carlson method)
+  const tangents: number[] = new Array(n)
+  tangents[0] = slopes[0]
+  tangents[n - 1] = slopes[n - 2]
+
+  for (let i = 1; i < n - 1; i++) {
+    if (slopes[i - 1] * slopes[i] <= 0) {
+      // Sign change → flat tangent (prevent overshoot)
+      tangents[i] = 0
+    } else {
+      // Harmonic mean of neighboring slopes
+      tangents[i] = (slopes[i - 1] + slopes[i]) / 2
+    }
+  }
+
+  // 3. Monotonicity fixup (Fritsch–Carlson conditions)
+  for (let i = 0; i < n - 1; i++) {
+    if (Math.abs(slopes[i]) < 1e-10) {
+      tangents[i] = 0
+      tangents[i + 1] = 0
+    } else {
+      const alpha = tangents[i] / slopes[i]
+      const beta = tangents[i + 1] / slopes[i]
+      // Restrict to a circle of radius 3 for monotonicity
+      const mag = alpha * alpha + beta * beta
+      if (mag > 9) {
+        const s = 3 / Math.sqrt(mag)
+        tangents[i] = s * alpha * slopes[i]
+        tangents[i + 1] = s * beta * slopes[i]
+      }
+    }
+  }
+
+  // 4. Build SVG path with cubic bezier segments
+  let d = `M${pts[0].x},${pts[0].y}`
+  for (let i = 0; i < n - 1; i++) {
+    const dx = deltas[i] / 3
+    const cp1x = pts[i].x + dx
+    const cp1y = pts[i].y + tangents[i] * dx
+    const cp2x = pts[i + 1].x - dx
+    const cp2y = pts[i + 1].y - tangents[i + 1] * dx
+    d += `C${cp1x},${cp1y},${cp2x},${cp2y},${pts[i + 1].x},${pts[i + 1].y}`
+  }
+  return d
+}
+
+/** Build closed area path: baseline → curve along points → back to baseline */
+function monotoneAreaPath(pts: Point[], baseline: number): string {
+  if (pts.length < 2) return ''
+  const curvePart = monotoneCurvePath(pts)
+  // curvePart starts with M<first point>, draw curve to last point
+  // Close by going straight down to baseline, then back to start
+  return (
+    `M${pts[0].x},${baseline}` +
+    `L${pts[0].x},${pts[0].y}` +
+    curvePart.slice(curvePart.indexOf('C')) + // append just the C segments
+    `L${pts[pts.length - 1].x},${baseline}Z`
+  )
+}
+
+/** Approximate path length for stroke-dasharray animation */
+function approxPathLength(pts: Point[]): number {
+  let len = 0
+  for (let i = 1; i < pts.length; i++) {
+    const dx = pts[i].x - pts[i - 1].x
+    const dy = pts[i].y - pts[i - 1].y
+    len += Math.sqrt(dx * dx + dy * dy)
+  }
+  // Curves are slightly longer than straight-line distance
+  return Math.ceil(len * 1.15)
+}
+
+// ────────────────────────────────────────────────────────────────
 
 export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
   // Build 7-day buckets
@@ -89,21 +196,30 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
   const maxVal = Math.max(...buckets.map((b) => b.total), 1)
   const xStep = chartW / Math.max(buckets.length - 1, 1)
   const yScale = (v: number): number => PAD_T + chartH - (v / maxVal) * chartH
+  const baseline = PAD_T + chartH
 
-  // Build polyline points per provider
-  const providerLines = providerIds.map((pid) => {
-    const pi = providerColorIndex[pid]
-    const points = buckets.map((b, bi) => ({
-      x: PAD_L + bi * xStep,
-      y: yScale(b.byProvider[pid] || 0)
-    }))
-    const linePoints = points.map((p) => `${p.x},${p.y}`).join(' ')
-    const baseline = PAD_T + chartH
-    const areaPath = `M${points[0].x},${baseline} ` +
-      points.map((p) => `L${p.x},${p.y}`).join(' ') +
-      ` L${points[points.length - 1].x},${baseline} Z`
-    return { pid, color: PROVIDER_COLORS[pi % PROVIDER_COLORS.length], linePoints, areaPath, points }
-  })
+  // Build smooth curve paths per provider
+  const providerLines = useMemo(() => {
+    return providerIds.map((pid) => {
+      const pi = providerColorIndex[pid]
+      const points = buckets.map((b, bi) => ({
+        x: PAD_L + bi * xStep,
+        y: yScale(b.byProvider[pid] || 0)
+      }))
+      const linePath = monotoneCurvePath(points)
+      const areaPath = monotoneAreaPath(points, baseline)
+      const pathLength = approxPathLength(points)
+      return {
+        pid,
+        color: PROVIDER_COLORS[pi % PROVIDER_COLORS.length],
+        linePath,
+        areaPath,
+        pathLength,
+        points
+      }
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entries.length, providerIds.length])
 
   // Y-axis labels (3 steps)
   const ySteps = [0, maxVal / 2, maxVal]
@@ -111,6 +227,9 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
     y: yScale(v),
     label: v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}K` : String(Math.round(v))
   }))
+
+  // Unique ID suffix for this chart instance (avoids gradient ID collisions)
+  const uid = useMemo(() => Math.random().toString(36).slice(2, 8), [])
 
   // ── Empty state ──
   if (entries.length === 0) {
@@ -154,18 +273,62 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
         {/* SVG Chart */}
         <div className="min-w-0 flex-1">
           <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full" preserveAspectRatio="xMidYMid meet">
+            {/* Animation keyframes */}
             <defs>
               {providerLines.map((line) => (
-                <linearGradient key={`g-${line.pid}`} id={`area-${line.pid}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={line.color} stopOpacity={0.12} />
+                <linearGradient key={`g-${line.pid}`} id={`area-${uid}-${line.pid}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={line.color} stopOpacity={0.15} />
                   <stop offset="100%" stopColor={line.color} stopOpacity={0.01} />
                 </linearGradient>
               ))}
             </defs>
 
+            {/* Inline CSS for SVG animations */}
+            <style>{`
+              /* Grid lines fade in */
+              .tc-grid-${uid} {
+                opacity: 0;
+                animation: tcFadeIn-${uid} 0.5s ease-out forwards;
+              }
+              /* X-axis labels fade in */
+              .tc-xlabel-${uid} {
+                opacity: 0;
+                animation: tcFadeIn-${uid} 0.4s ease-out forwards;
+              }
+              ${providerLines.map((line, i) => `
+              /* Line draw animation — provider ${i} */
+              .tc-line-${uid}-${i} {
+                stroke-dasharray: ${line.pathLength};
+                stroke-dashoffset: ${line.pathLength};
+                animation: tcDraw-${uid}-${i} 1.2s cubic-bezier(0.4, 0, 0.2, 1) ${0.15 * i}s forwards;
+              }
+              @keyframes tcDraw-${uid}-${i} {
+                to { stroke-dashoffset: 0; }
+              }
+              /* Area fade-in — provider ${i} */
+              .tc-area-${uid}-${i} {
+                opacity: 0;
+                animation: tcFadeIn-${uid} 0.8s ease-out ${0.3 + 0.15 * i}s forwards;
+              }
+              /* Dot pop-in — provider ${i} */
+              .tc-dot-${uid}-${i} {
+                transform-origin: center;
+                transform: scale(0);
+                opacity: 0;
+                animation: tcDotPop-${uid} 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+              }
+              `).join('')}
+              @keyframes tcFadeIn-${uid} {
+                to { opacity: 1; }
+              }
+              @keyframes tcDotPop-${uid} {
+                to { transform: scale(1); opacity: 1; }
+              }
+            `}</style>
+
             {/* Grid lines */}
             {yLabels.map((yl, i) => (
-              <g key={i}>
+              <g key={i} className={`tc-grid-${uid}`} style={{ animationDelay: `${i * 0.08}s` }}>
                 <line
                   x1={PAD_L} y1={yl.y} x2={W - PAD_R} y2={yl.y}
                   stroke="currentColor" className="text-border/40"
@@ -181,28 +344,52 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
             {buckets.map((b, bi) => (
               <text
                 key={bi} x={PAD_L + bi * xStep} y={H - 5}
-                textAnchor="middle" className="fill-text-secondary/50" fontSize={10}
+                textAnchor="middle" className={`fill-text-secondary/50 tc-xlabel-${uid}`}
+                style={{ animationDelay: `${0.05 * bi}s` }}
+                fontSize={10}
               >
                 {b.label}
               </text>
             ))}
 
-            {/* Area fills */}
-            {providerLines.map((line) => (
-              <path key={`a-${line.pid}`} d={line.areaPath} fill={`url(#area-${line.pid})`} />
+            {/* Area fills (smooth) */}
+            {providerLines.map((line, lineIdx) => (
+              <path
+                key={`a-${line.pid}`}
+                d={line.areaPath}
+                fill={`url(#area-${uid}-${line.pid})`}
+                className={`tc-area-${uid}-${lineIdx}`}
+              />
             ))}
 
-            {/* Lines + dots */}
-            {providerLines.map((line) => (
+            {/* Smooth curve lines + animated dots */}
+            {providerLines.map((line, lineIdx) => (
               <g key={line.pid}>
-                <polyline
-                  points={line.linePoints} fill="none" stroke={line.color}
-                  strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
+                {/* Smooth curve line */}
+                <path
+                  d={line.linePath}
+                  fill="none"
+                  stroke={line.color}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`tc-line-${uid}-${lineIdx}`}
                 />
+                {/* Data point dots — staggered pop-in */}
                 {line.points.map((p, bi) => {
                   const val = buckets[bi].byProvider[line.pid] || 0
                   if (val === 0) return null
-                  return <circle key={bi} cx={p.x} cy={p.y} r={2.5} fill={line.color} />
+                  return (
+                    <circle
+                      key={bi}
+                      cx={p.x}
+                      cy={p.y}
+                      r={2.5}
+                      fill={line.color}
+                      className={`tc-dot-${uid}-${lineIdx}`}
+                      style={{ animationDelay: `${0.6 + 0.15 * lineIdx + 0.06 * bi}s` }}
+                    />
+                  )
                 })}
               </g>
             ))}

@@ -40,17 +40,30 @@ const formatInstructions: Record<string, string> = {
     'Format as a structured one-pager with clear headings and bullet points.',
   'technical-doc':
     'Format as technical documentation with sections, code references where appropriate, and precise language.',
+  rca: `Format as a Root Cause Analysis (RCA) document with these sections:
+1. **Problem Statement** — concise description of the incident or issue
+2. **Impact** — scope, affected users/systems, severity, and business impact
+3. **Timeline** — chronological sequence of key events (use bullet points with timestamps if the text provides them)
+4. **Root Cause** — the primary underlying cause(s) identified
+5. **Contributing Factors** — secondary factors that enabled or worsened the issue
+6. **Corrective Actions** — immediate fixes applied or recommended (use a numbered list)
+7. **Preventive Measures** — long-term changes to prevent recurrence
+8. **Lessons Learned** — key takeaways for the team
+Use markdown headers (##) for each section. Be precise and factual.`,
   general: 'Format as clean, well-structured prose.'
 }
 
 /**
  * Builds a structured system prompt from the user's refinement options.
- * Encodes tone, format, and any custom instructions into clear AI directives.
+ * Encodes tone(s), format, and any custom instructions into clear AI directives.
  */
 export function buildSystemPrompt(options: RefinementOptions): string {
+  const tones = options.tones.length > 0 ? options.tones : ['professional']
+  const toneText = tones.map((t) => toneDescriptions[t] || toneDescriptions.professional).join(' ')
+
   return `You are an expert writing assistant. Rewrite the user's text according to these specifications:
 
-TONE: ${toneDescriptions[options.tone] || toneDescriptions.professional}
+TONE: ${toneText}
 FORMAT: ${formatInstructions[options.format] || formatInstructions.general}
 ${options.customInstructions ? `\nADDITIONAL INSTRUCTIONS: ${options.customInstructions}` : ''}
 
@@ -93,7 +106,7 @@ export const useTextCraftStore = create<TextCraftStore>((set, get) => ({
 
   inputText: '',
   options: {
-    tone: 'professional',
+    tones: ['professional'],
     format: 'email',
     customInstructions: ''
   },
@@ -221,15 +234,29 @@ export const useTextCraftStore = create<TextCraftStore>((set, get) => ({
   },
 
   loadFromHistory: (entry) => {
+    // Backward compat: old entries may have `tone` (string) instead of `tones` (array)
+    const raw = entry.options as Record<string, unknown>
+    const tones = Array.isArray(raw.tones)
+      ? (raw.tones as RefinementOptions['tones'])
+      : typeof raw.tone === 'string'
+        ? [raw.tone as RefinementOptions['tones'][number]]
+        : ['professional' as const]
+
+    const options: RefinementOptions = {
+      tones,
+      format: entry.options.format,
+      customInstructions: entry.options.customInstructions
+    }
+
     set({
       inputText: entry.inputText,
-      options: { ...entry.options },
+      options,
       session: {
         sessionId: `textcraft-history-${Date.now()}`,
         status: 'complete',
         rawText: entry.outputText,
         inputText: entry.inputText,
-        options: { ...entry.options }
+        options
       },
       error: null
     })

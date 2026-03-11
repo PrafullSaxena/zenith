@@ -1,7 +1,7 @@
 /**
  * ControlsPanel -- Middle panel of the TextCraft three-panel layout.
  *
- * Provides tone selection (5 options), format selection (4 options),
+ * Provides tone selection (multi-select, 5 options), format selection (4 options),
  * custom instructions textarea, and Refine/Cancel action button.
  * Agent resolution follows the AiAdvisor.tsx pattern with fallback.
  */
@@ -11,18 +11,19 @@ import { useAgentStore } from '../../stores/agent-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import type { ToneOption, FormatOption } from '../../types/textcraft'
 
-const TONE_OPTIONS: { value: ToneOption; label: string }[] = [
-  { value: 'professional', label: 'Professional' },
-  { value: 'casual', label: 'Casual' },
-  { value: 'technical', label: 'Technical' },
-  { value: 'friendly', label: 'Friendly' },
-  { value: 'concise', label: 'Concise' }
+const TONE_OPTIONS: { value: ToneOption; label: string; description: string }[] = [
+  { value: 'professional', label: 'Professional', description: 'Business-ready' },
+  { value: 'casual', label: 'Casual', description: 'Relaxed & friendly' },
+  { value: 'technical', label: 'Technical', description: 'Precise jargon' },
+  { value: 'friendly', label: 'Friendly', description: 'Warm & personal' },
+  { value: 'concise', label: 'Concise', description: 'Brief & direct' }
 ]
 
 const FORMAT_OPTIONS: { value: FormatOption; label: string }[] = [
   { value: 'email', label: 'Email' },
   { value: 'one-pager', label: 'One-Pager' },
   { value: 'technical-doc', label: 'Technical Doc' },
+  { value: 'rca', label: 'RCA' },
   { value: 'general', label: 'General' }
 ]
 
@@ -42,6 +43,23 @@ export default function ControlsPanel(): React.JSX.Element {
   const isStreaming = session?.status === 'streaming'
   const canRefine = inputText.trim().length > 0 && !isStreaming && !!agent
 
+  const handleToggleTone = (tone: ToneOption): void => {
+    const current = options.tones
+    const isSelected = current.includes(tone)
+
+    if (isSelected) {
+      // Don't allow deselecting the last tone
+      if (current.length <= 1) return
+      useTextCraftStore.getState().setOptions({
+        tones: current.filter((t) => t !== tone)
+      })
+    } else {
+      useTextCraftStore.getState().setOptions({
+        tones: [...current, tone]
+      })
+    }
+  }
+
   const handleRefine = (): void => {
     if (!agent) return
     void useTextCraftStore
@@ -55,26 +73,36 @@ export default function ControlsPanel(): React.JSX.Element {
 
   return (
     <div className="p-4 space-y-4 overflow-y-auto h-full">
-      {/* Section 1: Tone Selection */}
+      {/* Section 1: Tone Selection (multi-select) */}
       <div>
-        <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
-          Tone
-        </h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+            Tone
+          </h3>
+          <span className="text-[10px] text-text-secondary/60">
+            {options.tones.length} selected
+          </span>
+        </div>
         <div className="space-y-1.5">
           {TONE_OPTIONS.map((opt) => {
-            const isActive = options.tone === opt.value
+            const isActive = options.tones.includes(opt.value)
             return (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => useTextCraftStore.getState().setOptions({ tone: opt.value })}
-                className={`w-full rounded-lg py-2 px-3 text-sm text-left transition-colors ${
+                onClick={() => handleToggleTone(opt.value)}
+                className={`w-full rounded-lg py-2 px-3 text-left transition-colors ${
                   isActive
                     ? 'bg-accent/15 text-accent border border-accent/30'
                     : 'bg-surface-elevated text-text-secondary hover:text-text-primary hover:bg-surface-elevated/80 border border-transparent'
                 }`}
               >
-                {opt.label}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">{opt.label}</span>
+                  <span className={`text-[10px] ${isActive ? 'text-accent/70' : 'text-text-secondary/40'}`}>
+                    {opt.description}
+                  </span>
+                </div>
               </button>
             )
           })}

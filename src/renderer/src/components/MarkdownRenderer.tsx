@@ -1,15 +1,19 @@
 /**
  * MarkdownRenderer — Renders common markdown elements:
- * code fences, headers, bold, italic, inline code, lists, paragraphs.
- * Lightweight — no external dependencies.
+ * code fences, headers, bold, italic, inline code, lists, paragraphs,
+ * blockquotes, horizontal rules, tables, and mermaid diagrams.
+ * Lightweight — no external dependencies beyond highlight.js + mermaid.
  *
  * Supports optional SQL query execution: when `onRunQuery` is provided,
  * SQL code fences render a "▶ Run" button that executes read-only queries
  * and displays results inline below the code block.
  */
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import { Play, Loader2, AlertCircle } from 'lucide-react'
 import { highlightCode } from '../lib/highlight'
+
+/** Lazy-load the heavy MermaidRenderer only when a mermaid fence is encountered */
+const MermaidRenderer = lazy(() => import('../plugins/db-inspector/MermaidRenderer'))
 
 /** Shape returned by window.api.db.query */
 export interface QueryResult {
@@ -68,7 +72,7 @@ export default function MarkdownRenderer({
   )
 }
 
-/** Render a ``` code fence block with optional SQL run button */
+/** Render a ``` code fence block with optional SQL run button or mermaid diagram */
 function CodeFenceBlock({
   raw,
   onRunQuery,
@@ -83,6 +87,31 @@ function CodeFenceBlock({
   const lang = newlineIdx >= 0 ? inner.slice(0, newlineIdx).trim().toLowerCase() : ''
   const code = newlineIdx >= 0 ? inner.slice(newlineIdx + 1) : inner
   const trimmedCode = code.trim()
+
+  // ── Mermaid diagram fence → render as interactive diagram ──
+  if (lang === 'mermaid' && trimmedCode.length > 0) {
+    return (
+      <div className="my-3">
+        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-border bg-surface-elevated/60 px-3 py-1.5">
+          <span className="text-[9px] uppercase tracking-wider text-text-secondary/60">
+            mermaid
+          </span>
+        </div>
+        <div className="overflow-auto rounded-b-lg border border-border bg-surface p-3">
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center py-8">
+                <Loader2 size={16} className="animate-spin text-accent" />
+                <span className="ml-2 text-xs text-text-secondary">Loading diagram…</span>
+              </div>
+            }
+          >
+            <MermaidRenderer syntax={trimmedCode} interactive />
+          </Suspense>
+        </div>
+      </div>
+    )
+  }
 
   const isSql = lang === 'sql' || lang === 'postgresql' || lang === 'pgsql'
   const canRun = isSql && !!onRunQuery && trimmedCode.length > 0
@@ -229,7 +258,29 @@ function InlineMarkdownBlock({ text }: { text: string }): React.JSX.Element {
         const trimmed = para.trim()
         if (!trimmed) return null
 
-        // Headers
+        // ── Horizontal rule (---, ***, ___) ──
+        if (/^[-*_]{3,}\s*$/.test(trimmed)) {
+          return <hr key={pi} className="my-4 border-t border-border/50" />
+        }
+
+        // ── Blockquote (lines starting with >) ──
+        const bqLines = trimmed.split('\n')
+        const isBlockquote = bqLines.every((l) => /^>\s?/.test(l.trim()) || !l.trim())
+        if (isBlockquote && bqLines.some((l) => /^>\s?/.test(l.trim()))) {
+          const content = bqLines
+            .map((l) => l.trim().replace(/^>\s?/, ''))
+            .join('\n')
+          return (
+            <blockquote
+              key={pi}
+              className="my-3 border-l-2 border-accent/40 pl-4 italic text-sm leading-relaxed text-text-secondary"
+            >
+              {renderInline(content)}
+            </blockquote>
+          )
+        }
+
+        // ── Headers ──
         if (trimmed.startsWith('### ')) {
           return (
             <h3 key={pi} className="mb-2 mt-4 text-sm font-semibold text-text-primary first:mt-0">
@@ -252,7 +303,7 @@ function InlineMarkdownBlock({ text }: { text: string }): React.JSX.Element {
           )
         }
 
-        // Check if this paragraph is a list
+        // ── Lists ──
         const lines = trimmed.split('\n')
         const isNumberedList = lines.every((l) => /^\d+[.)]\s/.test(l.trim()) || !l.trim())
         const isBulletList = lines.every((l) => /^[-*•]\s/.test(l.trim()) || !l.trim())
@@ -291,7 +342,7 @@ function InlineMarkdownBlock({ text }: { text: string }): React.JSX.Element {
           )
         }
 
-        // Markdown table — lines with | separators and a ---+| divider row
+        // ── Markdown table ──
         const isTable =
           lines.length >= 2 &&
           lines[0].includes('|') &&
@@ -345,7 +396,7 @@ function InlineMarkdownBlock({ text }: { text: string }): React.JSX.Element {
           )
         }
 
-        // Regular paragraph
+        // ── Regular paragraph ──
         return (
           <p key={pi} className="my-1.5 text-sm leading-relaxed text-text-primary">
             {renderInline(trimmed)}
@@ -359,8 +410,11 @@ function InlineMarkdownBlock({ text }: { text: string }): React.JSX.Element {
 /**
  * Render inline markdown: **bold**, *italic*, `code`, [links]
  * Returns an array of React nodes.
+ *
+ * Exported so other components can render inline markdown without the
+ * full block-level MarkdownRenderer wrapper.
  */
-function renderInline(text: string): React.ReactNode {
+export function renderInline(text: string): React.ReactNode {
   // Pattern: **bold**, *italic*, `inline code`
   const parts: React.ReactNode[] = []
   // Regex for inline elements — order matters

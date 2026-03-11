@@ -21,7 +21,10 @@ import {
   ListChecks,
   Code2,
   ChevronsUpDown,
-  Clock
+  Clock,
+  FileDown,
+  AlignLeft,
+  FileText
 } from 'lucide-react'
 import type {
   QueryOptimizationSession,
@@ -30,6 +33,103 @@ import type {
 } from '../../types/database'
 import MermaidRenderer from './MermaidRenderer'
 import { highlightCode } from '../../lib/highlight'
+import { renderInline } from '../../components/MarkdownRenderer'
+
+// ── Clipboard helper ──────────────────────────────────────────────
+
+async function writeClipboard(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+  }
+}
+
+// ── Strip markdown syntax to plain text ───────────────────────────
+
+function stripMarkdown(md: string): string {
+  let t = md
+  t = t.replace(/^```[\w-]*\n?/gm, '')
+  t = t.replace(/^~~~[\w-]*\n?/gm, '')
+  t = t.replace(/^#{1,6}\s+/gm, '')
+  t = t.replace(/\*\*\*(.+?)\*\*\*/g, '$1')
+  t = t.replace(/___(.+?)___/g, '$1')
+  t = t.replace(/\*\*(.+?)\*\*/g, '$1')
+  t = t.replace(/__(.+?)__/g, '$1')
+  t = t.replace(/\*(.+?)\*/g, '$1')
+  t = t.replace(/_(.+?)_/g, '$1')
+  t = t.replace(/~~(.+?)~~/g, '$1')
+  t = t.replace(/`(.+?)`/g, '$1')
+  t = t.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+  t = t.replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+  t = t.replace(/^>\s?/gm, '')
+  t = t.replace(/^(\s*)[-*]\s+/gm, '$1• ')
+  t = t.replace(/^[-*_]{3,}\s*$/gm, '')
+  t = t.replace(/\n{3,}/g, '\n\n')
+  return t.trim()
+}
+
+// ── Compose tile content as markdown ──────────────────────────────
+
+function composeTileMarkdown(tile: OptimizerTile): string {
+  const { session } = tile
+  const lines: string[] = ['# Query Optimization Report', '']
+
+  lines.push('## Original Query', '```sql', tile.originalQuery, '```', '')
+
+  if (session.explainOutput) {
+    lines.push('## EXPLAIN ANALYZE', '```', session.explainOutput, '```', '')
+  }
+
+  if (session.insights.length > 0) {
+    lines.push('## Insights')
+    for (const i of session.insights) lines.push(`- ${i}`)
+    lines.push('')
+  }
+
+  if (session.tradeoffs.length > 0) {
+    lines.push('## Tradeoffs')
+    for (const t of session.tradeoffs) lines.push(`- ${t}`)
+    lines.push('')
+  }
+
+  if (session.suggestions.length > 0) {
+    lines.push('## Suggestions')
+    for (const s of session.suggestions) {
+      const sevLabel = SEVERITY_CONFIG[s.severity]?.label ?? s.severity
+      const typeLabel = TYPE_LABELS[s.type] ?? s.type
+      lines.push(`### [${sevLabel}] ${typeLabel}: ${s.title}`)
+      lines.push(s.explanation, '')
+      if (s.suggestedSQL) {
+        lines.push('```sql', s.suggestedSQL, '```', '')
+      }
+    }
+  }
+
+  if (session.optimizedQuery) {
+    lines.push('## Optimized Query', '```sql', session.optimizedQuery, '```', '')
+  }
+
+  if (session.summary) {
+    lines.push('## Summary', session.summary, '')
+  }
+
+  return lines.join('\n')
+}
+
+// ── Export as PDF via native pdfmake (main process) ──────────────
+
+async function exportTileAsPDF(tile: OptimizerTile): Promise<void> {
+  const md = composeTileMarkdown(tile)
+  await window.api.textcraft.exportPdf({ markdown: md, title: 'Query Optimization Report' })
+}
 
 interface QueryOptimizerProps {
   session: QueryOptimizationSession | null
@@ -214,6 +314,8 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['suggestions'])
   )
+  const [copiedMode, setCopiedMode] = useState<null | 'raw' | 'formatted'>(null)
+  const [isExporting, setIsExporting] = useState(false)
 
   const toggleSection = useCallback((section: string) => {
     setExpandedSections((prev) => {
@@ -223,6 +325,29 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
       return next
     })
   }, [])
+
+  const handleCopyRaw = useCallback(async () => {
+    const md = composeTileMarkdown(tile)
+    await writeClipboard(stripMarkdown(md))
+    setCopiedMode('raw')
+    setTimeout(() => setCopiedMode(null), 2000)
+  }, [tile])
+
+  const handleCopyFormatted = useCallback(async () => {
+    await writeClipboard(composeTileMarkdown(tile))
+    setCopiedMode('formatted')
+    setTimeout(() => setCopiedMode(null), 2000)
+  }, [tile])
+
+  const handleExportPDF = useCallback(async (): Promise<void> => {
+    if (isExporting) return
+    setIsExporting(true)
+    try {
+      await exportTileAsPDF(tile)
+    } finally {
+      setIsExporting(false)
+    }
+  }, [tile, isExporting])
 
   const allSectionIds = [
     session.explainOutput && 'explain',
@@ -251,23 +376,26 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
   return (
     <div className="overflow-hidden rounded-xl border border-border/50 bg-surface shadow-sm">
       {/* Tile header */}
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-3 bg-gradient-to-r from-surface-elevated to-surface px-4 py-3 text-left transition-colors hover:from-surface-elevated hover:to-surface-elevated"
-      >
-        {expanded ? (
-          <ChevronDown size={14} className="shrink-0 text-text-secondary" />
-        ) : (
-          <ChevronRight size={14} className="shrink-0 text-text-secondary" />
-        )}
-        <Zap size={13} className="shrink-0 text-accent" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-mono text-[11px] text-text-primary">
+      <div className="flex w-full items-center gap-3 bg-gradient-to-r from-surface-elevated to-surface px-4 py-3">
+        {/* Clickable left region: expand/collapse */}
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left transition-colors"
+        >
+          {expanded ? (
+            <ChevronDown size={14} className="shrink-0 text-text-secondary" />
+          ) : (
+            <ChevronRight size={14} className="shrink-0 text-text-secondary" />
+          )}
+          <Zap size={13} className="shrink-0 text-accent" />
+          <p className="min-w-0 truncate font-mono text-[11px] text-text-primary">
             {tile.originalQuery.slice(0, 100)}
             {tile.originalQuery.length > 100 ? '…' : ''}
           </p>
-        </div>
+        </button>
+
+        {/* Right region: badges + export actions */}
         <div className="flex shrink-0 items-center gap-2">
           {highCount > 0 && (
             <span className="rounded-full bg-red-500/20 px-1.5 py-0.5 text-[9px] font-bold text-red-400">
@@ -283,8 +411,49 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
             <Clock size={9} />
             {timeLabel}
           </span>
+
+          {/* Separator */}
+          <div className="h-4 w-px bg-border/40" />
+
+          {/* Export buttons */}
+          <button
+            type="button"
+            onClick={() => void handleExportPDF()}
+            disabled={isExporting}
+            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary disabled:opacity-50"
+            title="Export as PDF (save to file)"
+          >
+            {isExporting ? <Loader2 size={11} className="animate-spin" /> : <FileDown size={11} />}
+            {isExporting ? 'Exporting…' : 'PDF'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleCopyRaw()}
+            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+            title="Copy plain text (no formatting)"
+          >
+            {copiedMode === 'raw' ? (
+              <Check size={11} className="text-success" />
+            ) : (
+              <AlignLeft size={11} />
+            )}
+            {copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleCopyFormatted()}
+            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+            title="Copy formatted markdown"
+          >
+            {copiedMode === 'formatted' ? (
+              <Check size={11} className="text-success" />
+            ) : (
+              <FileText size={11} />
+            )}
+            {copiedMode === 'formatted' ? 'Copied!' : 'Formatted'}
+          </button>
         </div>
-      </button>
+      </div>
 
       {/* Tile body */}
       {expanded && (
@@ -335,7 +504,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
                       className="flex items-start gap-2.5 rounded-lg bg-surface-elevated/30 px-3 py-2 text-xs text-text-primary"
                     >
                       <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-400/60" />
-                      <span className="leading-relaxed">{insight}</span>
+                      <span className="leading-relaxed">{renderInline(insight)}</span>
                     </li>
                   ))}
                 </ul>
@@ -373,7 +542,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
                       className="flex items-start gap-2.5 rounded-lg bg-orange-500/5 border border-orange-500/10 px-3 py-2 text-xs text-text-primary"
                     >
                       <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400/60" />
-                      <span className="leading-relaxed">{tradeoff}</span>
+                      <span className="leading-relaxed">{renderInline(tradeoff)}</span>
                     </li>
                   ))}
                 </ul>
@@ -411,7 +580,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
                   Summary
                 </p>
                 <p className="mt-1.5 text-xs leading-relaxed text-text-primary">
-                  {session.summary}
+                  {renderInline(session.summary)}
                 </p>
               </div>
             )}
@@ -503,10 +672,10 @@ function SuggestionCard({
 
         {/* Title + explanation */}
         <p className="mt-2 text-[13px] font-medium text-text-primary">
-          {suggestion.title}
+          {renderInline(suggestion.title)}
         </p>
         <p className="mt-1 text-xs leading-relaxed text-text-secondary">
-          {suggestion.explanation}
+          {renderInline(suggestion.explanation)}
         </p>
       </div>
 

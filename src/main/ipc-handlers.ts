@@ -8,7 +8,9 @@ import { streamCliReview, cancelCliReview, streamCliAnalysis, probeCliBinary } f
 import { PostgresConnectionManager } from './db/postgres'
 import { buildSchemaContext, buildQueryOptimizationContext, buildTableDDL } from './db/introspection'
 import { exportDiagnosticZip } from './log-collector'
-import { exportEstimationPdf } from './launchpad/pdf-generator'
+// PDF generators are imported dynamically inside handlers to avoid
+// module-level side effects (pdfmake.fonts) that could interfere
+// with handler registration if module loading fails.
 import { NebulaDatabase } from './nebula/database'
 import { NoteFileStorage } from './nebula/file-storage'
 import { transcribeAudio } from './nebula/transcription'
@@ -430,7 +432,17 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('launchpad:exportPdf', async (_event, estimation) => {
     const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
     if (!mainWindow) throw new Error('No window available for save dialog')
+    const { exportEstimationPdf } = await import('./launchpad/pdf-generator')
     const filePath = await exportEstimationPdf(mainWindow, estimation)
+    return { filePath }
+  })
+
+  // --- TextCraft channels ---
+  ipcMain.handle('textcraft:exportPdf', async (_event, data: { markdown: string; title?: string }) => {
+    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+    if (!mainWindow) throw new Error('No window available for save dialog')
+    const { exportTextCraftPdf } = await import('./textcraft/pdf-generator')
+    const filePath = await exportTextCraftPdf(mainWindow, data)
     return { filePath }
   })
 
@@ -629,9 +641,13 @@ export function registerIpcHandlers(): void {
       }
     }
 
+    const useColor = getSetting('general.coloredPdf') !== false
+    const erTitleColor = useColor ? '#0d9488' : '#111111'
+    const erSubColor = useColor ? '#115e59' : '#666666'
+
     const content: unknown[] = [
-      { text: 'ER Diagram', fontSize: 22, bold: true, color: '#111111', marginBottom: 4 },
-      { text: `${data.connectionName} / ${data.schema}`, fontSize: 14, color: '#666666', marginBottom: 4 },
+      { text: 'ER Diagram', fontSize: 22, bold: true, color: erTitleColor, marginBottom: 4 },
+      { text: `${data.connectionName} / ${data.schema}`, fontSize: 14, color: erSubColor, marginBottom: 4 },
       {
         text: `${data.tableCount} tables · ${data.relationshipMode} mode · Generated ${new Date(data.generatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
         fontSize: 10,

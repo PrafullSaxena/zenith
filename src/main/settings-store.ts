@@ -8,7 +8,8 @@ const DEFAULTS: Record<string, unknown> = {
   general: {
     defaultView: 'dashboard',
     showWelcomeOnStart: true,
-    workingDirectory: ''
+    workingDirectory: '',
+    coloredPdf: true
   },
   plugins: {
     'code-review-bot': {

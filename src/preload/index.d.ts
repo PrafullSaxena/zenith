@@ -55,6 +55,9 @@ export interface ElectronAPI {
   launchpad: {
     exportPdf: (estimation: unknown) => Promise<{ filePath: string | null }>
   }
+  textcraft: {
+    exportPdf: (data: { markdown: string; title?: string }) => Promise<{ filePath: string | null }>
+  }
   nebula: {
     saveNote: (note: unknown) => Promise<{ saved: boolean }>
     loadNote: (id: string) => Promise<unknown>

@@ -96,6 +96,14 @@ export function GeneralSettings(): React.JSX.Element {
     defaultValue: true
   }
 
+  const coloredPdfField: SettingsFieldDef = {
+    key: 'coloredPdf',
+    label: 'Colored PDFs',
+    type: 'boolean',
+    description: 'Generate PDFs with accent colors and modern styling. When off, PDFs use basic black, white, and gray.',
+    defaultValue: true
+  }
+
   const workingDirectoryField: SettingsFieldDef = {
     key: 'workingDirectory',
     label: 'Working Directory',
@@ -132,6 +140,12 @@ export function GeneralSettings(): React.JSX.Element {
         field={showWelcomeField}
         value={getSetting('general.showWelcomeOnStart')}
         onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
+      />
+
+      <SettingsField
+        field={coloredPdfField}
+        value={getSetting('general.coloredPdf')}
+        onChange={(value) => setSetting('general.coloredPdf', value)}
       />
 
       <SettingsField

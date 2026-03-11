@@ -9,11 +9,12 @@
 export type ToneOption = 'professional' | 'casual' | 'technical' | 'friendly' | 'concise'
 
 /** Available output format options for AI refinement. */
-export type FormatOption = 'email' | 'one-pager' | 'technical-doc' | 'general'
+export type FormatOption = 'email' | 'one-pager' | 'technical-doc' | 'rca' | 'general'
 
 /** User-selected options that control how the AI refines text. */
 export interface RefinementOptions {
-  tone: ToneOption
+  /** One or more tones to blend (e.g., professional + concise) */
+  tones: ToneOption[]
   format: FormatOption
   /** Per-request freeform instructions (e.g., "make it shorter") */
   customInstructions: string

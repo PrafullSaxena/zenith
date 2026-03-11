@@ -170,6 +170,10 @@ const api = {
     exportPdf: (estimation: unknown): Promise<{ filePath: string | null }> =>
       ipcRenderer.invoke('launchpad:exportPdf', estimation),
   },
+  textcraft: {
+    exportPdf: (data: { markdown: string; title?: string }): Promise<{ filePath: string | null }> =>
+      ipcRenderer.invoke('textcraft:exportPdf', data),
+  },
   nebula: {
     saveNote: (note: unknown): Promise<{ saved: boolean }> =>
       ipcRenderer.invoke('nebula:saveNote', note),

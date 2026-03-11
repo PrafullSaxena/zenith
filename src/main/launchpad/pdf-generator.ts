@@ -8,10 +8,10 @@
  * totals, and optional AI recommendations.
  */
 
-import pdfmake from 'pdfmake'
 import { dialog, app } from 'electron'
 import type { BrowserWindow } from 'electron'
 import fs from 'fs'
+import { getSetting } from '../settings-store'
 
 // ── Local type (decoupled from renderer types) ───────────────────────────────
 
@@ -27,17 +27,6 @@ interface EstimationExport {
   totalMonthly: number
   totalYearly: number
   aiRecommendations?: string
-}
-
-// ── Font configuration (Helvetica is built into PDF, no font files needed) ───
-
-pdfmake.fonts = {
-  Helvetica: {
-    normal: 'Helvetica',
-    bold: 'Helvetica-Bold',
-    italics: 'Helvetica-Oblique',
-    bolditalics: 'Helvetica-BoldOblique'
-  }
 }
 
 // ── Helper: format currency ──────────────────────────────────────────────────
@@ -59,10 +48,15 @@ export async function exportEstimationPdf(
   win: BrowserWindow,
   estimation: EstimationExport
 ): Promise<string | null> {
+  // Resolve settings
+  const useColor = getSetting('general.coloredPdf') !== false
+  const workingDir = getSetting('general.workingDirectory') as string
+  const defaultDir = workingDir || app.getPath('downloads')
+
   // Show save dialog
   const { filePath, canceled } = await dialog.showSaveDialog(win, {
     title: 'Save Cost Estimation Report',
-    defaultPath: `${app.getPath('downloads')}/${estimation.name.replace(/\s+/g, '-')}-estimate.pdf`,
+    defaultPath: `${defaultDir}/${estimation.name.replace(/\s+/g, '-')}-estimate.pdf`,
     filters: [{ name: 'PDF Document', extensions: ['pdf'] }]
   })
 
@@ -70,16 +64,24 @@ export async function exportEstimationPdf(
     return null
   }
 
+  // Theme-aware colors
+  const headerFill = useColor ? '#0d9488' : '#1a1a1a'
+  const headerText = '#ffffff'
+  const totalFill = useColor ? '#f0fdfa' : '#f0f0f0'
+  const titleColor = useColor ? '#0d9488' : '#111111'
+  const subtitleColor = useColor ? '#115e59' : '#666666'
+  const recTitleColor = useColor ? '#0d9488' : '#333333'
+
   // Build table body: header + data rows + total row
   // Using unknown[][] to satisfy pdfmake's flexible table body type
   const tableBody: unknown[][] = []
 
   // Header row
   tableBody.push([
-    { text: 'Service', bold: true, fillColor: '#1a1a1a', color: '#ffffff' },
-    { text: 'Configuration', bold: true, fillColor: '#1a1a1a', color: '#ffffff' },
-    { text: 'Monthly', bold: true, fillColor: '#1a1a1a', color: '#ffffff', alignment: 'right' },
-    { text: 'Yearly', bold: true, fillColor: '#1a1a1a', color: '#ffffff', alignment: 'right' }
+    { text: 'Service', bold: true, fillColor: headerFill, color: headerText },
+    { text: 'Configuration', bold: true, fillColor: headerFill, color: headerText },
+    { text: 'Monthly', bold: true, fillColor: headerFill, color: headerText, alignment: 'right' },
+    { text: 'Yearly', bold: true, fillColor: headerFill, color: headerText, alignment: 'right' }
   ])
 
   // Data rows
@@ -94,18 +96,18 @@ export async function exportEstimationPdf(
 
   // Total row (colSpan for label + empty cell)
   tableBody.push([
-    { text: 'TOTAL', bold: true, colSpan: 2, fillColor: '#f0f0f0' },
+    { text: 'TOTAL', bold: true, colSpan: 2, fillColor: totalFill },
     {},
-    { text: fmt(estimation.totalMonthly), bold: true, alignment: 'right', fillColor: '#f0f0f0' },
-    { text: fmt(estimation.totalYearly), bold: true, alignment: 'right', fillColor: '#f0f0f0' }
+    { text: fmt(estimation.totalMonthly), bold: true, alignment: 'right', fillColor: totalFill },
+    { text: fmt(estimation.totalYearly), bold: true, alignment: 'right', fillColor: totalFill }
   ])
 
   // Build the content array
   const content: unknown[] = [
     // Title
-    { text: 'Cloud Cost Estimation Report', fontSize: 22, bold: true, color: '#111111', marginBottom: 4 },
+    { text: 'Cloud Cost Estimation Report', fontSize: 22, bold: true, color: titleColor, marginBottom: 4 },
     // Provider subtitle
-    { text: estimation.provider.toUpperCase(), fontSize: 14, color: '#666666', marginBottom: 4 },
+    { text: estimation.provider.toUpperCase(), fontSize: 14, color: subtitleColor, marginBottom: 4 },
     // Date
     {
       text: `Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
@@ -138,9 +140,21 @@ export async function exportEstimationPdf(
   // Append AI recommendations section if present
   if (estimation.aiRecommendations) {
     content.push(
-      { text: 'AI Recommendations', fontSize: 14, bold: true, color: '#333333', marginTop: 24, marginBottom: 8 },
+      { text: 'AI Recommendations', fontSize: 14, bold: true, color: recTitleColor, marginTop: 24, marginBottom: 8 },
       { text: estimation.aiRecommendations, fontSize: 10, color: '#444444' }
     )
+  }
+
+  // Lazy-load pdfmake and configure fonts inside the function to avoid
+  // module-level side effects that could interfere with handler registration.
+  const pdfmake = await import('pdfmake')
+  pdfmake.default.fonts = {
+    Helvetica: {
+      normal: 'Helvetica',
+      bold: 'Helvetica-Bold',
+      italics: 'Helvetica-Oblique',
+      bolditalics: 'Helvetica-BoldOblique'
+    }
   }
 
   // Build document definition using unknown cast to bypass strict table body typing
@@ -151,7 +165,7 @@ export async function exportEstimationPdf(
   }
 
   // Generate PDF buffer and write to disk
-  const pdf = pdfmake.createPdf(docDefinition as Parameters<typeof pdfmake.createPdf>[0])
+  const pdf = pdfmake.default.createPdf(docDefinition as Parameters<typeof pdfmake.default.createPdf>[0])
   const buffer = await pdf.getBuffer()
   fs.writeFileSync(filePath, buffer)
 

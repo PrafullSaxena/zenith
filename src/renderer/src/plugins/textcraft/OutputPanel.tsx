@@ -2,14 +2,15 @@
  * OutputPanel -- Right panel of the TextCraft three-panel layout.
  *
  * Displays AI-streamed refinement output with markdown rendering,
- * two copy modes (formatted markdown & clean plain text), and word/character count footer.
+ * copy modes (formatted markdown & clean plain text), PDF export,
+ * and word/character count footer.
  *
  * Four states: empty (no session), streaming (live markdown + indicator),
  * complete (final markdown + copy buttons), error (red message).
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { Check, Sparkles, FileText, AlignLeft, Copy } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { Check, Sparkles, FileText, AlignLeft, Copy, FileDown, ChevronDown, ChevronRight, ChevronsUpDown, Loader2 } from 'lucide-react'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import MarkdownRenderer from '../../components/MarkdownRenderer'
 
@@ -87,10 +88,61 @@ function stripMarkdown(md: string): string {
   return text.trim()
 }
 
+// ── Collapsible section parser ───────────────────────────────────────
+
+interface MarkdownSection {
+  /** Heading text (empty for preamble content before first heading) */
+  heading: string
+  /** Heading level: 1 for #, 2 for ##, 3 for ### (0 for preamble) */
+  level: number
+  /** Raw markdown content under this heading (excluding the heading line) */
+  content: string
+}
+
+/**
+ * Splits markdown into sections based on H1/H2/H3 headings.
+ * The first section may have level=0 if content precedes the first heading.
+ */
+function splitIntoSections(md: string): MarkdownSection[] {
+  const sections: MarkdownSection[] = []
+  const lines = md.split('\n')
+  let current: MarkdownSection = { heading: '', level: 0, content: '' }
+
+  for (const line of lines) {
+    const h1 = line.match(/^# (.+)$/)
+    const h2 = line.match(/^## (.+)$/)
+    const h3 = line.match(/^### (.+)$/)
+
+    if (h1 || h2 || h3) {
+      // Save previous section if it has content
+      if (current.heading || current.content.trim()) {
+        sections.push({ ...current, content: current.content.trimEnd() })
+      }
+      current = {
+        heading: h1 ? h1[1] : h2 ? h2[1] : h3![1],
+        level: h1 ? 1 : h2 ? 2 : 3,
+        content: ''
+      }
+    } else {
+      current.content += (current.content ? '\n' : '') + line
+    }
+  }
+  // Push the last section
+  if (current.heading || current.content.trim()) {
+    sections.push({ ...current, content: current.content.trimEnd() })
+  }
+
+  return sections
+}
+
+// ────────────────────────────────────────────────────────────────────
+
 export default function OutputPanel(): React.JSX.Element {
   const session = useTextCraftStore((s) => s.session)
   const error = useTextCraftStore((s) => s.error)
   const [copiedMode, setCopiedMode] = useState<CopiedMode>(null)
+  const [isExporting, setIsExporting] = useState(false)
+  const [collapsedSections, setCollapsedSections] = useState<Set<number>>(new Set())
   const contentRef = useRef<HTMLDivElement>(null)
 
   const rawText = session?.rawText ?? ''
@@ -103,6 +155,10 @@ export default function OutputPanel(): React.JSX.Element {
   const wordCount = rawText.trim() ? rawText.trim().split(/\s+/).length : 0
   const charCount = rawText.length
 
+  // Parse sections for collapsible view (only when complete)
+  const sections = useMemo(() => splitIntoSections(rawText), [rawText])
+  const hasSections = isComplete && sections.filter((s) => s.level > 0).length > 1
+
   // Auto-scroll during streaming
   useEffect(() => {
     if (isStreaming && contentRef.current) {
@@ -110,10 +166,35 @@ export default function OutputPanel(): React.JSX.Element {
     }
   }, [rawText, isStreaming])
 
-  // Reset feedback when output changes
+  // Reset feedback + expand all sections when output changes
   useEffect(() => {
     setCopiedMode(null)
+    setCollapsedSections(new Set())
   }, [rawText])
+
+  const toggleSection = useCallback((index: number) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev)
+      if (next.has(index)) next.delete(index)
+      else next.add(index)
+      return next
+    })
+  }, [])
+
+  const allCollapsed = hasSections && sections.filter((s) => s.level > 0).every((_, i) => {
+    const sectionIndex = sections.findIndex((s) => s.level > 0) + i
+    return collapsedSections.has(sectionIndex)
+  })
+
+  const toggleAll = useCallback(() => {
+    if (allCollapsed) {
+      setCollapsedSections(new Set())
+    } else {
+      const all = new Set<number>()
+      sections.forEach((s, i) => { if (s.level > 0) all.add(i) })
+      setCollapsedSections(all)
+    }
+  }, [allCollapsed, sections])
 
   /** Copy markdown source (formatted with markdown syntax) */
   const handleCopyFormatted = useCallback(async (): Promise<void> => {
@@ -131,7 +212,18 @@ export default function OutputPanel(): React.JSX.Element {
     setTimeout(() => setCopiedMode(null), 2000)
   }, [rawText])
 
-  const showCopyButtons = (isComplete || hasOutput) && !isStreaming
+  /** Export as PDF via native pdfmake (main process → save dialog → file) */
+  const handleExportPDF = useCallback(async (): Promise<void> => {
+    if (!rawText || isExporting) return
+    setIsExporting(true)
+    try {
+      await window.api.textcraft.exportPdf({ markdown: rawText })
+    } finally {
+      setIsExporting(false)
+    }
+  }, [rawText, isExporting])
+
+  const showActions = (isComplete || hasOutput) && !isStreaming
 
   return (
     <div className="flex h-full flex-col">
@@ -141,9 +233,25 @@ export default function OutputPanel(): React.JSX.Element {
           Output
         </h2>
 
-        {/* Copy buttons -- visible when output is ready */}
-        {showCopyButtons && (
+        {/* Action buttons -- visible when output is ready */}
+        {showActions && (
           <div className="flex items-center gap-1">
+            {/* Collapse/Expand All — only when multiple sections exist */}
+            {hasSections && (
+              <>
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-surface-elevated text-text-secondary hover:text-text-primary transition-colors"
+                  title={allCollapsed ? 'Expand all sections' : 'Collapse all sections'}
+                >
+                  <ChevronsUpDown size={13} />
+                  <span>{allCollapsed ? 'Expand' : 'Collapse'}</span>
+                </button>
+                <div className="h-4 w-px bg-border/40 mx-0.5" />
+              </>
+            )}
+
             {/* Copy Raw (plain text) */}
             <button
               type="button"
@@ -173,6 +281,25 @@ export default function OutputPanel(): React.JSX.Element {
               )}
               <span>{copiedMode === 'formatted' ? 'Copied!' : 'Markdown'}</span>
             </button>
+
+            {/* Separator */}
+            <div className="h-4 w-px bg-border/40 mx-0.5" />
+
+            {/* Export as PDF */}
+            <button
+              type="button"
+              onClick={() => void handleExportPDF()}
+              disabled={isExporting}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-surface-elevated text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
+              title="Export as PDF (save to file)"
+            >
+              {isExporting ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <FileDown size={13} />
+              )}
+              <span>{isExporting ? 'Exporting…' : 'PDF'}</span>
+            </button>
           </div>
         )}
 
@@ -195,7 +322,7 @@ export default function OutputPanel(): React.JSX.Element {
           </div>
         )}
 
-        {/* Streaming state */}
+        {/* Streaming state — flat render, no collapsing */}
         {isStreaming && (
           <div className="p-4">
             {hasOutput && <MarkdownRenderer text={rawText} className="text-sm leading-relaxed" />}
@@ -203,10 +330,51 @@ export default function OutputPanel(): React.JSX.Element {
           </div>
         )}
 
-        {/* Complete state */}
+        {/* Complete state — collapsible sections */}
         {isComplete && hasOutput && (
           <div className="p-4">
-            <MarkdownRenderer text={rawText} className="text-sm leading-relaxed" />
+            {hasSections ? (
+              sections.map((section, idx) => {
+                // Preamble (no heading) — always visible
+                if (section.level === 0) {
+                  return section.content.trim() ? (
+                    <MarkdownRenderer key={idx} text={section.content} className="text-sm leading-relaxed" />
+                  ) : null
+                }
+
+                const isCollapsed = collapsedSections.has(idx)
+                const headingClass =
+                  section.level === 1
+                    ? 'text-base font-bold'
+                    : section.level === 2
+                      ? 'text-[15px] font-bold'
+                      : 'text-sm font-semibold'
+
+                return (
+                  <div key={idx} className="mb-1">
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(idx)}
+                      className={`flex w-full items-center gap-2 rounded-md py-1.5 px-1 -ml-1 text-left transition-colors hover:bg-surface-elevated/50 ${headingClass} text-text-primary`}
+                    >
+                      {isCollapsed ? (
+                        <ChevronRight size={14} className="shrink-0 text-text-secondary" />
+                      ) : (
+                        <ChevronDown size={14} className="shrink-0 text-text-secondary" />
+                      )}
+                      <span>{section.heading.replace(/\*\*/g, '')}</span>
+                    </button>
+                    {!isCollapsed && section.content.trim() && (
+                      <div className="pl-5">
+                        <MarkdownRenderer text={section.content} className="text-sm leading-relaxed" />
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            ) : (
+              <MarkdownRenderer text={rawText} className="text-sm leading-relaxed" />
+            )}
           </div>
         )}
 
