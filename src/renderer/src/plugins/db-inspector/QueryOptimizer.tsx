@@ -128,7 +128,7 @@ function composeTileMarkdown(tile: OptimizerTile): string {
 
 async function exportTileAsPDF(tile: OptimizerTile): Promise<void> {
   const md = composeTileMarkdown(tile)
-  await window.api.textcraft.exportPdf({ markdown: md, title: 'Query Optimization Report' })
+  await window.api.app.exportPdf({ markdown: md, title: 'Query Optimization Report' })
 }
 
 interface QueryOptimizerProps {

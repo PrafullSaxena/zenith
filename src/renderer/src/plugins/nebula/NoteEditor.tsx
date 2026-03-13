@@ -450,7 +450,7 @@ export default function NoteEditor({
       const md = tiptapToMarkdown(doc)
       // Pre-render mermaid diagrams to PNG for embedding in PDF
       const mermaidImages = await renderAllMermaidBlocks(md)
-      await window.api.textcraft.exportPdf({
+      await window.api.app.exportPdf({
         markdown: md,
         title: title || 'Untitled',
         mermaidImages: Object.keys(mermaidImages).length > 0 ? mermaidImages : undefined

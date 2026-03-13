@@ -133,58 +133,24 @@ export default function ERDiagram({
   }, [editableCode])
 
   const handleExportPdf = useCallback(async () => {
-    const svgEl = diagramRef.current?.querySelector('svg')
-    if (!svgEl) return
+    if (!currentSyntax) return
 
     setIsExporting(true)
     try {
-      // Clone SVG and set explicit dimensions for canvas rendering
-      const clone = svgEl.cloneNode(true) as SVGSVGElement
-      const bbox = svgEl.getBBox()
-      const width = Math.ceil(bbox.width + bbox.x * 2) || svgEl.clientWidth || 800
-      const height = Math.ceil(bbox.height + bbox.y * 2) || svgEl.clientHeight || 600
-      clone.setAttribute('width', String(width))
-      clone.setAttribute('height', String(height))
-
-      // SVG → blob → Image → Canvas → PNG
-      const svgData = new XMLSerializer().serializeToString(clone)
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
-      const url = URL.createObjectURL(svgBlob)
-
-      const img = new window.Image()
-      img.src = url
-      await new Promise<void>((res, rej) => {
-        img.onload = () => res()
-        img.onerror = rej
-      })
-
-      const scale = 2 // 2x for crisp PDF
-      const canvas = document.createElement('canvas')
-      canvas.width = width * scale
-      canvas.height = height * scale
-      const ctx = canvas.getContext('2d')!
-      ctx.fillStyle = '#0f172a'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      ctx.scale(scale, scale)
-      ctx.drawImage(img, 0, 0, width, height)
-      URL.revokeObjectURL(url)
-
-      const pngDataUrl = canvas.toDataURL('image/png')
-
-      await window.api.db.exportErDiagramPdf({
-        imageDataUrl: pngDataUrl,
-        width,
-        height,
-        connectionName: connectionName ?? 'Unknown',
-        schema: schema ?? '',
-        tableCount: selectedTables.length,
-        relationshipMode,
-        generatedAt: session?.generatedAt ?? new Date().toISOString()
+      // Compose markdown with ER diagram metadata and mermaid code fence
+      const md = `# ER Diagram — ${connectionName ?? 'Database'}\n\n**Schema:** ${schema ?? 'N/A'} | **Tables:** ${selectedTables.length} | **Mode:** ${relationshipMode}\n\n\`\`\`mermaid\n${currentSyntax}\n\`\`\``
+      const { renderAllMermaidBlocks } = await import('../../lib/mermaid-to-png')
+      const mermaidImages = await renderAllMermaidBlocks(md)
+      await window.api.app.exportPdf({
+        markdown: md,
+        title: `ER Diagram — ${connectionName ?? 'Database'}`,
+        mermaidImages: Object.keys(mermaidImages).length > 0 ? mermaidImages : undefined,
+        orientation: 'landscape'
       })
     } finally {
       setIsExporting(false)
     }
-  }, [connectionName, schema, selectedTables.length, relationshipMode, session?.generatedAt])
+  }, [currentSyntax, connectionName, schema, selectedTables.length, relationshipMode])
 
   const allSelected = tables.length > 0 && selectedTables.length === tables.length
   const noneSelected = selectedTables.length === 0

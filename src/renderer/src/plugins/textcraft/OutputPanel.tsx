@@ -221,7 +221,7 @@ export default function OutputPanel(): React.JSX.Element {
     try {
       // Pre-render mermaid diagrams to PNG for embedding in PDF
       const mermaidImages = await renderAllMermaidBlocks(rawText)
-      await window.api.textcraft.exportPdf({
+      await window.api.app.exportPdf({
         markdown: rawText,
         mermaidImages: Object.keys(mermaidImages).length > 0 ? mermaidImages : undefined
       })
