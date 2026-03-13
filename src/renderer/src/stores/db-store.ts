@@ -395,7 +395,7 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
   history: [],
   isLoadingHistory: false,
 
-  activeTab: 'ask-ai',
+  activeTab: 'query-console',
 
   queryTabs: [],
   activeQueryTabId: null,
@@ -1460,6 +1460,38 @@ For each table, examine every non-PK column and check if it could reference a PK
       })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Query failed'
+
+      // Auto-reconnect on connection-loss errors, then retry once
+      const isConnectionError = /ECONNRESET|ETIMEDOUT|Connection terminated|Client has encountered a connection error|ECONNREFUSED/i.test(message)
+      if (isConnectionError) {
+        try {
+          await get().connectToDb(activeConnectionId)
+          // Retry query after reconnect
+          const tab2 = get().queryTabs.find((t) => t.id === tabId)
+          if (tab2) {
+            const retryResult = await window.api.db.query(activeConnectionId, sql, tab2.writeEnabled, 100, 0)
+            const executionTimeMs = Date.now() - startTime
+            const successResult: QueryExecution = {
+              status: 'success' as QueryExecutionStatus,
+              rows: retryResult.rows,
+              fields: retryResult.fields,
+              rowCount: retryResult.rowCount,
+              affectedRows: (retryResult as QueryResult & { affectedRows?: number }).affectedRows ?? 0,
+              executionTimeMs,
+              hasMore: (retryResult as QueryResult & { hasMore?: boolean }).hasMore ?? false,
+              sql,
+              command: retryResult.command ?? ''
+            }
+            set({
+              queryTabs: get().queryTabs.map((t) =>
+                t.id === tabId ? { ...t, lastResult: successResult } : t
+              )
+            })
+            return
+          }
+        } catch { /* reconnect/retry failed — fall through to show error */ }
+      }
+
       // Try to extract line number from PostgreSQL error messages ("at line N")
       const lineMatch = message.match(/at line (\d+)/i)
       const errorLine = lineMatch ? parseInt(lineMatch[1], 10) : undefined

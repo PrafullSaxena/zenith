@@ -9,7 +9,7 @@
  * This view only selects from existing connections, connects/disconnects,
  * and browses schemas/tables.
  */
-import React, { useEffect, useRef, useCallback } from 'react'
+import React, { useEffect, useRef, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   MessageSquare,
@@ -17,8 +17,11 @@ import {
   GitFork,
   History,
   Terminal,
-  AlertTriangle
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
+import type { EditorView } from '@codemirror/view'
 import { useDbStore } from '../../stores/db-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useActivityStore } from '../../stores/activity-store'
@@ -33,15 +36,37 @@ import DbHistory from './DbHistory'
 import QueryConsole from './QueryConsole'
 
 const TABS: { id: DbInspectorTab; label: string; icon: typeof MessageSquare }[] = [
+  { id: 'query-console', label: 'Console', icon: Terminal },
   { id: 'ask-ai', label: 'Ask AI', icon: MessageSquare },
   { id: 'query-optimizer', label: 'Optimizer', icon: Zap },
   { id: 'er-diagram', label: 'ER Diagram', icon: GitFork },
-  { id: 'query-console', label: 'Console', icon: Terminal },
   { id: 'history', label: 'History', icon: History }
 ]
 
 export default function DbInspectorView(): React.JSX.Element {
   const navigate = useNavigate()
+
+  // ── Left panel collapse state ────────────────────────────────────
+  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false)
+
+  // ── Editor view ref for schema double-click insert ───────────────
+  // The active QueryTab's SqlEditor provides its EditorView via onEditorReady.
+  const activeEditorViewRef = useRef<EditorView | null>(null)
+
+  const handleEditorReady = useCallback((view: EditorView) => {
+    activeEditorViewRef.current = view
+  }, [])
+
+  const handleInsertAtCursor = useCallback((text: string) => {
+    const view = activeEditorViewRef.current
+    if (!view) return
+    const { from, to } = view.state.selection.main
+    view.dispatch({
+      changes: { from, to, insert: text },
+      selection: { anchor: from + text.length }
+    })
+    view.focus()
+  }, [])
 
   // ── Stores ──────────────────────────────────────────────────────
 
@@ -274,6 +299,12 @@ export default function DbInspectorView(): React.JSX.Element {
           : 'Optimizer'
       case 'history':
         return history.length > 0 ? `History (${history.length})` : 'History'
+      case 'query-console': {
+        // Show running indicator if any query tab is currently running
+        const { queryTabs } = useDbStore.getState()
+        const hasRunning = queryTabs.some((t) => t.lastResult?.status === 'running')
+        return hasRunning ? 'Console ●' : 'Console'
+      }
       default:
         return TABS.find((t) => t.id === tab)?.label ?? tab
     }
@@ -300,43 +331,58 @@ export default function DbInspectorView(): React.JSX.Element {
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left panel — Connections (sticky) + Schema Explorer (scrollable) */}
-        <div className="stagger-children w-64 shrink-0 flex flex-col border-r border-border">
-          <div className="shrink-0 border-b border-border p-3">
-            <ConnectionManager
-              connections={connections}
-              connectionStatuses={connectionStatuses}
-              activeConnectionId={activeConnectionId}
-              onSelectConnection={setActiveConnection}
-              onConnect={connectToDb}
-              onDisconnect={disconnectDb}
-              onOpenSettings={handleOpenSettings}
-            />
-          </div>
-
-          {isConnected && (
-            <div className="flex-1 overflow-auto p-3">
-              <SchemaExplorer
-                databases={databases}
-                activeDatabase={activeDatabase}
-                onDatabaseChange={setActiveDatabase}
-                isLoadingDatabases={isLoadingDatabases}
-                schemas={schemas}
-                activeSchema={activeSchema}
-                onSchemaChange={setActiveSchema}
-                tables={tables}
-                isLoadingTables={isLoadingTables}
-                selectedTable={selectedTable}
-                onSelectTable={handleSelectTable}
-                columns={columns}
-                indexes={indexes}
-                foreignKeys={foreignKeys}
-                tableStats={tableStats}
-                isLoadingDetails={isLoadingDetails}
+        {/* Left panel — Connections (sticky) + Schema Explorer (scrollable) + collapse toggle */}
+        <div className="relative flex shrink-0 flex-col border-r border-border transition-all duration-200"
+          style={{ width: isLeftPanelCollapsed ? 0 : 256, overflow: isLeftPanelCollapsed ? 'hidden' : 'visible' }}
+        >
+          <div className="stagger-children flex h-full flex-col" style={{ width: 256 }}>
+            <div className="shrink-0 border-b border-border p-3">
+              <ConnectionManager
+                connections={connections}
+                connectionStatuses={connectionStatuses}
+                activeConnectionId={activeConnectionId}
+                onSelectConnection={setActiveConnection}
+                onConnect={connectToDb}
+                onDisconnect={disconnectDb}
+                onOpenSettings={handleOpenSettings}
               />
             </div>
-          )}
+
+            {isConnected && (
+              <div className="flex-1 overflow-auto p-3">
+                <SchemaExplorer
+                  databases={databases}
+                  activeDatabase={activeDatabase}
+                  onDatabaseChange={setActiveDatabase}
+                  isLoadingDatabases={isLoadingDatabases}
+                  schemas={schemas}
+                  activeSchema={activeSchema}
+                  onSchemaChange={setActiveSchema}
+                  tables={tables}
+                  isLoadingTables={isLoadingTables}
+                  selectedTable={selectedTable}
+                  onSelectTable={handleSelectTable}
+                  columns={columns}
+                  indexes={indexes}
+                  foreignKeys={foreignKeys}
+                  tableStats={tableStats}
+                  isLoadingDetails={isLoadingDetails}
+                  onInsertAtCursor={activeTab === 'query-console' ? handleInsertAtCursor : undefined}
+                />
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Collapse/expand toggle button */}
+        <button
+          type="button"
+          onClick={() => setIsLeftPanelCollapsed((v) => !v)}
+          title={isLeftPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
+          className="relative z-10 flex h-10 w-4 shrink-0 items-center justify-center self-start mt-2 rounded-r border border-l-0 border-border bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
+        >
+          {isLeftPanelCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+        </button>
 
         {/* Right panel — Tabbed content */}
         <div className="flex flex-1 flex-col overflow-hidden">
@@ -428,6 +474,7 @@ export default function DbInspectorView(): React.JSX.Element {
                 schema={activeSchema}
                 tables={tables}
                 engine={activeConnection?.engine ?? 'postgresql'}
+                onEditorReady={handleEditorReady}
               />
             )}
             {activeTab === 'history' && (

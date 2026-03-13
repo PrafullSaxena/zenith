@@ -10,6 +10,7 @@ import { Plus, X } from 'lucide-react'
 import { useDbStore } from '../../stores/db-store'
 import type { TableInfo } from '../../types/database'
 import QueryTab from './QueryTab'
+import type { EditorView } from '@codemirror/view'
 
 // ── Props ─────────────────────────────────────────────────────────────
 
@@ -19,6 +20,8 @@ interface QueryConsoleProps {
   schema: string | null
   tables: TableInfo[]
   engine: 'postgresql' | 'mysql'
+  /** Invoked when the active SqlEditor mounts its EditorView. */
+  onEditorReady?: (view: EditorView) => void
 }
 
 // ── Component ─────────────────────────────────────────────────────────
@@ -28,7 +31,8 @@ export default function QueryConsole({
   isConnected,
   schema,
   tables: _tables,
-  engine
+  engine,
+  onEditorReady
 }: QueryConsoleProps): React.JSX.Element {
   const {
     queryTabs,
@@ -158,6 +162,7 @@ export default function QueryConsole({
             connectionId={connectionId}
             schema={schema}
             engine={engine}
+            onEditorReady={onEditorReady}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-text-secondary text-sm">

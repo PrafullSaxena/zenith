@@ -32,6 +32,8 @@ interface SchemaExplorerProps {
   foreignKeys: ForeignKey[]
   tableStats: TableStats | null
   isLoadingDetails: boolean
+  /** Optional callback for double-click-to-insert table/column name into the active editor. */
+  onInsertAtCursor?: (text: string) => void
 }
 
 /** Fuzzy match: every character in query appears in order in target. */
@@ -61,7 +63,8 @@ export default function SchemaExplorer({
   indexes,
   foreignKeys,
   tableStats,
-  isLoadingDetails
+  isLoadingDetails,
+  onInsertAtCursor
 }: SchemaExplorerProps): React.JSX.Element {
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -158,11 +161,13 @@ export default function SchemaExplorer({
                 <button
                   type="button"
                   onClick={() => onSelectTable(table.name)}
+                  onDoubleClick={() => onInsertAtCursor?.(table.name)}
                   className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs transition-colors ${
                     isSelected
                       ? 'bg-accent/10 text-accent'
                       : 'text-text-primary hover:bg-surface-elevated'
-                  }`}
+                  } ${onInsertAtCursor ? 'cursor-pointer' : ''}`}
+                  title={onInsertAtCursor ? `Click to expand · Double-click to insert "${table.name}"` : undefined}
                 >
                   {isSelected ? (
                     <ChevronDown size={12} className="shrink-0" />
@@ -207,7 +212,13 @@ export default function SchemaExplorer({
                           {columns.map((col) => (
                             <div
                               key={col.name}
-                              className="flex items-center gap-1.5 text-[11px] text-text-primary"
+                              onDoubleClick={() => onInsertAtCursor?.(col.name)}
+                              className={`flex items-center gap-1.5 text-[11px] text-text-primary rounded px-1 py-0.5 -mx-1 ${
+                                onInsertAtCursor
+                                  ? 'cursor-pointer hover:bg-accent/10'
+                                  : ''
+                              }`}
+                              title={onInsertAtCursor ? `Double-click to insert "${col.name}"` : undefined}
                             >
                               {col.isPrimaryKey && (
                                 <Key size={9} className="shrink-0 text-amber-400" />

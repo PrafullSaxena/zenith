@@ -23,11 +23,15 @@ import {
   Zap,
   CheckCircle2,
   AlertCircle,
-  XCircle
+  XCircle,
+  BookMarked,
+  Save
 } from 'lucide-react'
 import { useDbStore, buildCmSchema } from '../../stores/db-store'
 import type { QueryTab as QueryTabType } from '../../types/database'
 import SqlEditor from './SqlEditor'
+import ResultsGrid from './ResultsGrid'
+import SavedQueriesPanel from './SavedQueriesPanel'
 import type { EditorView } from '@codemirror/view'
 
 // ── Props ─────────────────────────────────────────────────────────────
@@ -37,6 +41,8 @@ interface QueryTabProps {
   connectionId: string
   schema: string | null
   engine: 'postgresql' | 'mysql'
+  /** Callback invoked when the editor mounts, providing the EditorView for external insert-at-cursor. */
+  onEditorReady?: (view: EditorView) => void
 }
 
 // ── Elapsed timer hook ─────────────────────────────────────────────────
@@ -69,7 +75,8 @@ export default function QueryTab({
   tab,
   connectionId: _connectionId,
   schema,
-  engine
+  engine,
+  onEditorReady: onEditorReadyProp
 }: QueryTabProps): React.JSX.Element {
   const {
     updateQueryTabSql,
@@ -77,15 +84,24 @@ export default function QueryTab({
     toggleOutputMode,
     executeQuery,
     cancelQuery,
+    loadMoreRows,
     columnsCache,
     activeConnectionId,
     activeSchema,
     setActiveTab,
-    startOptimization
+    startOptimization,
+    saveQuery
   } = useDbStore()
 
   const editorViewRef = useRef<EditorView | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
+
+  // ── Saved queries panel state ────────────────────────────────────
+  const [showSavedQueries, setShowSavedQueries] = useState(false)
+
+  // ── Save query inline state ──────────────────────────────────────
+  const [showSaveInput, setShowSaveInput] = useState(false)
+  const [saveQueryName, setSaveQueryName] = useState('')
 
   const isRunning = tab.lastResult?.status === 'running'
   const elapsedDisplay = useElapsedTimer(isRunning)
@@ -169,47 +185,78 @@ export default function QueryTab({
 
   const handleEditorReady = useCallback((view: EditorView) => {
     editorViewRef.current = view
-  }, [])
+    onEditorReadyProp?.(view)
+  }, [onEditorReadyProp])
+
+  // ── Save query handler ─────────────────────────────────────────
+
+  const handleSaveQuery = useCallback(async () => {
+    const name = saveQueryName.trim()
+    const sql = tab.sql.trim()
+    if (!name || !sql) return
+    await saveQuery(name, sql)
+    setSaveQueryName('')
+    setShowSaveInput(false)
+  }, [saveQueryName, tab.sql, saveQuery])
+
+  const handleSaveKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') handleSaveQuery()
+      if (e.key === 'Escape') {
+        setShowSaveInput(false)
+        setSaveQueryName('')
+      }
+    },
+    [handleSaveQuery]
+  )
+
+  // ── Load saved query ─────────────────────────────────────────
+
+  const handleLoadSavedQuery = useCallback(
+    (sql: string) => {
+      updateQueryTabSql(tab.id, sql)
+      // Update the editor content via EditorView dispatch
+      const view = editorViewRef.current
+      if (view) {
+        view.dispatch({
+          changes: { from: 0, to: view.state.doc.length, insert: sql }
+        })
+      }
+      setShowSavedQueries(false)
+    },
+    [tab.id, updateQueryTabSql]
+  )
 
   // ── Result rendering helpers ─────────────────────────────────────
 
   const result = tab.lastResult
   const hasResult = result && result.status !== 'idle'
-  const hasRows = result && result.rows.length > 0
 
-  // ── Inline results block ─────────────────────────────────────────
+  // ── Results content (ResultsGrid or status messages) ─────────────
 
   const renderResultsContent = () => {
     if (!result) return null
 
-    if (result.status === 'running') {
+    const isRunning = result.status === 'running'
+    const isError = result.status === 'error'
+    const isCancelled = result.status === 'cancelled'
+
+    // For SELECT results or running state, use ResultsGrid
+    if (isRunning || (result.status === 'success' && (result.rows.length > 0 || result.command === 'SELECT'))) {
       return (
-        <div className="flex items-center gap-2 p-3 text-text-secondary text-xs">
-          <svg
-            className="h-3 w-3 animate-spin text-accent"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
-          <span>Running... {elapsedDisplay}</span>
-        </div>
+        <ResultsGrid
+          rows={result.rows}
+          fields={result.fields}
+          hasMore={result.hasMore}
+          isLoading={isRunning}
+          error={undefined}
+          errorLine={result.errorLine}
+          onLoadMore={() => loadMoreRows(tab.id, result.rows.length)}
+        />
       )
     }
 
-    if (result.status === 'error') {
+    if (isError) {
       return (
         <div className="p-3">
           <div className="flex items-start gap-2 rounded-md bg-red-500/10 border border-red-500/20 p-3">
@@ -222,7 +269,7 @@ export default function QueryTab({
       )
     }
 
-    if (result.status === 'cancelled') {
+    if (isCancelled) {
       return (
         <div className="flex items-center gap-2 p-3 text-text-secondary text-xs">
           <XCircle size={14} className="text-yellow-400" />
@@ -233,71 +280,14 @@ export default function QueryTab({
 
     if (result.status === 'success') {
       // DML result (no rows returned)
-      if (!hasRows && result.command !== 'SELECT') {
-        return (
-          <div className="flex items-center gap-2 p-3 text-text-secondary text-xs">
-            <CheckCircle2 size={14} className="text-green-400" />
-            <span>
-              {result.affectedRows > 0
-                ? `${result.affectedRows} row${result.affectedRows !== 1 ? 's' : ''} affected`
-                : 'Query executed successfully'}
-            </span>
-          </div>
-        )
-      }
-
-      // SELECT result — simple table
-      if (hasRows && result.fields.length > 0) {
-        return (
-          <div className="overflow-auto">
-            <table className="w-full text-xs">
-              <thead className="sticky top-0 bg-surface">
-                <tr>
-                  {result.fields.map((f) => (
-                    <th
-                      key={f.name}
-                      className="border-b border-border px-2 py-1.5 text-left font-medium text-text-secondary whitespace-nowrap"
-                    >
-                      {f.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {result.rows.map((row, i) => (
-                  <tr
-                    key={i}
-                    className="hover:bg-surface-hover border-b border-border/50 transition-colors"
-                  >
-                    {result.fields.map((f) => {
-                      const val = row[f.name]
-                      return (
-                        <td
-                          key={f.name}
-                          className="px-2 py-1 font-mono whitespace-nowrap max-w-xs truncate"
-                          title={val === null ? 'NULL' : String(val)}
-                        >
-                          {val === null ? (
-                            <span className="text-text-secondary/50 italic">NULL</span>
-                          ) : (
-                            String(val)
-                          )}
-                        </td>
-                      )
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )
-      }
-
-      // Empty result set
       return (
         <div className="flex items-center gap-2 p-3 text-text-secondary text-xs">
           <CheckCircle2 size={14} className="text-green-400" />
-          <span>Query returned 0 rows</span>
+          <span>
+            {result.affectedRows > 0
+              ? `${result.affectedRows} row${result.affectedRows !== 1 ? 's' : ''} affected`
+              : 'Query executed successfully'}
+          </span>
         </div>
       )
     }
@@ -451,6 +441,61 @@ export default function QueryTab({
           <Zap size={13} />
         </button>
 
+        <div className="mx-1 h-4 w-px bg-border" />
+
+        {/* Saved queries toggle */}
+        <button
+          type="button"
+          onClick={() => setShowSavedQueries((v) => !v)}
+          title="Saved queries"
+          className={`rounded p-1 transition-colors ${
+            showSavedQueries
+              ? 'bg-accent/20 text-accent'
+              : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+          }`}
+        >
+          <BookMarked size={13} />
+        </button>
+
+        {/* Save query (inline name input or trigger button) */}
+        {showSaveInput ? (
+          <div className="flex items-center gap-1">
+            <input
+              type="text"
+              value={saveQueryName}
+              onChange={(e) => setSaveQueryName(e.target.value)}
+              onKeyDown={handleSaveKeyDown}
+              placeholder="Query name…"
+              autoFocus
+              className="h-6 w-28 rounded border border-accent bg-transparent px-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleSaveQuery}
+              disabled={!saveQueryName.trim()}
+              className="rounded px-2 py-0.5 text-xs bg-accent/20 text-accent hover:bg-accent/30 disabled:opacity-50 transition-colors"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowSaveInput(false); setSaveQueryName('') }}
+              className="rounded p-1 text-text-secondary hover:text-text-primary transition-colors"
+            >
+              <XCircle size={12} />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowSaveInput(true)}
+            title="Save current query"
+            className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
+          >
+            <Save size={13} />
+          </button>
+        )}
+
         <div className="flex-1" />
 
         {/* Connection status badge */}
@@ -460,9 +505,19 @@ export default function QueryTab({
         </div>
       </div>
 
+      {/* Saved queries panel (collapsible) */}
+      {showSavedQueries && _connectionId && (
+        <div className="shrink-0 border-b border-border" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+          <SavedQueriesPanel
+            connectionId={_connectionId}
+            onLoadQuery={handleLoadSavedQuery}
+          />
+        </div>
+      )}
+
       {/* Editor + Results */}
       {tab.outputMode === 'split' ? (
-        // ── Split mode: editor top, results bottom ──────────────────
+        // ── Split mode: editor top (flex-1), results bottom (40%) ───
         <>
           <div className="min-h-0 flex-1 overflow-hidden">
             <SqlEditor
@@ -478,7 +533,7 @@ export default function QueryTab({
           </div>
 
           {hasResult && (
-            <div className="shrink-0 border-t border-border" style={{ maxHeight: '40%', overflow: 'auto' }}>
+            <div className="flex shrink-0 flex-col border-t border-border" style={{ height: '40%' }}>
               {renderResultsContent()}
             </div>
           )}
@@ -500,11 +555,13 @@ export default function QueryTab({
           </div>
 
           {hasResult && (
-            <div className="border-t border-border/50 bg-background/50">
-              <div className="px-2 py-1 text-xs text-text-secondary bg-surface/50 border-b border-border/50">
+            <div className="border-t border-border/50 bg-background/50" style={{ height: '55%', display: 'flex', flexDirection: 'column' }}>
+              <div className="shrink-0 px-2 py-1 text-xs text-text-secondary bg-surface/50 border-b border-border/50">
                 Result
               </div>
-              {renderResultsContent()}
+              <div className="flex-1 overflow-hidden">
+                {renderResultsContent()}
+              </div>
             </div>
           )}
         </div>

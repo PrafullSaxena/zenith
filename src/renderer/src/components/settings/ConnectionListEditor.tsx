@@ -22,6 +22,7 @@ export interface ConnectionEntry {
   database: string
   defaultSchema: string
   readStrategy: ReadStrategy
+  engine?: 'postgresql' | 'mysql'
 }
 
 interface ConnectionListEditorProps {
@@ -52,6 +53,7 @@ export function ConnectionListEditor({
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [readStrategy, setReadStrategy] = useState<ReadStrategy>('read-only')
+  const [engine, setEngine] = useState<'postgresql' | 'mysql'>('postgresql')
   const [isAdding, setIsAdding] = useState(false)
   const [isTesting, setIsTesting] = useState(false)
   const [testResult, setTestResult] = useState<{
@@ -71,8 +73,16 @@ export function ConnectionListEditor({
     setPassword('')
     setShowPassword(false)
     setReadStrategy('read-only')
+    setEngine('postgresql')
     setTestResult(null)
     setError('')
+  }
+
+  const handleEngineChange = (newEngine: 'postgresql' | 'mysql'): void => {
+    setEngine(newEngine)
+    // Auto-update port to engine default (only if user hasn't manually changed it)
+    if (newEngine === 'mysql' && port === 5432) setPort(3306)
+    if (newEngine === 'postgresql' && port === 3306) setPort(5432)
   }
 
   const handleAdd = async (): Promise<void> => {
@@ -103,9 +113,10 @@ export function ConnectionListEditor({
         host: trimmedHost,
         port,
         username: trimmedUsername,
-        database: 'postgres',
+        database: engine === 'mysql' ? 'mysql' : 'postgres',
         defaultSchema: 'public',
-        readStrategy
+        readStrategy,
+        engine
       }
 
       // Store password securely in main process (encrypted via safeStorage)
@@ -134,12 +145,15 @@ export function ConnectionListEditor({
     setIsTesting(true)
     setTestResult(null)
     try {
-      const result = await window.api.db.testConnection({
-        host: trimmedHost,
-        port,
-        username: trimmedUsername,
-        password
-      })
+      const result = await window.api.db.testConnection(
+        {
+          host: trimmedHost,
+          port,
+          username: trimmedUsername,
+          password
+        },
+        engine
+      )
       setTestResult(result)
     } catch (err) {
       setTestResult({
@@ -282,18 +296,33 @@ export function ConnectionListEditor({
             </div>
           </div>
 
-          <div>
-            <label className="mb-1 block text-xs font-medium text-text-secondary">
-              Access Mode
-            </label>
-            <select
-              className={selectClass}
-              value={readStrategy}
-              onChange={(e) => setReadStrategy(e.target.value as ReadStrategy)}
-            >
-              <option value="read-only">Read-only</option>
-              <option value="read-write">Read-write</option>
-            </select>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium text-text-secondary">
+                Engine
+              </label>
+              <select
+                className={selectClass}
+                value={engine}
+                onChange={(e) => handleEngineChange(e.target.value as 'postgresql' | 'mysql')}
+              >
+                <option value="postgresql">PostgreSQL</option>
+                <option value="mysql">MySQL</option>
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium text-text-secondary">
+                Access Mode
+              </label>
+              <select
+                className={selectClass}
+                value={readStrategy}
+                onChange={(e) => setReadStrategy(e.target.value as ReadStrategy)}
+              >
+                <option value="read-only">Read-only</option>
+                <option value="read-write">Read-write</option>
+              </select>
+            </div>
           </div>
 
           {/* Test result */}
@@ -308,7 +337,7 @@ export function ConnectionListEditor({
               {testResult.success ? (
                 <>
                   <CheckCircle2 size={14} />
-                  Connected — PostgreSQL {testResult.serverVersion}
+                  Connected — {engine === 'mysql' ? 'MySQL' : 'PostgreSQL'} {testResult.serverVersion}
                 </>
               ) : (
                 <>
