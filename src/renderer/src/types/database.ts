@@ -17,6 +17,7 @@ export interface DbConnection {
   database: string        // currently selected database
   defaultSchema: string
   readStrategy: ReadStrategy
+  engine?: 'postgresql' | 'mysql'
 }
 
 /** Full connection config used by the main process (includes password). */
@@ -30,6 +31,7 @@ export interface DbConnectionConfig {
   database: string        // currently active database
   defaultSchema: string
   readStrategy: ReadStrategy
+  engine?: 'postgresql' | 'mysql'
 }
 
 export interface ConnectionStatus {
@@ -203,7 +205,7 @@ export interface ERDiagramSession {
 
 // ── History types ───────────────────────────────────────────────────
 
-export type DbHistoryEntryType = 'qa' | 'optimize' | 'er-diagram'
+export type DbHistoryEntryType = 'qa' | 'optimize' | 'er-diagram' | 'query'
 
 export interface DbHistoryEntry {
   id: string
@@ -223,11 +225,57 @@ export interface DbHistoryEntry {
   // ER Diagram-specific
   selectedTables?: string[]
   mermaidSyntax?: string
+  // Query console-specific
+  executedSql?: string
+  executionTimeMs?: number
+  resultRowCount?: number
 }
 
 // ── Tab type ────────────────────────────────────────────────────────
 
-export type DbInspectorTab = 'ask-ai' | 'query-optimizer' | 'er-diagram' | 'history'
+export type DbInspectorTab = 'ask-ai' | 'query-optimizer' | 'er-diagram' | 'history' | 'query-console'
+
+// ── Query console types ─────────────────────────────────────────────
+
+export type QueryExecutionStatus = 'idle' | 'running' | 'success' | 'error' | 'cancelled'
+
+export interface QueryExecution {
+  status: QueryExecutionStatus
+  rows: Record<string, unknown>[]
+  fields: { name: string; dataTypeID: number }[]
+  rowCount: number
+  affectedRows: number
+  executionTimeMs: number
+  error?: string
+  errorLine?: number
+  hasMore: boolean
+  sql: string
+  command: string
+}
+
+/**
+ * A query editor tab in the query console.
+ * outputMode controls where results appear:
+ *   'split'  — bottom split panel (default)
+ *   'inline' — inline after each statement (DataGrip-style)
+ */
+export interface QueryTab {
+  id: string
+  connectionId: string
+  label: string
+  sql: string
+  writeEnabled: boolean
+  outputMode: 'split' | 'inline'
+  lastResult: QueryExecution | null
+}
+
+export interface SavedQuery {
+  id: string
+  name: string
+  sql: string
+  connectionId: string
+  createdAt: string
+}
 
 // ── Query result types ──────────────────────────────────────────────
 
