@@ -465,6 +465,46 @@ body {
   animation: status-pulse 2s ease-in-out infinite;
 }
 
+/* ── Query Console Animations ───────────────────────────── */
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-6px); max-height: 0; }
+  to { opacity: 1; transform: translateY(0); max-height: 200px; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-2px); }
+  30%, 70% { transform: translateX(2px); }
+}
+
+@keyframes tooltip-fade-in {
+  from { opacity: 0; transform: translate(-50%, 2px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes results-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes flash-green {
+  0% { background-color: oklch(0.7 0.15 145 / 0.3); }
+  100% { background-color: transparent; }
+}
+
+.animate-slide-up { animation: slide-up 0.25s ease-out; }
+.animate-slide-down { animation: slide-down 0.2s ease-out; }
+.animate-shake { animation: shake 0.4s ease-in-out; }
+.animate-tooltip-fade-in { animation: tooltip-fade-in 0.15s ease-out; }
+.animate-results-enter { animation: results-enter 0.2s ease-out; }
+.animate-flash-green { animation: flash-green 0.5s ease-out; }
+
 /* ── Nebula Tiptap editor styles ────────────────────────────────── */
 .nebula-editor .tiptap {
   outline: none;

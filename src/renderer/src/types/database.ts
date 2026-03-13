@@ -235,6 +235,14 @@ export interface DbHistoryEntry {
 
 export type DbInspectorTab = 'ask-ai' | 'query-optimizer' | 'er-diagram' | 'history' | 'query-console'
 
+// ── Output message types ────────────────────────────────────────────
+
+export interface OutputMessage {
+  timestamp: string
+  type: 'info' | 'error' | 'success' | 'warning'
+  message: string
+}
+
 // ── Query console types ─────────────────────────────────────────────
 
 export type QueryExecutionStatus = 'idle' | 'running' | 'success' | 'error' | 'cancelled'
@@ -267,6 +275,8 @@ export interface QueryTab {
   writeEnabled: boolean
   outputMode: 'split' | 'inline'
   lastResult: QueryExecution | null
+  outputMessages: OutputMessage[]
+  variables: Record<string, string>
 }
 
 export interface SavedQuery {

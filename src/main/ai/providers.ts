@@ -89,18 +89,17 @@ export function createModel(
     }
 
     case 'cursor-agent': {
-      // Cursor API uses Basic auth (not Bearer) and only supports the
-      // Chat Completions endpoint (/v1/chat/completions), not the newer
-      // OpenAI Responses API (/v1/responses).
+      // Cursor API uses Bearer auth and the Chat Completions endpoint
+      // at api2.cursor.sh (/v1/chat/completions).
       // In @ai-sdk/openai v3+, provider(model) defaults to Responses API;
       // use provider.chat(model) to explicitly select Chat Completions.
-      const cursorBaseUrl = baseUrl || 'https://api.cursor.com/v1'
+      const cursorBaseUrl = baseUrl || 'https://api2.cursor.sh/v1'
       const provider = createOpenAI({
         compatibility: 'compatible',
         apiKey: apiKey || 'unused',
         baseURL: cursorBaseUrl,
         ...(apiKey
-          ? { headers: { Authorization: `Basic ${apiKey}` } }
+          ? { headers: { Authorization: `Bearer ${apiKey}` } }
           : {})
       })
       return provider.chat(modelName)

@@ -13,11 +13,12 @@
  */
 
 import React, { useEffect, useRef, useCallback } from 'react'
-import { EditorView, keymap } from '@codemirror/view'
+import { EditorView, keymap, hoverTooltip } from '@codemirror/view'
 import { EditorState, Compartment } from '@codemirror/state'
 import { defaultKeymap, historyKeymap, history } from '@codemirror/commands'
 import { sql, PostgreSQL, MySQL } from '@codemirror/lang-sql'
-import { oneDark } from '@codemirror/theme-one-dark'
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
+import { tags } from '@lezer/highlight'
 import { basicSetup } from 'codemirror'
 import { Decoration, DecorationSet, ViewPlugin, ViewUpdate } from '@codemirror/view'
 import { StateField, StateEffect, RangeSetBuilder } from '@codemirror/state'
@@ -39,6 +40,8 @@ export interface SqlEditorProps {
   errorLine?: number | null
   /** Callback fired once with the EditorView on mount — use it to call insertAtCursor. */
   onEditorReady?: (view: EditorView) => void
+  /** Variable map for {{varName}} hover tooltips in the editor. */
+  variables?: Record<string, string>
 }
 
 // ── Error line decoration ────────────────────────────────────────────
@@ -155,8 +158,77 @@ const appTheme = EditorView.theme({
   },
   '.cm-cursor': {
     borderLeftColor: 'var(--color-accent)'
+  },
+  // Selection
+  '.cm-selectionBackground, &.cm-focused .cm-selectionBackground': {
+    backgroundColor: 'oklch(72% 0.15 195 / 0.2) !important'
+  },
+  '.cm-activeLine': {
+    backgroundColor: 'oklch(14% 0 0 / 0.5)'
+  },
+  '.cm-searchMatch': {
+    backgroundColor: 'oklch(72% 0.15 195 / 0.3)',
+    outline: '1px solid oklch(72% 0.15 195 / 0.5)'
+  },
+  '.cm-selectionMatch': {
+    backgroundColor: 'oklch(72% 0.15 195 / 0.15)'
+  },
+  // Matching brackets
+  '&.cm-focused .cm-matchingBracket': {
+    backgroundColor: 'oklch(72% 0.15 195 / 0.25)',
+    outline: '1px solid oklch(72% 0.15 195 / 0.5)'
+  },
+  // Tooltips & autocomplete
+  '.cm-tooltip': {
+    backgroundColor: 'var(--color-surface-elevated)',
+    border: '1px solid var(--color-border)',
+    color: 'var(--color-text-primary)',
+    borderRadius: '6px',
+    boxShadow: '0 4px 12px oklch(0% 0 0 / 0.4)'
+  },
+  '.cm-tooltip-autocomplete ul li[aria-selected]': {
+    backgroundColor: 'oklch(72% 0.15 195 / 0.15)',
+    color: 'var(--color-text-primary)'
+  },
+  '.cm-completionLabel': {
+    color: 'var(--color-text-primary)'
+  },
+  '.cm-completionDetail': {
+    color: 'var(--color-text-secondary)',
+    fontStyle: 'italic'
+  },
+  // Panels (search, etc.)
+  '.cm-panels': {
+    backgroundColor: 'var(--color-surface)',
+    borderTop: '1px solid var(--color-border)'
+  },
+  '.cm-panels input, .cm-panels button': {
+    color: 'var(--color-text-primary)'
+  },
+  // Fold gutter
+  '.cm-foldGutter span': {
+    color: 'var(--color-text-secondary)'
   }
 })
+
+const appHighlighting = HighlightStyle.define([
+  { tag: tags.keyword, color: 'oklch(75% 0.15 195)' },
+  { tag: tags.definitionKeyword, color: 'oklch(75% 0.15 195)' },
+  { tag: tags.operatorKeyword, color: 'oklch(75% 0.15 195)' },
+  { tag: tags.string, color: 'oklch(75% 0.15 145)' },
+  { tag: tags.number, color: 'oklch(78% 0.15 70)' },
+  { tag: tags.bool, color: 'oklch(78% 0.15 70)' },
+  { tag: tags.null, color: 'oklch(65% 0.12 30)' },
+  { tag: tags.operator, color: 'oklch(80% 0.08 60)' },
+  { tag: tags.punctuation, color: 'oklch(60% 0 0)' },
+  { tag: tags.comment, color: 'oklch(45% 0 0)', fontStyle: 'italic' },
+  { tag: tags.lineComment, color: 'oklch(45% 0 0)', fontStyle: 'italic' },
+  { tag: tags.blockComment, color: 'oklch(45% 0 0)', fontStyle: 'italic' },
+  { tag: tags.name, color: 'var(--color-text-primary)' },
+  { tag: tags.typeName, color: 'oklch(75% 0.12 280)' },
+  { tag: tags.propertyName, color: 'oklch(80% 0.1 220)' },
+  { tag: tags.special(tags.string), color: 'oklch(75% 0.15 145)' }
+])
 
 // ── Component ────────────────────────────────────────────────────────
 
@@ -169,12 +241,17 @@ const SqlEditor = React.memo(function SqlEditor({
   dialect,
   readOnly = false,
   errorLine,
-  onEditorReady
+  onEditorReady,
+  variables
 }: SqlEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const sqlCompartmentRef = useRef(new Compartment())
   const readOnlyCompartmentRef = useRef(new Compartment())
+  const autoFormatTimerRef = useRef<number | undefined>(undefined)
+  const isFormattingRef = useRef(false)
+  const editorReadyRef = useRef(false)
+  const variablesRef = useRef(variables)
 
   // Keep callbacks in refs to avoid recreating the editor on every render
   const onChangeRef = useRef(onChange)
@@ -183,6 +260,7 @@ const SqlEditor = React.memo(function SqlEditor({
   useEffect(() => { onChangeRef.current = onChange }, [onChange])
   useEffect(() => { onExecuteCurrentRef.current = onExecuteCurrent }, [onExecuteCurrent])
   useEffect(() => { onExecuteAllRef.current = onExecuteAll }, [onExecuteAll])
+  useEffect(() => { variablesRef.current = variables }, [variables])
 
   // ── Mount: create EditorView once ─────────────────────────────────
   useEffect(() => {
@@ -228,7 +306,7 @@ const SqlEditor = React.memo(function SqlEditor({
           const formatted = sqlFormat(text, {
             language: getFormatterDialect(dialect),
             tabWidth: 2,
-            keywordCase: 'lower'
+            keywordCase: 'upper'
           })
           if (formatted !== text) {
             event.preventDefault()
@@ -248,17 +326,17 @@ const SqlEditor = React.memo(function SqlEditor({
     const state = EditorState.create({
       doc: value,
       extensions: [
+        executionKeymap,
         basicSetup,
         history(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
-        executionKeymap,
-        oneDark,
         appTheme,
+        syntaxHighlighting(appHighlighting),
         sqlCompartment.of(
           sql({
             dialect: getSqlDialect(dialect),
             schema,
-            upperCaseKeywords: false
+            upperCaseKeywords: true
           })
         ),
         readOnlyCompartment.of(EditorState.readOnly.of(readOnly)),
@@ -268,7 +346,68 @@ const SqlEditor = React.memo(function SqlEditor({
             onChangeRef.current(update.state.doc.toString())
           }
         }),
-        pasteHandler
+        EditorView.updateListener.of((update: ViewUpdate) => {
+          if (update.docChanged && !isFormattingRef.current) {
+            if (!editorReadyRef.current) return // Skip during initialization
+            // Only debounce on user input (not programmatic changes)
+            const isUserInput = update.transactions.some(tr => tr.isUserEvent('input'))
+            if (!isUserInput) return
+            clearTimeout(autoFormatTimerRef.current)
+            autoFormatTimerRef.current = window.setTimeout(() => {
+              const view = viewRef.current
+              if (!view) return
+              const current = view.state.doc.toString()
+              try {
+                const formatted = sqlFormat(current, {
+                  language: getFormatterDialect(dialect),
+                  tabWidth: 2,
+                  keywordCase: 'upper'
+                })
+                if (formatted !== current) {
+                  const cursorPos = view.state.selection.main.head
+                  const ratio = current.length > 0 ? cursorPos / current.length : 0
+                  const newCursorPos = Math.min(
+                    Math.round(ratio * formatted.length),
+                    formatted.length
+                  )
+                  isFormattingRef.current = true
+                  view.dispatch({
+                    changes: { from: 0, to: current.length, insert: formatted },
+                    selection: { anchor: newCursorPos }
+                  })
+                  isFormattingRef.current = false
+                }
+              } catch {
+                // Partial SQL may fail — silently ignore
+              }
+            }, 1500)
+          }
+        }),
+        pasteHandler,
+        hoverTooltip((view, pos) => {
+          const doc = view.state.doc.toString()
+          const before = doc.lastIndexOf('{{', pos)
+          if (before === -1) return null
+          const after = doc.indexOf('}}', before + 2)
+          if (after === -1 || pos > after + 2) return null
+          if (pos < before || pos > after + 2) return null
+
+          const varName = doc.slice(before + 2, after)
+          const vars = variablesRef.current
+          if (!vars || !(varName in vars)) return null
+
+          return {
+            pos: before,
+            end: after + 2,
+            above: true,
+            create: () => {
+              const dom = document.createElement('div')
+              dom.style.cssText = 'padding: 4px 8px; font-size: 12px; font-family: monospace; background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: 4px; color: var(--color-text-primary); box-shadow: 0 2px 8px oklch(0% 0 0 / 0.3);'
+              dom.innerHTML = `<span style="color: oklch(72% 0.15 195)">${varName}</span> <span style="color: oklch(55% 0 0)">=</span> <span>${vars[varName] || '&lt;empty&gt;'}</span>`
+              return { dom }
+            }
+          }
+        })
       ]
     })
 
@@ -279,8 +418,11 @@ const SqlEditor = React.memo(function SqlEditor({
 
     viewRef.current = view
     if (onEditorReady) onEditorReady(view)
+    setTimeout(() => { editorReadyRef.current = true }, 500)
 
     return () => {
+      clearTimeout(autoFormatTimerRef.current)
+      editorReadyRef.current = false
       view.destroy()
       viewRef.current = null
     }
@@ -307,7 +449,7 @@ const SqlEditor = React.memo(function SqlEditor({
         sql({
           dialect: getSqlDialect(dialect),
           schema,
-          upperCaseKeywords: false
+          upperCaseKeywords: true
         })
       )
     })
@@ -342,7 +484,7 @@ const SqlEditor = React.memo(function SqlEditor({
       const formatted = sqlFormat(current, {
         language: getFormatterDialect(dialect),
         tabWidth: 2,
-        keywordCase: 'lower'
+        keywordCase: 'upper'
       })
       if (formatted !== current) {
         view.dispatch({

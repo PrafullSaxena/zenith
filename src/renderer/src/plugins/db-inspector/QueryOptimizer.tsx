@@ -31,6 +31,7 @@ import type {
   OptimizationSuggestion,
   OptimizerTile
 } from '../../types/database'
+import { useDbStore } from '../../stores/db-store'
 import MermaidRenderer from './MermaidRenderer'
 import { highlightCode } from '../../lib/highlight'
 import { renderInline } from '../../components/MarkdownRenderer'
@@ -182,6 +183,17 @@ export default function QueryOptimizer({
 }: QueryOptimizerProps): React.JSX.Element {
   const [sql, setSql] = useState('')
   const streamRef = useRef<HTMLDivElement>(null)
+
+  // Consume pending SQL from QueryTab's Explain button
+  const pendingOptimizerSql = useDbStore((s) => s.pendingOptimizerSql)
+  const setPendingOptimizerSql = useDbStore((s) => s.setPendingOptimizerSql)
+
+  useEffect(() => {
+    if (pendingOptimizerSql) {
+      setSql(pendingOptimizerSql)
+      setPendingOptimizerSql(null)
+    }
+  }, [pendingOptimizerSql, setPendingOptimizerSql])
 
   useEffect(() => {
     if (session?.status === 'streaming' && streamRef.current) {

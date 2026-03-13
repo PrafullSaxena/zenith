@@ -25,13 +25,20 @@ import {
   AlertCircle,
   XCircle,
   BookMarked,
-  Save
+  Save,
+  Braces,
+  Plus,
+  X,
+  Eye,
+  EyeOff
 } from 'lucide-react'
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { useDbStore, buildCmSchema } from '../../stores/db-store'
-import type { QueryTab as QueryTabType } from '../../types/database'
+import type { QueryTab as QueryTabType, OutputMessage } from '../../types/database'
 import SqlEditor from './SqlEditor'
 import ResultsGrid from './ResultsGrid'
 import SavedQueriesPanel from './SavedQueriesPanel'
+import Tooltip from './Tooltip'
 import type { EditorView } from '@codemirror/view'
 
 // ── Props ─────────────────────────────────────────────────────────────
@@ -90,7 +97,10 @@ export default function QueryTab({
     activeSchema,
     setActiveTab,
     startOptimization,
-    saveQuery
+    setPendingOptimizerSql,
+    saveQuery,
+    setTabVariable,
+    removeTabVariable
   } = useDbStore()
 
   const editorViewRef = useRef<EditorView | null>(null)
@@ -98,6 +108,15 @@ export default function QueryTab({
 
   // ── Saved queries panel state ────────────────────────────────────
   const [showSavedQueries, setShowSavedQueries] = useState(false)
+
+  // ── Output console tab state ───────────────────────────────────
+  const [outputTab, setOutputTab] = useState<'results' | 'output'>('results')
+
+  // ── Variables panel state ──────────────────────────────────────
+  const [showVariables, setShowVariables] = useState(false)
+
+  // ── Output visibility state ──────────────────────────────────
+  const [showOutput, setShowOutput] = useState(true)
 
   // ── Save query inline state ──────────────────────────────────────
   const [showSaveInput, setShowSaveInput] = useState(false)
@@ -169,9 +188,17 @@ export default function QueryTab({
   }, [])
 
   const handleExplain = useCallback(() => {
-    const sql = tab.sql.trim()
+    let sql = tab.sql.trim()
     if (sql) {
+      // Substitute variables
+      if (tab.variables) {
+        for (const [k, v] of Object.entries(tab.variables)) {
+          sql = sql.replaceAll(`{{${k}}}`, v)
+        }
+      }
       setActiveTab('query-optimizer')
+      // Always set pending SQL so the optimizer textarea gets populated
+      setPendingOptimizerSql(sql)
       // startOptimization needs an agent - we just switch tab and pass the SQL
       // The optimizer will handle agent selection
       const agentStore = (window as Window & { __agentStore?: { getState?: () => { providers?: { id: string; model?: string; command?: string; status: string; hasApiKey?: boolean }[] } } }).__agentStore
@@ -181,7 +208,7 @@ export default function QueryTab({
         startOptimization(sql, agent.id, agent.model ?? agent.id, agent.command)
       }
     }
-  }, [tab.sql, setActiveTab, startOptimization])
+  }, [tab.sql, tab.variables, setActiveTab, setPendingOptimizerSql, startOptimization])
 
   const handleEditorReady = useCallback((view: EditorView) => {
     editorViewRef.current = view
@@ -227,6 +254,14 @@ export default function QueryTab({
     [tab.id, updateQueryTabSql]
   )
 
+  // ── Add variable handler ────────────────────────────────────────
+
+  const handleAddVariable = useCallback(() => {
+    const existing = Object.keys(tab.variables || {})
+    const name = `var${existing.length + 1}`
+    setTabVariable(tab.id, name, '')
+  }, [tab.id, tab.variables, setTabVariable])
+
   // ── Result rendering helpers ─────────────────────────────────────
 
   const result = tab.lastResult
@@ -259,7 +294,7 @@ export default function QueryTab({
     if (isError) {
       return (
         <div className="p-3">
-          <div className="flex items-start gap-2 rounded-md bg-red-500/10 border border-red-500/20 p-3">
+          <div className="flex items-start gap-2 rounded-md bg-red-500/10 border border-red-500/20 p-3 animate-shake">
             <AlertCircle size={14} className="shrink-0 mt-0.5 text-red-400" />
             <pre className="text-xs text-red-300 whitespace-pre-wrap font-mono">
               {result.error ?? 'Unknown error'}
@@ -353,109 +388,139 @@ export default function QueryTab({
       {/* Toolbar */}
       <div className="flex shrink-0 items-center gap-1 border-b border-border bg-surface px-2 py-1.5">
         {/* Run current statement */}
-        <button
-          type="button"
-          onClick={handleRunCurrent}
-          disabled={isRunning}
-          title="Run statement (Ctrl+Enter)"
-          className="flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 disabled:opacity-50 transition-colors"
-        >
-          <Play size={11} />
-          Run
-        </button>
+        <Tooltip content="Run statement" shortcut="⌘↵">
+          <button
+            type="button"
+            onClick={handleRunCurrent}
+            disabled={isRunning}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 disabled:opacity-50 active:scale-95 transition-all"
+          >
+            <Play size={11} />
+            Run
+          </button>
+        </Tooltip>
 
         {/* Run all */}
-        <button
-          type="button"
-          onClick={handleExecuteAll}
-          disabled={isRunning}
-          title="Run all (Ctrl+Shift+Enter)"
-          className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface-hover disabled:opacity-50 transition-colors"
-        >
-          <ChevronRight size={11} />
-          All
-        </button>
+        <Tooltip content="Run all" shortcut="⌘⇧↵">
+          <button
+            type="button"
+            onClick={handleExecuteAll}
+            disabled={isRunning}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface-hover disabled:opacity-50 active:scale-95 transition-all"
+          >
+            <ChevronRight size={11} />
+            All
+          </button>
+        </Tooltip>
 
         {/* Cancel (visible only when running) */}
         {isRunning && (
-          <button
-            type="button"
-            onClick={handleCancel}
-            title="Cancel query"
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
-          >
-            <Square size={11} />
-            Cancel
-          </button>
+          <Tooltip content="Cancel query">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="flex items-center gap-1 rounded px-2 py-1 text-xs text-red-400 hover:bg-red-500/10 active:scale-95 transition-all"
+            >
+              <Square size={11} />
+              Cancel
+            </button>
+          </Tooltip>
         )}
 
         <div className="mx-1 h-4 w-px bg-border" />
 
         {/* Write mode toggle */}
-        <button
-          type="button"
-          onClick={() => toggleWriteMode(tab.id)}
-          title={tab.writeEnabled ? 'Write mode ON — DML allowed' : 'Write mode OFF — read only'}
-          className={`flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors ${
-            tab.writeEnabled
-              ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30'
-              : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
-          }`}
-        >
-          {tab.writeEnabled ? <Unlock size={11} /> : <Lock size={11} />}
-          {tab.writeEnabled ? 'Write' : 'Read'}
-        </button>
+        <Tooltip content={tab.writeEnabled ? 'Write mode — DML allowed' : 'Read-only mode'}>
+          <button
+            type="button"
+            onClick={() => toggleWriteMode(tab.id)}
+            className={`flex items-center gap-1 rounded px-2 py-1 text-xs active:scale-95 transition-all ${
+              tab.writeEnabled
+                ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30'
+                : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+            }`}
+          >
+            {tab.writeEnabled ? <Unlock size={11} /> : <Lock size={11} />}
+            {tab.writeEnabled ? 'Write' : 'Read'}
+          </button>
+        </Tooltip>
 
         {/* Output mode toggle */}
-        <button
-          type="button"
-          onClick={() => toggleOutputMode(tab.id)}
-          title={
-            tab.outputMode === 'split'
-              ? 'Switch to inline output (DataGrip-style)'
-              : 'Switch to split output (bottom panel)'
-          }
-          className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
-        >
-          {tab.outputMode === 'split' ? <PanelBottom size={11} /> : <AlignLeft size={11} />}
-          {tab.outputMode === 'split' ? 'Split' : 'Inline'}
-        </button>
+        <Tooltip content={tab.outputMode === 'split' ? 'Switch to inline output' : 'Switch to split output'}>
+          <button
+            type="button"
+            onClick={() => toggleOutputMode(tab.id)}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:bg-surface-hover hover:text-text-primary active:scale-95 transition-all"
+          >
+            {tab.outputMode === 'split' ? <PanelBottom size={11} /> : <AlignLeft size={11} />}
+            {tab.outputMode === 'split' ? 'Split' : 'Inline'}
+          </button>
+        </Tooltip>
+
+        {/* Show/hide output */}
+        <Tooltip content={showOutput ? 'Hide output' : 'Show output'}>
+          <button
+            type="button"
+            onClick={() => setShowOutput((v) => !v)}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-all active:scale-95"
+          >
+            {showOutput ? <Eye size={11} /> : <EyeOff size={11} />}
+          </button>
+        </Tooltip>
 
         {/* Format */}
-        <button
-          type="button"
-          onClick={handleFormat}
-          title="Format SQL"
-          className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
-        >
-          <Code2 size={13} />
-        </button>
+        <Tooltip content="Format SQL" shortcut="⌘⇧F">
+          <button
+            type="button"
+            onClick={handleFormat}
+            className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary active:scale-95 transition-all"
+          >
+            <Code2 size={13} />
+          </button>
+        </Tooltip>
 
         {/* Explain in Optimizer */}
-        <button
-          type="button"
-          onClick={handleExplain}
-          title="Analyze in Query Optimizer"
-          className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
-        >
-          <Zap size={13} />
-        </button>
+        <Tooltip content="Analyze in Optimizer">
+          <button
+            type="button"
+            onClick={handleExplain}
+            className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary active:scale-95 transition-all"
+          >
+            <Zap size={13} />
+          </button>
+        </Tooltip>
+
+        {/* Variables toggle */}
+        <Tooltip content="Query variables">
+          <button
+            type="button"
+            onClick={() => setShowVariables((v) => !v)}
+            className={`rounded p-1 active:scale-95 transition-all ${
+              showVariables
+                ? 'bg-accent/20 text-accent'
+                : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+            }`}
+          >
+            <Braces size={13} />
+          </button>
+        </Tooltip>
 
         <div className="mx-1 h-4 w-px bg-border" />
 
         {/* Saved queries toggle */}
-        <button
-          type="button"
-          onClick={() => setShowSavedQueries((v) => !v)}
-          title="Saved queries"
-          className={`rounded p-1 transition-colors ${
-            showSavedQueries
-              ? 'bg-accent/20 text-accent'
-              : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
-          }`}
-        >
-          <BookMarked size={13} />
-        </button>
+        <Tooltip content="Saved queries">
+          <button
+            type="button"
+            onClick={() => setShowSavedQueries((v) => !v)}
+            className={`rounded p-1 active:scale-95 transition-all ${
+              showSavedQueries
+                ? 'bg-accent/20 text-accent'
+                : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+            }`}
+          >
+            <BookMarked size={13} />
+          </button>
+        </Tooltip>
 
         {/* Save query (inline name input or trigger button) */}
         {showSaveInput ? (
@@ -473,7 +538,7 @@ export default function QueryTab({
               type="button"
               onClick={handleSaveQuery}
               disabled={!saveQueryName.trim()}
-              className="rounded px-2 py-0.5 text-xs bg-accent/20 text-accent hover:bg-accent/30 disabled:opacity-50 transition-colors"
+              className="rounded px-2 py-0.5 text-xs bg-accent/20 text-accent hover:bg-accent/30 disabled:opacity-50 active:scale-95 transition-all"
             >
               Save
             </button>
@@ -486,14 +551,15 @@ export default function QueryTab({
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => setShowSaveInput(true)}
-            title="Save current query"
-            className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
-          >
-            <Save size={13} />
-          </button>
+          <Tooltip content="Save query">
+            <button
+              type="button"
+              onClick={() => setShowSaveInput(true)}
+              className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary active:scale-95 transition-all"
+            >
+              <Save size={13} />
+            </button>
+          </Tooltip>
         )}
 
         <div className="flex-1" />
@@ -507,7 +573,7 @@ export default function QueryTab({
 
       {/* Saved queries panel (collapsible) */}
       {showSavedQueries && _connectionId && (
-        <div className="shrink-0 border-b border-border" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+        <div className="shrink-0 border-b border-border animate-slide-down" style={{ maxHeight: '200px', overflowY: 'auto' }}>
           <SavedQueriesPanel
             connectionId={_connectionId}
             onLoadQuery={handleLoadSavedQuery}
@@ -515,33 +581,99 @@ export default function QueryTab({
         </div>
       )}
 
+      {/* Variables panel (collapsible) */}
+      {showVariables && (
+        <div className="shrink-0 flex items-center gap-2 px-2 py-1.5 border-b border-border bg-surface/30 flex-wrap animate-slide-down">
+          {Object.entries(tab.variables || {}).map(([name, value]) => (
+            <VariableChip
+              key={name}
+              name={name}
+              value={value}
+              onChangeName={(newName) => {
+                if (newName !== name) {
+                  removeTabVariable(tab.id, name)
+                  setTabVariable(tab.id, newName, value)
+                }
+              }}
+              onChange={(v) => setTabVariable(tab.id, name, v)}
+              onRemove={() => removeTabVariable(tab.id, name)}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={handleAddVariable}
+            className="flex items-center gap-1 px-2 py-0.5 text-xs text-text-secondary hover:text-accent rounded border border-dashed border-border hover:border-accent/50 transition-colors"
+          >
+            <Plus size={10} /> Add
+          </button>
+        </div>
+      )}
+
       {/* Editor + Results */}
       {tab.outputMode === 'split' ? (
-        // ── Split mode: editor top (flex-1), results bottom (40%) ───
-        <>
-          <div className="min-h-0 flex-1 overflow-hidden">
-            <SqlEditor
-              value={tab.sql}
-              onChange={(sql) => updateQueryTabSql(tab.id, sql)}
-              onExecuteCurrent={handleExecuteCurrent}
-              onExecuteAll={handleExecuteAll}
-              schema={cmSchema}
-              dialect={engine}
-              errorLine={result?.errorLine}
-              onEditorReady={handleEditorReady}
-            />
-          </div>
-
-          {hasResult && (
-            <div className="flex shrink-0 flex-col border-t border-border" style={{ height: '40%' }}>
-              {renderResultsContent()}
+        // ── Split mode: resizable editor top, results bottom ────────
+        <PanelGroup orientation="vertical" className="flex-1">
+          <Panel defaultSize={showOutput && hasResult ? 60 : 100} minSize={20}>
+            <div className="h-full overflow-hidden">
+              <SqlEditor
+                value={tab.sql}
+                onChange={(sql) => updateQueryTabSql(tab.id, sql)}
+                onExecuteCurrent={handleExecuteCurrent}
+                onExecuteAll={handleExecuteAll}
+                schema={cmSchema}
+                dialect={engine}
+                errorLine={result?.errorLine}
+                onEditorReady={handleEditorReady}
+                variables={tab.variables}
+              />
             </div>
+          </Panel>
+          {showOutput && hasResult && (
+            <>
+              <PanelResizeHandle className="h-1.5 bg-transparent hover:bg-accent/30 transition-colors cursor-row-resize flex items-center justify-center group">
+                <div className="w-8 h-0.5 rounded-full bg-border group-hover:bg-accent/50 transition-colors" />
+              </PanelResizeHandle>
+              <Panel defaultSize={40} minSize={15}>
+                <div className="h-full flex flex-col overflow-hidden border-t border-border animate-results-enter">
+                  <div className="flex items-center gap-0 border-b border-border bg-surface/50 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setOutputTab('results')}
+                      className={`px-3 py-1 text-xs font-medium transition-all duration-150 ${
+                        outputTab === 'results'
+                          ? 'text-accent border-b-2 border-accent'
+                          : 'text-text-secondary hover:text-text-primary'
+                      }`}
+                    >
+                      Results
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setOutputTab('output')}
+                      className={`px-3 py-1 text-xs font-medium transition-all duration-150 relative ${
+                        outputTab === 'output'
+                          ? 'text-accent border-b-2 border-accent'
+                          : 'text-text-secondary hover:text-text-primary'
+                      }`}
+                    >
+                      Output
+                      {(tab.outputMessages || []).length > 0 && (
+                        <span className="ml-1 text-[9px] text-text-secondary">({(tab.outputMessages || []).length})</span>
+                      )}
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    {outputTab === 'results' ? renderResultsContent() : <OutputConsole messages={tab.outputMessages || []} />}
+                  </div>
+                </div>
+              </Panel>
+            </>
           )}
-        </>
+        </PanelGroup>
       ) : (
         // ── Inline mode: editor then results inline below ───────────
         <div className="flex-1 overflow-auto">
-          <div style={{ minHeight: '200px', height: hasResult ? '45%' : '100%' }}>
+          <div style={{ minHeight: 200 }}>
             <SqlEditor
               value={tab.sql}
               onChange={(sql) => updateQueryTabSql(tab.id, sql)}
@@ -551,16 +683,41 @@ export default function QueryTab({
               dialect={engine}
               errorLine={result?.errorLine}
               onEditorReady={handleEditorReady}
+              variables={tab.variables}
             />
           </div>
-
-          {hasResult && (
-            <div className="border-t border-border/50 bg-background/50" style={{ height: '55%', display: 'flex', flexDirection: 'column' }}>
-              <div className="shrink-0 px-2 py-1 text-xs text-text-secondary bg-surface/50 border-b border-border/50">
-                Result
+          {showOutput && hasResult && (
+            <div className="border-t border-border animate-results-enter">
+              {/* Output tabs */}
+              <div className="flex items-center gap-0 border-b border-border bg-surface/50 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setOutputTab('results')}
+                  className={`px-3 py-1 text-xs font-medium transition-all duration-150 ${
+                    outputTab === 'results'
+                      ? 'text-accent border-b-2 border-accent'
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  Results
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOutputTab('output')}
+                  className={`px-3 py-1 text-xs font-medium transition-all duration-150 relative ${
+                    outputTab === 'output'
+                      ? 'text-accent border-b-2 border-accent'
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  Output
+                  {(tab.outputMessages || []).length > 0 && (
+                    <span className="ml-1 text-[9px] text-text-secondary">({(tab.outputMessages || []).length})</span>
+                  )}
+                </button>
               </div>
-              <div className="flex-1 overflow-hidden">
-                {renderResultsContent()}
+              <div className="overflow-hidden">
+                {outputTab === 'results' ? renderResultsContent() : <OutputConsole messages={tab.outputMessages || []} />}
               </div>
             </div>
           )}
@@ -570,5 +727,160 @@ export default function QueryTab({
       {/* Status bar */}
       {renderStatusBar()}
     </div>
+  )
+}
+
+// ── OutputConsoleMessage ───────────────────────────────────────────────
+
+function OutputConsoleMessage({ message }: { message: string }): React.JSX.Element {
+  const [expanded, setExpanded] = useState(false)
+  const isMultiLine = message.includes('\n')
+  const isLong = message.length > 200
+
+  if (!isMultiLine && !isLong) {
+    return <span>{message}</span>
+  }
+
+  const firstLine = message.split('\n')[0]
+  const preview = isMultiLine ? firstLine : message.slice(0, 200)
+
+  return (
+    <span className="min-w-0">
+      {expanded ? (
+        <span
+          className="whitespace-pre-wrap break-words cursor-pointer"
+          onClick={() => setExpanded(false)}
+        >
+          {message}
+        </span>
+      ) : (
+        <span
+          className="truncate cursor-pointer hover:underline"
+          title={message}
+          onClick={() => setExpanded(true)}
+        >
+          {preview}
+          <span className="text-text-secondary/50 ml-1">...</span>
+        </span>
+      )}
+    </span>
+  )
+}
+
+// ── OutputConsole ──────────────────────────────────────────────────────
+
+function OutputConsole({ messages }: { messages: OutputMessage[] }): React.JSX.Element {
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages.length])
+
+  if (messages.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-text-secondary text-xs">
+        No output yet
+      </div>
+    )
+  }
+
+  return (
+    <div className="h-full overflow-auto p-2 font-mono text-xs space-y-0.5">
+      {messages.map((msg, i) => (
+        <div
+          key={i}
+          className={`flex items-start gap-2 py-0.5 ${
+            msg.type === 'error'
+              ? 'text-red-400'
+              : msg.type === 'success'
+                ? 'text-green-400'
+                : msg.type === 'warning'
+                  ? 'text-yellow-400'
+                  : 'text-text-secondary'
+          }`}
+        >
+          <span className="shrink-0 text-text-secondary/50">
+            {new Date(msg.timestamp).toLocaleTimeString()}
+          </span>
+          <OutputConsoleMessage message={msg.message} />
+        </div>
+      ))}
+      <div ref={bottomRef} />
+    </div>
+  )
+}
+
+// ── VariableChip ──────────────────────────────────────────────────────
+
+function VariableChip({
+  name,
+  value,
+  onChangeName,
+  onChange,
+  onRemove
+}: {
+  name: string
+  value: string
+  onChangeName: (newName: string) => void
+  onChange: (v: string) => void
+  onRemove: () => void
+}): React.JSX.Element {
+  const [editing, setEditing] = useState(false)
+  const [editName, setEditName] = useState(name)
+  const [editValue, setEditValue] = useState(value)
+
+  const handleSave = () => {
+    const newName = editName.trim().replace(/[^a-zA-Z0-9_]/g, '')
+    if (newName && newName !== name) {
+      onChangeName(newName)
+    }
+    onChange(editValue)
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/30 text-xs">
+        <span className="text-accent/50">{'{{'}</span>
+        <input
+          autoFocus
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          className="w-16 bg-transparent outline-none text-accent font-medium border-b border-accent/30"
+          placeholder="name"
+        />
+        <span className="text-accent/50">{'}}'}</span>
+        <span className="text-text-secondary">=</span>
+        <input
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSave()
+            if (e.key === 'Escape') setEditing(false)
+          }}
+          className="w-24 bg-transparent outline-none text-text-primary border-b border-accent/30"
+          placeholder="value"
+        />
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-text-secondary hover:text-red-400 ml-1"
+        >
+          <X size={10} />
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => { setEditName(name); setEditValue(value); setEditing(true) }}
+      className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-xs hover:border-accent/40 transition-colors"
+    >
+      <span className="text-accent font-medium">{`{{${name}}}`}</span>
+      <span className="text-text-secondary">=</span>
+      <span className="text-text-primary">{value || '...'}</span>
+    </button>
   )
 }

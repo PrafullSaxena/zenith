@@ -101,7 +101,7 @@ export default function QueryConsole({
             <div
               key={tab.id}
               onClick={() => setActiveQueryTab(tab.id)}
-              className={`group relative flex shrink-0 cursor-pointer items-center gap-1 px-3 py-2 text-xs font-medium transition-colors ${
+              className={`group relative flex shrink-0 cursor-pointer items-center gap-1 px-3 py-2 text-xs font-medium animate-tab-enter transition-colors ${
                 isActive
                   ? 'border-b-2 border-accent text-accent'
                   : 'text-text-secondary hover:text-text-primary'

@@ -37,7 +37,8 @@ import type {
   QueryTab,
   QueryExecution,
   QueryExecutionStatus,
-  SavedQuery
+  SavedQuery,
+  OutputMessage
 } from '../types/database'
 import {
   buildDbQASystemPrompt,
@@ -234,6 +235,8 @@ interface DbStoreState {
   // Query Optimizer
   optimizerSession: QueryOptimizationSession | null
   optimizerTiles: OptimizerTile[]
+  /** SQL pasted from QueryTab's Explain button, consumed by QueryOptimizer on mount */
+  pendingOptimizerSql: string | null
 
   // ER Diagram
   erSession: ERDiagramSession | null
@@ -304,6 +307,7 @@ interface DbStoreState {
 
   // ── Query Optimizer actions ─────────────────────────────────────
 
+  setPendingOptimizerSql: (sql: string | null) => void
   startOptimization: (
     sql: string,
     providerId: string,
@@ -353,6 +357,8 @@ interface DbStoreState {
   loadSavedQueries: () => Promise<void>
   saveQuery: (name: string, sql: string) => Promise<void>
   deleteSavedQuery: (id: string) => Promise<void>
+  setTabVariable: (tabId: string, name: string, value: string) => void
+  removeTabVariable: (tabId: string, name: string) => void
 }
 
 // ── Store creation ──────────────────────────────────────────────────
@@ -385,6 +391,7 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
   qaQuestionHistory: [],
   optimizerSession: null,
   optimizerTiles: [],
+  pendingOptimizerSql: null,
   erSession: null,
   selectedTablesForER: [],
   erRelationshipMode: 'fk-only' as RelationshipMode,
@@ -821,6 +828,8 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
   },
 
   // ── Query Optimizer actions ─────────────────────────────────────
+
+  setPendingOptimizerSql: (sql) => set({ pendingOptimizerSql: sql }),
 
   startOptimization: async (sql, providerId, modelName, command) => {
     const { activeConnectionId, activeSchema } = get()
@@ -1267,7 +1276,9 @@ For each table, examine every non-PK column and check if it could reference a PK
   loadQueryTabs: async (connectionId) => {
     try {
       const raw = await window.api.settings.get(`queryConsole.tabs.${connectionId}`)
-      const tabs = Array.isArray(raw) ? (raw as QueryTab[]) : []
+      const tabs = Array.isArray(raw)
+        ? (raw as QueryTab[]).map((t) => ({ ...t, outputMessages: t.outputMessages || [] }))
+        : []
       if (tabs.length > 0) {
         set({ queryTabs: tabs, activeQueryTabId: tabs[0].id })
       } else {
@@ -1317,7 +1328,9 @@ For each table, examine every non-PK column and check if it could reference a PK
       sql: '',
       writeEnabled: false,
       outputMode: 'split',
-      lastResult: null
+      lastResult: null,
+      outputMessages: [],
+      variables: {}
     }
     set({ queryTabs: [...queryTabs, newTab], activeQueryTabId: newTab.id })
     get().saveQueryTabs()
@@ -1399,6 +1412,31 @@ For each table, examine every non-PK column and check if it could reference a PK
     const tab = queryTabs.find((t) => t.id === tabId)
     if (!tab) return
 
+    // ── Variable substitution ────────────────────────────────────
+    let sqlToRun = sql
+    if (tab.variables) {
+      for (const [k, v] of Object.entries(tab.variables)) {
+        sqlToRun = sqlToRun.replaceAll(`{{${k}}}`, v)
+      }
+    }
+
+    // ── Helper to append output messages ─────────────────────────
+    const appendOutput = (msg: Omit<OutputMessage, 'timestamp'>) => {
+      const tabs = get().queryTabs.map((t) => {
+        if (t.id !== tabId) return t
+        let messages = [...(t.outputMessages || []), { ...msg, timestamp: new Date().toISOString() }]
+        // Cap at 1000 messages
+        if (messages.length > 1000) messages = messages.slice(-1000)
+        // Remove messages older than 48 hours
+        const cutoff = Date.now() - 48 * 60 * 60 * 1000
+        messages = messages.filter(m => new Date(m.timestamp).getTime() > cutoff)
+        return { ...t, outputMessages: messages }
+      })
+      set({ queryTabs: tabs })
+    }
+
+    appendOutput({ type: 'info', message: `Executing query:\n${sqlToRun}` })
+
     const startTime = Date.now()
 
     // Set running state
@@ -1423,7 +1461,7 @@ For each table, examine every non-PK column and check if it could reference a PK
     try {
       const result = await window.api.db.query(
         activeConnectionId,
-        sql,
+        sqlToRun,
         tab.writeEnabled,
         100,
         0
@@ -1438,7 +1476,7 @@ For each table, examine every non-PK column and check if it could reference a PK
         affectedRows: (result as QueryResult & { affectedRows?: number }).affectedRows ?? 0,
         executionTimeMs,
         hasMore: (result as QueryResult & { hasMore?: boolean }).hasMore ?? false,
-        sql,
+        sql: sqlToRun,
         command: result.command ?? ''
       }
 
@@ -1448,6 +1486,8 @@ For each table, examine every non-PK column and check if it could reference a PK
         )
       })
 
+      appendOutput({ type: 'success', message: `Query completed in ${executionTimeMs}ms. ${result.rowCount} rows returned.` })
+
       // Add to history
       const conn = get().connections.find((c) => c.id === activeConnectionId)
       await get().addHistoryEntry({
@@ -1455,7 +1495,7 @@ For each table, examine every non-PK column and check if it could reference a PK
         connectionId: activeConnectionId,
         connectionName: conn?.name ?? 'Unknown',
         schema: get().activeSchema ?? '',
-        executedSql: sql,
+        executedSql: sqlToRun,
         executionTimeMs,
         resultRowCount: result.rowCount
       })
@@ -1470,7 +1510,7 @@ For each table, examine every non-PK column and check if it could reference a PK
           // Retry query after reconnect
           const tab2 = get().queryTabs.find((t) => t.id === tabId)
           if (tab2) {
-            const retryResult = await window.api.db.query(activeConnectionId, sql, tab2.writeEnabled, 100, 0)
+            const retryResult = await window.api.db.query(activeConnectionId, sqlToRun, tab2.writeEnabled, 100, 0)
             const executionTimeMs = Date.now() - startTime
             const successResult: QueryExecution = {
               status: 'success' as QueryExecutionStatus,
@@ -1480,7 +1520,7 @@ For each table, examine every non-PK column and check if it could reference a PK
               affectedRows: (retryResult as QueryResult & { affectedRows?: number }).affectedRows ?? 0,
               executionTimeMs,
               hasMore: (retryResult as QueryResult & { hasMore?: boolean }).hasMore ?? false,
-              sql,
+              sql: sqlToRun,
               command: retryResult.command ?? ''
             }
             set({
@@ -1488,6 +1528,7 @@ For each table, examine every non-PK column and check if it could reference a PK
                 t.id === tabId ? { ...t, lastResult: successResult } : t
               )
             })
+            appendOutput({ type: 'success', message: `Query completed in ${executionTimeMs}ms (after reconnect). ${retryResult.rowCount} rows returned.` })
             return
           }
         } catch { /* reconnect/retry failed — fall through to show error */ }
@@ -1505,7 +1546,7 @@ For each table, examine every non-PK column and check if it could reference a PK
         affectedRows: 0,
         executionTimeMs: Date.now() - startTime,
         hasMore: false,
-        sql,
+        sql: sqlToRun,
         command: '',
         error: message,
         errorLine
@@ -1516,6 +1557,8 @@ For each table, examine every non-PK column and check if it could reference a PK
           t.id === tabId ? { ...t, lastResult: errorResult } : t
         )
       })
+
+      appendOutput({ type: 'error', message })
     }
   },
 
@@ -1567,13 +1610,17 @@ For each table, examine every non-PK column and check if it could reference a PK
       await window.api.db.cancelQuery(activeConnectionId)
     } catch { /* ignore */ }
 
-    set({
-      queryTabs: get().queryTabs.map((t) =>
-        t.id === tabId && t.lastResult?.status === 'running'
-          ? { ...t, lastResult: { ...t.lastResult, status: 'cancelled' as QueryExecutionStatus } }
-          : t
-      )
+    const cancelledTabs = get().queryTabs.map((t) => {
+      if (t.id === tabId && t.lastResult?.status === 'running') {
+        return {
+          ...t,
+          lastResult: { ...t.lastResult, status: 'cancelled' as QueryExecutionStatus },
+          outputMessages: [...(t.outputMessages || []), { type: 'warning' as const, message: 'Query cancelled.', timestamp: new Date().toISOString() }]
+        }
+      }
+      return t
     })
+    set({ queryTabs: cancelledTabs })
   },
 
   loadAllColumnsForAutocomplete: async () => {
@@ -1621,6 +1668,24 @@ For each table, examine every non-PK column and check if it could reference a PK
     const updated = get().savedQueries.filter((q) => q.id !== id)
     set({ savedQueries: updated })
     await window.api.settings.set('dbInspector.savedQueries', updated)
+  },
+
+  setTabVariable: (tabId, name, value) => {
+    const tabs = get().queryTabs.map((t) =>
+      t.id === tabId ? { ...t, variables: { ...(t.variables || {}), [name]: value } } : t
+    )
+    set({ queryTabs: tabs })
+    get().saveQueryTabs()
+  },
+
+  removeTabVariable: (tabId, name) => {
+    const tabs = get().queryTabs.map((t) => {
+      if (t.id !== tabId) return t
+      const { [name]: _, ...rest } = t.variables || {}
+      return { ...t, variables: rest }
+    })
+    set({ queryTabs: tabs })
+    get().saveQueryTabs()
   }
 }))
 

@@ -1,6 +1,6 @@
 import { useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Download, Copy, AlertCircle, Loader2 } from 'lucide-react'
+import { Download, Copy, Check, AlertCircle, Loader2 } from 'lucide-react'
 import CellModal from './CellModal'
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -51,6 +51,23 @@ interface ContextMenu {
   row: Record<string, unknown>
 }
 
+// ── Clipboard fallback for Electron ──────────────────────────────────
+
+async function copyToClipboard(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+  }
+}
+
 // ── Cell renderer ────────────────────────────────────────────────────
 
 function CellValue({
@@ -67,7 +84,7 @@ function CellValue({
 
   const handleClick = useCallback(async () => {
     const str = value === null || value === undefined ? '' : String(value)
-    await navigator.clipboard.writeText(str)
+    await copyToClipboard(str)
     setFlashCopy(true)
     setTimeout(() => setFlashCopy(false), 400)
     onClick()
@@ -167,6 +184,9 @@ export default function ResultsGrid({
 
   // Context menu
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null)
+
+  // Copy TSV feedback
+  const [copiedTsv, setCopiedTsv] = useState(false)
 
   // Load-more guard
   const isLoadingMoreRef = useRef(false)
@@ -310,13 +330,15 @@ export default function ResultsGrid({
   // Copy all as TSV
   const handleCopyAllTsv = useCallback(async () => {
     const tsv = serializeTsv(sortedRows, fields)
-    await navigator.clipboard.writeText(tsv)
+    await copyToClipboard(tsv)
+    setCopiedTsv(true)
+    setTimeout(() => setCopiedTsv(false), 1500)
   }, [sortedRows, fields])
 
   // Copy row as JSON
   const handleCopyRowJson = useCallback(
-    (row: Record<string, unknown>) => {
-      navigator.clipboard.writeText(JSON.stringify(row, null, 2))
+    async (row: Record<string, unknown>) => {
+      await copyToClipboard(JSON.stringify(row, null, 2))
       setContextMenu(null)
     },
     []
@@ -324,9 +346,9 @@ export default function ResultsGrid({
 
   // Copy row as TSV
   const handleCopyRowTsv = useCallback(
-    (row: Record<string, unknown>) => {
+    async (row: Record<string, unknown>) => {
       const tsv = fields.map((f) => (row[f.name] === null ? '' : String(row[f.name]))).join('\t')
-      navigator.clipboard.writeText(tsv)
+      await copyToClipboard(tsv)
       setContextMenu(null)
     },
     [fields]
@@ -376,15 +398,19 @@ export default function ResultsGrid({
         </span>
         <button
           onClick={handleCopyAllTsv}
-          className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface rounded transition-colors"
+          className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded active:scale-95 transition-all ${
+            copiedTsv
+              ? 'text-green-400 animate-flash-green'
+              : 'text-text-secondary hover:text-text-primary hover:bg-surface'
+          }`}
           title="Copy all rows as TSV"
         >
-          <Copy className="w-3 h-3" />
-          Copy TSV
+          {copiedTsv ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          {copiedTsv ? 'Copied!' : 'Copy TSV'}
         </button>
         <button
           onClick={handleExportCsv}
-          className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface rounded transition-colors"
+          className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface rounded active:scale-95 transition-all"
           title="Export as CSV"
         >
           <Download className="w-3 h-3" />
@@ -392,7 +418,7 @@ export default function ResultsGrid({
         </button>
         <button
           onClick={handleExportJson}
-          className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface rounded transition-colors"
+          className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface rounded active:scale-95 transition-all"
           title="Export as JSON"
         >
           <Download className="w-3 h-3" />
