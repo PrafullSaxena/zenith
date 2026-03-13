@@ -18,7 +18,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Last Activity:** 2026-03-13
 **Last Activity Description:** Completed 12-02 (TextCraft three-panel UI)
 
-**Progress:** [█████████░] 87%
+**Progress:** [█████████░] 89%
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 12 P02 | 4min | 3 tasks | 4 files |
 | Phase 04-dbinspector-plugin P01 | 5 | 2 tasks | 7 files |
 | Phase 04-dbinspector-plugin P03 | 8min | 2 tasks | 3 files |
+| Phase 04-dbinspector-plugin P02 | 6 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -170,6 +171,9 @@ Recent decisions affecting current work:
 - [Phase 04-dbinspector-plugin]: introspection.ts uses DbManagerLike duck-type interface instead of PostgresConnectionManager — both managers satisfy it
 - [Phase 04-dbinspector-plugin]: isLoadingMoreRef (useRef) guards scroll-triggered loadMore to prevent concurrent calls when rows prop changes
 - [Phase 04-dbinspector-plugin]: ResultsGrid receives onLoadMore callback prop — parent wires to loadMoreRows store action for decoupling
+- [Phase 04-dbinspector-plugin]: EditorView created once in mount-only useEffect — Compartment handles schema/dialect live updates without recreation
+- [Phase 04-dbinspector-plugin]: buildCmSchema exported as standalone function (pure transform) — transforms columnsCache to CodeMirror schema format
+- [Phase 04-dbinspector-plugin]: QueryConsole added as 5th tab in DbInspectorView; inline/split output mode toggle per-tab (DataGrip-style)
 
 ### Pending Todos
 
@@ -183,6 +187,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-13T19:33:33.968Z
-**Stopped at:** Completed 04-03-PLAN.md
+**Last session:** 2026-03-13T19:35:11.160Z
+**Stopped at:** Completed 04-02-PLAN.md
 **Resume file:** None
