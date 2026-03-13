@@ -29,6 +29,13 @@ const api = {
       ipcRenderer.invoke('app:exportDiagnosticLogs'),
     selectDirectory: (currentPath?: string): Promise<{ canceled: boolean; path: string }> =>
       ipcRenderer.invoke('app:selectDirectory', currentPath),
+    exportPdf: (data: {
+      markdown: string;
+      title?: string;
+      mermaidImages?: Record<number, string>;
+      orientation?: 'portrait' | 'landscape';
+    }): Promise<{ filePath: string | null }> =>
+      ipcRenderer.invoke('app:exportPdf', data),
   },
   bitbucket: {
     connect: (): Promise<{ connected: boolean; displayName: string }> =>

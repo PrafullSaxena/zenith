@@ -428,21 +428,56 @@ export function registerIpcHandlers(): void {
     cancelCliReview(sessionId)
   })
 
-  // --- Launchpad channels ---
-  ipcMain.handle('launchpad:exportPdf', async (_event, estimation) => {
+  // --- Unified PDF export channel ---
+  ipcMain.handle('app:exportPdf', async (_event, data: {
+    markdown: string;
+    title?: string;
+    mermaidImages?: Record<number, string>;
+    orientation?: 'portrait' | 'landscape';
+  }) => {
     const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
     if (!mainWindow) throw new Error('No window available for save dialog')
-    const { exportEstimationPdf } = await import('./launchpad/pdf-generator')
-    const filePath = await exportEstimationPdf(mainWindow, estimation)
+    const { exportPdf } = await import('./lib/pdf-generator')
+    const filePath = await exportPdf(mainWindow, data)
     return { filePath }
   })
 
-  // --- TextCraft channels ---
+  // --- Launchpad channels (forwards to unified PDF engine) ---
+  ipcMain.handle('launchpad:exportPdf', async (_event, estimation: {
+    name: string;
+    provider: string;
+    lineItems: Array<{ serviceName: string; configSummary: string; monthly: number; yearly: number }>;
+    totalMonthly: number;
+    totalYearly: number;
+    aiRecommendations?: string;
+  }) => {
+    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+    if (!mainWindow) throw new Error('No window available for save dialog')
+
+    // Convert estimation to markdown for unified engine
+    const tableHeader = '| Service | Configuration | Monthly | Yearly |\n| --- | --- | --- | --- |'
+    const tableRows = estimation.lineItems.map(
+      (li) => `| ${li.serviceName} | ${li.configSummary} | $${li.monthly.toFixed(2)} | $${li.yearly.toFixed(2)} |`
+    ).join('\n')
+    const totalRow = `\n**Total: $${estimation.totalMonthly.toFixed(2)}/mo — $${estimation.totalYearly.toFixed(2)}/yr**`
+
+    let md = `# ${estimation.name}\n\n**Provider:** ${estimation.provider}\n\n${tableHeader}\n${tableRows}\n${totalRow}`
+
+    if (estimation.aiRecommendations) {
+      md += `\n\n## AI Recommendations\n\n${estimation.aiRecommendations}`
+    }
+
+    const { exportPdf } = await import('./lib/pdf-generator')
+    const filePath = await exportPdf(mainWindow, { markdown: md, title: estimation.name })
+    return { filePath }
+  })
+
+  // --- TextCraft channels (backward-compatible alias for unified engine) ---
   ipcMain.handle('textcraft:exportPdf', async (_event, data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }) => {
     const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
     if (!mainWindow) throw new Error('No window available for save dialog')
-    const { exportTextCraftPdf } = await import('./textcraft/pdf-generator')
-    const filePath = await exportTextCraftPdf(mainWindow, data)
+    const { exportPdf } = await import('./lib/pdf-generator')
+    const filePath = await exportPdf(mainWindow, data)
     return { filePath }
   })
 
@@ -600,77 +635,48 @@ export function registerIpcHandlers(): void {
     return Array.from(new Uint8Array(buffer))
   })
 
-  // --- DbInspector ER Diagram PDF export ---
+  // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---
   ipcMain.handle('db:exportErDiagramPdf', async (_event, data: {
-    imageDataUrl: string
-    width: number
-    height: number
-    connectionName: string
-    schema: string
-    tableCount: number
-    relationshipMode: string
-    generatedAt: string
+    markdown?: string;
+    mermaidImages?: Record<number, string>;
+    title?: string;
+    // Legacy fields (image-based export)
+    imageDataUrl?: string;
+    width?: number;
+    height?: number;
+    connectionName?: string;
+    schema?: string;
+    tableCount?: number;
+    relationshipMode?: string;
+    generatedAt?: string;
   }) => {
     const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
     if (!mainWindow) throw new Error('No window available for save dialog')
+    const { exportPdf } = await import('./lib/pdf-generator')
 
-    const workingDir = getSetting('general.workingDirectory') as string
-    const defaultDir = workingDir || app.getPath('downloads')
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
-    const schemaSlug = data.schema.replace(/\s+/g, '-') || 'schema'
-    const filename = `er-diagram-${schemaSlug}-${timestamp}.pdf`
+    // If markdown is provided, use unified engine directly
+    if (data.markdown) {
+      const filePath = await exportPdf(mainWindow, {
+        markdown: data.markdown,
+        title: data.title || 'ER Diagram',
+        mermaidImages: data.mermaidImages,
+        orientation: 'landscape'
+      })
+      return { filePath }
+    }
 
-    const { filePath, canceled } = await dialog.showSaveDialog(mainWindow, {
-      title: 'Export ER Diagram as PDF',
-      defaultPath: `${defaultDir}/${filename}`,
-      filters: [{ name: 'PDF Document', extensions: ['pdf'] }]
+    // Legacy fallback: image-based export — wrap image in markdown
+    const title = data.connectionName ? `${data.connectionName} — ${data.schema}` : 'ER Diagram'
+    const md = `# ${title}\n\n**Tables:** ${data.tableCount ?? 'N/A'} | **Mode:** ${data.relationshipMode ?? 'N/A'}`
+    const mermaidImages = data.imageDataUrl ? { 0: data.imageDataUrl } : undefined
+    const mdWithDiagram = mermaidImages ? md + '\n\n```mermaid\nplaceholder\n```' : md
+
+    const filePath = await exportPdf(mainWindow, {
+      markdown: mdWithDiagram,
+      title,
+      mermaidImages,
+      orientation: 'landscape'
     })
-
-    if (canceled || !filePath) return { filePath: null }
-
-    // Strip data URL prefix to get raw base64
-    const base64 = data.imageDataUrl.replace(/^data:image\/png;base64,/, '')
-
-    const pdfmake = await import('pdfmake')
-    pdfmake.default.fonts = {
-      Helvetica: {
-        normal: 'Helvetica',
-        bold: 'Helvetica-Bold',
-        italics: 'Helvetica-Oblique',
-        bolditalics: 'Helvetica-BoldOblique'
-      }
-    }
-
-    const useColor = getSetting('general.coloredPdf') !== false
-    const erTitleColor = useColor ? '#0d9488' : '#111111'
-    const erSubColor = useColor ? '#115e59' : '#666666'
-
-    const content: unknown[] = [
-      { text: 'ER Diagram', fontSize: 22, bold: true, color: erTitleColor, marginBottom: 4 },
-      { text: `${data.connectionName} / ${data.schema}`, fontSize: 14, color: erSubColor, marginBottom: 4 },
-      {
-        text: `${data.tableCount} tables · ${data.relationshipMode} mode · Generated ${new Date(data.generatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
-        fontSize: 10,
-        color: '#888888',
-        marginBottom: 20
-      },
-      {
-        image: `data:image/png;base64,${base64}`,
-        width: Math.min(data.width, 755) // landscape page width minus margins
-      }
-    ]
-
-    const docDefinition = {
-      defaultStyle: { font: 'Helvetica', fontSize: 11 },
-      pageOrientation: 'landscape' as const,
-      content,
-      pageMargins: [40, 40, 40, 40]
-    }
-
-    const pdf = pdfmake.default.createPdf(docDefinition as Parameters<typeof pdfmake.default.createPdf>[0])
-    const buffer = await pdf.getBuffer()
-    fs.writeFileSync(filePath, buffer)
-
     return { filePath }
   })
 }

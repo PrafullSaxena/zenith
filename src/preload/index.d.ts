@@ -21,6 +21,12 @@ export interface ElectronAPI {
   app: {
     probeOllama: () => Promise<{ available: boolean; models: string[] }>
     probeCli: (command: string) => Promise<{ available: boolean }>
+    exportPdf: (data: {
+      markdown: string
+      title?: string
+      mermaidImages?: Record<number, string>
+      orientation?: 'portrait' | 'landscape'
+    }) => Promise<{ filePath: string | null }>
   }
   bitbucket: {
     connect: () => Promise<{ connected: boolean; displayName: string }>
