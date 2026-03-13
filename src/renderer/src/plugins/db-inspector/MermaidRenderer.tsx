@@ -7,13 +7,15 @@
  * - Orphaned mermaid error SVGs accumulating in the document body
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
+import { ZoomIn, ZoomOut, Maximize2, Code2, Check } from 'lucide-react'
 
 interface MermaidRendererProps {
   syntax: string
   className?: string
   /** Enable interactive zoom/pan controls (default: false). */
   interactive?: boolean
+  /** Show a "Copy Code" overlay button on hover (default: false). */
+  showCopyCode?: boolean
 }
 
 const MIN_ZOOM = 0.2
@@ -65,11 +67,21 @@ function cleanupMermaidErrors(): void {
 export default function MermaidRenderer({
   syntax,
   className,
-  interactive = false
+  interactive = false,
+  showCopyCode = false
 }: MermaidRendererProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgContainerRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
+  const [codeCopied, setCodeCopied] = useState(false)
+
+  // Copy mermaid source code to clipboard
+  const handleCopyCode = useCallback(() => {
+    navigator.clipboard.writeText(syntax).then(() => {
+      setCodeCopied(true)
+      setTimeout(() => setCodeCopied(false), 1500)
+    })
+  }, [syntax])
 
   // Zoom & Pan state
   const [zoom, setZoom] = useState(1)
@@ -196,10 +208,30 @@ export default function MermaidRenderer({
 
   const zoomPercent = Math.round(zoom * 100)
 
+  // Copy code overlay (shared between interactive and non-interactive modes)
+  const copyCodeOverlay = showCopyCode ? (
+    <button
+      type="button"
+      onClick={handleCopyCode}
+      className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-md
+        text-[10px] font-medium bg-surface/80 backdrop-blur-sm border border-border/50
+        text-text-secondary hover:text-text-primary hover:bg-surface-elevated
+        opacity-0 group-hover:opacity-100 transition-opacity"
+      title="Copy mermaid code"
+    >
+      {codeCopied ? (
+        <><Check size={11} className="text-green-400" /> Copied</>
+      ) : (
+        <><Code2 size={11} /> Code</>
+      )}
+    </button>
+  ) : null
+
   // Non-interactive: simple render
   if (!interactive) {
     return (
-      <div className={className}>
+      <div className={`group relative ${className ?? ''}`}>
+        {copyCodeOverlay}
         {error && (
           <pre className="mb-2 rounded border border-red-500/20 bg-red-500/10 p-2 text-xs text-red-400">
             Diagram render error: {error}
@@ -212,11 +244,30 @@ export default function MermaidRenderer({
 
   // Interactive: zoom/pan wrapper
   return (
-    <div className={`relative ${className ?? ''}`}>
+    <div className={`group relative ${className ?? ''}`}>
       {error && (
         <pre className="mb-2 rounded border border-red-500/20 bg-red-500/10 p-2 text-xs text-red-400">
           Diagram render error: {error}
         </pre>
+      )}
+
+      {/* Copy code overlay (positioned below zoom controls) */}
+      {showCopyCode && (
+        <button
+          type="button"
+          onClick={handleCopyCode}
+          className="absolute left-3 top-3 z-10 flex items-center gap-1 px-2 py-1 rounded-md
+            text-[10px] font-medium bg-surface/80 backdrop-blur-sm border border-border/50
+            text-text-secondary hover:text-text-primary hover:bg-surface-elevated
+            opacity-0 group-hover:opacity-100 transition-opacity"
+          title="Copy mermaid code"
+        >
+          {codeCopied ? (
+            <><Check size={11} className="text-green-400" /> Copied</>
+          ) : (
+            <><Code2 size={11} /> Code</>
+          )}
+        </button>
       )}
 
       {/* Zoom controls */}
