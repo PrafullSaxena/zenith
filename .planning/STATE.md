@@ -18,7 +18,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Last Activity:** 2026-03-13
 **Last Activity Description:** Completed 12-02 (TextCraft three-panel UI)
 
-**Progress:** [████████░░] 84%
+**Progress:** [█████████░] 87%
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 12 P01 | 2min | 2 tasks | 6 files |
 | Phase 12 P02 | 4min | 3 tasks | 4 files |
 | Phase 04-dbinspector-plugin P01 | 5 | 2 tasks | 7 files |
+| Phase 04-dbinspector-plugin P03 | 8min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -167,6 +168,8 @@ Recent decisions affecting current work:
 - [Phase 04-dbinspector-plugin]: MySqlConnectionManager.cancelQuery tracks thread IDs via SELECT CONNECTION_ID() before each query, uses KILL QUERY for cancellation
 - [Phase 04-dbinspector-plugin]: db:query pagination: appends LIMIT N OFFSET M only if not present in SQL; hasMore detection when rows.length === limit
 - [Phase 04-dbinspector-plugin]: introspection.ts uses DbManagerLike duck-type interface instead of PostgresConnectionManager — both managers satisfy it
+- [Phase 04-dbinspector-plugin]: isLoadingMoreRef (useRef) guards scroll-triggered loadMore to prevent concurrent calls when rows prop changes
+- [Phase 04-dbinspector-plugin]: ResultsGrid receives onLoadMore callback prop — parent wires to loadMoreRows store action for decoupling
 
 ### Pending Todos
 
@@ -180,6 +183,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-13T19:26:33.572Z
-**Stopped at:** Completed 04-01-PLAN.md
+**Last session:** 2026-03-13T19:33:33.968Z
+**Stopped at:** Completed 04-03-PLAN.md
 **Resume file:** None
