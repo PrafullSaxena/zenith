@@ -9,11 +9,13 @@
  * (decorations applied to the contentDOM element by CodeBlockLowlight).
  */
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect, lazy, Suspense } from 'react'
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/react'
-import { ChevronDown, Wand2, FileCode2, Copy, Check } from 'lucide-react'
+import { ChevronDown, Wand2, FileCode2, Copy, Check, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { LANGUAGES } from '../../lib/lowlight-setup'
+
+const MermaidRenderer = lazy(() => import('../db-inspector/MermaidRenderer'))
 
 // ── File extension map ──────────────────────────────────────────────
 
@@ -120,6 +122,15 @@ export default function CodeBlockNodeView({
   const [copied, setCopied] = useState(false)
   const [showLangPicker, setShowLangPicker] = useState(false)
 
+  // Mermaid live preview state
+  const isMermaid = language === 'mermaid'
+  const [showDiagram, setShowDiagram] = useState(isMermaid)
+
+  // Auto-switch to diagram mode when language changes to/from mermaid
+  useEffect(() => {
+    setShowDiagram(isMermaid)
+  }, [isMermaid])
+
   const filename = useMemo(() => inferFilename(code, language), [code, language])
 
   const langLabel = useMemo(
@@ -216,6 +227,18 @@ export default function CodeBlockNodeView({
             )}
           </div>
 
+          {/* Mermaid diagram/code toggle */}
+          {isMermaid && code.trim() && (
+            <button
+              type="button"
+              onClick={() => setShowDiagram(!showDiagram)}
+              className="code-block-action-btn"
+              title={showDiagram ? 'Edit code' : 'Show diagram'}
+            >
+              {showDiagram ? <EyeOff size={11} /> : <Eye size={11} />}
+            </button>
+          )}
+
           {/* Format button */}
           <button
             type="button"
@@ -238,10 +261,23 @@ export default function CodeBlockNodeView({
         </div>
       </div>
 
-      {/* Code content -- ProseMirror manages this, lowlight applies decorations */}
-      <pre className="code-block-pre">
-        <NodeViewContent as="code" className={`hljs language-${language}`} />
-      </pre>
+      {/* Mermaid diagram or code content */}
+      {isMermaid && showDiagram && code.trim() ? (
+        <div className="relative min-h-[100px] p-3" contentEditable={false}>
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-8 text-text-secondary/50">
+              <Loader2 size={16} className="animate-spin mr-2" />
+              Rendering diagram...
+            </div>
+          }>
+            <MermaidRenderer syntax={code} interactive showCopyCode />
+          </Suspense>
+        </div>
+      ) : (
+        <pre className="code-block-pre">
+          <NodeViewContent as="code" className={`hljs language-${language}`} />
+        </pre>
+      )}
     </NodeViewWrapper>
   )
 }
