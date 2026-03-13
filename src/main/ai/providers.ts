@@ -6,6 +6,7 @@
 
 import { safeStorage } from 'electron'
 import Store from 'electron-store'
+import { getSetting } from '../settings-store'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
@@ -33,6 +34,19 @@ export async function getApiKeyForProvider(providerId: string): Promise<string |
 
   const encrypted = credentialsStore.get(providerId) as string
   return safeStorage.decryptString(Buffer.from(encrypted, 'base64'))
+}
+
+/**
+ * Retrieve the base URL configured for a provider from the agents.providers setting.
+ * Returns undefined if the provider has no custom base URL set.
+ */
+export function getBaseUrlForProvider(providerId: string): string | undefined {
+  const providers = getSetting('agents.providers') as
+    | Array<{ id: string; baseUrl?: string }>
+    | undefined
+  if (!Array.isArray(providers)) return undefined
+  const match = providers.find((p) => p.id === providerId)
+  return match?.baseUrl || undefined
 }
 
 /**
@@ -74,14 +88,30 @@ export function createModel(
       return provider(modelName) as unknown as LanguageModel
     }
 
+    case 'cursor-agent': {
+      // Cursor API uses Basic auth (not Bearer) and only supports the
+      // Chat Completions endpoint (/v1/chat/completions), not the newer
+      // OpenAI Responses API (/v1/responses).
+      // In @ai-sdk/openai v3+, provider(model) defaults to Responses API;
+      // use provider.chat(model) to explicitly select Chat Completions.
+      const cursorBaseUrl = baseUrl || 'https://api.cursor.com/v1'
+      const provider = createOpenAI({
+        compatibility: 'compatible',
+        apiKey: apiKey || 'unused',
+        baseURL: cursorBaseUrl,
+        ...(apiKey
+          ? { headers: { Authorization: `Basic ${apiKey}` } }
+          : {})
+      })
+      return provider.chat(modelName)
+    }
+
     case 'codex':
     case 'opencode':
-    case 'cursor-agent':
     default: {
       if (
         providerId !== 'codex' &&
         providerId !== 'opencode' &&
-        providerId !== 'cursor-agent' &&
         !providerId.startsWith('custom-')
       ) {
         throw new Error(`Unsupported provider: ${providerId}`)

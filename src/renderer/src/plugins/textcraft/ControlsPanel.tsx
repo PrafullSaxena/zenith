@@ -64,7 +64,7 @@ export default function ControlsPanel(): React.JSX.Element {
     if (!agent) return
     void useTextCraftStore
       .getState()
-      .startRefinement(agent.id, agent.model || agent.id, agent.command || 'sdk')
+      .startRefinement(agent.id, agent.model || agent.id, agent.command || undefined)
   }
 
   const handleCancel = (): void => {

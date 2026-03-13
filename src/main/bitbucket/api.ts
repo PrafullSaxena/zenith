@@ -4,9 +4,17 @@
  * All functions run in the Electron main process (unrestricted network access).
  * The renderer never makes direct Bitbucket API calls -- it goes through IPC.
  *
+ * Uses Electron's `net.fetch` (Chromium networking stack) instead of Node.js
+ * native `fetch` so that:
+ *  - macOS system proxy settings are respected
+ *  - macOS Keychain certificates are used (important for corporate environments)
+ *  - macOS Sequoia+ network permissions work correctly in packaged apps
+ *  - Network access is handled through Chromium's proven stack, not Node.js undici
+ *
  * Uses HTTP Basic Auth with username + app_password (Bitbucket App Passwords).
  */
 
+import { net } from 'electron'
 import type { BitbucketPR, BitbucketPRListResponse } from './types'
 
 const BB_API = 'https://api.bitbucket.org/2.0'
@@ -23,7 +31,7 @@ export function basicAuthHeader(username: string, appPassword: string): string {
  * Returns the authenticated user's display name on success, throws on failure.
  */
 export async function testCredentials(authHeader: string): Promise<string> {
-  const response = await fetch(`${BB_API}/user`, {
+  const response = await net.fetch(`${BB_API}/user`, {
     headers: { Authorization: authHeader }
   })
 
@@ -75,9 +83,19 @@ export async function listOpenPRs(
 
   console.log(`[bitbucket-api] listOpenPRs: GET ${url}`)
 
-  const response = await fetch(url, {
-    headers: { Authorization: authHeader }
-  })
+  let response: Response
+  try {
+    response = await net.fetch(url, {
+      headers: { Authorization: authHeader }
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(`[bitbucket-api] listOpenPRs: network error:`, message)
+    throw new Error(
+      `Cannot reach Bitbucket API: ${message}. ` +
+      'Check your internet connection, VPN, or proxy settings.'
+    )
+  }
 
   console.log(`[bitbucket-api] listOpenPRs: status=${response.status}`)
 
@@ -119,7 +137,7 @@ export async function getPRDiff(
   prId: number,
   authHeader: string
 ): Promise<string> {
-  const response = await fetch(
+  const response = await net.fetch(
     `${BB_API}/repositories/${workspace}/${repoSlug}/pullrequests/${prId}/diff`,
     {
       headers: { Authorization: authHeader }
@@ -159,7 +177,7 @@ export async function postInlineComment(
   line: number,
   comment: string
 ): Promise<void> {
-  const response = await fetch(
+  const response = await net.fetch(
     `${BB_API}/repositories/${workspace}/${repoSlug}/pullrequests/${prId}/comments`,
     {
       method: 'POST',
@@ -197,7 +215,7 @@ export async function postTopLevelComment(
   authHeader: string,
   comment: string
 ): Promise<void> {
-  const response = await fetch(
+  const response = await net.fetch(
     `${BB_API}/repositories/${workspace}/${repoSlug}/pullrequests/${prId}/comments`,
     {
       method: 'POST',
@@ -227,7 +245,7 @@ export async function getDiffstatCount(
   prId: number,
   authHeader: string
 ): Promise<number> {
-  const response = await fetch(
+  const response = await net.fetch(
     `${BB_API}/repositories/${workspace}/${repoSlug}/pullrequests/${prId}/diffstat?pagelen=1`,
     { headers: { Authorization: authHeader } }
   )

@@ -42,7 +42,7 @@ export const DEFAULT_PROVIDERS: AgentProvider[] = [
     type: 'cli',
     baseUrl: '',
     model: '',
-    command: 'claude -p',
+    command: 'claude -p --trust',
     status: 'not-configured',
     isCustom: false,
     requiresApiKey: false,
@@ -54,7 +54,7 @@ export const DEFAULT_PROVIDERS: AgentProvider[] = [
     type: 'cli',
     baseUrl: '',
     model: '',
-    command: 'codex exec --json -',
+    command: 'codex exec --json --skip-git-repo-check -',
     status: 'not-configured',
     isCustom: false,
     requiresApiKey: false,
@@ -99,13 +99,13 @@ export const DEFAULT_PROVIDERS: AgentProvider[] = [
   {
     id: 'cursor-agent',
     name: 'Cursor Agent',
-    type: 'cli',
-    baseUrl: '',
-    model: '',
-    command: 'cursor-agent -p',
+    type: 'cloud',
+    baseUrl: 'https://api.cursor.com/v1',
+    model: 'gpt-4o',
+    command: '',
     status: 'not-configured',
     isCustom: false,
-    requiresApiKey: false,
+    requiresApiKey: true,
     hasApiKey: false
   }
 ]

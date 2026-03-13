@@ -45,7 +45,10 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
         }
       }
 
-      // Merge defaults with saved state — defaults are always present
+      // Merge defaults with saved state — defaults are always present.
+      // For built-in providers, the `type` and `command` from defaults take
+      // precedence when the type has changed (e.g., cursor-agent was converted
+      // from CLI to cloud). Only CLI agents preserve user-customised commands.
       const merged: AgentProvider[] = DEFAULT_PROVIDERS.map((def) => {
         const s = savedMap.get(def.id)
         if (s) {
@@ -53,7 +56,10 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
             ...def,
             model: s.model || def.model,
             baseUrl: s.baseUrl || def.baseUrl,
-            command: s.command || def.command,
+            // Only preserve saved command for CLI agents — cloud/SDK agents
+            // always use the default (empty) command to avoid stale CLI commands
+            // from a previous provider type lingering in persisted settings.
+            command: def.type === 'cli' ? (s.command || def.command) : def.command,
             status: 'not-configured' as const,
             hasApiKey: false
           }

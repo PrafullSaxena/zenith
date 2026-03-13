@@ -13,7 +13,7 @@
 
 import type { BrowserWindow } from 'electron'
 import { streamText } from 'ai'
-import { createModel, getApiKeyForProvider } from './providers'
+import { createModel, getApiKeyForProvider, getBaseUrlForProvider } from './providers'
 
 /**
  * Safely send an IPC message to the renderer.
@@ -76,7 +76,8 @@ RULES:
 
   try {
     const apiKey = await getApiKeyForProvider(providerId)
-    const model = createModel(providerId, modelName, apiKey)
+    const baseUrl = getBaseUrlForProvider(providerId)
+    const model = createModel(providerId, modelName, apiKey, baseUrl)
 
     const result = streamText({
       model,
@@ -144,7 +145,8 @@ export async function streamAnalysis(params: {
 
   try {
     const apiKey = await getApiKeyForProvider(providerId)
-    const model = createModel(providerId, modelName, apiKey)
+    const baseUrl = getBaseUrlForProvider(providerId)
+    const model = createModel(providerId, modelName, apiKey, baseUrl)
 
     const result = streamText({
       model,

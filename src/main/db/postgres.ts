@@ -115,11 +115,37 @@ export class PostgresConnectionManager {
     })
 
     // Verify the connection works
-    const client = await pool.connect()
+    let client
     try {
+      client = await pool.connect()
       await client.query('SELECT 1')
+    } catch (err) {
+      // Enhance error message for common connection failures
+      const message = err instanceof Error ? err.message : String(err)
+      await pool.end().catch(() => {})
+
+      if (message.includes('timeout') || message.includes('ETIMEDOUT')) {
+        throw new Error(
+          `Connection timed out to ${config.host}:${config.port}. ` +
+          'Possible causes: database server is unreachable, firewall is blocking the port, ' +
+          'VPN is not connected, or the security group does not allow your IP address.'
+        )
+      }
+      if (message.includes('ENOTFOUND')) {
+        throw new Error(
+          `Cannot resolve hostname "${config.host}". ` +
+          'Check that the host address is correct and DNS is working.'
+        )
+      }
+      if (message.includes('ECONNREFUSED')) {
+        throw new Error(
+          `Connection refused by ${config.host}:${config.port}. ` +
+          'The database server may not be running, or the port may be incorrect.'
+        )
+      }
+      throw err
     } finally {
-      client.release()
+      client?.release()
     }
 
     this.pools.set(config.id, pool)

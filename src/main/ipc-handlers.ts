@@ -1,4 +1,4 @@
-import { ipcMain, safeStorage, shell, BrowserWindow, dialog, app } from 'electron'
+import { ipcMain, safeStorage, shell, BrowserWindow, dialog, app, net } from 'electron'
 import Store from 'electron-store'
 import { getSettings, getSetting, setSetting, resetSettings } from './settings-store'
 import { TokenManager } from './bitbucket/token-manager'
@@ -201,7 +201,7 @@ export function registerIpcHandlers(): void {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 3000)
 
-      const response = await fetch('http://localhost:11434/api/tags', {
+      const response = await net.fetch('http://localhost:11434/api/tags', {
         signal: controller.signal
       })
       clearTimeout(timeout)

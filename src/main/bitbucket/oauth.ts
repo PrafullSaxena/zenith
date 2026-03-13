@@ -6,7 +6,7 @@
  * HTTP server is needed -- webRequest.onBeforeRequest catches the redirect.
  */
 
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, net } from 'electron'
 import type { BitbucketTokenPair } from './types'
 
 const BITBUCKET_AUTH_URL = 'https://bitbucket.org/site/oauth2/authorize'
@@ -22,7 +22,7 @@ async function exchangeCodeForTokens(
   clientId: string,
   clientSecret: string
 ): Promise<BitbucketTokenPair> {
-  const response = await fetch(BITBUCKET_TOKEN_URL, {
+  const response = await net.fetch(BITBUCKET_TOKEN_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
