@@ -18,7 +18,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Last Activity:** 2026-03-13
 **Last Activity Description:** Completed 12-02 (TextCraft three-panel UI)
 
-**Progress:** [█████████░] 89%
+**Progress:** [█████████░] 92%
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 04-dbinspector-plugin P01 | 5 | 2 tasks | 7 files |
 | Phase 04-dbinspector-plugin P03 | 8min | 2 tasks | 3 files |
 | Phase 04-dbinspector-plugin P02 | 6 | 2 tasks | 5 files |
+| Phase 04-dbinspector-plugin P04 | 10min | 1 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -174,6 +175,11 @@ Recent decisions affecting current work:
 - [Phase 04-dbinspector-plugin]: EditorView created once in mount-only useEffect — Compartment handles schema/dialect live updates without recreation
 - [Phase 04-dbinspector-plugin]: buildCmSchema exported as standalone function (pure transform) — transforms columnsCache to CodeMirror schema format
 - [Phase 04-dbinspector-plugin]: QueryConsole added as 5th tab in DbInspectorView; inline/split output mode toggle per-tab (DataGrip-style)
+- [Phase 04-dbinspector-plugin]: query-console tab placed FIRST in DbInspectorView TABS array and set as default activeTab — query console is primary feature of phase 04
+- [Phase 04-dbinspector-plugin]: Collapsible left panel uses style-based width transition (0/256px) with overflow:hidden; inner content div fixed at 256px for smooth animation
+- [Phase 04-dbinspector-plugin]: onInsertAtCursor only passed to SchemaExplorer when activeTab === query-console to prevent accidental inserts from other tabs
+- [Phase 04-dbinspector-plugin]: Auto-reconnect in executeQuery: ECONNRESET/ETIMEDOUT/Connection terminated regex, connectToDb + single retry; falls through to error on failure
+- [Phase 04-dbinspector-plugin]: Engine selector in ConnectionListEditor (Settings form) not ConnectionManager — aligns with connection creation location; handleEngineChange auto-swaps port only when port matches well-known default
 
 ### Pending Todos
 
@@ -187,6 +193,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-13T19:35:11.160Z
-**Stopped at:** Completed 04-02-PLAN.md
+**Last session:** 2026-03-13T19:44:54.830Z
+**Stopped at:** Checkpoint: 04-04 Task 2 human-verify — awaiting visual verification of complete query console
 **Resume file:** None
