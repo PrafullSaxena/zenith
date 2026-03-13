@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
@@ -27,6 +27,7 @@ import { Extension, mergeAttributes } from '@tiptap/core'
 import { Sparkles, Plus, X, Table as TableIcon, Hash, ClipboardCopy, FileText, Check, FileDown, Loader2 } from 'lucide-react'
 import { DOMSerializer } from '@tiptap/pm/model'
 import { lowlight } from '../../lib/lowlight-setup'
+import CodeBlockNodeView from './CodeBlockNodeView'
 import CodeBlockControls from './CodeBlockControls'
 import type { NoteTag } from '../../types/nebula'
 import { useNebulaStore } from '../../stores/nebula-store'
@@ -181,6 +182,9 @@ export default function NoteEditor({
         codeBlock: false // Replaced by CodeBlockLowlight for syntax highlighting
       }),
       CodeBlockLowlight.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(CodeBlockNodeView)
+        },
         renderHTML({ node, HTMLAttributes }) {
           return [
             'pre',

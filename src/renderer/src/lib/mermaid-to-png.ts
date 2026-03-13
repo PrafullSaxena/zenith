@@ -10,6 +10,26 @@
  */
 
 /**
+ * Pre-process mermaid syntax to fix common issues before rendering.
+ * - Flowcharts: replace `|` inside node labels ([...], (...), {...}) with ` · `
+ *   since mermaid uses `|` as a link-text delimiter.
+ * - ER diagrams are left untouched (they use `|` in relationship notation).
+ */
+function preprocessMermaid(raw: string): string {
+  const trimmed = raw.trim()
+
+  // Only sanitize pipe characters in flowchart / graph definitions
+  if (/^(flowchart|graph)\s/i.test(trimmed)) {
+    let result = trimmed.replace(/\[[^\]]*\]/g, (m) => m.replace(/\|/g, ' · '))
+    result = result.replace(/\([^)]*\)/g, (m) => m.replace(/\|/g, ' · '))
+    result = result.replace(/\{[^}]*\}/g, (m) => m.replace(/\|/g, ' · '))
+    return result
+  }
+
+  return trimmed
+}
+
+/**
  * Render mermaid syntax to a base64 PNG data URL.
  * Returns null if rendering fails.
  *
@@ -22,10 +42,17 @@ export async function renderMermaidToPng(
   width = 800,
   lightMode = false
 ): Promise<string | null> {
+  // Create an off-screen container for mermaid to render into.
+  // Mermaid needs a DOM element to measure text dimensions.
+  const container = document.createElement('div')
+  container.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden;'
+  document.body.appendChild(container)
+
   try {
     const mermaid = await import('mermaid')
     mermaid.default.initialize({
       startOnLoad: false,
+      suppressErrorRendering: true,
       theme: lightMode ? 'default' : 'dark',
       themeVariables: lightMode ? {
         primaryColor: '#0d9488',
@@ -58,14 +85,21 @@ export async function renderMermaidToPng(
       er: { useMaxWidth: true }
     })
 
+    // Pre-process syntax to fix common issues (pipe chars in flowcharts, etc.)
+    const sanitized = preprocessMermaid(syntax)
+
     const id = `mermaid-png-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`
-    const { svg } = await mermaid.default.render(id, syntax.trim())
+    const { svg } = await mermaid.default.render(id, sanitized)
 
     // Convert SVG to PNG via canvas
     return await svgToPng(svg, width, lightMode)
   } catch (err) {
     console.warn('[mermaid-to-png] Failed to render:', err)
     return null
+  } finally {
+    // Always clean up the off-screen container and any orphaned mermaid elements
+    container.remove()
+    cleanupMermaidErrors()
   }
 }
 
@@ -103,23 +137,47 @@ export async function renderAllMermaidBlocks(
   return results
 }
 
+/** Remove orphaned mermaid error SVGs that mermaid injects into the document body. */
+function cleanupMermaidErrors(): void {
+  document.querySelectorAll('svg[id^="d"]').forEach((el) => {
+    if (
+      el.querySelector('.error-icon') ||
+      el.textContent?.includes('Syntax error')
+    ) {
+      el.remove()
+    }
+  })
+  document.querySelectorAll('div[id^="d"]').forEach((el) => {
+    if (el.textContent?.includes('Syntax error') && el.querySelector('svg')) {
+      el.remove()
+    }
+  })
+}
+
 async function svgToPng(svgString: string, targetWidth: number, lightMode = false): Promise<string> {
+  // Ensure SVG has explicit dimensions and xmlns for standalone rendering
+  let svgStr = svgString
+  if (!svgStr.includes('xmlns=')) {
+    svgStr = svgStr.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
+  }
+
   return new Promise((resolve, reject) => {
     const img = new Image()
-    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
-    const url = URL.createObjectURL(svgBlob)
+
+    // Use a data URL instead of Blob URL to avoid potential CORS/CSP issues in Electron
+    const encoded = btoa(unescape(encodeURIComponent(svgStr)))
+    const dataUrl = `data:image/svg+xml;base64,${encoded}`
 
     img.onload = () => {
       const aspectRatio = img.height / img.width
-      const width = Math.min(targetWidth, img.width)
-      const height = Math.round(width * aspectRatio)
+      const width = Math.min(targetWidth, img.width || targetWidth)
+      const height = Math.round(width * aspectRatio) || Math.round(width * 0.6)
 
       const canvas = document.createElement('canvas')
       canvas.width = width * 2 // 2x for retina
       canvas.height = height * 2
       const ctx = canvas.getContext('2d')
       if (!ctx) {
-        URL.revokeObjectURL(url)
         reject(new Error('No canvas context'))
         return
       }
@@ -130,16 +188,15 @@ async function svgToPng(svgString: string, targetWidth: number, lightMode = fals
 
       ctx.scale(2, 2)
       ctx.drawImage(img, 0, 0, width, height)
-      URL.revokeObjectURL(url)
 
       resolve(canvas.toDataURL('image/png'))
     }
 
-    img.onerror = () => {
-      URL.revokeObjectURL(url)
+    img.onerror = (e) => {
+      console.warn('[mermaid-to-png] Image load failed:', e)
       reject(new Error('SVG image load failed'))
     }
 
-    img.src = url
+    img.src = dataUrl
   })
 }

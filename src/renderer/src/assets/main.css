@@ -528,24 +528,21 @@ body {
   margin: 0.15rem 0;
 }
 
-/* ── Code block styles ───────────────────────────────────────────────── */
+/* ── Code block NodeView styles ──────────────────────────────────────── */
 
-.nebula-editor .tiptap pre {
+/* Wrapper for the entire code block NodeView */
+.nebula-code-block {
   position: relative;
   margin: 0.75rem 0;
   border-radius: 8px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  padding: 0.75rem 1rem 0.75rem 1.25rem;
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  line-height: 1.6;
+  overflow: hidden;
   animation: code-block-enter 0.3s ease-out;
 }
 
 /* Left accent bar */
-.nebula-editor .tiptap pre::before {
+.nebula-code-block::before {
   content: '';
   position: absolute;
   left: 0;
@@ -556,29 +553,124 @@ body {
   opacity: 0.4;
   transition: opacity 0.2s;
   border-radius: 8px 0 0 8px;
+  z-index: 1;
 }
 
-.nebula-editor .tiptap pre:hover::before {
+.nebula-code-block:hover::before {
   opacity: 0.8;
 }
 
-/* Language label in top-right corner */
-.nebula-editor .tiptap pre::after {
-  content: attr(data-language);
-  position: absolute;
-  top: 0.35rem;
-  right: 0.5rem;
-  font-size: 0.6rem;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.4;
-  pointer-events: none;
-  font-family: var(--font-mono);
+/* Header bar with filename, language selector, and action buttons */
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  opacity: 0.85;
+  user-select: none;
 }
 
-/* Code inside pre — reset inline code styles */
-.nebula-editor .tiptap pre code {
+.nebula-code-block:hover .code-block-header {
+  opacity: 1;
+}
+
+/* Filename display */
+.code-block-filename {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  letter-spacing: 0.02em;
+}
+
+/* Action buttons (language selector, format, copy, diagram toggle) */
+.code-block-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
+.code-block-action-btn:hover {
+  opacity: 1;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+/* Buttons only visible on hover */
+.code-block-hover-action {
+  opacity: 0;
+}
+
+.nebula-code-block:hover .code-block-hover-action {
+  opacity: 0.7;
+}
+
+.nebula-code-block:hover .code-block-hover-action:hover {
+  opacity: 1;
+}
+
+/* Language picker dropdown */
+.code-block-lang-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+  min-width: 120px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface-elevated);
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.3);
+  padding: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.code-block-lang-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.code-block-lang-option:hover {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+/* Code content area (pre + code) */
+.code-block-pre {
+  margin: 0;
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.code-block-pre code {
   background: none;
   padding: 0;
   border-radius: 0;
@@ -596,6 +688,20 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Fallback for any bare pre tags (e.g. from paste or non-NodeView context) */
+.nebula-editor .tiptap pre:not(.code-block-pre) {
+  position: relative;
+  margin: 0.75rem 0;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
 }
 
 /* ── Inline code (not in code blocks) ────────────────────────────────── */
@@ -723,8 +829,9 @@ body {
   counter-increment: editor-line;
 }
 
-/* Count pre (which has position: relative from code-block styles) */
-.nebula-line-numbers .ProseMirror > pre {
+/* Count code block NodeView wrappers and bare pre tags */
+.nebula-line-numbers .ProseMirror > pre,
+.nebula-line-numbers .ProseMirror > [data-node-view-wrapper] {
   counter-increment: editor-line;
 }
 

@@ -270,7 +270,8 @@ function markdownToPdfContent(
         if (imageData) {
           content.push({
             image: imageData,
-            width: 480,
+            width: 515,  // Full content width (page width minus margins)
+            alignment: 'center' as const,
             margin: [0, 8, 0, 8]
           })
         } else {
@@ -379,16 +380,21 @@ function markdownToPdfContent(
         continue
       }
 
-      // Lists (supports nested indented items)
+      // Lists (supports nested indented items and continuation lines)
       const lines = trimmed.split('\n')
       const firstNonEmpty = lines.find((l: string) => l.trim())
       const isBulletList = firstNonEmpty && /^[-*•]\s/.test(firstNonEmpty.trim())
       const isNumberedList = firstNonEmpty && /^\d+[.)]\s/.test(firstNonEmpty.trim())
       const isListBlock =
         (isBulletList || isNumberedList) &&
-        lines.every(
-          (l: string) => /^[-*•]\s/.test(l.trim()) || /^\d+[.)]\s/.test(l.trim()) || !l.trim()
-        )
+        lines.every((l: string) => {
+          const t = l.trim()
+          if (!t) return true // empty line
+          if (/^[-*•]\s/.test(t) || /^\d+[.)]\s/.test(t)) return true // list marker
+          // Allow indented continuation lines (part of a list item)
+          if (getIndent(l) > 0) return true
+          return false
+        })
 
       if (isListBlock) {
         content.push(parseNestedList(lines, theme))

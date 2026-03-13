@@ -263,14 +263,14 @@ export default function CodeBlockNodeView({
 
       {/* Mermaid diagram or code content */}
       {isMermaid && showDiagram && code.trim() ? (
-        <div className="relative min-h-[100px] p-3" contentEditable={false}>
+        <div className="relative p-2" contentEditable={false}>
           <Suspense fallback={
-            <div className="flex items-center justify-center py-8 text-text-secondary/50">
+            <div className="flex items-center justify-center py-6 text-text-secondary/50">
               <Loader2 size={16} className="animate-spin mr-2" />
               Rendering diagram...
             </div>
           }>
-            <MermaidRenderer syntax={code} interactive showCopyCode />
+            <MermaidRenderer syntax={code} interactive />
           </Suspense>
         </div>
       ) : (
