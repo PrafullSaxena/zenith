@@ -7,7 +7,7 @@
 | 1 | Foundation | 5 | In Progress | 2/5 |
 | 2 | Mission Control & Activity Log | 3 | Planned | 0/3 |
 | 3 | CodeReviewBot Plugin | 4 | Planned | 0/4 |
-| 4 | DbInspector Plugin | 5 | Planned | 0/5 |
+| 4 | DbInspector Plugin | 4 | Planned | 0/4 |
 | 5 | AstroPatch Plugin | 7 | 4/4 | Complete   | 2026-03-09 | 6 | Polish & Production | 3 | Planned | 0/3 |
 | 7 | Launchpad Plugin | 4 | Complete | 4/4 |
 | 8 | Nebula Plugin | 6 | Complete | 6/6 |
@@ -58,7 +58,17 @@ Plans:
 
 ## Phase 4: DbInspector Plugin
 
-**Goal:** Database inspection and query tooling.
+**Goal:** Full SQL query console for the DbInspector plugin — CodeMirror 6 editor with schema-aware autocomplete, multi-tab management, query execution with results grid, MySQL support, saved queries, CSV/JSON export, and session persistence.
+
+**Requirements:** [DBIS-01, DBIS-02, DBIS-03, DBIS-04, DBIS-05, DBIS-06, DBIS-07, DBIS-08, DBIS-09]
+
+**Plans:** 4 plans
+
+Plans:
+- [ ] 04-01-PLAN.md -- MySQL driver, unified DB manager, query console types, new IPC handlers
+- [ ] 04-02-PLAN.md -- CodeMirror 6 SQL editor, query tab management, execution store actions
+- [ ] 04-03-PLAN.md -- Results grid with virtual scroll, export, saved queries panel
+- [ ] 04-04-PLAN.md -- Wire query console into DbInspectorView, schema browser enhancements, visual verification
 
 ## Phase 5: AstroPatch Plugin
 
