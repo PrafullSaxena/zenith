@@ -73,6 +73,7 @@ lowlight.registerAlias('csharp', ['cs'])
 /** All languages registered in lowlight, for the language selector dropdown. */
 export const LANGUAGES = [
   { value: 'plaintext', label: 'Plain Text', ext: 'txt' },
+  { value: 'mermaid', label: 'Mermaid', ext: 'mmd' },
   { value: 'javascript', label: 'JavaScript', ext: 'js' },
   { value: 'typescript', label: 'TypeScript', ext: 'ts' },
   { value: 'python', label: 'Python', ext: 'py' },
