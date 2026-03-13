@@ -106,7 +106,7 @@ function CodeFenceBlock({
               </div>
             }
           >
-            <MermaidRenderer syntax={trimmedCode} interactive />
+            <MermaidRenderer syntax={trimmedCode} interactive showCopyCode />
           </Suspense>
         </div>
       </div>
