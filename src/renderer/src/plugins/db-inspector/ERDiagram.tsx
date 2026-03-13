@@ -140,7 +140,11 @@ export default function ERDiagram({
       // Compose markdown with ER diagram metadata and mermaid code fence
       const md = `# ER Diagram — ${connectionName ?? 'Database'}\n\n**Schema:** ${schema ?? 'N/A'} | **Tables:** ${selectedTables.length} | **Mode:** ${relationshipMode}\n\n\`\`\`mermaid\n${currentSyntax}\n\`\`\``
       const { renderAllMermaidBlocks } = await import('../../lib/mermaid-to-png')
-      const mermaidImages = await renderAllMermaidBlocks(md)
+      // Read PDF style to determine mermaid theme
+      const settings = await window.api.settings.getAll()
+      const pdfStyle = (settings?.['general.pdfStyle'] as string) ?? 'colored'
+      const lightMode = pdfStyle !== 'pretty'
+      const mermaidImages = await renderAllMermaidBlocks(md, lightMode)
       await window.api.app.exportPdf({
         markdown: md,
         title: `ER Diagram — ${connectionName ?? 'Database'}`,

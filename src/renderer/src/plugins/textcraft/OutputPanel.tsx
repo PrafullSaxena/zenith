@@ -219,8 +219,12 @@ export default function OutputPanel(): React.JSX.Element {
     if (!rawText || isExporting) return
     setIsExporting(true)
     try {
+      // Read PDF style to determine mermaid theme (light for colored/traditional, dark for pretty)
+      const settings = await window.api.settings.getAll()
+      const pdfStyle = (settings?.['general.pdfStyle'] as string) ?? 'colored'
+      const lightMode = pdfStyle !== 'pretty'
       // Pre-render mermaid diagrams to PNG for embedding in PDF
-      const mermaidImages = await renderAllMermaidBlocks(rawText)
+      const mermaidImages = await renderAllMermaidBlocks(rawText, lightMode)
       await window.api.app.exportPdf({
         markdown: rawText,
         mermaidImages: Object.keys(mermaidImages).length > 0 ? mermaidImages : undefined

@@ -2,24 +2,45 @@
  * Renders a mermaid diagram syntax string to a PNG data URL.
  *
  * Creates an off-screen container, uses the mermaid library to render SVG,
- * then converts SVG to PNG via canvas. Uses the same dark theme as
- * MermaidRenderer.tsx for visual consistency.
+ * then converts SVG to PNG via canvas.
+ *
+ * Supports light and dark themes for matching PDF export styles:
+ * - lightMode=false (default): dark theme matching app appearance
+ * - lightMode=true: light theme for "colored" and "traditional" PDF styles
  */
 
 /**
  * Render mermaid syntax to a base64 PNG data URL.
  * Returns null if rendering fails.
+ *
+ * @param syntax - Mermaid diagram syntax
+ * @param width - Target width in pixels (default: 800)
+ * @param lightMode - Use light theme for light PDF backgrounds (default: false)
  */
 export async function renderMermaidToPng(
   syntax: string,
-  width = 800
+  width = 800,
+  lightMode = false
 ): Promise<string | null> {
   try {
     const mermaid = await import('mermaid')
     mermaid.default.initialize({
       startOnLoad: false,
-      theme: 'dark',
-      themeVariables: {
+      theme: lightMode ? 'default' : 'dark',
+      themeVariables: lightMode ? {
+        primaryColor: '#0d9488',
+        primaryTextColor: '#1a1a1a',
+        primaryBorderColor: '#0d9488',
+        lineColor: '#64748b',
+        secondaryColor: '#f0fdfa',
+        tertiaryColor: '#ccfbf1',
+        background: '#ffffff',
+        mainBkg: '#f0fdfa',
+        nodeBorder: '#0d9488',
+        clusterBkg: '#f8fafc',
+        titleColor: '#1a1a1a',
+        edgeLabelBackground: '#ffffff'
+      } : {
         primaryColor: '#4f46e5',
         primaryTextColor: '#e2e8f0',
         primaryBorderColor: '#6366f1',
@@ -41,7 +62,7 @@ export async function renderMermaidToPng(
     const { svg } = await mermaid.default.render(id, syntax.trim())
 
     // Convert SVG to PNG via canvas
-    return await svgToPng(svg, width)
+    return await svgToPng(svg, width, lightMode)
   } catch (err) {
     console.warn('[mermaid-to-png] Failed to render:', err)
     return null
@@ -51,9 +72,13 @@ export async function renderMermaidToPng(
 /**
  * Extract all mermaid code blocks from markdown and render them to PNG.
  * Returns a map of index → data URL for each successfully rendered diagram.
+ *
+ * @param markdown - Markdown text containing mermaid code fences
+ * @param lightMode - Use light theme for light PDF backgrounds (default: false)
  */
 export async function renderAllMermaidBlocks(
-  markdown: string
+  markdown: string,
+  lightMode = false
 ): Promise<Record<number, string>> {
   const mermaidBlocks: { index: number; syntax: string }[] = []
   const regex = /```mermaid\n([\s\S]*?)```/g
@@ -69,7 +94,7 @@ export async function renderAllMermaidBlocks(
 
   const results: Record<number, string> = {}
   for (const block of mermaidBlocks) {
-    const png = await renderMermaidToPng(block.syntax)
+    const png = await renderMermaidToPng(block.syntax, 800, lightMode)
     if (png) {
       results[block.index] = png
     }
@@ -78,7 +103,7 @@ export async function renderAllMermaidBlocks(
   return results
 }
 
-async function svgToPng(svgString: string, targetWidth: number): Promise<string> {
+async function svgToPng(svgString: string, targetWidth: number, lightMode = false): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
@@ -99,8 +124,8 @@ async function svgToPng(svgString: string, targetWidth: number): Promise<string>
         return
       }
 
-      // White background for light PDFs, dark for dark PDFs
-      ctx.fillStyle = '#1a1b2e'
+      // Background color matches PDF theme
+      ctx.fillStyle = lightMode ? '#ffffff' : '#1a1b2e'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       ctx.scale(2, 2)
