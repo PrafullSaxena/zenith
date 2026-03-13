@@ -5,7 +5,8 @@ import { TokenManager } from './bitbucket/token-manager'
 import { listOpenPRs, getPRDiff, postInlineComment, postTopLevelComment, getDiffstatCount, testCredentials, basicAuthHeader } from './bitbucket/api'
 import { streamReview, cancelSdkReview, streamAnalysis } from './ai/stream'
 import { streamCliReview, cancelCliReview, streamCliAnalysis, probeCliBinary } from './ai/cli-stream'
-import { PostgresConnectionManager } from './db/postgres'
+import { UnifiedDbManager } from './db/db-manager'
+import { validateQuery } from './db/postgres'
 import { buildSchemaContext, buildQueryOptimizationContext, buildTableDDL } from './db/introspection'
 import { exportDiagnosticZip } from './log-collector'
 // PDF generators are imported dynamically inside handlers to avoid
@@ -27,8 +28,8 @@ const credentialsStore = new Store({ name: 'zenith-credentials' })
 /** Module-level credential manager for Bitbucket App Password auth. */
 const tokenManager = new TokenManager()
 
-/** Module-level PostgreSQL connection manager for DbInspector. */
-const dbManager = new PostgresConnectionManager()
+/** Module-level unified DB manager for DbInspector (routes to PostgreSQL or MySQL). */
+const dbManager = new UnifiedDbManager()
 
 /** Lazy-initialized Nebula database and file storage instances. */
 let nebulaDb: NebulaDatabase | null = null
@@ -248,14 +249,38 @@ export function registerIpcHandlers(): void {
     return { canceled: false, path: filePaths[0] }
   })
 
+  ipcMain.handle(
+    'app:saveTextFile',
+    async (
+      _event,
+      content: string,
+      defaultFilename: string,
+      filters: { name: string; extensions: string[] }[]
+    ) => {
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      if (!mainWindow) return { filePath: null }
+
+      const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
+        defaultPath: defaultFilename,
+        filters
+      })
+
+      if (canceled || !filePath) return { filePath: null }
+
+      await fs.promises.writeFile(filePath, content, 'utf-8')
+      return { filePath }
+    }
+  )
+
   // --- Database channels ---
   ipcMain.handle(
     'db:testConnection',
     async (
       _event,
-      params: { host: string; port: number; username: string; password: string }
+      params: { host: string; port: number; username: string; password: string },
+      engine?: 'postgresql' | 'mysql'
     ) => {
-      return dbManager.testConnection(params)
+      return dbManager.testConnection(params, engine)
     }
   )
 
@@ -271,7 +296,8 @@ export function registerIpcHandlers(): void {
       password: string,
       database: string,
       defaultSchema: string,
-      readStrategy: 'read-only' | 'read-write'
+      readStrategy: 'read-only' | 'read-write',
+      engine?: 'postgresql' | 'mysql'
     ) => {
       await dbManager.connect({
         id,
@@ -282,7 +308,8 @@ export function registerIpcHandlers(): void {
         password,
         database,
         defaultSchema,
-        readStrategy
+        readStrategy,
+        engine: engine ?? 'postgresql'
       })
     }
   )
@@ -350,14 +377,65 @@ export function registerIpcHandlers(): void {
     }
   )
 
-  ipcMain.handle('db:query', async (_event, connectionId: string, sql: string) => {
-    const result = await dbManager.query(connectionId, sql)
-    return {
-      rows: result.rows,
-      fields: result.fields.map((f) => ({ name: f.name, dataTypeID: f.dataTypeID })),
-      rowCount: result.rowCount ?? 0,
-      command: result.command
+  ipcMain.handle(
+    'db:query',
+    async (
+      _event,
+      connectionId: string,
+      sql: string,
+      allowWrite?: boolean,
+      limit?: number,
+      offset?: number
+    ) => {
+      // Safety: always validate unless allowWrite is explicitly true
+      if (!allowWrite) {
+        validateQuery(sql)
+      }
+
+      // Pagination: wrap with LIMIT/OFFSET if requested and not already present
+      let querySql = sql
+      const defaultLimit = limit ?? 100
+      if (!(/\bLIMIT\b/i.test(sql))) {
+        const off = offset ?? 0
+        querySql = `${sql.trimEnd().replace(/;+$/, '')}\nLIMIT ${defaultLimit} OFFSET ${off}`
+      }
+
+      const result = await dbManager.query(connectionId, querySql)
+      const hasMore = result.rows.length === defaultLimit
+
+      return {
+        rows: result.rows,
+        fields: result.fields,
+        rowCount: result.rowCount ?? 0,
+        command: result.command,
+        hasMore
+      }
     }
+  )
+
+  ipcMain.handle('db:cancelQuery', async (_event, connectionId: string) => {
+    return dbManager.cancelQuery(connectionId)
+  })
+
+  ipcMain.handle('db:allColumns', async (_event, connectionId: string, schema: string) => {
+    const tables = await dbManager.getTables(connectionId, schema)
+    const tableNames = tables.map((t) => t.name)
+
+    // Fetch columns for all tables with concurrency limit of 5
+    const result: Record<string, { name: string; dataType: string }[]> = {}
+    const concurrencyLimit = 5
+
+    for (let i = 0; i < tableNames.length; i += concurrencyLimit) {
+      const batch = tableNames.slice(i, i + concurrencyLimit)
+      await Promise.all(
+        batch.map(async (tableName) => {
+          const columns = await dbManager.getColumns(connectionId, schema, tableName)
+          result[tableName] = columns.map((c) => ({ name: c.name, dataType: c.dataType }))
+        })
+      )
+    }
+
+    return result
   })
 
   ipcMain.handle('db:explain', async (_event, connectionId: string, sql: string) => {

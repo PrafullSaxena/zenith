@@ -34,6 +34,11 @@ export interface ElectronAPI {
     probeCli: (command: string) => Promise<{ available: boolean }>
     openExternal: (url: string) => Promise<void>
     selectDirectory: (currentPath?: string) => Promise<{ canceled: boolean; path: string }>
+    saveTextFile: (
+      content: string,
+      defaultFilename: string,
+      filters: { name: string; extensions: string[] }[]
+    ) => Promise<{ filePath: string | null }>
   }
   bitbucket: {
     connect: () => Promise<{ connected: boolean }>
@@ -99,12 +104,15 @@ export interface ElectronAPI {
     cancelAnalysis: (sessionId: string) => Promise<void>
   }
   db: {
-    testConnection: (params: {
-      host: string
-      port: number
-      username: string
-      password: string
-    }) => Promise<TestConnectionResult>
+    testConnection: (
+      params: {
+        host: string
+        port: number
+        username: string
+        password: string
+      },
+      engine?: 'postgresql' | 'mysql'
+    ) => Promise<TestConnectionResult>
     connect: (
       id: string,
       name: string,
@@ -114,7 +122,8 @@ export interface ElectronAPI {
       password: string,
       database: string,
       defaultSchema: string,
-      readStrategy: string
+      readStrategy: string,
+      engine?: 'postgresql' | 'mysql'
     ) => Promise<void>
     disconnect: (connectionId: string) => Promise<void>
     getConnections: () => Promise<DbConnection[]>
@@ -147,7 +156,18 @@ export interface ElectronAPI {
       schema: string,
       table: string
     ) => Promise<TableStats>
-    query: (connectionId: string, sql: string) => Promise<QueryResult>
+    query: (
+      connectionId: string,
+      sql: string,
+      allowWrite?: boolean,
+      limit?: number,
+      offset?: number
+    ) => Promise<QueryResult & { hasMore: boolean }>
+    cancelQuery: (connectionId: string) => Promise<void>
+    allColumns: (
+      connectionId: string,
+      schema: string
+    ) => Promise<Record<string, { name: string; dataType: string }[]>>
     explain: (connectionId: string, sql: string) => Promise<string>
     buildSchemaContext: (
       connectionId: string,

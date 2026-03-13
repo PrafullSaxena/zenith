@@ -5,13 +5,56 @@
  * Uses information_schema and pg_catalog for maximum PostgreSQL compatibility.
  */
 
-import type { PostgresConnectionManager } from './postgres'
+/**
+ * Minimal interface required by introspection functions.
+ * Satisfied by both PostgresConnectionManager and UnifiedDbManager.
+ */
+interface DbManagerLike {
+  getColumns(connectionId: string, schema: string, table: string): Promise<{
+    name: string
+    dataType: string
+    isNullable: boolean
+    defaultValue: string | null
+    ordinalPosition: number
+    isPrimaryKey: boolean
+    maxLength: number | null
+    precision: number | null
+  }[]>
+  getIndexes(connectionId: string, schema: string, table: string): Promise<{
+    name: string
+    columns: string[]
+    isUnique: boolean
+    isPrimary: boolean
+    indexType: string
+  }[]>
+  getForeignKeys(connectionId: string, schema: string): Promise<{
+    constraintName: string
+    sourceTable: string
+    sourceColumn: string
+    targetTable: string
+    targetColumn: string
+  }[]>
+  getTableStats(connectionId: string, schema: string, table: string): Promise<{
+    estimatedRows: number
+    totalSize: string
+    indexSize: string
+    lastVacuum: string | null
+    lastAnalyze: string | null
+  }>
+  getTables(connectionId: string, schema: string): Promise<{
+    name: string
+    type: string
+    estimatedRows: number
+    totalSize: string
+  }[]>
+  explain(connectionId: string, sql: string): Promise<string>
+}
 
 /**
  * Build a CREATE TABLE DDL string for a single table.
  */
 export async function buildTableDDL(
-  manager: PostgresConnectionManager,
+  manager: DbManagerLike,
   connectionId: string,
   schema: string,
   table: string
@@ -58,7 +101,7 @@ export async function buildTableDDL(
  * Used when full DDL would exceed token limits.
  */
 export async function buildTableSummary(
-  manager: PostgresConnectionManager,
+  manager: DbManagerLike,
   connectionId: string,
   schema: string,
   table: string
@@ -79,7 +122,7 @@ export async function buildTableSummary(
  * @param tables - Specific tables to include. If undefined, uses all tables in the schema.
  */
 export async function buildSchemaContext(
-  manager: PostgresConnectionManager,
+  manager: DbManagerLike,
   connectionId: string,
   schema: string,
   tables?: string[]
@@ -177,7 +220,7 @@ function isKeyword(word: string): boolean {
  * Includes EXPLAIN ANALYZE output + DDL + indexes + stats for referenced tables.
  */
 export async function buildQueryOptimizationContext(
-  manager: PostgresConnectionManager,
+  manager: DbManagerLike,
   connectionId: string,
   schema: string,
   sql: string

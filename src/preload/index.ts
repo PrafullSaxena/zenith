@@ -36,6 +36,12 @@ const api = {
       orientation?: 'portrait' | 'landscape';
     }): Promise<{ filePath: string | null }> =>
       ipcRenderer.invoke('app:exportPdf', data),
+    saveTextFile: (
+      content: string,
+      defaultFilename: string,
+      filters: { name: string; extensions: string[] }[]
+    ): Promise<{ filePath: string | null }> =>
+      ipcRenderer.invoke('app:saveTextFile', content, defaultFilename, filters),
   },
   bitbucket: {
     connect: (): Promise<{ connected: boolean; displayName: string }> =>
@@ -120,8 +126,11 @@ const api = {
       ipcRenderer.invoke('ai:cancelAnalysis', sessionId),
   },
   db: {
-    testConnection: (params: { host: string; port: number; username: string; password: string }): Promise<{ success: boolean; serverVersion?: string; error?: string }> =>
-      ipcRenderer.invoke('db:testConnection', params),
+    testConnection: (
+      params: { host: string; port: number; username: string; password: string },
+      engine?: 'postgresql' | 'mysql'
+    ): Promise<{ success: boolean; serverVersion?: string; error?: string }> =>
+      ipcRenderer.invoke('db:testConnection', params, engine),
     connect: (
       id: string,
       name: string,
@@ -131,9 +140,10 @@ const api = {
       password: string,
       database: string,
       defaultSchema: string,
-      readStrategy: string
+      readStrategy: string,
+      engine?: 'postgresql' | 'mysql'
     ): Promise<void> =>
-      ipcRenderer.invoke('db:connect', id, name, host, port, username, password, database, defaultSchema, readStrategy),
+      ipcRenderer.invoke('db:connect', id, name, host, port, username, password, database, defaultSchema, readStrategy, engine),
     disconnect: (connectionId: string): Promise<void> =>
       ipcRenderer.invoke('db:disconnect', connectionId),
     getConnections: (): Promise<unknown[]> =>
@@ -158,8 +168,12 @@ const api = {
       ipcRenderer.invoke('db:getIndexes', connectionId, schema, table),
     getTableStats: (connectionId: string, schema: string, table: string): Promise<unknown> =>
       ipcRenderer.invoke('db:getTableStats', connectionId, schema, table),
-    query: (connectionId: string, sql: string): Promise<unknown> =>
-      ipcRenderer.invoke('db:query', connectionId, sql),
+    query: (connectionId: string, sql: string, allowWrite?: boolean, limit?: number, offset?: number): Promise<unknown> =>
+      ipcRenderer.invoke('db:query', connectionId, sql, allowWrite, limit, offset),
+    cancelQuery: (connectionId: string): Promise<void> =>
+      ipcRenderer.invoke('db:cancelQuery', connectionId),
+    allColumns: (connectionId: string, schema: string): Promise<Record<string, { name: string; dataType: string }[]>> =>
+      ipcRenderer.invoke('db:allColumns', connectionId, schema),
     explain: (connectionId: string, sql: string): Promise<string> =>
       ipcRenderer.invoke('db:explain', connectionId, sql),
     buildSchemaContext: (connectionId: string, schema: string, tables?: string[]): Promise<string> =>
