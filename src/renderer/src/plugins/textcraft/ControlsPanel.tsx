@@ -1,7 +1,7 @@
 /**
  * ControlsPanel -- Middle panel of the TextCraft three-panel layout.
  *
- * Provides tone selection (multi-select, 5 options), format selection (4 options),
+ * Provides tone selection (multi-select, 6 options), format selection (6 options),
  * custom instructions textarea, and Refine/Cancel action button.
  * Agent resolution follows the AiAdvisor.tsx pattern with fallback.
  */
@@ -16,7 +16,8 @@ const TONE_OPTIONS: { value: ToneOption; label: string; description: string }[] 
   { value: 'casual', label: 'Casual', description: 'Relaxed & friendly' },
   { value: 'technical', label: 'Technical', description: 'Precise jargon' },
   { value: 'friendly', label: 'Friendly', description: 'Warm & personal' },
-  { value: 'concise', label: 'Concise', description: 'Brief & direct' }
+  { value: 'concise', label: 'Concise', description: 'Brief & direct' },
+  { value: 'instructive', label: 'Instructive', description: 'Clear directives' }
 ]
 
 const FORMAT_OPTIONS: { value: FormatOption; label: string }[] = [
@@ -24,7 +25,8 @@ const FORMAT_OPTIONS: { value: FormatOption; label: string }[] = [
   { value: 'one-pager', label: 'One-Pager' },
   { value: 'technical-doc', label: 'Technical Doc' },
   { value: 'rca', label: 'RCA' },
-  { value: 'general', label: 'General' }
+  { value: 'general', label: 'General' },
+  { value: 'prompt', label: 'Prompt' }
 ]
 
 export default function ControlsPanel(): React.JSX.Element {

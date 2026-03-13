@@ -31,7 +31,9 @@ const toneDescriptions: Record<string, string> = {
   technical:
     'Use precise technical language with appropriate jargon for a technical audience.',
   friendly: 'Use warm, approachable language that builds rapport.',
-  concise: 'Be extremely brief and to the point. Remove all filler words.'
+  concise: 'Be extremely brief and to the point. Remove all filler words.',
+  instructive:
+    'Use clear, directive language optimized for instructing an AI model. Be explicit and unambiguous.'
 }
 
 const formatInstructions: Record<string, string> = {
@@ -50,7 +52,16 @@ const formatInstructions: Record<string, string> = {
 7. **Preventive Measures** — long-term changes to prevent recurrence
 8. **Lessons Learned** — key takeaways for the team
 Use markdown headers (##) for each section. Be precise and factual.`,
-  general: 'Format as clean, well-structured prose.'
+  general: 'Format as clean, well-structured prose.',
+  prompt: `You are an expert prompt engineer. Transform the user's text into the best possible AI prompt.
+Structure the prompt with:
+1. **Role/Context** — Define the AI's role and expertise
+2. **Task** — Clear, specific instruction of what to do
+3. **Input Details** — Key information and constraints from the original text
+4. **Output Format** — Expected format, length, and structure
+5. **Quality Criteria** — What makes a good response
+Use markdown formatting. Make the prompt specific, unambiguous, and actionable.
+Do NOT execute the prompt — only generate it.`
 }
 
 /**
@@ -96,6 +107,7 @@ interface TextCraftStore {
   saveToHistory: (entry: TextCraftHistoryEntry) => Promise<void>
   loadHistory: () => Promise<void>
   loadFromHistory: (entry: TextCraftHistoryEntry) => void
+  deleteHistoryEntry: (id: string) => Promise<void>
   clearSession: () => void
 }
 
@@ -260,6 +272,12 @@ export const useTextCraftStore = create<TextCraftStore>((set, get) => ({
       },
       error: null
     })
+  },
+
+  deleteHistoryEntry: async (id) => {
+    const updated = get().history.filter((e) => e.id !== id)
+    set({ history: updated })
+    await window.api.settings.set(HISTORY_STORAGE_KEY, updated)
   },
 
   clearSession: () => {

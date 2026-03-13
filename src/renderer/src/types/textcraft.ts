@@ -6,10 +6,10 @@
  */
 
 /** Available writing tone options for AI refinement. */
-export type ToneOption = 'professional' | 'casual' | 'technical' | 'friendly' | 'concise'
+export type ToneOption = 'professional' | 'casual' | 'technical' | 'friendly' | 'concise' | 'instructive'
 
 /** Available output format options for AI refinement. */
-export type FormatOption = 'email' | 'one-pager' | 'technical-doc' | 'rca' | 'general'
+export type FormatOption = 'email' | 'one-pager' | 'technical-doc' | 'rca' | 'general' | 'prompt'
 
 /** User-selected options that control how the AI refines text. */
 export interface RefinementOptions {

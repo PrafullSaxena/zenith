@@ -10,8 +10,10 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { Check, Sparkles, FileText, AlignLeft, Copy, FileDown, ChevronDown, ChevronRight, ChevronsUpDown, Loader2 } from 'lucide-react'
+import { Check, Sparkles, FileText, AlignLeft, Copy, FileDown, ChevronDown, ChevronRight, ChevronsUpDown, Loader2, BookOpen } from 'lucide-react'
 import { useTextCraftStore } from '../../stores/textcraft-store'
+import { renderAllMermaidBlocks } from '../../lib/mermaid-to-png'
+import { markdownToTiptapJson } from '../../lib/markdown-to-tiptap'
 import MarkdownRenderer from '../../components/MarkdownRenderer'
 
 type CopiedMode = null | 'raw' | 'formatted'
@@ -217,11 +219,64 @@ export default function OutputPanel(): React.JSX.Element {
     if (!rawText || isExporting) return
     setIsExporting(true)
     try {
-      await window.api.textcraft.exportPdf({ markdown: rawText })
+      // Pre-render mermaid diagrams to PNG for embedding in PDF
+      const mermaidImages = await renderAllMermaidBlocks(rawText)
+      await window.api.textcraft.exportPdf({
+        markdown: rawText,
+        mermaidImages: Object.keys(mermaidImages).length > 0 ? mermaidImages : undefined
+      })
     } finally {
       setIsExporting(false)
     }
   }, [rawText, isExporting])
+
+  const [savedAsNote, setSavedAsNote] = useState(false)
+
+  /** Save input + config + output as a new Nebula note */
+  const handleSaveAsNote = useCallback(async (): Promise<void> => {
+    if (!rawText || !session) return
+    const opts = session.options
+    const formatLabel = opts.format.charAt(0).toUpperCase() + opts.format.slice(1)
+    const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const noteTitle = `TextCraft: ${formatLabel} — ${date}`
+
+    // Build markdown with Input, Config, and Output sections
+    const configLines = [
+      `**Tones:** ${opts.tones.join(', ')}`,
+      `**Format:** ${formatLabel}`,
+      opts.customInstructions ? `**Instructions:** ${opts.customInstructions}` : ''
+    ].filter(Boolean).join('\n')
+
+    const fullMarkdown = [
+      `## Input\n\n${session.inputText}`,
+      `## Configuration\n\n${configLines}`,
+      `## Output\n\n${rawText}`
+    ].join('\n\n---\n\n')
+
+    const tiptapContent = markdownToTiptapJson(fullMarkdown)
+
+    const id = crypto.randomUUID()
+    const now = new Date().toISOString()
+    const note = {
+      id,
+      title: noteTitle,
+      content: tiptapContent,
+      drawing: null,
+      summary: null,
+      topics: ['textcraft'],
+      tags: [{ id: `tag-${Date.now()}`, label: 'TextCraft', color: '#4ade80' }],
+      createdAt: now,
+      updatedAt: now
+    }
+
+    try {
+      await window.api.nebula.saveNote(note)
+      setSavedAsNote(true)
+      setTimeout(() => setSavedAsNote(false), 2000)
+    } catch {
+      // Nebula IPC not available
+    }
+  }, [rawText, session])
 
   const showActions = (isComplete || hasOutput) && !isStreaming
 
@@ -299,6 +354,24 @@ export default function OutputPanel(): React.JSX.Element {
                 <FileDown size={13} />
               )}
               <span>{isExporting ? 'Exporting…' : 'PDF'}</span>
+            </button>
+
+            {/* Separator */}
+            <div className="h-4 w-px bg-border/40 mx-0.5" />
+
+            {/* Save as Nebula note */}
+            <button
+              type="button"
+              onClick={() => void handleSaveAsNote()}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-surface-elevated text-text-secondary hover:text-text-primary transition-colors"
+              title="Save as Nebula note (input + config + output)"
+            >
+              {savedAsNote ? (
+                <Check size={13} className="text-success" />
+              ) : (
+                <BookOpen size={13} />
+              )}
+              <span>{savedAsNote ? 'Saved!' : 'Note'}</span>
             </button>
           </div>
         )}

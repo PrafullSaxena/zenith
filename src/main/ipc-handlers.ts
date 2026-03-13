@@ -438,7 +438,7 @@ export function registerIpcHandlers(): void {
   })
 
   // --- TextCraft channels ---
-  ipcMain.handle('textcraft:exportPdf', async (_event, data: { markdown: string; title?: string }) => {
+  ipcMain.handle('textcraft:exportPdf', async (_event, data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }) => {
     const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
     if (!mainWindow) throw new Error('No window available for save dialog')
     const { exportTextCraftPdf } = await import('./textcraft/pdf-generator')

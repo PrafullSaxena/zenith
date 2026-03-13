@@ -137,7 +137,8 @@ export const PLUGINS: readonly PluginDefinition[] = [
           { label: 'Casual', value: 'casual' },
           { label: 'Technical', value: 'technical' },
           { label: 'Friendly', value: 'friendly' },
-          { label: 'Concise', value: 'concise' }
+          { label: 'Concise', value: 'concise' },
+          { label: 'Instructive', value: 'instructive' }
         ]
       },
       {
@@ -150,7 +151,9 @@ export const PLUGINS: readonly PluginDefinition[] = [
           { label: 'Email', value: 'email' },
           { label: 'One-Pager', value: 'one-pager' },
           { label: 'Technical Doc', value: 'technical-doc' },
-          { label: 'General', value: 'general' }
+          { label: 'RCA', value: 'rca' },
+          { label: 'General', value: 'general' },
+          { label: 'Prompt', value: 'prompt' }
         ]
       }
     ],

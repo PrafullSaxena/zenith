@@ -49,7 +49,8 @@ export async function exportEstimationPdf(
   estimation: EstimationExport
 ): Promise<string | null> {
   // Resolve settings
-  const useColor = getSetting('general.coloredPdf') !== false
+  const pdfStyle = getSetting('general.pdfStyle') as string | undefined
+  const useColor = pdfStyle !== 'traditional'
   const workingDir = getSetting('general.workingDirectory') as string
   const defaultDir = workingDir || app.getPath('downloads')
 

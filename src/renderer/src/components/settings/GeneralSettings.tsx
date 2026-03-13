@@ -96,12 +96,17 @@ export function GeneralSettings(): React.JSX.Element {
     defaultValue: true
   }
 
-  const coloredPdfField: SettingsFieldDef = {
-    key: 'coloredPdf',
-    label: 'Colored PDFs',
-    type: 'boolean',
-    description: 'Generate PDFs with accent colors and modern styling. When off, PDFs use basic black, white, and gray.',
-    defaultValue: true
+  const pdfStyleField: SettingsFieldDef = {
+    key: 'pdfStyle',
+    label: 'PDF Style',
+    type: 'select',
+    description: 'Visual style for exported PDF documents.',
+    defaultValue: 'colored',
+    options: [
+      { label: 'Traditional', value: 'traditional' },
+      { label: 'Colored', value: 'colored' },
+      { label: 'Pretty', value: 'pretty' }
+    ]
   }
 
   const workingDirectoryField: SettingsFieldDef = {
@@ -143,9 +148,9 @@ export function GeneralSettings(): React.JSX.Element {
       />
 
       <SettingsField
-        field={coloredPdfField}
-        value={getSetting('general.coloredPdf')}
-        onChange={(value) => setSetting('general.coloredPdf', value)}
+        field={pdfStyleField}
+        value={getSetting('general.pdfStyle')}
+        onChange={(value) => setSetting('general.pdfStyle', value)}
       />
 
       <SettingsField

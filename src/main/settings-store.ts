@@ -9,7 +9,7 @@ const DEFAULTS: Record<string, unknown> = {
     defaultView: 'dashboard',
     showWelcomeOnStart: true,
     workingDirectory: '',
-    coloredPdf: true
+    pdfStyle: 'colored'
   },
   plugins: {
     'code-review-bot': {
@@ -31,6 +31,13 @@ if (store.size === 0) {
   for (const [key, value] of Object.entries(DEFAULTS)) {
     store.set(key, value)
   }
+}
+
+// Migration: coloredPdf (boolean) → pdfStyle (string)
+if (store.has('general.coloredPdf') && !store.has('general.pdfStyle')) {
+  const colored = store.get('general.coloredPdf')
+  store.set('general.pdfStyle', colored === false ? 'traditional' : 'colored')
+  store.delete('general.coloredPdf')
 }
 
 /**

@@ -685,6 +685,98 @@ body {
   margin: 1rem 0;
 }
 
+/* ── Nebula editor: line numbers ─────────────────────────────────── */
+.nebula-line-numbers .ProseMirror {
+  counter-reset: editor-line;
+  position: relative;
+  padding-left: 2.5rem;
+}
+
+/* Gutter border — vertical line separating numbers from content */
+.nebula-line-numbers .ProseMirror::after {
+  content: '';
+  position: absolute;
+  left: 2.25rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+  pointer-events: none;
+}
+
+/* Count top-level blocks (exclude ol/ul containers — they aren't lines) */
+.nebula-line-numbers .ProseMirror > p,
+.nebula-line-numbers .ProseMirror > h1,
+.nebula-line-numbers .ProseMirror > h2,
+.nebula-line-numbers .ProseMirror > h3,
+.nebula-line-numbers .ProseMirror > h4,
+.nebula-line-numbers .ProseMirror > h5,
+.nebula-line-numbers .ProseMirror > h6,
+.nebula-line-numbers .ProseMirror > blockquote,
+.nebula-line-numbers .ProseMirror > hr,
+.nebula-line-numbers .ProseMirror > .tableWrapper {
+  counter-increment: editor-line;
+}
+
+/* Count list items at every nesting depth */
+.nebula-line-numbers .ProseMirror li {
+  counter-increment: editor-line;
+}
+
+/* Count pre (which has position: relative from code-block styles) */
+.nebula-line-numbers .ProseMirror > pre {
+  counter-increment: editor-line;
+}
+
+/* Line number display — elements WITHOUT position: relative
+   ::before floats up to .ProseMirror as containing block */
+.nebula-line-numbers .ProseMirror > p::before,
+.nebula-line-numbers .ProseMirror > h1::before,
+.nebula-line-numbers .ProseMirror > h2::before,
+.nebula-line-numbers .ProseMirror > h3::before,
+.nebula-line-numbers .ProseMirror > h4::before,
+.nebula-line-numbers .ProseMirror > h5::before,
+.nebula-line-numbers .ProseMirror > h6::before,
+.nebula-line-numbers .ProseMirror > blockquote::before,
+.nebula-line-numbers .ProseMirror > hr::before,
+.nebula-line-numbers .ProseMirror > .tableWrapper::before,
+.nebula-line-numbers .ProseMirror li::before {
+  content: counter(editor-line);
+  position: absolute;
+  left: 0;
+  width: 2rem;
+  text-align: right;
+  color: var(--color-text-secondary);
+  opacity: 0.25;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  line-height: inherit;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* pre has position: relative — its ::before is relative to itself,
+   so offset left to reach the gutter */
+.nebula-line-numbers .ProseMirror > pre::before {
+  content: counter(editor-line);
+  position: absolute;
+  left: -2.5rem;
+  width: 2rem;
+  text-align: right;
+  top: 0.75rem;
+  color: var(--color-text-secondary);
+  opacity: 0.25;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Don't show line numbers for empty placeholder paragraph */
+.nebula-line-numbers .ProseMirror > p.is-editor-empty:first-child::before {
+  content: none;
+}
+
 /* ── Equalizer animation keyframes (for voice recording FAB) ──────── */
 @keyframes equalizer-1 { 0%, 100% { height: 4px; } 50% { height: 16px; } }
 @keyframes equalizer-2 { 0%, 100% { height: 8px; } 50% { height: 20px; } }

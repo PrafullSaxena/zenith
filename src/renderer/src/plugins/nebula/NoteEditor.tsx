@@ -24,11 +24,15 @@ import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { Extension, mergeAttributes } from '@tiptap/core'
-import { Sparkles, Plus, X, Table as TableIcon } from 'lucide-react'
+import { Sparkles, Plus, X, Table as TableIcon, Hash, ClipboardCopy, FileText, Check, FileDown, Loader2 } from 'lucide-react'
+import { DOMSerializer } from '@tiptap/pm/model'
 import { lowlight } from '../../lib/lowlight-setup'
 import CodeBlockControls from './CodeBlockControls'
 import type { NoteTag } from '../../types/nebula'
 import { useNebulaStore } from '../../stores/nebula-store'
+import { useSettingsStore } from '../../stores/settings-store'
+import { tiptapToMarkdown, tiptapToPlainText } from './tiptap-to-markdown'
+import { renderAllMermaidBlocks } from '../../lib/mermaid-to-png'
 import FloatingToolbar from './FloatingToolbar'
 import LinkDialog from './LinkDialog'
 import TableControls from './TableControls'
@@ -95,6 +99,15 @@ export default function NoteEditor({
   // IMPORTANT: Use a stable constant for the fallback to avoid Zustand re-render loop.
   // `?? []` creates a new array reference each call → Object.is fails → infinite re-renders.
   const transcriptionSegments = useNebulaStore((s) => s.transcriptionSegments[noteId]) ?? EMPTY_SEGMENTS
+
+  // Line numbers toggle (persisted global setting)
+  const showLineNumbers = useSettingsStore((s) => s.getSetting('plugins.nebula.showLineNumbers')) as boolean | undefined
+  const lineNumbersEnabled = showLineNumbers === true
+
+  // Copy feedback state
+  const [copiedMode, setCopiedMode] = useState<null | 'raw' | 'markdown'>(null)
+  const [isExportingPdf, setIsExportingPdf] = useState(false)
+
   // Link dialog state
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [linkPosition, setLinkPosition] = useState({ x: 0, y: 0 })
@@ -247,6 +260,47 @@ export default function NoteEditor({
       onBlur?.()
     },
     editorProps: {
+      handleDOMEvents: {
+        copy: (view, event) => {
+          // Intercept copy to provide well-formatted plain text alongside HTML
+          const { state } = view
+          if (state.selection.empty) return false
+          const slice = state.selection.content()
+          // Get HTML via DOMSerializer (Tiptap default behavior)
+          const serializer = DOMSerializer.fromSchema(state.schema)
+          const div = document.createElement('div')
+          const fragment = serializer.serializeFragment(slice.content)
+          div.appendChild(fragment)
+          const html = div.innerHTML
+          // Build a Tiptap-like JSON from slice then convert to plain text
+          const tempDoc = { type: 'doc', content: slice.content.toJSON() }
+          const plainText = tiptapToPlainText(tempDoc)
+          event.clipboardData?.clearData()
+          event.clipboardData?.setData('text/html', html)
+          event.clipboardData?.setData('text/plain', plainText)
+          event.preventDefault()
+          return true
+        },
+        cut: (view, event) => {
+          const { state } = view
+          if (state.selection.empty) return false
+          const slice = state.selection.content()
+          const serializer = DOMSerializer.fromSchema(state.schema)
+          const div = document.createElement('div')
+          const fragment = serializer.serializeFragment(slice.content)
+          div.appendChild(fragment)
+          const html = div.innerHTML
+          const tempDoc = { type: 'doc', content: slice.content.toJSON() }
+          const plainText = tiptapToPlainText(tempDoc)
+          event.clipboardData?.clearData()
+          event.clipboardData?.setData('text/html', html)
+          event.clipboardData?.setData('text/plain', plainText)
+          // Delete the selection
+          view.dispatch(state.tr.deleteSelection().scrollIntoView())
+          event.preventDefault()
+          return true
+        }
+      },
       handleDrop: (_view, event) => {
         const files = event.dataTransfer?.files
         if (!files || files.length === 0) return false
@@ -347,6 +401,65 @@ export default function NoteEditor({
     }
   }, [showTagInput])
 
+  // Copy full note as formatted plain text (preserving code blocks with backticks)
+  const handleCopyRaw = useCallback(async () => {
+    if (!editor) return
+    const doc = editor.getJSON()
+    const text = tiptapToPlainText(doc)
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const ta = document.createElement('textarea')
+      ta.value = text
+      ta.style.cssText = 'position:fixed;opacity:0'
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+    }
+    setCopiedMode('raw')
+    setTimeout(() => setCopiedMode(null), 2000)
+  }, [editor])
+
+  // Copy full note as markdown
+  const handleCopyMarkdown = useCallback(async () => {
+    if (!editor) return
+    const doc = editor.getJSON()
+    const md = tiptapToMarkdown(doc)
+    try {
+      await navigator.clipboard.writeText(md)
+    } catch {
+      const ta = document.createElement('textarea')
+      ta.value = md
+      ta.style.cssText = 'position:fixed;opacity:0'
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+    }
+    setCopiedMode('markdown')
+    setTimeout(() => setCopiedMode(null), 2000)
+  }, [editor])
+
+  // Export note as PDF
+  const handleExportPdf = useCallback(async () => {
+    if (!editor || isExportingPdf) return
+    setIsExportingPdf(true)
+    try {
+      const doc = editor.getJSON()
+      const md = tiptapToMarkdown(doc)
+      // Pre-render mermaid diagrams to PNG for embedding in PDF
+      const mermaidImages = await renderAllMermaidBlocks(md)
+      await window.api.textcraft.exportPdf({
+        markdown: md,
+        title: title || 'Untitled',
+        mermaidImages: Object.keys(mermaidImages).length > 0 ? mermaidImages : undefined
+      })
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }, [editor, title, isExportingPdf])
+
   // Insert table
   const handleInsertTable = useCallback(() => {
     editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
@@ -381,6 +494,45 @@ export default function NoteEditor({
             className="flex-1 border-none bg-transparent text-2xl font-bold text-text-primary outline-none placeholder:text-text-secondary/40"
           />
           <div className="flex items-center gap-2">
+            {/* Raw Copy */}
+            <button
+              type="button"
+              onClick={() => void handleCopyRaw()}
+              className={`p-1 rounded transition-colors ${copiedMode === 'raw' ? 'text-green-400' : 'text-text-secondary/40 hover:text-text-secondary'}`}
+              title="Copy as plain text"
+            >
+              {copiedMode === 'raw' ? <Check size={13} /> : <ClipboardCopy size={13} />}
+            </button>
+            {/* Copy Markdown */}
+            <button
+              type="button"
+              onClick={() => void handleCopyMarkdown()}
+              className={`p-1 rounded transition-colors ${copiedMode === 'markdown' ? 'text-green-400' : 'text-text-secondary/40 hover:text-text-secondary'}`}
+              title="Copy as markdown"
+            >
+              {copiedMode === 'markdown' ? <Check size={13} /> : <FileText size={13} />}
+            </button>
+            {/* Export PDF */}
+            <button
+              type="button"
+              onClick={() => void handleExportPdf()}
+              disabled={isExportingPdf}
+              className="p-1 rounded transition-colors text-text-secondary/40 hover:text-text-secondary disabled:opacity-50"
+              title="Export as PDF"
+            >
+              {isExportingPdf ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
+            </button>
+            {/* Separator */}
+            <div className="h-3 w-px bg-border/30" />
+            {/* Line numbers toggle */}
+            <button
+              type="button"
+              onClick={() => useSettingsStore.getState().setSetting('plugins.nebula.showLineNumbers', !lineNumbersEnabled)}
+              className={`p-1 rounded transition-colors ${lineNumbersEnabled ? 'text-accent bg-accent/10' : 'text-text-secondary/40 hover:text-text-secondary'}`}
+              title={lineNumbersEnabled ? 'Hide line numbers' : 'Show line numbers'}
+            >
+              <Hash size={13} />
+            </button>
             {/* Auto-save dot */}
             <span
               className={`inline-block h-2 w-2 rounded-full transition-colors duration-300 ${dotClass}`}
@@ -481,7 +633,7 @@ export default function NoteEditor({
       <div className="flex-1 overflow-y-auto">
         <EditorContent
           editor={editor}
-          className="nebula-editor max-w-none px-4 py-3"
+          className={`nebula-editor max-w-none px-4 py-3${lineNumbersEnabled ? ' nebula-line-numbers' : ''}`}
         />
 
         {/* Transcription block -- shown when note has transcription data */}

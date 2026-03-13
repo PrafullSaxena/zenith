@@ -171,7 +171,7 @@ const api = {
       ipcRenderer.invoke('launchpad:exportPdf', estimation),
   },
   textcraft: {
-    exportPdf: (data: { markdown: string; title?: string }): Promise<{ filePath: string | null }> =>
+    exportPdf: (data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }): Promise<{ filePath: string | null }> =>
       ipcRenderer.invoke('textcraft:exportPdf', data),
   },
   nebula: {

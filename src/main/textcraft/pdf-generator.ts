@@ -30,6 +30,7 @@ import { getSetting } from '../settings-store'
 interface TextCraftExport {
   markdown: string
   title?: string
+  mermaidImages?: Record<number, string>
 }
 
 // pdfmake content node (simplified)
@@ -85,6 +86,22 @@ const BASIC_THEME: PdfTheme = {
   footerColor: '#aaaaaa'
 }
 
+const PRETTY_THEME: PdfTheme = {
+  h1Color: '#67e8f9',       // cyan-300
+  h2Color: '#22d3ee',       // cyan-400
+  h3Color: '#a5f3fc',       // cyan-200
+  textColor: '#e2e8f0',     // slate-200
+  mutedColor: '#94a3b8',    // slate-400
+  codeBackground: '#0f172a', // slate-900
+  codeLabelColor: '#67e8f9',
+  blockquoteBorderColor: '#22d3ee',
+  blockquoteTextColor: '#cbd5e1', // slate-300
+  ruleColor: '#334155',     // slate-700
+  tableHeaderFill: '#1e293b', // slate-800
+  tableBorderColor: '#334155',
+  footerColor: '#64748b'    // slate-500
+}
+
 // ── Inline markdown parser → pdfmake text array ────────────────────────────
 
 function parseInline(text: string, theme: PdfTheme): PdfNode[] | string {
@@ -119,10 +136,114 @@ function parseInline(text: string, theme: PdfTheme): PdfNode[] | string {
   return parts
 }
 
+// ── Nested list parser ──────────────────────────────────────────────────────
+
+interface ListTreeItem {
+  text: string
+  ordered: boolean
+  children: ListTreeItem[]
+}
+
+/**
+ * Get the indentation level (number of leading spaces) of a line.
+ */
+function getIndent(line: string): number {
+  return line.length - line.trimStart().length
+}
+
+/**
+ * Parse indented markdown list lines into a tree, then convert to a pdfmake
+ * nested list node. Handles mixed ordered/unordered and arbitrary depth.
+ */
+function parseNestedList(lines: string[], theme: PdfTheme): PdfNode {
+  const nonEmpty = lines.filter((l: string) => l.trim())
+  if (nonEmpty.length === 0) return { text: '' }
+
+  function parseItems(items: string[], baseIndent: number): ListTreeItem[] {
+    const result: ListTreeItem[] = []
+    let i = 0
+
+    while (i < items.length) {
+      const line = items[i]
+      if (!line.trim()) {
+        i++
+        continue
+      }
+
+      const indent = getIndent(line)
+
+      // Skip lines with less indent than expected (shouldn't happen at this level)
+      if (indent < baseIndent) break
+
+      if (indent === baseIndent) {
+        const trimmed = line.trim()
+        const isOrd = /^\d+[.)]\s/.test(trimmed)
+        const text = trimmed.replace(/^[-*•]\s*/, '').replace(/^\d+[.)]\s*/, '')
+        result.push({ text, ordered: isOrd, children: [] })
+        i++
+
+        // Collect child lines (greater indent)
+        const childLines: string[] = []
+        while (i < items.length) {
+          const nextLine = items[i]
+          if (!nextLine.trim()) {
+            i++
+            continue
+          }
+          if (getIndent(nextLine) > baseIndent) {
+            childLines.push(nextLine)
+            i++
+          } else {
+            break
+          }
+        }
+
+        if (childLines.length > 0) {
+          const childIndent = getIndent(childLines.find((l: string) => l.trim()) || '')
+          result[result.length - 1].children = parseItems(childLines, childIndent)
+        }
+      } else {
+        // Unexpected deeper indent without a parent — treat as base
+        i++
+      }
+    }
+
+    return result
+  }
+
+  const baseIndent = getIndent(nonEmpty[0])
+  const tree = parseItems(nonEmpty, baseIndent)
+
+  function treeToNode(items: ListTreeItem[]): PdfNode {
+    const isOrd = items[0]?.ordered ?? false
+    const key = isOrd ? 'ol' : 'ul'
+    return {
+      [key]: items.map((item) => {
+        const textNode = {
+          text: parseInline(item.text, theme),
+          fontSize: 10,
+          lineHeight: 1.5,
+          margin: [0, 2, 0, 2]
+        }
+        if (item.children.length === 0) return textNode
+        return [textNode, treeToNode(item.children)]
+      }),
+      margin: [0, 4, 0, 4]
+    }
+  }
+
+  return treeToNode(tree)
+}
+
 // ── Block-level markdown → pdfmake content ──────────────────────────────────
 
-function markdownToPdfContent(md: string, theme: PdfTheme): PdfNode[] {
+function markdownToPdfContent(
+  md: string,
+  theme: PdfTheme,
+  mermaidImages?: Record<number, string>
+): PdfNode[] {
   const content: PdfNode[] = []
+  let mermaidIndex = 0
 
   // Split by code fences first
   const blocks = md.split(/(```[\s\S]*?```)/g)
@@ -135,15 +256,25 @@ function markdownToPdfContent(md: string, theme: PdfTheme): PdfNode[] {
       const lang = nlIdx >= 0 ? inner.slice(0, nlIdx).trim().toLowerCase() : ''
       const code = nlIdx >= 0 ? inner.slice(nlIdx + 1).trim() : inner.trim()
 
-      // Skip mermaid diagrams (can't render in pdfmake) — add a placeholder
+      // Mermaid diagrams — embed pre-rendered PNG if available, otherwise placeholder
       if (lang === 'mermaid') {
-        content.push({
-          text: '[Mermaid Diagram — view in app]',
-          italics: true,
-          fontSize: 9,
-          color: theme.mutedColor,
-          margin: [0, 6, 0, 6]
-        })
+        const imageData = mermaidImages?.[mermaidIndex]
+        mermaidIndex++
+        if (imageData) {
+          content.push({
+            image: imageData,
+            width: 480,
+            margin: [0, 8, 0, 8]
+          })
+        } else {
+          content.push({
+            text: '[Mermaid Diagram — view in app]',
+            italics: true,
+            fontSize: 9,
+            color: theme.mutedColor,
+            margin: [0, 6, 0, 6]
+          })
+        }
         continue
       }
 
@@ -241,38 +372,19 @@ function markdownToPdfContent(md: string, theme: PdfTheme): PdfNode[] {
         continue
       }
 
-      // Lists
+      // Lists (supports nested indented items)
       const lines = trimmed.split('\n')
-      const isBulletList = lines.every((l: string) => /^[-*•]\s/.test(l.trim()) || !l.trim())
-      const isNumberedList = lines.every((l: string) => /^\d+[.)]\s/.test(l.trim()) || !l.trim())
+      const firstNonEmpty = lines.find((l: string) => l.trim())
+      const isBulletList = firstNonEmpty && /^[-*•]\s/.test(firstNonEmpty.trim())
+      const isNumberedList = firstNonEmpty && /^\d+[.)]\s/.test(firstNonEmpty.trim())
+      const isListBlock =
+        (isBulletList || isNumberedList) &&
+        lines.every(
+          (l: string) => /^[-*•]\s/.test(l.trim()) || /^\d+[.)]\s/.test(l.trim()) || !l.trim()
+        )
 
-      if (isBulletList && lines.some((l: string) => /^[-*•]\s/.test(l.trim()))) {
-        content.push({
-          ul: lines
-            .filter((l: string) => /^[-*•]\s/.test(l.trim()))
-            .map((l: string) => ({
-              text: parseInline(l.trim().replace(/^[-*•]\s*/, ''), theme),
-              fontSize: 10,
-              lineHeight: 1.5,
-              margin: [0, 2, 0, 2]
-            })),
-          margin: [0, 4, 0, 4]
-        })
-        continue
-      }
-
-      if (isNumberedList && lines.some((l: string) => /^\d+[.)]\s/.test(l.trim()))) {
-        content.push({
-          ol: lines
-            .filter((l: string) => /^\d+[.)]\s/.test(l.trim()))
-            .map((l: string) => ({
-              text: parseInline(l.trim().replace(/^\d+[.)]\s*/, ''), theme),
-              fontSize: 10,
-              lineHeight: 1.5,
-              margin: [0, 2, 0, 2]
-            })),
-          margin: [0, 4, 0, 4]
-        })
+      if (isListBlock) {
+        content.push(parseNestedList(lines, theme))
         continue
       }
 
@@ -362,8 +474,9 @@ export async function exportTextCraftPdf(
   data: TextCraftExport
 ): Promise<string | null> {
   // Resolve theme from settings
-  const useColor = getSetting('general.coloredPdf') !== false
-  const theme = useColor ? COLORED_THEME : BASIC_THEME
+  const pdfStyle = getSetting('general.pdfStyle') as string | undefined
+  const theme =
+    pdfStyle === 'pretty' ? PRETTY_THEME : pdfStyle === 'traditional' ? BASIC_THEME : COLORED_THEME
 
   // Use working directory if set, otherwise downloads
   const workingDir = getSetting('general.workingDirectory') as string
@@ -384,7 +497,7 @@ export async function exportTextCraftPdf(
   if (canceled || !filePath) return null
 
   // Build PDF content from markdown
-  const content = markdownToPdfContent(data.markdown, theme)
+  const content = markdownToPdfContent(data.markdown, theme, data.mermaidImages)
 
   // Add generation footer
   content.push({
@@ -413,10 +526,27 @@ export async function exportTextCraftPdf(
     }
   }
 
+  const isPretty = pdfStyle === 'pretty'
   const docDefinition = {
-    defaultStyle: { font: 'Helvetica', fontSize: 10 },
+    defaultStyle: { font: 'Helvetica', fontSize: 10, color: theme.textColor },
     content,
-    pageMargins: [40, 40, 40, 40]
+    pageMargins: [40, 40, 40, 40],
+    ...(isPretty
+      ? {
+          background: () => ({
+            canvas: [
+              {
+                type: 'rect',
+                x: 0,
+                y: 0,
+                w: 595.28,
+                h: 841.89,
+                color: '#1a1b2e'
+              }
+            ]
+          })
+        }
+      : {})
   }
 
   const pdf = pdfmake.default.createPdf(docDefinition as Parameters<typeof pdfmake.default.createPdf>[0])
