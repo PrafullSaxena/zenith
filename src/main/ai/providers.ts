@@ -89,15 +89,18 @@ export function createModel(
     }
 
     case 'cursor-agent': {
-      // Cursor API uses Bearer auth and the Chat Completions endpoint
-      // at api2.cursor.sh (/v1/chat/completions).
-      // In @ai-sdk/openai v3+, provider(model) defaults to Responses API;
-      // use provider.chat(model) to explicitly select Chat Completions.
-      const cursorBaseUrl = baseUrl || 'https://api2.cursor.sh/v1'
+      // Cursor does not expose a standard OpenAI-compatible Chat Completions
+      // endpoint.  Users must provide a proxy URL (e.g. LiteLLM or OpenRouter).
+      if (!baseUrl) {
+        throw new Error(
+          'Cursor requires a proxy URL. Configure a base URL in provider settings ' +
+          '(e.g., use LiteLLM proxy at http://localhost:4000/v1 or OpenRouter at https://openrouter.ai/api/v1).'
+        )
+      }
       const provider = createOpenAI({
         compatibility: 'compatible',
         apiKey: apiKey || 'unused',
-        baseURL: cursorBaseUrl,
+        baseURL: baseUrl,
         ...(apiKey
           ? { headers: { Authorization: `Bearer ${apiKey}` } }
           : {})

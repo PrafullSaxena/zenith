@@ -100,7 +100,7 @@ export const DEFAULT_PROVIDERS: AgentProvider[] = [
     id: 'cursor-agent',
     name: 'Cursor Agent',
     type: 'cloud',
-    baseUrl: 'https://api2.cursor.sh/v1',
+    baseUrl: '',
     model: 'gpt-4o',
     command: '',
     status: 'not-configured',

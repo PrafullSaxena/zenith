@@ -222,6 +222,10 @@ export interface DbHistoryEntry {
   explainOutput?: string
   suggestions?: OptimizationSuggestion[]
   summary?: string
+  insights?: string[]
+  tradeoffs?: string[]
+  mermaidDiagram?: string
+  optimizedQuery?: string
   // ER Diagram-specific
   selectedTables?: string[]
   mermaidSyntax?: string
@@ -267,6 +271,14 @@ export interface QueryExecution {
  *   'split'  — bottom split panel (default)
  *   'inline' — inline after each statement (DataGrip-style)
  */
+export interface InlineResult {
+  id: string
+  sql: string
+  lineStart: number  // 1-based line number where the statement starts
+  lineEnd: number    // 1-based line number where the statement ends
+  result: QueryExecution
+}
+
 export interface QueryTab {
   id: string
   connectionId: string
@@ -275,6 +287,7 @@ export interface QueryTab {
   writeEnabled: boolean
   outputMode: 'split' | 'inline'
   lastResult: QueryExecution | null
+  inlineResults: InlineResult[]
   outputMessages: OutputMessage[]
   variables: Record<string, string>
 }

@@ -197,7 +197,11 @@ export default function DbInspectorView(): React.JSX.Element {
       originalQuery: optimizerSession.originalQuery,
       explainOutput: optimizerSession.explainOutput,
       suggestions: optimizerSession.suggestions,
-      summary: optimizerSession.summary
+      summary: optimizerSession.summary,
+      insights: optimizerSession.insights,
+      tradeoffs: optimizerSession.tradeoffs,
+      mermaidDiagram: optimizerSession.mermaidDiagram,
+      optimizedQuery: optimizerSession.optimizedQuery
     })
 
     addActivity({

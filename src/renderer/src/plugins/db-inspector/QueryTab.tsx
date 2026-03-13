@@ -34,7 +34,7 @@ import {
 } from 'lucide-react'
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { useDbStore, buildCmSchema } from '../../stores/db-store'
-import type { QueryTab as QueryTabType, OutputMessage } from '../../types/database'
+import type { QueryTab as QueryTabType, OutputMessage, InlineResult } from '../../types/database'
 import SqlEditor from './SqlEditor'
 import ResultsGrid from './ResultsGrid'
 import SavedQueriesPanel from './SavedQueriesPanel'
@@ -100,7 +100,9 @@ export default function QueryTab({
     setPendingOptimizerSql,
     saveQuery,
     setTabVariable,
-    removeTabVariable
+    removeTabVariable,
+    removeInlineResult,
+    clearInlineResults
   } = useDbStore()
 
   const editorViewRef = useRef<EditorView | null>(null)
@@ -266,6 +268,7 @@ export default function QueryTab({
 
   const result = tab.lastResult
   const hasResult = result && result.status !== 'idle'
+  const hasInlineResults = (tab.inlineResults || []).length > 0
 
   // ── Results content (ResultsGrid or status messages) ─────────────
 
@@ -686,9 +689,9 @@ export default function QueryTab({
               variables={tab.variables}
             />
           </div>
-          {showOutput && hasResult && (
-            <div className="border-t border-border animate-results-enter">
-              {/* Output tabs */}
+          {showOutput && hasInlineResults && (
+            <div className="border-t border-border">
+              {/* Results/Output tab headers */}
               <div className="flex items-center gap-0 border-b border-border bg-surface/50 shrink-0">
                 <button
                   type="button"
@@ -699,7 +702,7 @@ export default function QueryTab({
                       : 'text-text-secondary hover:text-text-primary'
                   }`}
                 >
-                  Results
+                  Results ({(tab.inlineResults || []).length})
                 </button>
                 <button
                   type="button"
@@ -715,10 +718,55 @@ export default function QueryTab({
                     <span className="ml-1 text-[9px] text-text-secondary">({(tab.outputMessages || []).length})</span>
                   )}
                 </button>
+                {outputTab === 'results' && (tab.inlineResults || []).length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => clearInlineResults(tab.id)}
+                    className="ml-auto mr-2 text-[10px] text-text-secondary hover:text-red-400 transition-colors"
+                  >
+                    Clear all
+                  </button>
+                )}
               </div>
-              <div className="overflow-hidden">
-                {outputTab === 'results' ? renderResultsContent() : <OutputConsole messages={tab.outputMessages || []} />}
-              </div>
+              {outputTab === 'results' ? (
+                <div className="divide-y divide-border">
+                  {(tab.inlineResults || []).map((ir, idx) => (
+                    <div key={ir.id} className="animate-results-enter">
+                      <div className="flex items-center gap-2 px-3 py-1 bg-surface/30 text-xs text-text-secondary">
+                        <span className="font-mono text-accent">#{idx + 1}</span>
+                        <span className="truncate flex-1 font-mono">{ir.sql.slice(0, 80)}{ir.sql.length > 80 ? '...' : ''}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeInlineResult(tab.id, ir.id)}
+                          className="text-text-secondary hover:text-red-400 p-0.5"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                      {ir.result.status === 'success' && ir.result.rows.length > 0 ? (
+                        <div style={{ maxHeight: 300 }} className="overflow-auto">
+                          <ResultsGrid
+                            rows={ir.result.rows}
+                            fields={ir.result.fields}
+                            hasMore={ir.result.hasMore}
+                            isLoading={false}
+                            error={undefined}
+                            onLoadMore={() => {}}
+                          />
+                        </div>
+                      ) : ir.result.status === 'error' ? (
+                        <div className="p-2 text-xs text-red-400">{ir.result.error}</div>
+                      ) : (
+                        <div className="p-2 text-xs text-green-400">
+                          {ir.result.affectedRows > 0 ? `${ir.result.affectedRows} rows affected` : 'Query executed successfully'}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <OutputConsole messages={tab.outputMessages || []} />
+              )}
             </div>
           )}
         </div>

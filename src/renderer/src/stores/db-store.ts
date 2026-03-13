@@ -37,6 +37,7 @@ import type {
   QueryTab,
   QueryExecution,
   QueryExecutionStatus,
+  InlineResult,
   SavedQuery,
   OutputMessage
 } from '../types/database'
@@ -359,6 +360,8 @@ interface DbStoreState {
   deleteSavedQuery: (id: string) => Promise<void>
   setTabVariable: (tabId: string, name: string, value: string) => void
   removeTabVariable: (tabId: string, name: string) => void
+  removeInlineResult: (tabId: string, resultId: string) => void
+  clearInlineResults: (tabId: string) => void
 }
 
 // ── Store creation ──────────────────────────────────────────────────
@@ -1223,27 +1226,38 @@ For each table, examine every non-PK column and check if it could reference a PK
           activeTab: 'ask-ai'
         })
         break
-      case 'optimize':
+      case 'optimize': {
+        const restoredSession: QueryOptimizationSession = {
+          sessionId: `opt-restored-${Date.now()}`,
+          connectionId: entry.connectionId,
+          schema: entry.schema,
+          status: 'complete',
+          originalQuery: entry.originalQuery ?? '',
+          explainOutput: entry.explainOutput ?? '',
+          rawText: '',
+          suggestions: entry.suggestions ?? [],
+          summary: entry.summary ?? '',
+          insights: entry.insights ?? [],
+          tradeoffs: entry.tradeoffs ?? [],
+          mermaidDiagram: entry.mermaidDiagram ?? '',
+          optimizedQuery: entry.optimizedQuery ?? '',
+          startedAt: entry.timestamp
+        }
+        // Create a tile so the completed session is visible in the optimizer view
+        const restoredTile: OptimizerTile = {
+          id: restoredSession.sessionId,
+          originalQuery: restoredSession.originalQuery,
+          session: restoredSession,
+          timestamp: entry.timestamp
+        }
+        const existingTiles = get().optimizerTiles.filter((t) => t.id !== restoredTile.id)
         set({
-          optimizerSession: {
-            sessionId: `opt-restored-${Date.now()}`,
-            connectionId: entry.connectionId,
-            schema: entry.schema,
-            status: 'complete',
-            originalQuery: entry.originalQuery ?? '',
-            explainOutput: entry.explainOutput ?? '',
-            rawText: '',
-            suggestions: entry.suggestions ?? [],
-            summary: entry.summary ?? '',
-            insights: [],
-            tradeoffs: [],
-            mermaidDiagram: '',
-            optimizedQuery: '',
-            startedAt: entry.timestamp
-          },
+          optimizerSession: restoredSession,
+          optimizerTiles: [restoredTile, ...existingTiles].slice(0, MAX_OPTIMIZER_TILES),
           activeTab: 'query-optimizer'
         })
         break
+      }
       case 'er-diagram':
         set({
           erSession: {
@@ -1277,7 +1291,7 @@ For each table, examine every non-PK column and check if it could reference a PK
     try {
       const raw = await window.api.settings.get(`queryConsole.tabs.${connectionId}`)
       const tabs = Array.isArray(raw)
-        ? (raw as QueryTab[]).map((t) => ({ ...t, outputMessages: t.outputMessages || [] }))
+        ? (raw as QueryTab[]).map((t) => ({ ...t, outputMessages: t.outputMessages || [], variables: t.variables || {}, inlineResults: t.inlineResults || [] }))
         : []
       if (tabs.length > 0) {
         set({ queryTabs: tabs, activeQueryTabId: tabs[0].id })
@@ -1290,7 +1304,10 @@ For each table, examine every non-PK column and check if it could reference a PK
           sql: '',
           writeEnabled: false,
           outputMode: 'split',
-          lastResult: null
+          lastResult: null,
+          inlineResults: [],
+          outputMessages: [],
+          variables: {}
         }
         set({ queryTabs: [defaultTab], activeQueryTabId: defaultTab.id })
       }
@@ -1302,7 +1319,10 @@ For each table, examine every non-PK column and check if it could reference a PK
         sql: '',
         writeEnabled: false,
         outputMode: 'split',
-        lastResult: null
+        lastResult: null,
+        inlineResults: [],
+        outputMessages: [],
+        variables: {}
       }
       set({ queryTabs: [defaultTab], activeQueryTabId: defaultTab.id })
     }
@@ -1329,6 +1349,7 @@ For each table, examine every non-PK column and check if it could reference a PK
       writeEnabled: false,
       outputMode: 'split',
       lastResult: null,
+      inlineResults: [],
       outputMessages: [],
       variables: {}
     }
@@ -1354,7 +1375,10 @@ For each table, examine every non-PK column and check if it could reference a PK
         sql: '',
         writeEnabled: false,
         outputMode: 'split',
-        lastResult: null
+        lastResult: null,
+        inlineResults: [],
+        outputMessages: [],
+        variables: {}
       }
       remaining = [fresh]
       newActiveId = fresh.id
@@ -1415,6 +1439,36 @@ For each table, examine every non-PK column and check if it could reference a PK
     // ── Variable substitution ────────────────────────────────────
     let sqlToRun = sql
     if (tab.variables) {
+      // Check for empty variable values before substitution
+      const emptyVars = Object.entries(tab.variables)
+        .filter(([, v]) => v === '')
+        .map(([k]) => k)
+        .filter((k) => sql.includes(`{{${k}}}`))
+      if (emptyVars.length > 0) {
+        // ── Helper to append output messages (early-error path) ───
+        const earlyAppend = (msg: Omit<OutputMessage, 'timestamp'>) => {
+          const tabs = get().queryTabs.map((t) => {
+            if (t.id !== tabId) return t
+            let messages = [...(t.outputMessages || []), { ...msg, timestamp: new Date().toISOString() }]
+            if (messages.length > 1000) messages = messages.slice(-1000)
+            const cutoff = Date.now() - 48 * 60 * 60 * 1000
+            messages = messages.filter(m => new Date(m.timestamp).getTime() > cutoff)
+            return { ...t, outputMessages: messages }
+          })
+          set({ queryTabs: tabs })
+        }
+        const errMsg = `Empty variable values: ${emptyVars.join(', ')}. Set their values in the variables panel before running.`
+        earlyAppend({ type: 'error', message: errMsg })
+        set({
+          queryTabs: get().queryTabs.map((t) =>
+            t.id === tabId
+              ? { ...t, lastResult: { status: 'error' as QueryExecutionStatus, rows: [], fields: [], rowCount: 0, affectedRows: 0, executionTimeMs: 0, hasMore: false, sql, command: '', error: errMsg } }
+              : t
+          )
+        })
+        return
+      }
+
       for (const [k, v] of Object.entries(tab.variables)) {
         sqlToRun = sqlToRun.replaceAll(`{{${k}}}`, v)
       }
@@ -1436,6 +1490,22 @@ For each table, examine every non-PK column and check if it could reference a PK
     }
 
     appendOutput({ type: 'info', message: `Executing query:\n${sqlToRun}` })
+
+    // Check for unresolved variables (not defined in tab.variables at all)
+    const unresolvedMatch = sqlToRun.match(/\{\{(\w+)\}\}/g)
+    if (unresolvedMatch) {
+      const names = unresolvedMatch.map((m) => m.slice(2, -2))
+      const errMsg = `Unresolved variables: ${names.join(', ')}. Set values in the variables panel.`
+      appendOutput({ type: 'error', message: errMsg })
+      set({
+        queryTabs: get().queryTabs.map((t) =>
+          t.id === tabId
+            ? { ...t, lastResult: { status: 'error' as QueryExecutionStatus, rows: [], fields: [], rowCount: 0, affectedRows: 0, executionTimeMs: 0, hasMore: false, sql, command: '', error: errMsg } }
+            : t
+        )
+      })
+      return
+    }
 
     const startTime = Date.now()
 
@@ -1480,9 +1550,18 @@ For each table, examine every non-PK column and check if it could reference a PK
         command: result.command ?? ''
       }
 
+      // Append to inlineResults for inline mode
+      const inlineEntry: InlineResult = {
+        id: `ir-${Date.now()}`,
+        sql,
+        lineStart: 0,
+        lineEnd: 0,
+        result: successResult
+      }
+
       set({
         queryTabs: get().queryTabs.map((t) =>
-          t.id === tabId ? { ...t, lastResult: successResult } : t
+          t.id === tabId ? { ...t, lastResult: successResult, inlineResults: [...(t.inlineResults || []), inlineEntry] } : t
         )
       })
 
@@ -1523,9 +1602,16 @@ For each table, examine every non-PK column and check if it could reference a PK
               sql: sqlToRun,
               command: retryResult.command ?? ''
             }
+            const retryInlineEntry: InlineResult = {
+              id: `ir-${Date.now()}`,
+              sql,
+              lineStart: 0,
+              lineEnd: 0,
+              result: successResult
+            }
             set({
               queryTabs: get().queryTabs.map((t) =>
-                t.id === tabId ? { ...t, lastResult: successResult } : t
+                t.id === tabId ? { ...t, lastResult: successResult, inlineResults: [...(t.inlineResults || []), retryInlineEntry] } : t
               )
             })
             appendOutput({ type: 'success', message: `Query completed in ${executionTimeMs}ms (after reconnect). ${retryResult.rowCount} rows returned.` })
@@ -1552,9 +1638,18 @@ For each table, examine every non-PK column and check if it could reference a PK
         errorLine
       }
 
+      // Append error to inlineResults for inline mode
+      const errorInlineEntry: InlineResult = {
+        id: `ir-${Date.now()}`,
+        sql,
+        lineStart: 0,
+        lineEnd: 0,
+        result: errorResult
+      }
+
       set({
         queryTabs: get().queryTabs.map((t) =>
-          t.id === tabId ? { ...t, lastResult: errorResult } : t
+          t.id === tabId ? { ...t, lastResult: errorResult, inlineResults: [...(t.inlineResults || []), errorInlineEntry] } : t
         )
       })
 
@@ -1686,6 +1781,20 @@ For each table, examine every non-PK column and check if it could reference a PK
     })
     set({ queryTabs: tabs })
     get().saveQueryTabs()
+  },
+
+  removeInlineResult: (tabId, resultId) => {
+    const tabs = get().queryTabs.map((t) =>
+      t.id === tabId ? { ...t, inlineResults: (t.inlineResults || []).filter((r) => r.id !== resultId) } : t
+    )
+    set({ queryTabs: tabs })
+  },
+
+  clearInlineResults: (tabId) => {
+    const tabs = get().queryTabs.map((t) =>
+      t.id === tabId ? { ...t, inlineResults: [] } : t
+    )
+    set({ queryTabs: tabs })
   }
 }))
 

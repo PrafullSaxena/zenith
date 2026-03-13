@@ -207,6 +207,12 @@ export default function ResultsGrid({
     [columnWidths]
   )
 
+  // Total width for table-layout: fixed
+  const ROW_NUM_WIDTH = 40
+  const totalWidth = useMemo(() => {
+    return ROW_NUM_WIDTH + fields.reduce((sum, f) => sum + getColWidth(f.name), 0)
+  }, [fields, getColWidth])
+
   // Sorted rows
   const sortedRows = useMemo(() => {
     if (!sortColumn || sortDirection === null) return rows
@@ -432,10 +438,20 @@ export default function ResultsGrid({
         className="flex-1 overflow-auto min-h-0 text-xs"
         onScroll={handleScroll}
       >
-        <table className="border-separate border-spacing-0 w-max min-w-full">
+        <table
+          className="border-separate border-spacing-0 w-max min-w-full"
+          style={{ tableLayout: 'fixed', width: totalWidth }}
+        >
           {/* Header */}
           <thead className="sticky top-0 z-10 bg-background">
             <tr>
+              {/* Row number column */}
+              <th
+                style={{ width: ROW_NUM_WIDTH, minWidth: ROW_NUM_WIDTH, maxWidth: ROW_NUM_WIDTH }}
+                className="sticky left-0 z-20 border-b border-r border-border px-2 py-1.5 text-left font-medium text-text-secondary bg-background select-none"
+              >
+                #
+              </th>
               {fields.map((field) => {
                 const width = getColWidth(field.name)
                 const isSorted = sortColumn === field.name
@@ -480,7 +496,8 @@ export default function ResultsGrid({
                     position: 'absolute',
                     top: 0,
                     left: 0,
-                    width: '100%',
+                    width: totalWidth,
+                    minWidth: '100%',
                     height: virtualRow.size + 'px',
                     transform: `translateY(${virtualRow.start}px)`
                   }}
@@ -490,6 +507,13 @@ export default function ResultsGrid({
                     setContextMenu({ x: e.clientX, y: e.clientY, row })
                   }}
                 >
+                  {/* Row number cell */}
+                  <td
+                    style={{ width: ROW_NUM_WIDTH, minWidth: ROW_NUM_WIDTH, maxWidth: ROW_NUM_WIDTH }}
+                    className="sticky left-0 z-[5] border-b border-r border-border/50 px-2 py-0 h-8 text-right text-text-secondary/50 bg-background font-mono text-[10px]"
+                  >
+                    {virtualRow.index + 1}
+                  </td>
                   {fields.map((field) => {
                     const value = row[field.name]
                     const isNumber = typeof value === 'number'
