@@ -6,8 +6,7 @@
 |-------|------|-------|--------|----------|
 | 1 | Foundation | 5 | In Progress | 2/5 |
 | 2 | Mission Control & Activity Log | 3 | Planned | 0/3 |
-| 3 | CodeReviewBot Plugin | 4 | Planned | 0/4 |
-| 4 | DbInspector Plugin | 4 | Planned | 0/4 |
+| 3 | CodeReviewBot Plugin | 4 | 1/4 | In Progress|  | 4 | DbInspector Plugin | 4 | Planned | 0/4 |
 | 5 | AstroPatch Plugin | 7 | 4/4 | Complete   | 2026-03-09 | 6 | Polish & Production | 3 | Planned | 0/3 |
 | 7 | Launchpad Plugin | 4 | Complete | 4/4 |
 | 8 | Nebula Plugin | 6 | Complete | 6/6 |
@@ -62,7 +61,7 @@ Plans:
 
 **Requirements:** [DBIS-01, DBIS-02, DBIS-03, DBIS-04, DBIS-05, DBIS-06, DBIS-07, DBIS-08, DBIS-09]
 
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
 - [ ] 04-01-PLAN.md -- MySQL driver, unified DB manager, query console types, new IPC handlers
