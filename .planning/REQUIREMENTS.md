@@ -183,7 +183,7 @@
 | DBIS-06 | 4 | - | Planned |
 | DBIS-07 | 4 | - | Planned |
 | DBIS-08 | 4 | - | Planned |
-| DBIS-09 | 4 | - | Planned |
+| DBIS-09 | - | - | Deferred |
 | ARPA-01 | 5 | - | Planned |
 | ARPA-02 | 5 | - | Planned |
 | ARPA-03 | 5 | - | Planned |

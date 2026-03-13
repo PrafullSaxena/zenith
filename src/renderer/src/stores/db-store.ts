@@ -503,7 +503,8 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
         password,
         conn.database,
         conn.defaultSchema,
-        conn.readStrategy
+        conn.readStrategy,
+        conn.engine
       )
 
       set({
