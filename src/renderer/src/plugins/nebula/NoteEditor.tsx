@@ -24,11 +24,11 @@ import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { Extension, mergeAttributes } from '@tiptap/core'
-import { Sparkles, Plus, X, Table as TableIcon, Hash, ClipboardCopy, FileText, Check, FileDown, Loader2 } from 'lucide-react'
+import { Sparkles, Plus, X, Table as TableIcon, Hash, ClipboardCopy, FileText, Check, FileDown, Loader2, Eye, EyeOff } from 'lucide-react'
 import { DOMSerializer } from '@tiptap/pm/model'
 import { lowlight } from '../../lib/lowlight-setup'
 import CodeBlockNodeView from './CodeBlockNodeView'
-import CodeBlockControls from './CodeBlockControls'
+// CodeBlockControls removed — mermaid preview toggle moved to top ribbon
 import type { NoteTag } from '../../types/nebula'
 import { useNebulaStore } from '../../stores/nebula-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -104,6 +104,10 @@ export default function NoteEditor({
   // Line numbers toggle (persisted global setting)
   const showLineNumbers = useSettingsStore((s) => s.getSetting('plugins.nebula.showLineNumbers')) as boolean | undefined
   const lineNumbersEnabled = showLineNumbers === true
+
+  // Mermaid diagram preview toggle (persisted global setting)
+  const showMermaidPreview = useSettingsStore((s) => s.getSetting('plugins.nebula.showMermaidPreview')) as boolean | undefined
+  const mermaidPreviewEnabled = showMermaidPreview !== false // default to true
 
   // Copy feedback state
   const [copiedMode, setCopiedMode] = useState<null | 'raw' | 'markdown'>(null)
@@ -532,6 +536,15 @@ export default function NoteEditor({
             </button>
             {/* Separator */}
             <div className="h-3 w-px bg-border/30" />
+            {/* Mermaid diagram preview toggle */}
+            <button
+              type="button"
+              onClick={() => useSettingsStore.getState().setSetting('plugins.nebula.showMermaidPreview', !mermaidPreviewEnabled)}
+              className={`p-1 rounded transition-colors ${mermaidPreviewEnabled ? 'text-accent bg-accent/10' : 'text-text-secondary/40 hover:text-text-secondary'}`}
+              title={mermaidPreviewEnabled ? 'Show mermaid code' : 'Show mermaid diagrams'}
+            >
+              {mermaidPreviewEnabled ? <Eye size={13} /> : <EyeOff size={13} />}
+            </button>
             {/* Line numbers toggle */}
             <button
               type="button"
@@ -618,9 +631,6 @@ export default function NoteEditor({
 
       {/* Table controls (shown when cursor is in a table) */}
       {editor && <TableControls editor={editor} />}
-
-      {/* Code block controls (shown when cursor is in a code block) */}
-      {editor && <CodeBlockControls editor={editor} />}
 
       {/* Insert table button (subtle, below title/tags area) */}
       {editor && !editor.isActive('table') && (

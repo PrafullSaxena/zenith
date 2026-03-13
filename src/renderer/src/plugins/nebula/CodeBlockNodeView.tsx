@@ -9,11 +9,12 @@
  * (decorations applied to the contentDOM element by CodeBlockLowlight).
  */
 
-import { useCallback, useMemo, useState, useEffect, lazy, Suspense } from 'react'
+import { useCallback, useMemo, useState, lazy, Suspense } from 'react'
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/react'
-import { ChevronDown, Wand2, FileCode2, Copy, Check, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { ChevronDown, Wand2, FileCode2, Copy, Check, Loader2 } from 'lucide-react'
 import { LANGUAGES } from '../../lib/lowlight-setup'
+import { useSettingsStore } from '../../stores/settings-store'
 
 const MermaidRenderer = lazy(() => import('../db-inspector/MermaidRenderer'))
 
@@ -122,14 +123,10 @@ export default function CodeBlockNodeView({
   const [copied, setCopied] = useState(false)
   const [showLangPicker, setShowLangPicker] = useState(false)
 
-  // Mermaid live preview state
+  // Mermaid live preview state (global setting from top ribbon)
   const isMermaid = language === 'mermaid'
-  const [showDiagram, setShowDiagram] = useState(isMermaid)
-
-  // Auto-switch to diagram mode when language changes to/from mermaid
-  useEffect(() => {
-    setShowDiagram(isMermaid)
-  }, [isMermaid])
+  const showMermaidPreview = useSettingsStore((s) => s.getSetting('plugins.nebula.showMermaidPreview')) as boolean | undefined
+  const showDiagram = isMermaid && showMermaidPreview !== false
 
   const filename = useMemo(() => inferFilename(code, language), [code, language])
 
@@ -227,18 +224,6 @@ export default function CodeBlockNodeView({
             )}
           </div>
 
-          {/* Mermaid diagram/code toggle */}
-          {isMermaid && code.trim() && (
-            <button
-              type="button"
-              onClick={() => setShowDiagram(!showDiagram)}
-              className="code-block-action-btn"
-              title={showDiagram ? 'Edit code' : 'Show diagram'}
-            >
-              {showDiagram ? <EyeOff size={11} /> : <Eye size={11} />}
-            </button>
-          )}
-
           {/* Format button */}
           <button
             type="button"
@@ -262,7 +247,7 @@ export default function CodeBlockNodeView({
       </div>
 
       {/* Mermaid diagram or code content */}
-      {isMermaid && showDiagram && code.trim() ? (
+      {showDiagram && code.trim() ? (
         <div className="relative p-2" contentEditable={false}>
           <Suspense fallback={
             <div className="flex items-center justify-center py-6 text-text-secondary/50">
