@@ -16,6 +16,7 @@ import {
   Zap,
   GitFork,
   History,
+  Terminal,
   AlertTriangle
 } from 'lucide-react'
 import { useDbStore } from '../../stores/db-store'
@@ -29,11 +30,13 @@ import AskAI from './AskAI'
 import QueryOptimizer from './QueryOptimizer'
 import ERDiagram from './ERDiagram'
 import DbHistory from './DbHistory'
+import QueryConsole from './QueryConsole'
 
 const TABS: { id: DbInspectorTab; label: string; icon: typeof MessageSquare }[] = [
   { id: 'ask-ai', label: 'Ask AI', icon: MessageSquare },
   { id: 'query-optimizer', label: 'Optimizer', icon: Zap },
   { id: 'er-diagram', label: 'ER Diagram', icon: GitFork },
+  { id: 'query-console', label: 'Console', icon: Terminal },
   { id: 'history', label: 'History', icon: History }
 ]
 
@@ -416,6 +419,15 @@ export default function DbInspectorView(): React.JSX.Element {
                 inferredCount={erInferredRelationships.length}
                 connectionName={activeConnection?.name}
                 schema={activeSchema ?? ''}
+              />
+            )}
+            {activeTab === 'query-console' && (
+              <QueryConsole
+                connectionId={activeConnectionId}
+                isConnected={isConnected}
+                schema={activeSchema}
+                tables={tables}
+                engine={activeConnection?.engine ?? 'postgresql'}
               />
             )}
             {activeTab === 'history' && (

@@ -33,7 +33,11 @@ import type {
   RelationshipMode,
   ERInferenceStatus,
   InferredRelationship,
-  Cardinality
+  Cardinality,
+  QueryTab,
+  QueryExecution,
+  QueryExecutionStatus,
+  SavedQuery
 } from '../types/database'
 import {
   buildDbQASystemPrompt,
@@ -246,6 +250,14 @@ interface DbStoreState {
   // Active tab
   activeTab: DbInspectorTab
 
+  // Query console
+  queryTabs: QueryTab[]
+  activeQueryTabId: string | null
+  savedQueries: SavedQuery[]
+  /** Keyed by `connectionId:schema`, value is tableName → columns[]. Used for CodeMirror autocomplete. */
+  columnsCache: Record<string, Record<string, { name: string; dataType: string }[]>>
+  isLoadingAllColumns: boolean
+
   // ── Connection actions ──────────────────────────────────────────
 
   loadConnections: () => Promise<void>
@@ -322,6 +334,25 @@ interface DbStoreState {
   // ── Tab actions ─────────────────────────────────────────────────
 
   setActiveTab: (tab: DbInspectorTab) => void
+
+  // ── Query console actions ────────────────────────────────────────
+
+  loadQueryTabs: (connectionId: string) => Promise<void>
+  saveQueryTabs: () => Promise<void>
+  addQueryTab: () => void
+  closeQueryTab: (tabId: string) => void
+  setActiveQueryTab: (tabId: string) => void
+  updateQueryTabSql: (tabId: string, sql: string) => void
+  toggleWriteMode: (tabId: string) => void
+  toggleOutputMode: (tabId: string) => void
+  renameQueryTab: (tabId: string, label: string) => void
+  executeQuery: (tabId: string, sql: string) => Promise<void>
+  loadMoreRows: (tabId: string, offset: number) => Promise<void>
+  cancelQuery: (tabId: string) => Promise<void>
+  loadAllColumnsForAutocomplete: () => Promise<void>
+  loadSavedQueries: () => Promise<void>
+  saveQuery: (name: string, sql: string) => Promise<void>
+  deleteSavedQuery: (id: string) => Promise<void>
 }
 
 // ── Store creation ──────────────────────────────────────────────────
@@ -365,6 +396,12 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
   isLoadingHistory: false,
 
   activeTab: 'ask-ai',
+
+  queryTabs: [],
+  activeQueryTabId: null,
+  savedQueries: [],
+  columnsCache: {},
+  isLoadingAllColumns: false,
 
   // ── Connection actions ──────────────────────────────────────────
 
@@ -490,6 +527,11 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
       // Auto-load databases, then schemas (which auto-selects schema + loads tables)
       await get().loadDatabases()
       await get().loadSchemas()
+
+      // Load query tabs for this connection
+      await get().loadQueryTabs(connectionId)
+      // Load columns for autocomplete (non-blocking)
+      get().loadAllColumnsForAutocomplete().catch(() => {/* non-critical */})
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Connection failed'
       set({
@@ -537,6 +579,10 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
       indexes: [],
       tableStats: null
     })
+    // Load query tabs for the newly selected connection
+    if (id) {
+      get().loadQueryTabs(id).catch(() => {/* non-critical */})
+    }
   },
 
   setActiveDatabase: async (database) => {
@@ -637,6 +683,8 @@ export const useDbStore = create<DbStoreState>((set, get) => ({
     try {
       const tables = await window.api.db.getTables(activeConnectionId, activeSchema)
       set({ tables, isLoadingTables: false })
+      // Cascade: load all columns for autocomplete after schema is loaded
+      get().loadAllColumnsForAutocomplete().catch(() => {/* non-critical */})
     } catch {
       set({ tables: [], isLoadingTables: false })
     }
@@ -1211,8 +1259,354 @@ For each table, examine every non-PK column and check if it could reference a PK
 
   // ── Tab actions ─────────────────────────────────────────────────
 
-  setActiveTab: (tab) => set({ activeTab: tab })
+  setActiveTab: (tab) => set({ activeTab: tab }),
+
+  // ── Query console actions ────────────────────────────────────────
+
+  loadQueryTabs: async (connectionId) => {
+    try {
+      const raw = await window.api.settings.get(`queryConsole.tabs.${connectionId}`)
+      const tabs = Array.isArray(raw) ? (raw as QueryTab[]) : []
+      if (tabs.length > 0) {
+        set({ queryTabs: tabs, activeQueryTabId: tabs[0].id })
+      } else {
+        // Create a default tab if none saved
+        const defaultTab: QueryTab = {
+          id: crypto.randomUUID(),
+          connectionId,
+          label: 'Query 1',
+          sql: '',
+          writeEnabled: false,
+          outputMode: 'split',
+          lastResult: null
+        }
+        set({ queryTabs: [defaultTab], activeQueryTabId: defaultTab.id })
+      }
+    } catch {
+      const defaultTab: QueryTab = {
+        id: crypto.randomUUID(),
+        connectionId,
+        label: 'Query 1',
+        sql: '',
+        writeEnabled: false,
+        outputMode: 'split',
+        lastResult: null
+      }
+      set({ queryTabs: [defaultTab], activeQueryTabId: defaultTab.id })
+    }
+  },
+
+  saveQueryTabs: async () => {
+    const { activeConnectionId, queryTabs } = get()
+    if (!activeConnectionId) return
+    try {
+      await window.api.settings.set(`queryConsole.tabs.${activeConnectionId}`, queryTabs)
+    } catch {
+      // Non-critical — ignore
+    }
+  },
+
+  addQueryTab: () => {
+    const { queryTabs, activeConnectionId } = get()
+    const connectionId = activeConnectionId ?? ''
+    const newTab: QueryTab = {
+      id: crypto.randomUUID(),
+      connectionId,
+      label: `Query ${queryTabs.length + 1}`,
+      sql: '',
+      writeEnabled: false,
+      outputMode: 'split',
+      lastResult: null
+    }
+    set({ queryTabs: [...queryTabs, newTab], activeQueryTabId: newTab.id })
+    get().saveQueryTabs()
+  },
+
+  closeQueryTab: (tabId) => {
+    const { queryTabs, activeQueryTabId, activeConnectionId } = get()
+    const connectionId = activeConnectionId ?? ''
+    const idx = queryTabs.findIndex((t) => t.id === tabId)
+    if (idx === -1) return
+
+    let remaining = queryTabs.filter((t) => t.id !== tabId)
+    let newActiveId = activeQueryTabId
+
+    if (remaining.length === 0) {
+      // Create a fresh default tab if last one is closed
+      const fresh: QueryTab = {
+        id: crypto.randomUUID(),
+        connectionId,
+        label: 'Query 1',
+        sql: '',
+        writeEnabled: false,
+        outputMode: 'split',
+        lastResult: null
+      }
+      remaining = [fresh]
+      newActiveId = fresh.id
+    } else if (activeQueryTabId === tabId) {
+      // Switch to nearest tab
+      const nextIdx = Math.min(idx, remaining.length - 1)
+      newActiveId = remaining[nextIdx].id
+    }
+
+    set({ queryTabs: remaining, activeQueryTabId: newActiveId })
+    get().saveQueryTabs()
+  },
+
+  setActiveQueryTab: (tabId) => set({ activeQueryTabId: tabId }),
+
+  // Debounce timer for updateQueryTabSql
+  updateQueryTabSql: (() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+    return (tabId: string, sql: string) => {
+      const tabs = get().queryTabs.map((t) => (t.id === tabId ? { ...t, sql } : t))
+      set({ queryTabs: tabs })
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        get().saveQueryTabs()
+      }, 1000)
+    }
+  })(),
+
+  toggleWriteMode: (tabId) => {
+    const tabs = get().queryTabs.map((t) =>
+      t.id === tabId ? { ...t, writeEnabled: !t.writeEnabled } : t
+    )
+    set({ queryTabs: tabs })
+    get().saveQueryTabs()
+  },
+
+  toggleOutputMode: (tabId) => {
+    const tabs = get().queryTabs.map((t) =>
+      t.id === tabId ? { ...t, outputMode: t.outputMode === 'split' ? 'inline' : 'split' } : t
+    )
+    set({ queryTabs: tabs })
+    get().saveQueryTabs()
+  },
+
+  renameQueryTab: (tabId, label) => {
+    const tabs = get().queryTabs.map((t) => (t.id === tabId ? { ...t, label } : t))
+    set({ queryTabs: tabs })
+    get().saveQueryTabs()
+  },
+
+  executeQuery: async (tabId, sql) => {
+    const { activeConnectionId, queryTabs } = get()
+    if (!activeConnectionId) return
+
+    const tab = queryTabs.find((t) => t.id === tabId)
+    if (!tab) return
+
+    const startTime = Date.now()
+
+    // Set running state
+    const runningResult: QueryExecution = {
+      status: 'running' as QueryExecutionStatus,
+      rows: [],
+      fields: [],
+      rowCount: 0,
+      affectedRows: 0,
+      executionTimeMs: 0,
+      hasMore: false,
+      sql,
+      command: ''
+    }
+
+    set({
+      queryTabs: queryTabs.map((t) =>
+        t.id === tabId ? { ...t, lastResult: runningResult } : t
+      )
+    })
+
+    try {
+      const result = await window.api.db.query(
+        activeConnectionId,
+        sql,
+        tab.writeEnabled,
+        100,
+        0
+      )
+
+      const executionTimeMs = Date.now() - startTime
+      const successResult: QueryExecution = {
+        status: 'success' as QueryExecutionStatus,
+        rows: result.rows,
+        fields: result.fields,
+        rowCount: result.rowCount,
+        affectedRows: (result as QueryResult & { affectedRows?: number }).affectedRows ?? 0,
+        executionTimeMs,
+        hasMore: (result as QueryResult & { hasMore?: boolean }).hasMore ?? false,
+        sql,
+        command: result.command ?? ''
+      }
+
+      set({
+        queryTabs: get().queryTabs.map((t) =>
+          t.id === tabId ? { ...t, lastResult: successResult } : t
+        )
+      })
+
+      // Add to history
+      const conn = get().connections.find((c) => c.id === activeConnectionId)
+      await get().addHistoryEntry({
+        type: 'query',
+        connectionId: activeConnectionId,
+        connectionName: conn?.name ?? 'Unknown',
+        schema: get().activeSchema ?? '',
+        executedSql: sql,
+        executionTimeMs,
+        resultRowCount: result.rowCount
+      })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Query failed'
+      // Try to extract line number from PostgreSQL error messages ("at line N")
+      const lineMatch = message.match(/at line (\d+)/i)
+      const errorLine = lineMatch ? parseInt(lineMatch[1], 10) : undefined
+
+      const errorResult: QueryExecution = {
+        status: 'error' as QueryExecutionStatus,
+        rows: [],
+        fields: [],
+        rowCount: 0,
+        affectedRows: 0,
+        executionTimeMs: Date.now() - startTime,
+        hasMore: false,
+        sql,
+        command: '',
+        error: message,
+        errorLine
+      }
+
+      set({
+        queryTabs: get().queryTabs.map((t) =>
+          t.id === tabId ? { ...t, lastResult: errorResult } : t
+        )
+      })
+    }
+  },
+
+  loadMoreRows: async (tabId, offset) => {
+    const { activeConnectionId, queryTabs } = get()
+    if (!activeConnectionId) return
+
+    const tab = queryTabs.find((t) => t.id === tabId)
+    if (!tab?.lastResult) return
+
+    const { sql } = tab.lastResult
+
+    try {
+      const result = await window.api.db.query(
+        activeConnectionId,
+        sql,
+        tab.writeEnabled,
+        100,
+        offset
+      )
+
+      const currentRows = tab.lastResult.rows
+      const appendedRows = [...currentRows, ...result.rows]
+
+      set({
+        queryTabs: get().queryTabs.map((t) =>
+          t.id === tabId
+            ? {
+                ...t,
+                lastResult: {
+                  ...t.lastResult!,
+                  rows: appendedRows,
+                  rowCount: appendedRows.length,
+                  hasMore: (result as QueryResult & { hasMore?: boolean }).hasMore ?? false
+                }
+              }
+            : t
+        )
+      })
+    } catch (err) {
+      console.error('[db-store] loadMoreRows failed:', err)
+    }
+  },
+
+  cancelQuery: async (tabId) => {
+    const { activeConnectionId } = get()
+    if (!activeConnectionId) return
+    try {
+      await window.api.db.cancelQuery(activeConnectionId)
+    } catch { /* ignore */ }
+
+    set({
+      queryTabs: get().queryTabs.map((t) =>
+        t.id === tabId && t.lastResult?.status === 'running'
+          ? { ...t, lastResult: { ...t.lastResult, status: 'cancelled' as QueryExecutionStatus } }
+          : t
+      )
+    })
+  },
+
+  loadAllColumnsForAutocomplete: async () => {
+    const { activeConnectionId, activeSchema } = get()
+    if (!activeConnectionId || !activeSchema) return
+
+    set({ isLoadingAllColumns: true })
+    try {
+      const columns = await window.api.db.allColumns(activeConnectionId, activeSchema)
+      const cacheKey = `${activeConnectionId}:${activeSchema}`
+      set((state) => ({
+        columnsCache: { ...state.columnsCache, [cacheKey]: columns },
+        isLoadingAllColumns: false
+      }))
+    } catch {
+      set({ isLoadingAllColumns: false })
+    }
+  },
+
+  loadSavedQueries: async () => {
+    try {
+      const raw = await window.api.settings.get('dbInspector.savedQueries')
+      const savedQueries = Array.isArray(raw) ? (raw as SavedQuery[]) : []
+      set({ savedQueries })
+    } catch {
+      set({ savedQueries: [] })
+    }
+  },
+
+  saveQuery: async (name, sql) => {
+    const { activeConnectionId } = get()
+    const newQuery: SavedQuery = {
+      id: crypto.randomUUID(),
+      name,
+      sql,
+      connectionId: activeConnectionId ?? '',
+      createdAt: new Date().toISOString()
+    }
+    const updated = [...get().savedQueries, newQuery]
+    set({ savedQueries: updated })
+    await window.api.settings.set('dbInspector.savedQueries', updated)
+  },
+
+  deleteSavedQuery: async (id) => {
+    const updated = get().savedQueries.filter((q) => q.id !== id)
+    set({ savedQueries: updated })
+    await window.api.settings.set('dbInspector.savedQueries', updated)
+  }
 }))
+
+// ── Exported helper: build CodeMirror schema from columnsCache ────────
+
+/**
+ * Transform columnsCache[connectionId:schema] from
+ *   Record<tableName, { name: string, dataType: string }[]>
+ * into the format CodeMirror's sql() extension expects:
+ *   Record<tableName, string[]>  (column names only)
+ */
+export function buildCmSchema(
+  tableColumns: Record<string, { name: string; dataType: string }[]> | undefined
+): Record<string, string[]> {
+  if (!tableColumns) return {}
+  return Object.fromEntries(
+    Object.entries(tableColumns).map(([table, cols]) => [table, cols.map((c) => c.name)])
+  )
+}
 
 // ── Helper: Mermaid sanitization ──────────────────────────────────
 
