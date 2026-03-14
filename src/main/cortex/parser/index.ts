@@ -4,6 +4,7 @@ import { parsePythonFiles, type PythonParseResult } from './python-parser'
 import { parseFrontendProject, type FEParseResult } from './fe-parser'
 import { parseDEProject, type DEParseResult } from './de-parser'
 import { buildCallGraph } from './call-graph-builder'
+import { detectTests, type TestStats } from '../test-detector'
 import fs from 'fs/promises'
 import path from 'path'
 
@@ -70,6 +71,7 @@ export interface ParseResult {
   routes: RouteInfo[]
   components: ComponentInfo[]
   pipelines: PipelineInfo[]
+  testStats: TestStats
 }
 
 /** Paths to exclude from parsing */
@@ -209,10 +211,24 @@ export async function parseRepository(
   const graph = buildCallGraph(entities, calls)
   calls = graph.edges // Use validated edges only
 
+  // Detect tests: read contents of test files
+  const testExtensions = ['.java', '.ts', '.tsx', '.js', '.jsx', '.py', '.go']
+  const testFileContents = new Map<string, string>()
+  for (const fp of validPaths) {
+    if (!testExtensions.some((ext) => fp.endsWith(ext))) continue
+    try {
+      const content = await fs.readFile(path.join(repoPath, fp), 'utf-8')
+      testFileContents.set(fp, content)
+    } catch {
+      // Skip unreadable files
+    }
+  }
+  const testStats = detectTests(validPaths, testFileContents)
+
   // Report final progress
   onProgress?.(totalFiles, totalFiles)
 
-  return { entities, calls, routes, components, pipelines }
+  return { entities, calls, routes, components, pipelines, testStats }
 }
 
 // Re-export for use by analyzer
