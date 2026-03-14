@@ -34,6 +34,12 @@ export interface ElectronAPI {
     probeCli: (command: string) => Promise<{ available: boolean }>
     openExternal: (url: string) => Promise<void>
     selectDirectory: (currentPath?: string) => Promise<{ canceled: boolean; path: string }>
+    exportPdf: (data: {
+      markdown: string
+      title?: string
+      mermaidImages?: Record<number, string>
+      orientation?: 'portrait' | 'landscape'
+    }) => Promise<{ filePath: string | null }>
     saveTextFile: (
       content: string,
       defaultFilename: string,

@@ -2,6 +2,7 @@
  * DesignDocTab — Renders the generated HLD with Mermaid diagrams.
  * Calls cban:generateHLD IPC to generate document from analysis results,
  * then renders via MarkdownRenderer (which handles mermaid fences).
+ * Stores HLD content in the codebase-analyzer store for export access.
  */
 import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
@@ -10,11 +11,12 @@ import { useCodebaseAnalyzerStore } from '../../../../stores/codebase-analyzer-s
 import MarkdownRenderer from '../../../../components/MarkdownRenderer'
 
 export default function DesignDocTab(): React.JSX.Element {
-  const [hldContent, setHldContent] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const analysisResult = useCodebaseAnalyzerStore((s) => s.analysisResult)
+  const designDoc = useCodebaseAnalyzerStore((s) => s.designDoc)
+  const setDesignDoc = useCodebaseAnalyzerStore((s) => s.setDesignDoc)
   const repos = useCodebaseAnalyzerStore((s) => s.repos)
   const activeRepoId = useCodebaseAnalyzerStore((s) => s.activeRepoId)
 
@@ -28,14 +30,14 @@ export default function DesignDocTab(): React.JSX.Element {
 
     try {
       const doc = await window.api.cban.generateHLD(activeRepo.url, activeRepo.branch)
-      setHldContent(doc)
+      setDesignDoc(doc)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to generate HLD'
       setError(message)
     } finally {
       setIsGenerating(false)
     }
-  }, [activeRepo, isGenerating])
+  }, [activeRepo, isGenerating, setDesignDoc])
 
   if (!analysisResult) {
     return (
@@ -46,7 +48,7 @@ export default function DesignDocTab(): React.JSX.Element {
   }
 
   // Empty state — no HLD generated yet
-  if (!hldContent && !isGenerating) {
+  if (!designDoc && !isGenerating) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4">
         <motion.div
@@ -76,13 +78,12 @@ export default function DesignDocTab(): React.JSX.Element {
     )
   }
 
-  // Loading state
+  // Loading state with skeleton placeholders
   if (isGenerating) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <Loader2 size={24} className="animate-spin text-accent" />
         <p className="text-sm text-text-secondary">Generating design document...</p>
-        {/* Skeleton placeholders */}
         <div className="mt-4 w-full max-w-2xl space-y-3 px-6">
           <div className="h-6 w-3/4 animate-pulse rounded bg-surface" />
           <div className="h-4 w-full animate-pulse rounded bg-surface" />
@@ -128,7 +129,7 @@ export default function DesignDocTab(): React.JSX.Element {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <MarkdownRenderer text={hldContent} />
+          <MarkdownRenderer text={designDoc} />
         </motion.div>
       </div>
     </div>

@@ -84,7 +84,7 @@ export default function CodebaseAnalyzerView(): React.JSX.Element {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -143,6 +143,78 @@ export default function CodebaseAnalyzerView(): React.JSX.Element {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Status bar */}
+      {activeRepo && analysisResult && (
+        <div className="flex items-center justify-between border-t border-border bg-surface px-4 py-1 text-[10px] text-text-secondary">
+          <div className="flex items-center gap-3">
+            <span>{activeRepo.name}</span>
+            <span className="text-text-secondary/50">/</span>
+            <span>{activeRepo.branch}</span>
+            {activeRepo.commitSha && (
+              <>
+                <span className="text-text-secondary/50">/</span>
+                <span className="font-mono">{activeRepo.commitSha.slice(0, 7)}</span>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <span
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: getRepoTypeDotColor(analysisResult.repoType) }}
+              />
+              {formatRepoType(analysisResult.repoType)}
+            </span>
+            <span>{analysisResult.stats.totalFiles.toLocaleString()} files</span>
+            <span>{analysisResult.entities.length.toLocaleString()} entities</span>
+            {activeRepo.lastAnalyzed && (
+              <span>Last analyzed: {formatTimeAgo(activeRepo.lastAnalyzed)}</span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
+}
+
+function getRepoTypeDotColor(type: string): string {
+  switch (type) {
+    case 'backend':
+      return '#3b82f6'
+    case 'frontend':
+      return '#a855f7'
+    case 'data-engineering':
+      return '#f59e0b'
+    case 'fullstack':
+      return '#10b981'
+    default:
+      return '#6b7280'
+  }
+}
+
+function formatRepoType(type: string): string {
+  switch (type) {
+    case 'backend':
+      return 'Backend'
+    case 'frontend':
+      return 'Frontend'
+    case 'data-engineering':
+      return 'Data Eng'
+    case 'fullstack':
+      return 'Fullstack'
+    default:
+      return type
+  }
+}
+
+function formatTimeAgo(isoDate: string): string {
+  const diff = Date.now() - new Date(isoDate).getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  return `${days}d ago`
 }

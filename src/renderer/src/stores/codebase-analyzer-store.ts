@@ -27,6 +27,9 @@ interface CodebaseAnalyzerState {
   activeFilePath: string | null
   fileContent: FileContent | null
 
+  // Design doc
+  designDoc: string
+
   // Q&A
   qaMessages: QAMessage[]
   isQAStreaming: boolean
@@ -46,6 +49,7 @@ interface CodebaseAnalyzerState {
   closeFile: (path: string) => void
   setActiveFile: (path: string | null) => void
   setFileContent: (content: FileContent | null) => void
+  setDesignDoc: (doc: string) => void
   addQAMessage: (msg: QAMessage) => void
   updateLastQAMessage: (content: string) => void
   clearQA: () => void
@@ -64,6 +68,7 @@ export const useCodebaseAnalyzerStore = create<CodebaseAnalyzerState>((set) => (
   openFiles: [],
   activeFilePath: null,
   fileContent: null,
+  designDoc: '',
   qaMessages: [],
   isQAStreaming: false,
 
@@ -107,6 +112,7 @@ export const useCodebaseAnalyzerStore = create<CodebaseAnalyzerState>((set) => (
     }),
   setActiveFile: (path) => set({ activeFilePath: path }),
   setFileContent: (content) => set({ fileContent: content }),
+  setDesignDoc: (doc) => set({ designDoc: doc }),
 
   addQAMessage: (msg) => set((s) => ({ qaMessages: [...s.qaMessages, msg] })),
   updateLastQAMessage: (content) =>

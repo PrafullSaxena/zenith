@@ -1,14 +1,17 @@
 /**
  * InsightsPanel -- Container for the insights section with sub-tab navigation.
  * Sub-tabs: Overview, APIs, Flows, Design Doc
+ * Includes Export button for documentation export when design doc is available.
  */
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, Route, GitBranch, BookOpen } from 'lucide-react'
+import { FileText, Route, GitBranch, BookOpen, Download } from 'lucide-react'
 import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
 import DesignDocTab from './DesignDocTab'
+import ExportDialog from './ExportDialog'
 
 const INSIGHT_TABS = [
   { id: 'overview', label: 'Overview', icon: FileText },
@@ -20,6 +23,9 @@ const INSIGHT_TABS = [
 export default function InsightsPanel(): React.JSX.Element {
   const insightsSubTab = useCodebaseAnalyzerStore((s) => s.insightsSubTab)
   const setInsightsSubTab = useCodebaseAnalyzerStore((s) => s.setInsightsSubTab)
+  const designDoc = useCodebaseAnalyzerStore((s) => s.designDoc)
+
+  const [showExport, setShowExport] = useState(false)
 
   return (
     <div className="flex h-full flex-col">
@@ -46,6 +52,19 @@ export default function InsightsPanel(): React.JSX.Element {
             )
           })}
         </div>
+
+        {/* Export button — visible when HLD is generated */}
+        {designDoc && (
+          <button
+            type="button"
+            onClick={() => setShowExport(true)}
+            className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors"
+            title="Export documentation"
+          >
+            <Download size={12} />
+            Export
+          </button>
+        )}
       </div>
 
       {/* Content */}
@@ -66,6 +85,14 @@ export default function InsightsPanel(): React.JSX.Element {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Export dialog */}
+      {showExport && designDoc && (
+        <ExportDialog
+          hldContent={designDoc}
+          onClose={() => setShowExport(false)}
+        />
+      )}
     </div>
   )
 }
