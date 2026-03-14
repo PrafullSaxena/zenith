@@ -8,7 +8,8 @@ import {
   Play,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  RefreshCw
 } from 'lucide-react'
 import type { Repository } from '../../../types/cortex'
 import { useCortexStore } from '../../../stores/cortex-store'
@@ -61,6 +62,7 @@ export default function RepoCard({
 }: Props): React.JSX.Element {
   const progress = useCortexStore((s) => s.progress)
   const isAnalyzing = useCortexStore((s) => s.isAnalyzing)
+  const reanalyze = useCortexStore((s) => s.reanalyze)
   const isThisAnalyzing = isAnalyzing && isActive && repo.status === 'analyzing'
 
   return (
@@ -145,6 +147,19 @@ export default function RepoCard({
             <Play size={12} />
             Analyze
           </button>
+          {repo.status === 'ready' && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                reanalyze(repo.id)
+              }}
+              title="Re-analyze (fetch latest from remote)"
+              className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent"
+            >
+              <RefreshCw size={12} />
+            </button>
+          )}
           <button
             type="button"
             onClick={(e) => {

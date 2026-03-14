@@ -924,6 +924,32 @@ export function registerIpcHandlers(): void {
     }
   )
 
+  // Re-analyze: fetch latest from remote, reset, and re-run analysis
+  ipcMain.handle('cortex:reanalyze', async (event, repoId: string) => {
+    const { git, analyzer } = getCortexInstances()
+    const repo = analyzer.cache.getRepoById(repoId)
+    if (!repo) throw new Error('Repo not found')
+
+    // Fetch and reset to latest
+    const newSha = await git.fetchAndReset(repo.repoPath, repo.branch)
+    if (newSha === repo.commitSha) return { changed: false }
+
+    // Clear old cache
+    analyzer.cache.deleteAnalysis(repo.url, repo.branch)
+    analyzer.cache.clearInsights(repo.url, repo.branch)
+
+    // Re-analyze
+    const win = BrowserWindow.fromWebContents(event.sender)
+    const result = await analyzer.analyzeRepository(repo.repoPath, repo.branch, repo.url, (progress) => {
+      win?.webContents.send('cortex:analysisProgress', progress)
+    })
+
+    // Update repo record
+    analyzer.cache.updateRepo(repoId, { commitSha: newSha, lastAnalyzed: new Date().toISOString() })
+
+    return { changed: true, result }
+  })
+
   // --- Cortex RTK probe ---
   ipcMain.handle('cortex:probeRtk', async () => {
     return isRtkAvailable()

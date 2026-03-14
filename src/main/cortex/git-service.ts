@@ -127,6 +127,14 @@ export class GitService {
     return fs.readFile(resolved, 'utf-8')
   }
 
+  async fetchAndReset(repoPath: string, branch: string): Promise<string> {
+    const git = this.createGit(repoPath)
+    await git.fetch('origin')
+    await git.reset(['--hard', `origin/${branch}`])
+    const log = await git.log({ maxCount: 1 })
+    return log.latest?.hash ?? ''
+  }
+
   async removeRepo(repoPath: string): Promise<void> {
     await fs.rm(repoPath, { recursive: true, force: true })
   }

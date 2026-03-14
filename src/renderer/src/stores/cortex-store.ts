@@ -178,6 +178,7 @@ interface CortexState {
   updateLastQAMessage: (content: string) => void
   clearQA: () => void
   setIsQAStreaming: (v: boolean) => void
+  reanalyze: (repoId: string) => Promise<void>
 }
 
 /**
@@ -389,5 +390,58 @@ export const useCortexStore = create<CortexState>((set, get) => ({
       return { qaMessages: msgs }
     }),
   clearQA: () => set({ qaMessages: [] }),
-  setIsQAStreaming: (v) => set({ isQAStreaming: v })
+  setIsQAStreaming: (v) => set({ isQAStreaming: v }),
+
+  reanalyze: async (repoId: string) => {
+    const state = get()
+    const repo = state.repos.find((r) => r.id === repoId)
+    if (!repo) return
+
+    // Set status to analyzing
+    set((s) => ({
+      repos: s.repos.map((r) => (r.id === repoId ? { ...r, status: 'analyzing' as const } : r)),
+      isAnalyzing: true
+    }))
+
+    try {
+      const response = await window.api.cortex.reanalyze(repoId)
+      if (response.changed && response.result) {
+        const result = response.result as AnalysisResult
+        set((s) => ({
+          repos: s.repos.map((r) =>
+            r.id === repoId
+              ? {
+                  ...r,
+                  status: 'ready' as const,
+                  commitSha: result.commitSha,
+                  lastAnalyzed: new Date().toISOString(),
+                  repoType: result.repoType,
+                  framework: result.framework,
+                  language: result.language
+                }
+              : r
+          ),
+          analysisResult: s.activeRepoId === repoId ? result : s.analysisResult,
+          isAnalyzing: false
+        }))
+      } else {
+        // Already up to date
+        set((s) => ({
+          repos: s.repos.map((r) =>
+            r.id === repoId ? { ...r, status: 'ready' as const } : r
+          ),
+          isAnalyzing: false
+        }))
+      }
+    } catch (err) {
+      set((s) => ({
+        repos: s.repos.map((r) =>
+          r.id === repoId
+            ? { ...r, status: 'error' as const, error: String(err) }
+            : r
+        ),
+        isAnalyzing: false
+      }))
+    }
+  }
 }))
