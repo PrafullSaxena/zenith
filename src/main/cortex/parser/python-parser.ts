@@ -41,8 +41,11 @@ interface RouteInfo {
 }
 
 interface CallEdge {
-  from: string
-  to: string
+  id: string
+  callerId: string
+  calleeId: string
+  filePath: string
+  line: number
   type: 'call' | 'inject' | 'spark-pipeline'
 }
 
@@ -148,7 +151,14 @@ function parsePySpark(
         parentId: null
       })
       if (lastPipelineEntityId) {
-        callEdges.push({ from: lastPipelineEntityId, to: id, type: 'spark-pipeline' })
+        callEdges.push({
+          id: `${lastPipelineEntityId}->${id}`,
+          callerId: lastPipelineEntityId,
+          calleeId: id,
+          filePath,
+          line: lineNum,
+          type: 'spark-pipeline'
+        })
       }
       lastPipelineEntityId = id
       continue
@@ -199,7 +209,14 @@ function parsePySpark(
           parentId: null
         })
         if (lastPipelineEntityId) {
-          callEdges.push({ from: lastPipelineEntityId, to: id, type: 'spark-pipeline' })
+          callEdges.push({
+            id: `${lastPipelineEntityId}->${id}`,
+            callerId: lastPipelineEntityId,
+            calleeId: id,
+            filePath,
+            line: lineNum,
+            type: 'spark-pipeline'
+          })
         }
         lastPipelineEntityId = id
       }
@@ -226,7 +243,14 @@ function parsePySpark(
         parentId: null
       })
       if (lastPipelineEntityId) {
-        callEdges.push({ from: lastPipelineEntityId, to: id, type: 'spark-pipeline' })
+        callEdges.push({
+          id: `${lastPipelineEntityId}->${id}`,
+          callerId: lastPipelineEntityId,
+          calleeId: id,
+          filePath,
+          line: lineNum,
+          type: 'spark-pipeline'
+        })
       }
       // Sink ends a pipeline chain
       lastPipelineEntityId = null
@@ -493,8 +517,11 @@ export function parsePythonFile(content: string, filePath: string): PythonParseR
         while ((depsMatch = DEPENDS_REGEX.exec(paramsStr)) !== null) {
           const depFunc = depsMatch[1]
           callEdges.push({
-            from: entityId,
-            to: depFunc, // resolve to id later if needed; use name as target
+            id: `${entityId}->${depFunc}`,
+            callerId: entityId,
+            calleeId: depFunc, // resolve to id later if needed; use name as target
+            filePath,
+            line: lineNum,
             type: 'inject'
           })
         }
