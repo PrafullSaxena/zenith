@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { FileText, Hash, Route, Component } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
+import AnimatedCounter from './AnimatedCounter'
 
 const cardVariants = {
   hidden: { opacity: 0, y: 16, scale: 0.96 },
@@ -80,13 +81,13 @@ export default function OverviewTab(): React.JSX.Element {
   const statCards = [
     {
       label: 'Total Files',
-      value: stats.totalFiles.toLocaleString(),
+      value: stats.totalFiles,
       icon: FileText,
       color: 'text-blue-400'
     },
     {
       label: 'Total Lines',
-      value: stats.totalLines.toLocaleString(),
+      value: stats.totalLines,
       icon: Hash,
       color: 'text-green-400'
     },
@@ -94,7 +95,7 @@ export default function OverviewTab(): React.JSX.Element {
       ? [
           {
             label: 'API Endpoints',
-            value: stats.routeCount.toLocaleString(),
+            value: stats.routeCount,
             icon: Route,
             color: 'text-amber-400'
           }
@@ -104,7 +105,7 @@ export default function OverviewTab(): React.JSX.Element {
       ? [
           {
             label: 'Components',
-            value: stats.componentCount.toLocaleString(),
+            value: stats.componentCount,
             icon: Component,
             color: 'text-purple-400'
           }
@@ -133,7 +134,9 @@ export default function OverviewTab(): React.JSX.Element {
                   {card.label}
                 </span>
               </div>
-              <p className="mt-2 text-2xl font-bold text-text-primary">{card.value}</p>
+              <p className="mt-2 text-2xl font-bold text-text-primary">
+                <AnimatedCounter value={card.value} />
+              </p>
             </motion.div>
           )
         })}
@@ -293,9 +296,10 @@ export default function OverviewTab(): React.JSX.Element {
                       : undefined
                   }
                 >
-                  <span className="text-lg font-bold text-text-primary">
-                    {entity.count.toLocaleString()}
-                  </span>
+                  <AnimatedCounter
+                    value={entity.count}
+                    className="text-lg font-bold text-text-primary"
+                  />
                   <p
                     className={`text-[10px] capitalize ${ENTITY_ICONS[entity.kind] ?? 'text-text-secondary'}`}
                   >
