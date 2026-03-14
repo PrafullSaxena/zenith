@@ -5,20 +5,20 @@
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** CodeReviewBot must work flawlessly — automated PR code review that connects to Bitbucket, fetches diffs, and posts inline AI-generated review comments
-**Current focus:** Phase 12 — TextCraft Plugin (Complete)
+**Current focus:** Phase 13 — Codebase Analyzer Plugin
 
 ## Current Position
 
-**Current Phase:** 12
-**Current Phase Name:** TextCraft Plugin
-**Total Phases:** 12
-**Current Plan:** 2 (complete)
-**Total Plans in Phase:** 2
-**Status:** Phase complete — ready for verification
-**Last Activity:** 2026-03-13
-**Last Activity Description:** Completed 12-02 (TextCraft three-panel UI)
+**Current Phase:** 13
+**Current Phase Name:** Codebase Analyzer
+**Total Phases:** 13
+**Current Plan:** 1 (complete)
+**Total Plans in Phase:** 6
+**Status:** Plan 13-01 complete — foundation layer ready
+**Last Activity:** 2026-03-14
+**Last Activity Description:** Completed 13-01 (Foundation -- Types, DB, Git, Plugin Registration)
 
-**Progress:** [█████████░] 92%
+**Progress:** [█████████░] 93%
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 04-dbinspector-plugin P03 | 8min | 2 tasks | 3 files |
 | Phase 04-dbinspector-plugin P02 | 6 | 2 tasks | 5 files |
 | Phase 04-dbinspector-plugin P04 | 10min | 1 tasks | 6 files |
+| Phase 13-codebase-analyzer P01 | 6min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -180,6 +181,11 @@ Recent decisions affecting current work:
 - [Phase 04-dbinspector-plugin]: onInsertAtCursor only passed to SchemaExplorer when activeTab === query-console to prevent accidental inserts from other tabs
 - [Phase 04-dbinspector-plugin]: Auto-reconnect in executeQuery: ECONNRESET/ETIMEDOUT/Connection terminated regex, connectToDb + single retry; falls through to error on failure
 - [Phase 04-dbinspector-plugin]: Engine selector in ConnectionListEditor (Settings form) not ConnectionManager — aligns with connection creation location; handleEngineChange auto-swaps port only when port matches well-known default
+- [Phase 13-codebase-analyzer]: Lazy-init getCbanInstances() pattern for GitService/CodebaseAnalyzer -- matches Nebula getNebulaInstances() singleton pattern
+- [Phase 13-codebase-analyzer]: cban: IPC namespace prefix -- short consistent naming like db:, ai:, nebula:
+- [Phase 13-codebase-analyzer]: AnalysisResult shape duplicated in main process analyzer.ts to avoid cross-process type imports
+- [Phase 13-codebase-analyzer]: FTS5 file_index_fts manually synced via INSERT/DELETE in insertFileIndex/clearFileIndex
+- [Phase 13-codebase-analyzer]: SearchCode icon with amber accent palette for codebase-analyzer plugin card
 
 ### Pending Todos
 
@@ -193,6 +199,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-13T19:44:54.830Z
-**Stopped at:** Checkpoint: 04-04 Task 2 human-verify — awaiting visual verification of complete query console
+**Last session:** 2026-03-14T10:52:28Z
+**Stopped at:** Completed 13-01-PLAN.md
 **Resume file:** None

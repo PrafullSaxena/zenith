@@ -123,6 +123,23 @@
 - **TXCR-09**: AI-streamed output rendered as markdown with copy-to-clipboard button
 - **TXCR-10**: Custom instructions field for per-refinement freeform instructions
 
+### CodebaseAnalyzer (CBAN)
+
+- **CBAN-01**: Plugin registered in PLUGINS array with route /codebase-analyzer, sidebar icon, and settings schema
+- **CBAN-02**: Add repository URL + branch selection UI with analyze trigger button
+- **CBAN-03**: Repository analysis engine — clone/fetch repo, detect repo type (BE/FE/DE), parse codebase structure
+- **CBAN-04**: Generated documentation cached by repo+branch combination for fast re-access
+- **CBAN-05**: Two-section layout — Insights (documentation, flow diagrams, design docs) and Code (file browser, code viewer)
+- **CBAN-06**: Code flow visualization — interactive staged flow diagrams showing function call chains with hover summaries
+- **CBAN-07**: Code file browser — tree view of repository files with syntax-highlighted code viewer in new tabs
+- **CBAN-08**: Natural language Q&A — query the codebase in plain English and get AI-powered answers with code references
+- **CBAN-09**: Documentation export — export generated docs as Markdown, PDF, and Plain Text formats
+- **CBAN-10**: Design document extraction — generate High Level Design document with Mermaid diagrams
+- **CBAN-11**: BE repo support — list controllers, map user journeys, list APIs, plot full API flow visually with stage summaries and click-to-code
+- **CBAN-12**: DE repo support — list trigger scripts, map data flows, same visual treatment as BE repos
+- **CBAN-13**: FE repo support — detect App.tsx/App.js entry point, visualize component tree and routing structure
+- **CBAN-14**: Visually impressive UI with animations, transitions, and interactive elements throughout
+
 ### PromptBuilder (PMPT)
 
 - **PMPT-01**: Create and edit prompt templates with variable placeholders
@@ -222,6 +239,20 @@
 | TXCR-08 | 12 | 12-02 | Planned |
 | TXCR-09 | 12 | 12-02 | Planned |
 | TXCR-10 | 12 | 12-02 | Planned |
+| CBAN-01 | 13 | 13-01, 13-03 | In Progress |
+| CBAN-02 | 13 | 13-03 | Planned |
+| CBAN-03 | 13 | 13-01, 13-02 | In Progress |
+| CBAN-04 | 13 | 13-01 | Complete |
+| CBAN-05 | 13 | 13-03, 13-05 | Planned |
+| CBAN-06 | 13 | 13-04 | Planned |
+| CBAN-07 | 13 | 13-05 | Planned |
+| CBAN-08 | 13 | 13-05 | Planned |
+| CBAN-09 | 13 | 13-06 | Planned |
+| CBAN-10 | 13 | 13-06 | Planned |
+| CBAN-11 | 13 | 13-02, 13-04 | Planned |
+| CBAN-12 | 13 | 13-02, 13-04 | Planned |
+| CBAN-13 | 13 | 13-02, 13-04 | Planned |
+| CBAN-14 | 13 | 13-03, 13-04, 13-06 | Planned |
 | PMPT-01 | 6 | - | Planned |
 | PMPT-02 | 6 | - | Planned |
 | PMPT-03 | 6 | - | Planned |

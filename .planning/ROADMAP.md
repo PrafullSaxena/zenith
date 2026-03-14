@@ -14,6 +14,7 @@
 | 10 | Settings UX Fix | 3 | Complete | 3/3 |
 | 11 | 3/3 | Complete    | 2026-03-10 | 0/3 |
 | 12 | TextCraft Plugin | 2 | Complete | 2/2 |
+| 13 | CodebaseAnalyzer Plugin | 6 | In Progress | 1/6 |
 
 ## Phase 1: Foundation
 
@@ -152,6 +153,22 @@ Plans:
 Plans:
 - [x] 12-01-PLAN.md -- TextCraft types, Zustand store with AI streaming, plugin registration, sidebar icon
 - [x] 12-02-PLAN.md -- Three-panel UI: InputPanel, ControlsPanel, OutputPanel with streaming and copy-to-clipboard
+
+## Phase 13: CodebaseAnalyzer Plugin
+
+**Goal:** Codebase analysis and documentation plugin — add repos with branch selection, auto-detect repo type (BE/FE/DE), generate cached documentation, visualize code flows interactively, browse code files, query codebase in plain English, export docs (MD/PDF/TXT), and extract HLD with Mermaid diagrams. BE repos get controller/API flow mapping, DE repos get trigger script mapping, FE repos get component tree visualization.
+
+**Requirements:** [CBAN-01, CBAN-02, CBAN-03, CBAN-04, CBAN-05, CBAN-06, CBAN-07, CBAN-08, CBAN-09, CBAN-10, CBAN-11, CBAN-12, CBAN-13, CBAN-14]
+
+**Plans:** 6 plans
+
+Plans:
+- [x] 13-01-PLAN.md -- Foundation: types, SQLite cache DB, git service, repo detector, plugin registration, IPC bridge, Zustand store
+- [ ] 13-02-PLAN.md -- Analysis engine: TS/Java/Python parsers, FE component tree, DE pipeline detection, call graph builder
+- [ ] 13-03-PLAN.md -- Core UI: CodebaseAnalyzerView shell, repo management, insights layout with Overview + API list tabs
+- [ ] 13-04-PLAN.md -- Flow visualization: React Flow interactive diagrams with custom nodes/edges, dagre auto-layout, entrance animations
+- [ ] 13-05-PLAN.md -- Code section: file tree browser, CodeMirror code viewer with tabs, AI-powered natural language Q&A
+- [ ] 13-06-PLAN.md -- Export and polish: HLD generation with Mermaid diagrams, MD/PDF/TXT export, animations, skeleton loaders, error handling
 
 ## Phase 6: Polish & Production
 
