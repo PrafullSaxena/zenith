@@ -14,7 +14,7 @@
 | 10 | Settings UX Fix | 3 | Complete | 3/3 |
 | 11 | 3/3 | Complete    | 2026-03-10 | 0/3 |
 | 12 | TextCraft Plugin | 2 | Complete | 2/2 |
-| 13 | 4/6 | In Progress|  | 1/6 |
+| 13 | 5/6 | In Progress|  | 1/6 |
 
 ## Phase 1: Foundation
 
@@ -160,7 +160,7 @@ Plans:
 
 **Requirements:** [CBAN-01, CBAN-02, CBAN-03, CBAN-04, CBAN-05, CBAN-06, CBAN-07, CBAN-08, CBAN-09, CBAN-10, CBAN-11, CBAN-12, CBAN-13, CBAN-14]
 
-**Plans:** 4/6 plans executed
+**Plans:** 5/6 plans executed
 
 Plans:
 - [x] 13-01-PLAN.md -- Foundation: types, SQLite cache DB, git service, repo detector, plugin registration, IPC bridge, Zustand store
