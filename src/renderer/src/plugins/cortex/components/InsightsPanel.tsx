@@ -10,7 +10,7 @@ import { useCortexStore } from '../../../stores/cortex-store'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
-import DesignDocTab from './DesignDocTab'
+import ArchitectureDashboard from './ArchitectureDashboard'
 import ExportDialog from './ExportDialog'
 
 const INSIGHT_TABS = [
@@ -81,7 +81,7 @@ export default function InsightsPanel(): React.JSX.Element {
             {insightsSubTab === 'overview' && <OverviewTab />}
             {insightsSubTab === 'apis' && <APIListTab />}
             {insightsSubTab === 'flows' && <FlowsTab />}
-            {insightsSubTab === 'design' && <DesignDocTab />}
+            {insightsSubTab === 'design' && <ArchitectureDashboard />}
           </motion.div>
         </AnimatePresence>
       </div>

@@ -6,6 +6,7 @@ import type {
   FileContent,
   QAMessage
 } from '../types/cortex'
+import type { ToonInsights } from '../plugins/cortex/components/ArchitectureDashboard'
 import { useAgentStore } from './agent-store'
 import { useSettingsStore } from './settings-store'
 
@@ -33,6 +34,10 @@ interface CortexState {
   // Design doc
   designDoc: string
 
+  // AI Insights
+  aiInsights: ToonInsights | null
+  isGeneratingInsights: boolean
+
   // Q&A
   qaMessages: QAMessage[]
   isQAStreaming: boolean
@@ -56,6 +61,8 @@ interface CortexState {
   setScrollToLine: (line: number | null) => void
   navigateToFile: (filePath: string, line?: number) => void
   setDesignDoc: (doc: string) => void
+  setAiInsights: (insights: ToonInsights | null) => void
+  setGeneratingInsights: (v: boolean) => void
   addQAMessage: (msg: QAMessage) => void
   updateLastQAMessage: (content: string) => void
   clearQA: () => void
@@ -95,6 +102,8 @@ export const useCortexStore = create<CortexState>((set, get) => ({
   fileContent: null,
   scrollToLine: null,
   designDoc: '',
+  aiInsights: null,
+  isGeneratingInsights: false,
   qaMessages: [],
   isQAStreaming: false,
 
@@ -190,6 +199,8 @@ export const useCortexStore = create<CortexState>((set, get) => ({
     }
   },
   setDesignDoc: (doc) => set({ designDoc: doc }),
+  setAiInsights: (insights) => set({ aiInsights: insights }),
+  setGeneratingInsights: (v) => set({ isGeneratingInsights: v }),
 
   addQAMessage: (msg) => set((s) => ({ qaMessages: [...s.qaMessages, msg] })),
   updateLastQAMessage: (content) =>
