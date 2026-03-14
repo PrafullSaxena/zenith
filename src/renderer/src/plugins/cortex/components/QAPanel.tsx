@@ -77,9 +77,8 @@ export default function QAPanel(): React.JSX.Element {
       if (!question.trim() || isQAStreaming || !analysisResult) return
 
       const agent = getCortexAgent()
-      if (!agent) return
 
-      // Add user message
+      // Add user message first (regardless of agent availability for better UX)
       const userMsg: QAMessage = {
         id: crypto.randomUUID(),
         role: 'user',
@@ -88,6 +87,19 @@ export default function QAPanel(): React.JSX.Element {
         timestamp: new Date().toISOString()
       }
       addQAMessage(userMsg)
+      setInput('')
+
+      if (!agent) {
+        addQAMessage({
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content:
+            'No AI agent is configured. Go to **Settings → AI Agents** to set one up.',
+          sources: [],
+          timestamp: new Date().toISOString()
+        })
+        return
+      }
 
       // Add placeholder assistant message
       const assistantMsg: QAMessage = {
@@ -100,7 +112,6 @@ export default function QAPanel(): React.JSX.Element {
       addQAMessage(assistantMsg)
 
       setIsQAStreaming(true)
-      setInput('')
       accumulatorRef.current = ''
 
       // Build system prompt with codebase context
