@@ -328,50 +328,80 @@ export function parseJavaFile(
         for (const dec of decorators) {
           const httpMethod = MAPPING_ANNOTATIONS[dec]
           if (httpMethod) {
-            // Extract path from decorator
-            let routePath = ''
-            for (let j = i - 1; j >= 0 && j >= i - 5; j--) {
+            // Find the annotation line by scanning backward (up to 8 lines for multi-line annotations)
+            let annotationLine = ''
+            for (let j = i - 1; j >= 0 && j >= i - 8; j--) {
               const prevLine = lines[j].trim()
-              const pathMatch = prevLine.match(
-                new RegExp(`@${dec}\\(\\s*(?:value\\s*=\\s*)?["']([^"']+)["']`)
-              )
-              if (pathMatch) {
-                routePath = pathMatch[1]
-                break
-              }
-              // Handle @GetMapping without path argument
-              if (new RegExp(`^@${dec}$`).test(prevLine)) {
-                routePath = ''
+              if (prevLine.startsWith(`@${dec}`)) {
+                annotationLine = prevLine
                 break
               }
             }
 
-            const normalizedBase = basePath.startsWith('/') ? basePath : '/' + basePath
-            const normalizedRoute = routePath.startsWith('/') ? routePath : '/' + routePath
-            const fullPath =
-              normalizedBase === '/'
-                ? normalizedRoute
-                : normalizedRoute === '/'
-                  ? normalizedBase
-                  : normalizedBase + normalizedRoute
+            // Extract paths from annotation: handles these patterns:
+            //   @GetMapping("/path")
+            //   @GetMapping(value = "/path")
+            //   @GetMapping(path = "/path")
+            //   @GetMapping({"/path1", "/path2"})
+            //   @GetMapping  (no args = maps to "")
+            const routePaths: string[] = []
 
-            routes.push({
-              method: httpMethod,
-              path: routePath,
-              handlerName: methodName,
-              controllerName,
-              filePath,
-              line: lineNum,
-              fullPath
-            })
+            if (annotationLine) {
+              const parenIdx = annotationLine.indexOf('(')
+              if (parenIdx === -1) {
+                // No parentheses: @GetMapping alone
+                routePaths.push('')
+              } else {
+                const argsStr = annotationLine.slice(parenIdx + 1, annotationLine.lastIndexOf(')'))
+                // Multi-value: {"/path1", "/path2"}
+                const multiMatch = argsStr.match(/\{([^}]+)\}/)
+                if (multiMatch) {
+                  const allPaths = [...multiMatch[1].matchAll(/["']([^"']+)["']/g)]
+                  for (const m of allPaths) routePaths.push(m[1])
+                } else {
+                  // Single value: "/path" or value="/path" or path="/path"
+                  const singleMatch = argsStr.match(/(?:(?:value|path)\s*=\s*)?["']([^"']+)["']/)
+                  if (singleMatch) {
+                    routePaths.push(singleMatch[1])
+                  } else {
+                    // Empty parens @GetMapping()
+                    routePaths.push('')
+                  }
+                }
+              }
+            } else {
+              // Decorator found in decorator list but annotation line not found — emit with empty path
+              routePaths.push('')
+            }
+
+            const normalizedBase = basePath.startsWith('/') ? basePath : '/' + basePath
+            for (const routePath of routePaths) {
+              const normalizedRoute = routePath.startsWith('/') ? routePath : '/' + routePath
+              const fullPath =
+                normalizedBase === '/'
+                  ? normalizedRoute
+                  : normalizedRoute === '/'
+                    ? normalizedBase
+                    : normalizedBase + normalizedRoute
+
+              routes.push({
+                method: httpMethod,
+                path: routePath,
+                handlerName: methodName,
+                controllerName,
+                filePath,
+                line: lineNum,
+                fullPath
+              })
+            }
           }
 
           // Handle @RequestMapping on method
           if (dec === 'RequestMapping') {
-            for (let j = i - 1; j >= 0 && j >= i - 5; j--) {
+            for (let j = i - 1; j >= 0 && j >= i - 8; j--) {
               const prevLine = lines[j].trim()
               const rmMatch = prevLine.match(
-                /@RequestMapping\(\s*(?:value\s*=\s*)?["']([^"']+)["'](?:.*?method\s*=\s*RequestMethod\.(\w+))?/
+                /@RequestMapping\(\s*(?:(?:value|path)\s*=\s*)?["']([^"']+)["'](?:.*?method\s*=\s*RequestMethod\.(\w+))?/
               )
               if (rmMatch) {
                 const routePath = rmMatch[1]
