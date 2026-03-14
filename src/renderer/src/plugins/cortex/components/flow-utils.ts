@@ -272,12 +272,12 @@ export function buildAPIFlowNodes(
     for (const c of calls) {
       if (seen.has(c.callerId) && seen.has(c.calleeId)) {
         edges.push({
-          id: `e-${c.id}`,
+          id: `e-${c.callerId}-${c.calleeId}`,
           source: c.callerId,
           target: c.calleeId,
           type: 'animated',
           animated: true,
-          data: { label: c.type, type: c.type, animated: true }
+          data: { label: c.type ?? 'calls', type: c.type ?? 'call', animated: true }
         })
       }
     }
