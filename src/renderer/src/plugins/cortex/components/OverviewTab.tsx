@@ -58,6 +58,7 @@ const ENTITY_ICONS: Record<string, string> = {
 
 export default function OverviewTab(): React.JSX.Element {
   const analysisResult = useCortexStore((s) => s.analysisResult)
+  const navigateToFile = useCortexStore((s) => s.navigateToFile)
 
   if (!analysisResult) {
     return (
@@ -275,25 +276,34 @@ export default function OverviewTab(): React.JSX.Element {
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">Entity Breakdown</h3>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            {stats.entityCount.map((entity, i) => (
-              <motion.div
-                key={entity.kind}
-                custom={i}
-                initial="hidden"
-                animate="visible"
-                variants={cardVariants}
-                className="rounded-lg border border-border/40 bg-surface-elevated/50 px-3 py-2"
-              >
-                <span className="text-lg font-bold text-text-primary">
-                  {entity.count.toLocaleString()}
-                </span>
-                <p
-                  className={`text-[10px] capitalize ${ENTITY_ICONS[entity.kind] ?? 'text-text-secondary'}`}
+            {stats.entityCount.map((entity, i) => {
+              const firstEntity = analysisResult?.entities.find((e) => e.kind === entity.kind)
+              const isClickable = !!firstEntity
+              return (
+                <motion.div
+                  key={entity.kind}
+                  custom={i}
+                  initial="hidden"
+                  animate="visible"
+                  variants={cardVariants}
+                  className={`rounded-lg border border-border/40 bg-surface-elevated/50 px-3 py-2 ${isClickable ? 'cursor-pointer transition-colors hover:border-accent/40 hover:bg-surface-elevated' : ''}`}
+                  onClick={
+                    isClickable
+                      ? () => navigateToFile(firstEntity.filePath, firstEntity.line)
+                      : undefined
+                  }
                 >
-                  {entity.kind === 'dag' ? 'DAGs' : `${entity.kind}s`}
-                </p>
-              </motion.div>
-            ))}
+                  <span className="text-lg font-bold text-text-primary">
+                    {entity.count.toLocaleString()}
+                  </span>
+                  <p
+                    className={`text-[10px] capitalize ${ENTITY_ICONS[entity.kind] ?? 'text-text-secondary'}`}
+                  >
+                    {entity.kind === 'dag' ? 'DAGs' : `${entity.kind}s`}
+                  </p>
+                </motion.div>
+              )
+            })}
           </div>
         </motion.div>
       )}

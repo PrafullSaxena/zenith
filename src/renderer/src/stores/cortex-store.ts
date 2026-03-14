@@ -28,6 +28,7 @@ interface CortexState {
   openFiles: { path: string; language: string }[]
   activeFilePath: string | null
   fileContent: FileContent | null
+  scrollToLine: number | null
 
   // Design doc
   designDoc: string
@@ -52,6 +53,8 @@ interface CortexState {
   closeFile: (path: string) => void
   setActiveFile: (path: string | null) => void
   setFileContent: (content: FileContent | null) => void
+  setScrollToLine: (line: number | null) => void
+  navigateToFile: (filePath: string, line?: number) => void
   setDesignDoc: (doc: string) => void
   addQAMessage: (msg: QAMessage) => void
   updateLastQAMessage: (content: string) => void
@@ -78,7 +81,7 @@ export function getCortexAgent(): { providerId: string; model: string; command?:
   return { providerId: agent.id, model: agent.model ?? agent.id, command: agent.command }
 }
 
-export const useCortexStore = create<CortexState>((set) => ({
+export const useCortexStore = create<CortexState>((set, get) => ({
   repos: [],
   activeRepoId: null,
   analysisResult: null,
@@ -90,6 +93,7 @@ export const useCortexStore = create<CortexState>((set) => ({
   openFiles: [],
   activeFilePath: null,
   fileContent: null,
+  scrollToLine: null,
   designDoc: '',
   qaMessages: [],
   isQAStreaming: false,
@@ -146,6 +150,45 @@ export const useCortexStore = create<CortexState>((set) => ({
     }),
   setActiveFile: (path) => set({ activeFilePath: path }),
   setFileContent: (content) => set({ fileContent: content }),
+  setScrollToLine: (line) => set({ scrollToLine: line }),
+
+  navigateToFile: async (filePath, line) => {
+    const extMap: Record<string, string> = {
+      java: 'java',
+      py: 'python',
+      ts: 'typescript',
+      tsx: 'typescriptreact',
+      js: 'javascript',
+      jsx: 'javascript',
+      go: 'go',
+      kt: 'kotlin',
+      rs: 'rust',
+      rb: 'ruby',
+      php: 'php',
+      cs: 'csharp',
+      sql: 'sql',
+      css: 'css',
+      scss: 'scss',
+      html: 'html',
+      md: 'markdown',
+      json: 'json'
+    }
+    const ext = filePath.split('.').pop()?.toLowerCase() ?? ''
+    const language = extMap[ext] ?? ext
+
+    set({ activeTab: 'code' })
+    get().openFile(filePath, language)
+
+    const activeRepo = get().repos.find((r) => r.id === get().activeRepoId)
+    if (activeRepo) {
+      const content = await window.api.cortex.getFileContent(activeRepo.repoPath, filePath)
+      set({ fileContent: content })
+    }
+
+    if (line !== undefined) {
+      set({ scrollToLine: line })
+    }
+  },
   setDesignDoc: (doc) => set({ designDoc: doc }),
 
   addQAMessage: (msg) => set((s) => ({ qaMessages: [...s.qaMessages, msg] })),

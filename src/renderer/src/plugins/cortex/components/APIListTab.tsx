@@ -21,8 +21,7 @@ type SortDir = 'asc' | 'desc'
 
 export default function APIListTab(): React.JSX.Element {
   const routes = useCortexStore((s) => s.analysisResult?.routes ?? [])
-  const openFile = useCortexStore((s) => s.openFile)
-  const setActiveTab = useCortexStore((s) => s.setActiveTab)
+  const navigateToFile = useCortexStore((s) => s.navigateToFile)
 
   const [filter, setFilter] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('path')
@@ -42,22 +41,9 @@ export default function APIListTab(): React.JSX.Element {
 
   const handleFileClick = useCallback(
     (route: RouteInfo) => {
-      const ext = route.filePath.split('.').pop() ?? ''
-      const langMap: Record<string, string> = {
-        ts: 'typescript',
-        tsx: 'typescript',
-        js: 'javascript',
-        jsx: 'javascript',
-        java: 'java',
-        py: 'python',
-        go: 'go',
-        kt: 'kotlin',
-        rs: 'rust'
-      }
-      openFile(route.filePath, langMap[ext] ?? ext)
-      setActiveTab('code')
+      navigateToFile(route.filePath, route.line)
     },
-    [openFile, setActiveTab]
+    [navigateToFile]
   )
 
   const filteredRoutes = useMemo(() => {

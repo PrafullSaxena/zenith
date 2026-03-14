@@ -67,6 +67,8 @@ export default function CodeViewer(): React.JSX.Element {
   const fileContent = useCortexStore((s) => s.fileContent)
   const activeFilePath = useCortexStore((s) => s.activeFilePath)
   const openFiles = useCortexStore((s) => s.openFiles)
+  const scrollToLine = useCortexStore((s) => s.scrollToLine)
+  const setScrollToLine = useCortexStore((s) => s.setScrollToLine)
 
   // Get language from openFiles list for the active file
   const activeFileEntry = openFiles.find((f) => f.path === activeFilePath)
@@ -114,6 +116,20 @@ export default function CodeViewer(): React.JSX.Element {
       cancelled = true
     }
   }, [fileContent, language])
+
+  // Scroll to line when requested
+  useEffect(() => {
+    if (scrollToLine && viewRef.current) {
+      const view = viewRef.current
+      const lineNum = Math.min(scrollToLine, view.state.doc.lines)
+      const line = view.state.doc.line(lineNum)
+      view.dispatch({
+        selection: { anchor: line.from },
+        effects: EditorView.scrollIntoView(line.from, { y: 'center' })
+      })
+      setScrollToLine(null)
+    }
+  }, [scrollToLine, setScrollToLine])
 
   // Cleanup on unmount
   useEffect(() => {

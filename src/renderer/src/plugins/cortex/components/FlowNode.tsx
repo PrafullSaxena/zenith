@@ -11,20 +11,10 @@ import type { FlowNodeData } from '../../../types/cortex'
 import { getStageColor } from './flow-utils'
 import { useCortexStore } from '../../../stores/cortex-store'
 
-function detectLanguage(filePath: string): string {
-  const ext = filePath.split('.').pop()?.toLowerCase() ?? ''
-  const map: Record<string, string> = {
-    ts: 'typescript', tsx: 'typescript', js: 'javascript', jsx: 'javascript',
-    py: 'python', java: 'java', kt: 'kotlin', go: 'go', rs: 'rust',
-    rb: 'ruby', php: 'php', cs: 'csharp', sql: 'sql'
-  }
-  return map[ext] ?? ext
-}
 
 const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>) {
   const [showTooltip, setShowTooltip] = useState(false)
-  const openFile = useCortexStore((s) => s.openFile)
-  const setActiveTab = useCortexStore((s) => s.setActiveTab)
+  const navigateToFile = useCortexStore((s) => s.navigateToFile)
 
   const colors = getStageColor(data.type)
   const IconComp = (Icons as Record<string, React.ComponentType<{ size?: number }>>)[data.icon] ?? Icons.Circle
@@ -33,8 +23,7 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
   const fileLabel = data.line > 0 ? `${fileName}:${data.line}` : fileName
 
   function handleClick(): void {
-    openFile(data.filePath, detectLanguage(data.filePath))
-    setActiveTab('code')
+    navigateToFile(data.filePath, data.line > 0 ? data.line : undefined)
   }
 
   return (
