@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 import type { FlowNodeData, FlowNodeType } from '../../../types/cortex'
 import { useCortexStore } from '../../../stores/cortex-store'
+import { usePrefersReducedMotion } from './useReducedMotion'
 
 // ---- Kind-to-style mapping ----
 
@@ -176,6 +177,7 @@ function getKindStyle(type: FlowNodeType | string): KindStyle {
 const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>) {
   const [showTooltip, setShowTooltip] = useState(false)
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
+  const reducedMotion = usePrefersReducedMotion()
 
   const style = getKindStyle(data.type)
   const { Icon, gradient, border, glow, textColor } = style
@@ -200,7 +202,7 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
       />
 
       <motion.div
-        whileHover={{ scale: 1.02 }}
+        whileHover={reducedMotion ? undefined : { scale: 1.02 }}
         transition={{ duration: 0.15 }}
         onClick={handleClick}
         className={`cursor-pointer rounded-lg border ${border} bg-gradient-to-br ${gradient} px-3 py-2 shadow-lg ${glow} backdrop-blur-sm`}

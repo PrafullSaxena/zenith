@@ -8,15 +8,26 @@ import { useCortexStore } from '../../../stores/cortex-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import AnimatedCounter from './AnimatedCounter'
 import TestCoverageCard from './TestCoverageCard'
+import { usePrefersReducedMotion } from './useReducedMotion'
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 16, scale: 0.96 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { delay: i * 0.08, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }
-  })
+function useCardVariants(): {
+  hidden: object
+  visible: (i: number) => object
+} {
+  const reducedMotion = usePrefersReducedMotion()
+  return {
+    hidden: { opacity: 0, y: reducedMotion ? 0 : 16, scale: reducedMotion ? 1 : 0.96 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        delay: reducedMotion ? 0 : i * 0.08,
+        duration: reducedMotion ? 0.15 : 0.35,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }
+    })
+  }
 }
 
 const SOURCE_LANGUAGES = new Set([
@@ -59,6 +70,7 @@ const ENTITY_ICONS: Record<string, string> = {
 }
 
 export default function OverviewTab(): React.JSX.Element {
+  const cardVariants = useCardVariants()
   const analysisResult = useCortexStore((s) => s.analysisResult)
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
 
