@@ -15,6 +15,17 @@ interface CodeEntity {
     | 'decorator'
     | 'dag'
     | 'task'
+    | 'configuration'
+    | 'aspect'
+    | 'filter'
+    | 'port-in'
+    | 'port-out'
+    | 'web-adapter'
+    | 'db-adapter'
+    | 'http-adapter'
+    | 'error-handler'
+    | 'client-impl'
+    | 'shared'
   filePath: string
   line: number
   endLine: number
@@ -23,6 +34,12 @@ interface CodeEntity {
   returnType: string
   summary: string
   parentId: string | null
+}
+
+interface CallEdge {
+  from: string
+  to: string
+  type: 'inject' | 'call'
 }
 
 interface RouteInfo {
@@ -38,6 +55,46 @@ interface RouteInfo {
 export interface JavaParseResult {
   entities: CodeEntity[]
   routes: RouteInfo[]
+  callEdges: CallEdge[]
+  architecture: JavaArchitecture
+}
+
+type JavaArchitecture = 'hexagonal' | 'domain' | 'layered'
+
+function detectJavaArchitecture(filePaths: string[]): JavaArchitecture {
+  const hasAdapters = filePaths.some(f => /\/adapters\//.test(f))
+  const hasPorts = filePaths.some(f => /\/port\/(in|out)\//.test(f))
+  if (hasAdapters && hasPorts) return 'hexagonal'
+
+  // Domain: multiple sibling packages each with controller+service
+  const domainPackages = new Map<string, Set<string>>()
+  for (const f of filePaths) {
+    const match = f.match(/\/([^/]+)\/(controller|service|repository)\//)
+    if (match) {
+      const domain = match[1]
+      if (!domainPackages.has(domain)) domainPackages.set(domain, new Set())
+      domainPackages.get(domain)!.add(match[2])
+    }
+  }
+  const domainCount = [...domainPackages.values()].filter(s => s.size >= 2).length
+  if (domainCount >= 2) return 'domain'
+
+  return 'layered'
+}
+
+function classifyByPath(filePath: string, arch: JavaArchitecture): CodeEntity['kind'] | null {
+  if (arch !== 'hexagonal') return null
+  if (/\/application\/.*\/port\/in\//.test(filePath)) return 'port-in'
+  if (/\/application\/.*\/port\/out\//.test(filePath)) return 'port-out'
+  if (/\/adapters\/(web|rest)\//.test(filePath)) return 'web-adapter'
+  if (/\/adapters\/(db|persistence)\//.test(filePath)) return 'db-adapter'
+  if (/\/adapters\/http\//.test(filePath)) return 'http-adapter'
+  if (/\/application\//.test(filePath)) return 'service'
+  if (/\/config\//.test(filePath)) return 'configuration'
+  if (/\/clients\//.test(filePath)) return 'client-impl'
+  if (/\/common\//.test(filePath)) return 'shared'
+  if (/\/errors\//.test(filePath)) return 'error-handler'
+  return null
 }
 
 /** Strip single-line and multi-line Java comments */
@@ -64,9 +121,16 @@ const MAPPING_ANNOTATIONS: Record<string, RouteInfo['method']> = {
   PatchMapping: 'PATCH'
 }
 
-export function parseJavaFile(content: string, filePath: string): JavaParseResult {
+export function parseJavaFile(
+  content: string,
+  filePath: string,
+  arch: JavaArchitecture = 'layered'
+): Omit<JavaParseResult, 'architecture'> & { constructorParams: Map<string, string[]> } {
   const entities: CodeEntity[] = []
   const routes: RouteInfo[] = []
+  const callEdges: CallEdge[] = []
+  // Map from class entity id -> list of injected type names (from constructor params)
+  const constructorParams = new Map<string, string[]>()
 
   const stripped = stripComments(content)
   const lines = stripped.split('\n')
@@ -90,6 +154,7 @@ export function parseJavaFile(content: string, filePath: string): JavaParseResul
   // Extract class declarations
   const classRegex = /^(\s*)(public\s+)?(abstract\s+)?(class|interface|enum)\s+(\w+)/
   let currentClassId: string | null = null
+  let currentClassName: string | null = null
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
@@ -100,8 +165,11 @@ export function parseJavaFile(content: string, filePath: string): JavaParseResul
     if (classMatch) {
       const className = classMatch[5]
       controllerName = className
+      currentClassName = className
 
-      let kind: CodeEntity['kind'] = 'class'
+      // Path-based classification takes priority for hexagonal arch
+      const pathKind = classifyByPath(filePath, arch)
+      let kind: CodeEntity['kind'] = pathKind ?? 'class'
       const decorators: string[] = []
 
       // Gather decorators from preceding lines
@@ -115,12 +183,23 @@ export function parseJavaFile(content: string, filePath: string): JavaParseResul
         }
       }
 
-      if (decorators.includes('RestController') || decorators.includes('Controller')) {
-        kind = 'controller'
-      } else if (decorators.includes('Service')) {
-        kind = 'service'
-      } else if (decorators.includes('Repository')) {
-        kind = 'repository'
+      // Annotation-based kind detection (only if path didn't classify it)
+      if (pathKind === null) {
+        if (decorators.includes('RestController') || decorators.includes('Controller')) {
+          kind = 'controller'
+        } else if (decorators.includes('Service')) {
+          kind = 'service'
+        } else if (decorators.includes('Repository')) {
+          kind = 'repository'
+        } else if (decorators.includes('Configuration')) {
+          kind = 'configuration'
+        } else if (decorators.includes('Component')) {
+          kind = 'component'
+        } else if (decorators.includes('Aspect')) {
+          kind = 'aspect'
+        } else if (decorators.includes('Filter')) {
+          kind = 'filter'
+        }
       }
 
       // Find end line (matching closing brace)
@@ -154,6 +233,35 @@ export function parseJavaFile(content: string, filePath: string): JavaParseResul
         summary: '',
         parentId: null
       })
+    }
+
+    // Constructor injection detection:
+    // A constructor is a method whose name matches the current class name and has no return type token
+    // Pattern: public ClassName(params)
+    if (currentClassId && currentClassName) {
+      const ctorRegex = new RegExp(
+        `^\\s*(public|protected|private)\\s+${currentClassName}\\s*\\(([^)]*)\\)`
+      )
+      const ctorMatch = line.match(ctorRegex)
+      if (ctorMatch) {
+        const paramsStr = ctorMatch[2]
+        if (paramsStr.trim()) {
+          const injectedTypes: string[] = []
+          const params = paramsStr.split(',')
+          for (const p of params) {
+            const parts = p.trim().split(/\s+/)
+            const nonAnnotation = parts.filter((pt) => !pt.startsWith('@'))
+            if (nonAnnotation.length >= 2) {
+              // The type is everything except the last token (param name)
+              const typeName = nonAnnotation.slice(0, -1).join(' ').replace(/[<>[\]]/g, '').trim()
+              injectedTypes.push(typeName)
+            }
+          }
+          if (injectedTypes.length > 0) {
+            constructorParams.set(currentClassId, injectedTypes)
+          }
+        }
+      }
     }
 
     // Method declarations
@@ -292,20 +400,50 @@ export function parseJavaFile(content: string, filePath: string): JavaParseResul
     }
   }
 
-  return { entities, routes }
+  return { entities, routes, callEdges, constructorParams }
 }
 
 export function parseJavaFiles(
   files: { path: string; content: string }[]
 ): JavaParseResult {
+  const allFilePaths = files.map(f => f.path)
+  const architecture = detectJavaArchitecture(allFilePaths)
+
   const entities: CodeEntity[] = []
   const routes: RouteInfo[] = []
+  const callEdges: CallEdge[] = []
 
-  for (const file of files) {
-    const result = parseJavaFile(file.content, file.path)
+  // Map from class name -> entity id for injection edge resolution
+  const classNameToId = new Map<string, string>()
+
+  // First pass: parse all files and collect class names
+  const fileResults = files.map(file => {
+    const result = parseJavaFile(file.content, file.path, architecture)
+    for (const entity of result.entities) {
+      if (entity.parentId === null) {
+        // Top-level class/interface
+        classNameToId.set(entity.name, entity.id)
+      }
+    }
+    return result
+  })
+
+  // Second pass: aggregate and build injection edges
+  for (const result of fileResults) {
     entities.push(...result.entities)
     routes.push(...result.routes)
+    callEdges.push(...result.callEdges)
+
+    // Resolve constructor injection edges
+    for (const [classId, injectedTypes] of result.constructorParams) {
+      for (const typeName of injectedTypes) {
+        const targetId = classNameToId.get(typeName)
+        if (targetId && targetId !== classId) {
+          callEdges.push({ from: classId, to: targetId, type: 'inject' })
+        }
+      }
+    }
   }
 
-  return { entities, routes }
+  return { entities, routes, callEdges, architecture }
 }
