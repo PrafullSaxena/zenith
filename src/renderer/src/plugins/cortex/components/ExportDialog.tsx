@@ -6,6 +6,7 @@ import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, FileDown, AlignLeft, X, Download, Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../../stores/cortex-store'
+import { analysisResultToMermaidBlocks } from './flow-utils'
 
 type ExportFormat = 'markdown' | 'pdf' | 'plaintext'
 
@@ -146,6 +147,20 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
     return filtered.join('\n').trim()
   }
 
+  /**
+   * Append Mermaid flow diagram blocks to content for MD/PDF exports.
+   * Each diagram is wrapped in a ```mermaid fence with a heading.
+   */
+  const appendFlowDiagrams = (content: string): string => {
+    if (!analysisResult) return content
+    const diagrams = analysisResultToMermaidBlocks(analysisResult)
+    if (diagrams.length === 0) return content
+    const blocks = diagrams
+      .map((d) => `## ${d.title} Diagram\n\n\`\`\`mermaid\n${d.mermaid}\n\`\`\``)
+      .join('\n\n')
+    return `${content}\n\n## Flow Diagrams\n\n${blocks}`
+  }
+
   const handleExport = useCallback(async () => {
     if (isExporting) return
 
@@ -153,9 +168,9 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
     setError(null)
 
     try {
-      const content = getFilteredContent()
+      const baseContent = getFilteredContent()
 
-      if (!content.trim()) {
+      if (!baseContent.trim()) {
         setError('No content to export. Select at least one section.')
         setIsExporting(false)
         return
@@ -163,6 +178,7 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
 
       switch (format) {
         case 'markdown': {
+          const content = appendFlowDiagrams(baseContent)
           await window.api.app.saveTextFile(
             content,
             `${repoName}-documentation.md`,
@@ -171,6 +187,8 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
           break
         }
         case 'plaintext': {
+          // Append flow diagrams before stripping markdown so [Diagram omitted] placeholder applies
+          const content = appendFlowDiagrams(baseContent)
           const plainText = stripMarkdown(content)
           await window.api.app.saveTextFile(
             plainText,
@@ -180,6 +198,7 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
           break
         }
         case 'pdf': {
+          const content = appendFlowDiagrams(baseContent)
           await window.api.app.exportPdf({
             markdown: content,
             title: `${repoName} - Documentation`,
@@ -196,7 +215,7 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
     } finally {
       setIsExporting(false)
     }
-  }, [format, selectedSections, hldContent, repoName, isExporting, onClose])
+  }, [format, selectedSections, hldContent, repoName, isExporting, onClose, analysisResult])
 
   return (
     <AnimatePresence>

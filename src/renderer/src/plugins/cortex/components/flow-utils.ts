@@ -409,6 +409,109 @@ export function buildPipelineNodes(
   return { nodes, edges }
 }
 
+// ---- Mermaid export ----
+
+/**
+ * Convert React Flow node/edge arrays to Mermaid flowchart syntax.
+ * Pure string transformation — safe to call from the renderer.
+ */
+export function flowDataToMermaid(
+  nodes: { id: string; data: { label: string; kind: string } }[],
+  edges: { source: string; target: string; data?: { label: string } }[],
+  direction: 'TB' | 'LR' = 'TB'
+): string {
+  const lines = [`flowchart ${direction}`]
+  for (const node of nodes) {
+    // Sanitize label (remove chars that break Mermaid syntax)
+    const label = node.data.label.replace(/["\[\](){}|]/g, '')
+    const shape =
+      node.data.kind === 'database' ||
+      node.data.kind === 'repository' ||
+      node.data.kind === 'db-adapter'
+        ? `[(${label})]`
+        : `[${label}]`
+    // Sanitize node id for Mermaid (only alphanumeric + underscore)
+    const nodeId = node.id.replace(/[^a-zA-Z0-9_]/g, '_')
+    lines.push(`  ${nodeId}${shape}`)
+  }
+  for (const edge of edges) {
+    const srcId = edge.source.replace(/[^a-zA-Z0-9_]/g, '_')
+    const tgtId = edge.target.replace(/[^a-zA-Z0-9_]/g, '_')
+    const label = edge.data?.label ? `|${edge.data.label}|` : ''
+    lines.push(`  ${srcId} -->${label} ${tgtId}`)
+  }
+  return lines.join('\n')
+}
+
+/**
+ * Derive Mermaid diagram(s) from an AnalysisResult for use in exports.
+ * Returns an object with one Mermaid block per relevant diagram type.
+ */
+export function analysisResultToMermaidBlocks(result: {
+  entities: CodeEntity[]
+  calls: CallEdge[]
+  routes: RouteInfo[]
+  components: ComponentInfo[]
+  pipelines: PipelineInfo[]
+  repoType: string
+}): { title: string; mermaid: string }[] {
+  const diagrams: { title: string; mermaid: string }[] = []
+
+  if (result.routes.length > 0 || result.entities.length > 0) {
+    // API / call flow
+    const { nodes, edges } = buildAPIFlowNodes(result.entities, result.calls, result.routes)
+    if (nodes.length > 0) {
+      const mermaidNodes = nodes.map((n) => ({
+        id: n.id,
+        data: { label: n.data.label, kind: n.data.type }
+      }))
+      const mermaidEdges = edges.map((e) => ({
+        source: e.source,
+        target: e.target,
+        data: e.data ? { label: e.data.label } : undefined
+      }))
+      const diagram = flowDataToMermaid(mermaidNodes, mermaidEdges, 'LR')
+      diagrams.push({ title: 'Call Flow', mermaid: diagram })
+    }
+  }
+
+  if (result.components.length > 0) {
+    const { nodes, edges } = buildComponentTreeNodes(result.components)
+    if (nodes.length > 0) {
+      const mermaidNodes = nodes.map((n) => ({
+        id: n.id,
+        data: { label: n.data.label, kind: n.data.type }
+      }))
+      const mermaidEdges = edges.map((e) => ({
+        source: e.source,
+        target: e.target,
+        data: e.data ? { label: e.data.label } : undefined
+      }))
+      const diagram = flowDataToMermaid(mermaidNodes, mermaidEdges, 'TB')
+      diagrams.push({ title: 'Component Tree', mermaid: diagram })
+    }
+  }
+
+  if (result.pipelines.length > 0) {
+    const { nodes, edges } = buildPipelineNodes(result.pipelines)
+    if (nodes.length > 0) {
+      const mermaidNodes = nodes.map((n) => ({
+        id: n.id,
+        data: { label: n.data.label, kind: n.data.type }
+      }))
+      const mermaidEdges = edges.map((e) => ({
+        source: e.source,
+        target: e.target,
+        data: e.data ? { label: e.data.label } : undefined
+      }))
+      const diagram = flowDataToMermaid(mermaidNodes, mermaidEdges, 'LR')
+      diagrams.push({ title: 'Pipeline', mermaid: diagram })
+    }
+  }
+
+  return diagrams
+}
+
 // ---- Helpers ----
 
 function mapKindToFlowType(kind: CodeEntity['kind']): FlowNodeType {

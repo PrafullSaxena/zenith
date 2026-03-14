@@ -271,6 +271,34 @@ export function generatePipelineDiagram(result: AnalysisResult): string {
 }
 
 /**
+ * Convert React Flow node/edge data to Mermaid flowchart syntax.
+ * This is used by the export pipeline to embed flow diagrams in MD/TXT/PDF exports.
+ */
+export function flowDataToMermaid(
+  nodes: { id: string; data: { label: string; kind: string } }[],
+  edges: { source: string; target: string; data?: { label: string } }[],
+  direction: 'TB' | 'LR' = 'TB'
+): string {
+  const lines = [`flowchart ${direction}`]
+  for (const node of nodes) {
+    // Sanitize label for Mermaid (remove special chars that break syntax)
+    const label = node.data.label.replace(/["\[\](){}|]/g, '')
+    const shape =
+      node.data.kind === 'database' ||
+      node.data.kind === 'repository' ||
+      node.data.kind === 'db-adapter'
+        ? `[(${label})]`
+        : `[${label}]`
+    lines.push(`  ${node.id}${shape}`)
+  }
+  for (const edge of edges) {
+    const label = edge.data?.label ? `|${edge.data.label}|` : ''
+    lines.push(`  ${edge.source} -->${label} ${edge.target}`)
+  }
+  return lines.join('\n')
+}
+
+/**
  * Generate class diagram showing class relationships.
  * Shows top classes/services with their methods.
  */
