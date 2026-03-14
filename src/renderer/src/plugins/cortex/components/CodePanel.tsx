@@ -3,9 +3,9 @@
  * Horizontal split: FileTree (left sidebar) | CodeTabs + CodeViewer (right).
  * Uses react-resizable-panels for resize handle.
  */
-import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
+import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { FileCode } from 'lucide-react'
-import { useCortexStore } from '../../../../stores/cortex-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 import FileTree from './FileTree'
 import CodeTabs from './CodeTabs'
 import CodeViewer from './CodeViewer'

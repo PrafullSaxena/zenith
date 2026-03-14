@@ -5,7 +5,7 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, FileDown, AlignLeft, X, Download, Loader2 } from 'lucide-react'
-import { useCortexStore } from '../../../../stores/cortex-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 import { analysisResultToMermaidBlocks } from './flow-utils'
 
 type ExportFormat = 'markdown' | 'pdf' | 'plaintext'

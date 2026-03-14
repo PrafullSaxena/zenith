@@ -9,8 +9,8 @@ import { useState, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, FileCode, Folder, FolderOpen, Search } from 'lucide-react'
 import { FixedSizeList, type ListChildComponentProps } from 'react-window'
-import type { FileNode } from '../../../../types/cortex'
-import { useCortexStore } from '../../../../stores/cortex-store'
+import type { FileNode } from '../../../types/cortex'
+import { useCortexStore } from '../../../stores/cortex-store'
 
 // ── Icon color map by file extension ────────────────────────────────
 

@@ -370,10 +370,13 @@ export function parseDEProject(
       /trigger_\w+\.py$/.test(filePath) ||
       /run_\w+\.sh$/.test(filePath)
 
+    // Avoid literal 'import' adjacent to quotes — electron-vite's ESM shim regex
+    // misdetects it as an ES import statement and injects CJS shims mid-code
+    const imp = 'im' + 'port'
     const hasScheduleImport =
-      content.includes('from schedule import') ||
-      content.includes('from apscheduler') ||
-      content.includes('import schedule')
+      content.includes(`from schedule ${imp}`) ||
+      content.includes(`from apscheduler`) ||
+      content.includes(`${imp} schedule`)
 
     if (isTriggerPattern || hasScheduleImport) {
       const result = parseTriggerScript(content, filePath)

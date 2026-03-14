@@ -8,7 +8,7 @@ import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { FileCode } from 'lucide-react'
-import { useCortexStore } from '../../../../stores/cortex-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 import type { Extension } from '@codemirror/state'
 
 // ── Language extension loader ───────────────────────────────────────

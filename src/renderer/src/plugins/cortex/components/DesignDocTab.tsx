@@ -7,8 +7,8 @@
 import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { BookOpen, RefreshCw, Loader2 } from 'lucide-react'
-import { useCortexStore } from '../../../../stores/cortex-store'
-import MarkdownRenderer from '../../../../components/MarkdownRenderer'
+import { useCortexStore } from '../../../stores/cortex-store'
+import MarkdownRenderer from '../../../components/MarkdownRenderer'
 
 export default function DesignDocTab(): React.JSX.Element {
   const [isGenerating, setIsGenerating] = useState(false)

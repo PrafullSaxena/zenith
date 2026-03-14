@@ -134,17 +134,17 @@ export class AnalyzerDatabase {
   }
 
   listCachedRepos(): { repoUrl: string; branch: string; commitSha: string; createdAt: string }[] {
-    return this.db
+    const rows = this.db
       .prepare(
         'SELECT repo_url, branch, commit_sha, created_at FROM analysis_cache ORDER BY created_at DESC'
       )
       .all() as { repo_url: string; branch: string; commit_sha: string; created_at: string }[]
-      .map((r) => ({
-        repoUrl: r.repo_url,
-        branch: r.branch,
-        commitSha: r.commit_sha,
-        createdAt: r.created_at
-      })) as { repoUrl: string; branch: string; commitSha: string; createdAt: string }[]
+    return rows.map((r) => ({
+      repoUrl: r.repo_url,
+      branch: r.branch,
+      commitSha: r.commit_sha,
+      createdAt: r.created_at
+    }))
   }
 
   // --- File indexing for FTS5 search (used by Plan 13-02 analyzer and Plan 13-05 Q&A) ---

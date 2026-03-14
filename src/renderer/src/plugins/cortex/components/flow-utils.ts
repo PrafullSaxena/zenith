@@ -2,7 +2,7 @@
  * flow-utils.ts -- Layout engine and data transformation for React Flow diagrams.
  * Uses dagre for automatic hierarchical layout.
  */
-import * as dagre from '@dagrejs/dagre'
+import dagre from '@dagrejs/dagre'
 import type { Node, Edge } from '@xyflow/react'
 import type {
   CodeEntity,

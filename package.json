@@ -71,7 +71,7 @@
     "react-force-graph-2d": "^1.29.1",
     "react-resizable-panels": "^4.7.2",
     "react-router-dom": "^7.13.1",
-    "react-window": "^2.2.7",
+    "react-window": "^1.8.11",
     "simple-git": "^3.33.0",
     "sql-formatter": "^15.7.2",
     "tldraw": "^4.4.1",

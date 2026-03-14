@@ -3,7 +3,7 @@
  * Each tab shows filename with extension-colored icon and close button.
  */
 import { X, FileCode } from 'lucide-react'
-import { useCortexStore } from '../../../../stores/cortex-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 
 // ── Icon color by extension (shared with FileTree) ──────────────────
 

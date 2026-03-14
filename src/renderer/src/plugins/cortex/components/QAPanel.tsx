@@ -6,9 +6,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Send, Search, FileCode, Loader2, Trash2 } from 'lucide-react'
-import { useCortexStore, getCortexAgent } from '../../../../stores/cortex-store'
-import MarkdownRenderer from '../../../../components/MarkdownRenderer'
-import type { QAMessage, RepoType } from '../../../../types/cortex'
+import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
+import MarkdownRenderer from '../../../components/MarkdownRenderer'
+import type { QAMessage, RepoType } from '../../../types/cortex'
 
 // ── Suggested questions by repo type ────────────────────────────────
 
