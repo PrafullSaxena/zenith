@@ -13,6 +13,8 @@ import { SearchCode, LayoutDashboard, Code2, MessageSquare, FolderGit2 } from 'l
 import { useCodebaseAnalyzerStore } from '../../stores/codebase-analyzer-store'
 import RepoManager from './components/RepoManager'
 import InsightsPanel from './components/InsightsPanel'
+import CodePanel from './components/CodePanel'
+import QAPanel from './components/QAPanel'
 
 type CbanTab = 'insights' | 'code' | 'qa' | 'repos'
 
@@ -108,16 +110,36 @@ export default function CodebaseAnalyzerView(): React.JSX.Element {
                 </button>
               </div>
             ) : null}
-            {activeTab === 'code' && (
-              <div className="flex h-full items-center justify-center text-sm text-text-secondary">
-                Code explorer -- coming soon
+            {activeTab === 'code' && analysisResult ? (
+              <CodePanel />
+            ) : activeTab === 'code' && !analysisResult ? (
+              <div className="flex h-full flex-col items-center justify-center gap-2 text-text-secondary">
+                <Code2 size={32} className="opacity-30" />
+                <p className="text-sm">Analyze a repository first to browse code</p>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('repos')}
+                  className="mt-2 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
+                >
+                  Go to Repos
+                </button>
               </div>
-            )}
-            {activeTab === 'qa' && (
-              <div className="flex h-full items-center justify-center text-sm text-text-secondary">
-                Code Q&A -- coming soon
+            ) : null}
+            {activeTab === 'qa' && analysisResult ? (
+              <QAPanel />
+            ) : activeTab === 'qa' && !analysisResult ? (
+              <div className="flex h-full flex-col items-center justify-center gap-2 text-text-secondary">
+                <MessageSquare size={32} className="opacity-30" />
+                <p className="text-sm">Analyze a repository first to ask questions</p>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('repos')}
+                  className="mt-2 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
+                >
+                  Go to Repos
+                </button>
               </div>
-            )}
+            ) : null}
           </motion.div>
         </AnimatePresence>
       </div>
