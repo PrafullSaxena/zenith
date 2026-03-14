@@ -1,12 +1,15 @@
 /**
- * ArchitectureDashboard -- Replaces DesignDocTab with interactive cards
- * showing AI-powered architecture insights. Three sections:
- *   A) Architecture Overview (full width)
- *   B) Insight Cards (responsive grid)
- *   C) Architecture Diagrams (tabbed, React Flow)
+ * ArchitectureDashboard -- Architecture visualization with two layers:
+ *   Section A (always shown): Static analysis from analysisResult
+ *     - Code Structure Overview (entity counts, stats, framework badges)
+ *     - Entity Relationship Diagram (React Flow from analysisResult)
+ *     - Route Summary (API endpoints from analysisResult.routes)
+ *   Section B (optional, collapsible): AI-powered insights
+ *     - InsightCards grid (dependencies, security, patterns, etc.)
+ *     - Architecture Diagrams (tabbed React Flow from aiInsights)
  */
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Brain,
   Package,
@@ -19,7 +22,14 @@ import {
   Loader2,
   RefreshCw,
   Lightbulb,
-  TestTube2
+  TestTube2,
+  ChevronDown,
+  ChevronRight,
+  Globe,
+  FileCode,
+  Hash,
+  Cpu,
+  ExternalLink
 } from 'lucide-react'
 import {
   ReactFlow,
@@ -30,10 +40,38 @@ import {
   type Edge
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { useCortexStore } from '../../../stores/cortex-store'
+import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { useAgentStore } from '../../../stores/agent-store'
 import InsightCard from './InsightCard'
 import type { ToonInsights } from '../../../stores/cortex-store'
+import type { AnalysisResult, RouteInfo } from '../../../types/cortex'
+
+// ── Color constants ──────────────────────────────────────────────────────
+
+const KIND_COLORS: Record<string, string> = {
+  class: '#3b82f6',
+  service: '#8b5cf6',
+  controller: '#10b981',
+  repository: '#f59e0b',
+  component: '#ec4899',
+  function: '#64748b',
+  middleware: '#ef4444',
+  decorator: '#6b7280',
+  method: '#6b7280',
+  route: '#10b981',
+  dag: '#f59e0b',
+  task: '#8b5cf6',
+  default: '#64748b'
+}
+
+const METHOD_COLORS: Record<string, string> = {
+  GET: '#10b981',
+  POST: '#3b82f6',
+  PUT: '#f59e0b',
+  PATCH: '#8b5cf6',
+  DELETE: '#ef4444',
+  ALL: '#64748b'
+}
 
 // ── Diagram tab IDs ─────────────────────────────────────────────────────
 
@@ -45,21 +83,113 @@ const DIAGRAM_TABS = [
 
 type DiagramTabId = (typeof DIAGRAM_TABS)[number]['id']
 
-// ── Helpers: build React Flow nodes/edges from insights ────────────────
+// ── Helpers: build React Flow graph from raw analysisResult ────────────
 
-const KIND_COLORS: Record<string, string> = {
-  class: '#3b82f6',
-  service: '#8b5cf6',
-  controller: '#10b981',
-  repository: '#f59e0b',
-  component: '#ec4899',
-  function: '#64748b',
-  middleware: '#ef4444',
-  decorator: '#6b7280',
-  default: '#64748b'
+/**
+ * Build a static entity graph from raw analysisResult data.
+ * Groups entities by kind and places them in layers:
+ *   controllers → left, services → middle, repositories → right.
+ * Draws call edges between connected entities.
+ * Capped at top 30 entities for readability.
+ */
+function buildStaticEntityGraph(analysisResult: AnalysisResult): { nodes: Node[]; edges: Edge[] } {
+  const LAYER_ORDER = ['controller', 'service', 'repository', 'class', 'component', 'middleware', 'function']
+  const entities = analysisResult.entities
+    .filter((e) => e.kind !== 'method') // skip methods, keep top-level classes
+    .slice(0, 30)
+
+  // Group by kind
+  const byKind = new Map<string, typeof entities>()
+  for (const e of entities) {
+    const kind = e.kind.toLowerCase()
+    const list = byKind.get(kind) ?? []
+    list.push(e)
+    byKind.set(kind, list)
+  }
+
+  // Sort kinds by layer order
+  const sortedKinds = [...byKind.keys()].sort((a, b) => {
+    const ai = LAYER_ORDER.indexOf(a)
+    const bi = LAYER_ORDER.indexOf(b)
+    if (ai === -1 && bi === -1) return 0
+    if (ai === -1) return 1
+    if (bi === -1) return -1
+    return ai - bi
+  })
+
+  const nodes: Node[] = []
+  const entityNodeMap = new Map<string, string>() // entityId -> nodeId
+
+  const COLUMN_WIDTH = 220
+  const ROW_HEIGHT = 100
+
+  sortedKinds.forEach((kind, colIdx) => {
+    const kindEntities = byKind.get(kind) ?? []
+    const color = KIND_COLORS[kind] ?? KIND_COLORS.default
+    const x = colIdx * COLUMN_WIDTH
+
+    // Column header node
+    nodes.push({
+      id: `col-${kind}`,
+      position: { x, y: 0 },
+      data: { label: kind.toUpperCase() },
+      selectable: false,
+      style: {
+        background: `${color}15`,
+        border: `1px dashed ${color}44`,
+        borderRadius: 8,
+        padding: '4px 12px',
+        fontSize: 9,
+        color,
+        fontWeight: 700,
+        letterSpacing: '0.08em',
+        width: 180
+      }
+    })
+
+    kindEntities.forEach((e, rowIdx) => {
+      const nodeId = `static-${colIdx}-${rowIdx}`
+      entityNodeMap.set(e.id, nodeId)
+      nodes.push({
+        id: nodeId,
+        position: { x, y: (rowIdx + 1) * ROW_HEIGHT },
+        data: { label: e.name },
+        style: {
+          background: `${color}22`,
+          border: `1px solid ${color}55`,
+          borderRadius: 10,
+          padding: '6px 14px',
+          fontSize: 11,
+          color: '#e2e8f0',
+          fontWeight: 500,
+          width: 180
+        }
+      })
+    })
+  })
+
+  // Build edges from call graph
+  const edges: Edge[] = []
+  let edgeIdx = 0
+  for (const call of analysisResult.calls.slice(0, 60)) {
+    const sourceId = entityNodeMap.get(call.callerId)
+    const targetId = entityNodeMap.get(call.calleeId)
+    if (sourceId && targetId && sourceId !== targetId) {
+      edges.push({
+        id: `se-${edgeIdx++}`,
+        source: sourceId,
+        target: targetId,
+        animated: call.type === 'inject' || call.type === 'route',
+        style: { stroke: '#47556966' }
+      })
+    }
+  }
+
+  return { nodes, edges }
 }
 
-/** Derive graph nodes/edges from entities */
+// ── Helpers: build React Flow graphs from AI insights ──────────────────
+
 function buildEntityGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
   const entities = insights.entities.slice(0, 20)
   const nodes: Node[] = entities.map((e, i) => {
@@ -81,7 +211,6 @@ function buildEntityGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[
     }
   })
 
-  // Connect entities in the same location (file) with edges
   const edges: Edge[] = []
   const locationMap = new Map<string, number[]>()
   entities.forEach((e, i) => {
@@ -102,12 +231,10 @@ function buildEntityGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[
       })
     }
   }
-
   return { nodes, edges }
 }
 
 function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  // Group entities by kind to form layers
   const groups = new Map<string, typeof insights.entities>()
   for (const e of insights.entities.slice(0, 30)) {
     const kind = e.kind.toLowerCase()
@@ -139,7 +266,6 @@ function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[]
         width: 120
       }
     })
-
     members.slice(0, 5).forEach((m, mi) => {
       nodes.push({
         id: `layer-${kind}-${mi}`,
@@ -156,7 +282,6 @@ function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[]
         }
       })
     })
-
     if (layerIdx > 0) {
       const prevKind = [...groups.keys()][layerIdx - 1]
       const prevMembers = groups.get(prevKind)
@@ -170,11 +295,9 @@ function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[]
         })
       }
     }
-
     y += 120
     layerIdx++
   }
-
   return { nodes, edges }
 }
 
@@ -188,8 +311,6 @@ function buildDependencyGraph(insights: ToonInsights): { nodes: Node[]; edges: E
     build: '#f59e0b',
     util: '#ec4899'
   }
-
-  // Center node for the project
   const nodes: Node[] = [
     {
       id: 'project',
@@ -206,10 +327,8 @@ function buildDependencyGraph(insights: ToonInsights): { nodes: Node[]; edges: E
       }
     }
   ]
-
   const edges: Edge[] = []
   const angleStep = (2 * Math.PI) / Math.max(deps.length, 1)
-
   deps.forEach((dep, i) => {
     const angle = i * angleStep
     const radius = 180
@@ -236,14 +355,190 @@ function buildDependencyGraph(insights: ToonInsights): { nodes: Node[]; edges: E
       style: { stroke: `${color}66` }
     })
   })
-
   return { nodes, edges }
+}
+
+// ── Section A: Static Code Structure Overview ───────────────────────────
+
+function CodeStructureOverview({ analysisResult }: { analysisResult: AnalysisResult }): React.JSX.Element {
+  const { stats, framework, language } = analysisResult
+
+  // Entity count grouped by kind
+  const entityBadges = stats.entityCount
+    .filter((ec) => ec.count > 0 && ec.kind !== 'method')
+    .sort((a, b) => b.count - a.count)
+
+  return (
+    <div className="space-y-4">
+      {/* Framework + Language badges */}
+      <div className="flex flex-wrap items-center gap-2">
+        {framework && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-[11px] font-semibold text-accent">
+            <Cpu size={11} />
+            {framework}
+          </span>
+        )}
+        {language && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-[10px] font-medium text-text-secondary">
+            <FileCode size={10} />
+            {language}
+          </span>
+        )}
+      </div>
+
+      {/* Stats row */}
+      <div className="flex flex-wrap gap-4">
+        <div className="flex items-center gap-1.5">
+          <FileCode size={13} className="text-text-tertiary" />
+          <span className="text-xs text-text-secondary">
+            <span className="font-semibold text-text-primary">{stats.totalFiles.toLocaleString()}</span> files
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Hash size={13} className="text-text-tertiary" />
+          <span className="text-xs text-text-secondary">
+            <span className="font-semibold text-text-primary">{stats.totalLines.toLocaleString()}</span> lines
+          </span>
+        </div>
+        {stats.routeCount > 0 && (
+          <div className="flex items-center gap-1.5">
+            <Globe size={13} className="text-text-tertiary" />
+            <span className="text-xs text-text-secondary">
+              <span className="font-semibold text-text-primary">{stats.routeCount}</span> API endpoints
+            </span>
+          </div>
+        )}
+        {stats.componentCount > 0 && (
+          <div className="flex items-center gap-1.5">
+            <Network size={13} className="text-text-tertiary" />
+            <span className="text-xs text-text-secondary">
+              <span className="font-semibold text-text-primary">{stats.componentCount}</span> components
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Entity kind badges */}
+      {entityBadges.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {entityBadges.map((ec) => {
+            const color = KIND_COLORS[ec.kind.toLowerCase()] ?? KIND_COLORS.default
+            return (
+              <span
+                key={ec.kind}
+                className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-medium"
+                style={{ background: `${color}20`, color }}
+              >
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ background: color }}
+                />
+                {ec.kind}
+                <span className="ml-0.5 opacity-70">{ec.count}</span>
+              </span>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Language breakdown */}
+      {stats.languages.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {stats.languages.slice(0, 6).map((lang) => (
+            <span
+              key={lang.language}
+              className="inline-flex items-center gap-1.5 rounded-md bg-surface px-2.5 py-1 text-[10px] text-text-secondary"
+            >
+              {lang.language}
+              <span className="text-text-tertiary">{lang.fileCount}f</span>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Section A: Route Summary ────────────────────────────────────────────
+
+function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate: (filePath: string, line: number) => void }): React.JSX.Element {
+  // Count by HTTP method
+  const methodCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const route of routes) {
+      counts.set(route.method, (counts.get(route.method) ?? 0) + 1)
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])
+  }, [routes])
+
+  // Top 10 routes sorted by path
+  const topRoutes = useMemo(
+    () => [...routes].sort((a, b) => a.fullPath.localeCompare(b.fullPath)).slice(0, 10),
+    [routes]
+  )
+
+  return (
+    <div className="space-y-3">
+      {/* Method distribution */}
+      <div className="flex flex-wrap gap-2">
+        {methodCounts.map(([method, count]) => {
+          const color = METHOD_COLORS[method] ?? '#64748b'
+          return (
+            <span
+              key={method}
+              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-semibold"
+              style={{ background: `${color}20`, color }}
+            >
+              {method}
+              <span className="ml-0.5 opacity-70">{count}</span>
+            </span>
+          )
+        })}
+      </div>
+
+      {/* Route list */}
+      <div className="divide-y divide-border/30 rounded-lg border border-border/40 bg-surface/50">
+        {topRoutes.map((route, i) => {
+          const color = METHOD_COLORS[route.method] ?? '#64748b'
+          return (
+            <button
+              key={i}
+              type="button"
+              className="group flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-elevated"
+              onClick={() => onNavigate(route.filePath, route.line)}
+            >
+              <span
+                className="shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold"
+                style={{ background: `${color}20`, color }}
+              >
+                {route.method}
+              </span>
+              <span className="flex-1 truncate text-[11px] font-mono text-text-primary">
+                {route.fullPath}
+              </span>
+              <span className="shrink-0 text-[10px] text-text-tertiary">
+                {route.handlerName}
+              </span>
+              <ExternalLink
+                size={10}
+                className="shrink-0 text-text-tertiary opacity-0 transition-opacity group-hover:opacity-60"
+              />
+            </button>
+          )
+        })}
+        {routes.length > 10 && (
+          <div className="px-3 py-2 text-[10px] text-text-tertiary">
+            +{routes.length - 10} more endpoints
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 // ── Section B: InsightCards grid ────────────────────────────────────────
 
 function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.Element {
-  // Group dependencies by category
   const depsByCategory = useMemo(() => {
     const map = new Map<string, typeof insights.dependencies>()
     for (const dep of insights.dependencies) {
@@ -256,7 +551,6 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {/* Dependencies Card */}
       <InsightCard title="Dependencies" icon={Package} delay={0.05}>
         {insights.dependencies.length === 0 ? (
           <p className="text-xs text-text-secondary">No dependency data available</p>
@@ -286,7 +580,6 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
         )}
       </InsightCard>
 
-      {/* Security Card */}
       <InsightCard title="Security" icon={Shield} delay={0.1}>
         {insights.security.length === 0 ? (
           <p className="text-xs text-text-secondary">No security patterns detected</p>
@@ -302,7 +595,6 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
         )}
       </InsightCard>
 
-      {/* Patterns Card */}
       <InsightCard title="Design Patterns" icon={Layers} delay={0.15}>
         {insights.patterns.length === 0 ? (
           <p className="text-xs text-text-secondary">No design patterns detected</p>
@@ -318,7 +610,6 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
         )}
       </InsightCard>
 
-      {/* Config Card */}
       <InsightCard title="Configuration" icon={Settings} delay={0.2}>
         {insights.config.length === 0 ? (
           <p className="text-xs text-text-secondary">No config sources detected</p>
@@ -334,7 +625,6 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
         )}
       </InsightCard>
 
-      {/* Async Card */}
       <InsightCard title="Async Patterns" icon={Zap} delay={0.25}>
         {insights.async.length === 0 ? (
           <p className="text-xs text-text-secondary">No async patterns detected</p>
@@ -350,7 +640,6 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
         )}
       </InsightCard>
 
-      {/* Insights Card (strengths & concerns) */}
       {insights.insights.length > 0 && (
         <InsightCard title="Key Insights" icon={Lightbulb} delay={0.3}>
           <ul className="space-y-2">
@@ -371,7 +660,6 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
         </InsightCard>
       )}
 
-      {/* Tests Card */}
       {insights.tests.framework && (
         <InsightCard title="Testing" icon={TestTube2} delay={0.35}>
           <div className="space-y-2">
@@ -399,11 +687,13 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
 
 export default function ArchitectureDashboard(): React.JSX.Element {
   const [activeDiagramTab, setActiveDiagramTab] = useState<DiagramTabId>('entities')
+  const [aiSectionExpanded, setAiSectionExpanded] = useState(false)
 
   const analysisResult = useCortexStore((s) => s.analysisResult)
   const aiInsights = useCortexStore((s) => s.aiInsights)
   const isGeneratingInsights = useCortexStore((s) => s.isGeneratingInsights)
   const generateInsights = useCortexStore((s) => s.generateInsights)
+  const navigateToFile = useCortexStore((s) => s.navigateToFile)
   const activeRepoId = useCortexStore((s) => s.activeRepoId)
   const repos = useCortexStore((s) => s.repos)
 
@@ -415,19 +705,33 @@ export default function ArchitectureDashboard(): React.JSX.Element {
     }
   }, [])
 
-  // Auto-load cached insights on mount
+  // Auto-expand AI section when insights arrive
+  useEffect(() => {
+    if (aiInsights) {
+      setAiSectionExpanded(true)
+    }
+  }, [aiInsights])
+
+  // Auto-load cached insights on mount if agent configured
   useEffect(() => {
     if (!aiInsights && !isGeneratingInsights && activeRepoId) {
       const repo = repos.find((r) => r.id === activeRepoId)
-      if (repo?.commitSha) {
+      const agent = getCortexAgent()
+      if (repo?.commitSha && agent) {
         generateInsights()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeRepoId])
 
-  // Build graph data for the active diagram tab
-  const diagramData = useMemo(() => {
+  // Build static entity graph from analysisResult
+  const staticEntityGraph = useMemo(() => {
+    if (!analysisResult || analysisResult.entities.length === 0) return { nodes: [], edges: [] }
+    return buildStaticEntityGraph(analysisResult)
+  }, [analysisResult])
+
+  // Build AI diagram data
+  const aiDiagramData = useMemo(() => {
     if (!aiInsights) return { nodes: [], edges: [] }
     switch (activeDiagramTab) {
       case 'entities':
@@ -441,7 +745,10 @@ export default function ArchitectureDashboard(): React.JSX.Element {
     }
   }, [aiInsights, activeDiagramTab])
 
+  const hasAgent = !!getCortexAgent()
+
   const handleGenerateInsights = useCallback(() => {
+    setAiSectionExpanded(true)
     generateInsights()
   }, [generateInsights])
 
@@ -449,6 +756,13 @@ export default function ArchitectureDashboard(): React.JSX.Element {
     useCortexStore.getState().setAiInsights(null)
     generateInsights()
   }, [generateInsights])
+
+  const handleNavigateToFile = useCallback(
+    (filePath: string, line: number) => {
+      navigateToFile(filePath, line)
+    },
+    [navigateToFile]
+  )
 
   // No analysis data at all
   if (!analysisResult) {
@@ -459,222 +773,284 @@ export default function ArchitectureDashboard(): React.JSX.Element {
     )
   }
 
-  // No AI insights yet — show generation prompt
-  if (!aiInsights && !isGeneratingInsights) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="text-center"
-        >
-          <motion.div
-            animate={{ scale: [1, 1.08, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10"
-          >
-            <Brain size={28} className="text-accent" />
-          </motion.div>
-          <h3 className="text-sm font-semibold text-text-primary">Architecture Dashboard</h3>
-          <p className="mt-1.5 max-w-sm text-xs text-text-secondary">
-            Generate AI-powered architecture insights including design patterns,
-            security analysis, dependency mapping, and interactive diagrams.
-          </p>
-          <button
-            type="button"
-            onClick={handleGenerateInsights}
-            className="mt-5 rounded-lg bg-accent/15 px-5 py-2.5 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
-          >
-            Generate Architecture Insights
-          </button>
-        </motion.div>
-      </div>
-    )
-  }
-
-  // Loading state with progressive content
-  if (isGeneratingInsights && !aiInsights) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-3">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        >
-          <Brain size={28} className="text-accent" />
-        </motion.div>
-        <p className="text-sm text-text-secondary">Cortex is thinking...</p>
-        <div className="mt-4 w-full max-w-2xl space-y-3 px-6">
-          <div className="h-6 w-3/4 animate-pulse rounded bg-surface" />
-          <div className="h-4 w-full animate-pulse rounded bg-surface" />
-          <div className="h-4 w-5/6 animate-pulse rounded bg-surface" />
-          <div className="h-32 w-full animate-pulse rounded bg-surface" />
-        </div>
-      </div>
-    )
-  }
-
-  // Full dashboard with insights (may still be streaming)
-  if (!aiInsights) return null
-  const insights = aiInsights
+  const hasRoutes = analysisResult.routes.length > 0
+  const hasEntities = analysisResult.entities.length > 0
 
   return (
     <div className="h-full overflow-y-auto p-6 space-y-8">
-      {/* Streaming indicator */}
-      {isGeneratingInsights && (
-        <div className="flex items-center gap-2 rounded-lg bg-accent/10 px-3 py-2 text-xs text-accent">
-          <Loader2 size={14} className="animate-spin" />
-          Streaming insights... cards will populate progressively.
-        </div>
-      )}
 
-      {/* ── Section A: Architecture Overview ─────────────────────── */}
+      {/* ── Section A: Code Structure Overview ───────────────── */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
       >
-        {/* Title row with refresh */}
-        <div className="mb-4 flex items-center gap-3">
-          <h3 className="text-sm font-semibold text-text-primary">Architecture Overview</h3>
-          <button
-            type="button"
-            onClick={handleRefreshInsights}
-            disabled={isGeneratingInsights}
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors disabled:opacity-40"
-            title="Refresh insights"
-          >
-            <RefreshCw size={11} className={isGeneratingInsights ? 'animate-spin' : ''} />
-            Refresh
-          </button>
-        </div>
-
-        {/* Badges row */}
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          {/* Architecture pattern badge */}
-          {insights.architecture.pattern && (
-            <span className="inline-flex items-center rounded-full bg-accent/15 px-3 py-1 text-[11px] font-semibold text-accent">
-              {insights.architecture.pattern}
-            </span>
-          )}
-
-          {/* Framework badge */}
-          {insights.architecture.framework && (
-            <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary">
-              {insights.architecture.framework}
-            </span>
-          )}
-
-          {/* Language badge */}
-          {insights.architecture.language && (
-            <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary">
-              {insights.architecture.language}
-            </span>
-          )}
-
-          {/* Lib badges */}
-          {insights.architecture.libs.map((lib) => (
-            <span
-              key={lib}
-              className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary"
-            >
-              {lib}
-            </span>
-          ))}
-        </div>
-
-        {/* AI Summary */}
-        {insights.summary && (
-          <p className="mb-5 max-w-3xl text-sm leading-relaxed text-text-secondary">
-            {insights.summary}
-          </p>
-        )}
-
-        {/* Interactive entity graph */}
-        {insights.entities.length > 0 && (
-          <div className="h-64 overflow-hidden rounded-xl border border-border/60 bg-surface-elevated/40">
-            <ReactFlow
-              nodes={buildEntityGraph(insights).nodes}
-              edges={buildEntityGraph(insights).edges}
-              fitView
-              proOptions={{ hideAttribution: true }}
-              minZoom={0.3}
-              maxZoom={2}
-            >
-              <Background gap={20} size={1} color="#1e293b" />
-              <Controls
-                showInteractive={false}
-                className="!bg-surface !border-border/60 !rounded-lg [&>button]:!bg-surface [&>button]:!border-border/40 [&>button]:!text-text-secondary"
-              />
-              <MiniMap
-                nodeStrokeWidth={3}
-                pannable
-                zoomable
-                className="!bg-surface !border-border/60 !rounded-lg"
-              />
-            </ReactFlow>
-          </div>
-        )}
+        <h3 className="mb-4 text-sm font-semibold text-text-primary">Code Structure Overview</h3>
+        <CodeStructureOverview analysisResult={analysisResult} />
       </motion.section>
 
-      {/* ── Section B: Insight Cards ─────────────────────────────── */}
-      <section>
-        <h3 className="mb-4 text-xs font-semibold text-text-primary">Architecture Insights</h3>
-        <InsightCardsGrid insights={insights} />
-      </section>
-
-      {/* ── Section C: Architecture Diagrams ─────────────────────── */}
-      <section>
-        <h3 className="mb-3 text-xs font-semibold text-text-primary">Architecture Diagrams</h3>
-
-        {/* Diagram tab bar */}
-        <div className="mb-3 flex items-center gap-1">
-          {DIAGRAM_TABS.map((tab) => {
-            const Icon = tab.icon
-            const isActive = activeDiagramTab === tab.id
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveDiagramTab(tab.id)}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                  isActive
-                    ? 'bg-accent/15 text-accent'
-                    : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
-                }`}
+      {/* ── Section A: Entity Relationship Diagram ────────────── */}
+      {hasEntities && (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.05 }}
+        >
+          <h3 className="mb-3 text-sm font-semibold text-text-primary">Entity Relationship Diagram</h3>
+          <p className="mb-3 text-[11px] text-text-tertiary">
+            Grouped by kind — controllers, services, repositories. Edges show call/injection relationships.
+          </p>
+          <div className="h-72 overflow-hidden rounded-xl border border-border/60 bg-surface-elevated/40">
+            {staticEntityGraph.nodes.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-xs text-text-secondary">
+                No entity data available
+              </div>
+            ) : (
+              <ReactFlow
+                nodes={staticEntityGraph.nodes}
+                edges={staticEntityGraph.edges}
+                fitView
+                proOptions={{ hideAttribution: true }}
+                minZoom={0.2}
+                maxZoom={2}
               >
-                <Icon size={12} />
-                {tab.label}
-              </button>
-            )
-          })}
-        </div>
+                <Background gap={20} size={1} color="#1e293b" />
+                <Controls
+                  showInteractive={false}
+                  className="!bg-surface !border-border/60 !rounded-lg [&>button]:!bg-surface [&>button]:!border-border/40 [&>button]:!text-text-secondary"
+                />
+                <MiniMap
+                  nodeStrokeWidth={3}
+                  pannable
+                  zoomable
+                  className="!bg-surface !border-border/60 !rounded-lg"
+                />
+              </ReactFlow>
+            )}
+          </div>
+        </motion.section>
+      )}
 
-        {/* Diagram canvas */}
-        <div className="h-80 overflow-hidden rounded-xl border border-border/60 bg-surface-elevated/40">
-          {diagramData.nodes.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-xs text-text-secondary">
-              No diagram data available for this view
-            </div>
-          ) : (
-            <ReactFlow
-              key={activeDiagramTab}
-              nodes={diagramData.nodes}
-              edges={diagramData.edges}
-              fitView
-              proOptions={{ hideAttribution: true }}
-              minZoom={0.3}
-              maxZoom={2}
-            >
-              <Background gap={20} size={1} color="#1e293b" />
-              <Controls
-                showInteractive={false}
-                className="!bg-surface !border-border/60 !rounded-lg [&>button]:!bg-surface [&>button]:!border-border/40 [&>button]:!text-text-secondary"
-              />
-            </ReactFlow>
+      {/* ── Section A: Route Summary ──────────────────────────── */}
+      {hasRoutes && (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
+        >
+          <h3 className="mb-3 text-sm font-semibold text-text-primary">
+            API Endpoints
+            <span className="ml-2 text-xs font-normal text-text-tertiary">
+              {analysisResult.routes.length} total
+            </span>
+          </h3>
+          <RouteSummary routes={analysisResult.routes} onNavigate={handleNavigateToFile} />
+        </motion.section>
+      )}
+
+      {/* ── Section B: AI-Powered Insights (collapsible) ─────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.15 }}
+      >
+        {/* Collapsible header */}
+        <button
+          type="button"
+          className="group mb-3 flex w-full items-center gap-2 text-left"
+          onClick={() => setAiSectionExpanded((v) => !v)}
+        >
+          <Brain size={15} className="text-accent/70" />
+          <h3 className="flex-1 text-sm font-semibold text-text-primary">AI-Powered Insights</h3>
+          {aiInsights && (
+            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
+              Generated
+            </span>
           )}
-        </div>
-      </section>
+          {aiSectionExpanded ? (
+            <ChevronDown size={14} className="text-text-tertiary group-hover:text-text-secondary" />
+          ) : (
+            <ChevronRight size={14} className="text-text-tertiary group-hover:text-text-secondary" />
+          )}
+        </button>
+
+        <AnimatePresence initial={false}>
+          {aiSectionExpanded && (
+            <motion.div
+              key="ai-section"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="space-y-6">
+                {/* Generate / Refresh controls */}
+                {!aiInsights && !isGeneratingInsights && (
+                  <div className="rounded-xl border border-border/40 bg-surface/40 p-5">
+                    {hasAgent ? (
+                      <div className="flex flex-col items-start gap-3">
+                        <p className="text-xs text-text-secondary">
+                          Generate AI-powered architecture insights: design patterns, security analysis,
+                          dependency mapping, and richer interactive diagrams.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleGenerateInsights}
+                          className="rounded-lg bg-accent/15 px-4 py-2 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
+                        >
+                          Generate Architecture Insights
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-text-secondary">
+                        Configure an AI agent in{' '}
+                        <span className="font-medium text-text-primary">Settings</span>{' '}
+                        to unlock deeper architecture insights, pattern detection, and security analysis.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Loading state */}
+                {isGeneratingInsights && !aiInsights && (
+                  <div className="flex flex-col items-center gap-3 py-6">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                    >
+                      <Brain size={24} className="text-accent" />
+                    </motion.div>
+                    <p className="text-xs text-text-secondary">Cortex is thinking...</p>
+                    <div className="mt-2 w-full max-w-lg space-y-2">
+                      <div className="h-5 w-3/4 animate-pulse rounded bg-surface" />
+                      <div className="h-4 w-full animate-pulse rounded bg-surface" />
+                      <div className="h-4 w-5/6 animate-pulse rounded bg-surface" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Streaming indicator */}
+                {isGeneratingInsights && aiInsights && (
+                  <div className="flex items-center gap-2 rounded-lg bg-accent/10 px-3 py-2 text-xs text-accent">
+                    <Loader2 size={13} className="animate-spin" />
+                    Streaming insights — cards are populating progressively.
+                  </div>
+                )}
+
+                {/* AI content */}
+                {aiInsights && (
+                  <>
+                    {/* Architecture overview from AI */}
+                    <div>
+                      <div className="mb-3 flex items-center gap-2">
+                        <h4 className="text-xs font-semibold text-text-primary">Architecture Overview</h4>
+                        <button
+                          type="button"
+                          onClick={handleRefreshInsights}
+                          disabled={isGeneratingInsights}
+                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors disabled:opacity-40"
+                          title="Refresh insights"
+                        >
+                          <RefreshCw size={10} className={isGeneratingInsights ? 'animate-spin' : ''} />
+                          Refresh
+                        </button>
+                      </div>
+
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        {aiInsights.architecture.pattern && (
+                          <span className="inline-flex items-center rounded-full bg-accent/15 px-3 py-1 text-[11px] font-semibold text-accent">
+                            {aiInsights.architecture.pattern}
+                          </span>
+                        )}
+                        {aiInsights.architecture.framework && (
+                          <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary">
+                            {aiInsights.architecture.framework}
+                          </span>
+                        )}
+                        {aiInsights.architecture.language && (
+                          <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary">
+                            {aiInsights.architecture.language}
+                          </span>
+                        )}
+                        {aiInsights.architecture.libs.map((lib) => (
+                          <span
+                            key={lib}
+                            className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary"
+                          >
+                            {lib}
+                          </span>
+                        ))}
+                      </div>
+
+                      {aiInsights.summary && (
+                        <p className="mb-3 max-w-3xl text-sm leading-relaxed text-text-secondary">
+                          {aiInsights.summary}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Insight Cards */}
+                    <div>
+                      <h4 className="mb-3 text-xs font-semibold text-text-primary">Architecture Insights</h4>
+                      <InsightCardsGrid insights={aiInsights} />
+                    </div>
+
+                    {/* AI Diagram Tabs */}
+                    <div>
+                      <h4 className="mb-3 text-xs font-semibold text-text-primary">Architecture Diagrams</h4>
+                      <div className="mb-3 flex items-center gap-1">
+                        {DIAGRAM_TABS.map((tab) => {
+                          const Icon = tab.icon
+                          const isActive = activeDiagramTab === tab.id
+                          return (
+                            <button
+                              key={tab.id}
+                              type="button"
+                              onClick={() => setActiveDiagramTab(tab.id)}
+                              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                                isActive
+                                  ? 'bg-accent/15 text-accent'
+                                  : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+                              }`}
+                            >
+                              <Icon size={12} />
+                              {tab.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      <div className="h-80 overflow-hidden rounded-xl border border-border/60 bg-surface-elevated/40">
+                        {aiDiagramData.nodes.length === 0 ? (
+                          <div className="flex h-full items-center justify-center text-xs text-text-secondary">
+                            No diagram data available for this view
+                          </div>
+                        ) : (
+                          <ReactFlow
+                            key={activeDiagramTab}
+                            nodes={aiDiagramData.nodes}
+                            edges={aiDiagramData.edges}
+                            fitView
+                            proOptions={{ hideAttribution: true }}
+                            minZoom={0.3}
+                            maxZoom={2}
+                          >
+                            <Background gap={20} size={1} color="#1e293b" />
+                            <Controls
+                              showInteractive={false}
+                              className="!bg-surface !border-border/60 !rounded-lg [&>button]:!bg-surface [&>button]:!border-border/40 [&>button]:!text-text-secondary"
+                            />
+                          </ReactFlow>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.section>
     </div>
   )
 }
