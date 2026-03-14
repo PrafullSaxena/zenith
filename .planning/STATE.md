@@ -18,7 +18,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Last Activity:** 2026-03-14
 **Last Activity Description:** Completed 13-03 (Core UI -- View Shell, Repo Management, Insights Layout)
 
-**Progress:** [█████████░] 90%
+**Progress:** [█████████░] 92%
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 13-codebase-analyzer PP06 | 7min | 2 tasks | 12 files |
 | Phase 14-cortex-bugfix P04 | 8min | 4 tasks | 2 files |
 | Phase 14-cortex-bugfix P01 | 2min | 4 tasks | 3 files |
+| Phase 14 P3 | 3min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -214,6 +215,7 @@ Recent decisions affecting current work:
 - [Phase 14-cortex-bugfix]: Defensive provider load pattern: check providers.length === 0 on mount and call loadProviders() to handle direct Cortex navigation
 - [Phase 14-cortex-bugfix]: Canonical CallEdge type cast as CallEdge[] at aggregation boundary in index.ts — subparser types use narrower type subsets compatible at runtime
 - [Phase 14-cortex-bugfix]: Route path extraction rewritten to annotation-line finder pattern: scan backward for line starting with @Mapping, then parse args — handles all Spring Boot annotation variants including multi-value arrays
+- [Phase 14]: Static entity graph groups entities by kind into columns; AI insights section collapsible (not blocking) with AnimatePresence; Route summary navigates to handler on click
 
 ### Pending Todos
 
@@ -227,6 +229,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-14T22:09:25.353Z
-**Stopped at:** Completed 14-01-PLAN.md
+**Last session:** 2026-03-14T22:09:47.986Z
+**Stopped at:** Completed 14-03-PLAN.md
 **Resume file:** None

@@ -15,7 +15,7 @@
 | 11 | 3/3 | Complete    | 2026-03-10 | 0/3 |
 | 12 | TextCraft Plugin | 2 | Complete | 2/2 |
 | 13 | 6/6 | Complete   | 2026-03-14 | 1/6 |
-| 14 | 2/4 | In Progress|  | 0/4 |
+| 14 | 3/4 | In Progress|  | 0/4 |
 
 ## Phase 1: Foundation
 
@@ -177,7 +177,7 @@ Plans:
 
 **Requirements:** [CBAN-04, CBAN-05, CBAN-07, CBAN-09]
 
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 - [ ] 14-01-PLAN.md -- Fix Java/Python parser route detection and CallEdge type mismatch + wire callEdges in parser index
