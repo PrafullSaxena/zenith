@@ -156,12 +156,18 @@ export function buildAPIFlowNodes(
   const edges: Edge<FlowEdgeData>[] = []
   const seen = new Set<string>()
 
-  // Build adjacency for calls
+  // Build adjacency for calls, and a lookup map for edge type
   const callMap = new Map<string, string[]>()
+  const callEdgeTypeMap = new Map<string, CallEdge['type']>()
   for (const c of calls) {
     const list = callMap.get(c.callerId) ?? []
     list.push(c.calleeId)
     callMap.set(c.callerId, list)
+    // Store first encountered edge type for each caller-callee pair
+    const key = `${c.callerId}->${c.calleeId}`
+    if (!callEdgeTypeMap.has(key)) {
+      callEdgeTypeMap.set(key, c.type)
+    }
   }
 
   const entityById = new Map(entities.map((e) => [e.id, e]))
@@ -237,13 +243,14 @@ export function buildAPIFlowNodes(
         if (!callee) continue
 
         addNode(callee)
+        const edgeType = callEdgeTypeMap.get(`${currentId}->${calleeId}`) ?? 'call'
         edges.push({
           id: `e-${currentId}-${calleeId}`,
           source: currentId,
           target: calleeId,
           type: 'animated',
           animated: true,
-          data: { label: 'calls', type: 'call', animated: true }
+          data: { label: edgeType, type: edgeType, animated: true }
         })
         queue.push(calleeId)
       }
