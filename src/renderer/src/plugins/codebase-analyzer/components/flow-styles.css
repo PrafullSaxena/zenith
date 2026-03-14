@@ -1,0 +1,44 @@
+/* flow-styles.css -- Dark theme overrides for React Flow */
+
+/* Dark theme overrides */
+.cban-flow .react-flow {
+  --xy-background-color: transparent;
+  --xy-minimap-background: var(--color-surface);
+  --xy-controls-button-background-color: var(--color-surface-elevated);
+  --xy-controls-button-border-color: var(--color-border);
+  --xy-controls-button-color: var(--color-text-primary);
+}
+
+.cban-flow .react-flow__controls button:hover {
+  background-color: var(--color-surface) !important;
+}
+
+/* Edge entrance: draw-in animation */
+.cban-flow .react-flow__edge-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: cban-edge-draw 0.6s ease-out forwards;
+}
+
+@keyframes cban-edge-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* MiniMap styling */
+.cban-flow .react-flow__minimap {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Hide default attribution */
+.cban-flow .react-flow__attribution {
+  display: none;
+}
+
+/* Panel override for dark theme */
+.cban-flow .react-flow__panel {
+  background: transparent;
+}
