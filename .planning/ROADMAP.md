@@ -165,7 +165,7 @@ Plans:
 Plans:
 - [x] 13-01-PLAN.md -- Foundation: types, SQLite cache DB, git service, repo detector, plugin registration, IPC bridge, Zustand store
 - [ ] 13-02-PLAN.md -- Analysis engine: TS/Java/Python parsers, FE component tree, DE pipeline detection, call graph builder
-- [ ] 13-03-PLAN.md -- Core UI: CodebaseAnalyzerView shell, repo management, insights layout with Overview + API list tabs
+- [x] 13-03-PLAN.md -- Core UI: CodebaseAnalyzerView shell, repo management, insights layout with Overview + API list tabs
 - [ ] 13-04-PLAN.md -- Flow visualization: React Flow interactive diagrams with custom nodes/edges, dagre auto-layout, entrance animations
 - [ ] 13-05-PLAN.md -- Code section: file tree browser, CodeMirror code viewer with tabs, AI-powered natural language Q&A
 - [ ] 13-06-PLAN.md -- Export and polish: HLD generation with Mermaid diagrams, MD/PDF/TXT export, animations, skeleton loaders, error handling

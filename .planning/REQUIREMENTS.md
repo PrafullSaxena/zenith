@@ -239,11 +239,11 @@
 | TXCR-08 | 12 | 12-02 | Planned |
 | TXCR-09 | 12 | 12-02 | Planned |
 | TXCR-10 | 12 | 12-02 | Planned |
-| CBAN-01 | 13 | 13-01, 13-03 | In Progress |
-| CBAN-02 | 13 | 13-03 | Planned |
+| CBAN-01 | 13 | 13-01, 13-03 | Complete |
+| CBAN-02 | 13 | 13-03 | Complete |
 | CBAN-03 | 13 | 13-01, 13-02 | In Progress |
 | CBAN-04 | 13 | 13-01 | Complete |
-| CBAN-05 | 13 | 13-03, 13-05 | Planned |
+| CBAN-05 | 13 | 13-03, 13-05 | In Progress |
 | CBAN-06 | 13 | 13-04 | Planned |
 | CBAN-07 | 13 | 13-05 | Planned |
 | CBAN-08 | 13 | 13-05 | Planned |
@@ -252,7 +252,7 @@
 | CBAN-11 | 13 | 13-02, 13-04 | Planned |
 | CBAN-12 | 13 | 13-02, 13-04 | Planned |
 | CBAN-13 | 13 | 13-02, 13-04 | Planned |
-| CBAN-14 | 13 | 13-03, 13-04, 13-06 | Planned |
+| CBAN-14 | 13 | 13-03, 13-04, 13-06 | In Progress |
 | PMPT-01 | 6 | - | Planned |
 | PMPT-02 | 6 | - | Planned |
 | PMPT-03 | 6 | - | Planned |

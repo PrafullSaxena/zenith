@@ -12,11 +12,11 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Current Phase:** 13
 **Current Phase Name:** Codebase Analyzer
 **Total Phases:** 13
-**Current Plan:** 1 (complete)
+**Current Plan:** 3 (complete)
 **Total Plans in Phase:** 6
-**Status:** Plan 13-01 complete — foundation layer ready
+**Status:** Plan 13-03 complete — core UI with view shell, repo management, insights
 **Last Activity:** 2026-03-14
-**Last Activity Description:** Completed 13-01 (Foundation -- Types, DB, Git, Plugin Registration)
+**Last Activity Description:** Completed 13-03 (Core UI -- View Shell, Repo Management, Insights Layout)
 
 **Progress:** [█████████░] 93%
 
@@ -67,6 +67,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 04-dbinspector-plugin P02 | 6 | 2 tasks | 5 files |
 | Phase 04-dbinspector-plugin P04 | 10min | 1 tasks | 6 files |
 | Phase 13-codebase-analyzer P01 | 6min | 3 tasks | 14 files |
+| Phase 13-codebase-analyzer P03 | 4min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -186,6 +187,9 @@ Recent decisions affecting current work:
 - [Phase 13-codebase-analyzer]: AnalysisResult shape duplicated in main process analyzer.ts to avoid cross-process type imports
 - [Phase 13-codebase-analyzer]: FTS5 file_index_fts manually synced via INSERT/DELETE in insertFileIndex/clearFileIndex
 - [Phase 13-codebase-analyzer]: SearchCode icon with amber accent palette for codebase-analyzer plugin card
+- [Phase 13-codebase-analyzer]: OverviewTab uses existing MarkdownRenderer component for documentation rendering
+- [Phase 13-codebase-analyzer]: APIListTab sorts by path alphabetically by default with click-to-toggle sort direction
+- [Phase 13-codebase-analyzer]: RepoCard shows AnalysisProgress inline replacing action buttons during analysis
 
 ### Pending Todos
 
@@ -199,6 +203,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-14T10:52:28Z
-**Stopped at:** Completed 13-01-PLAN.md
+**Last session:** 2026-03-14T10:59:53Z
+**Stopped at:** Completed 13-03-PLAN.md
 **Resume file:** None
