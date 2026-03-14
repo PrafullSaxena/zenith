@@ -17,6 +17,15 @@ const cardVariants = {
   })
 }
 
+const SOURCE_LANGUAGES = new Set([
+  'java', 'python', 'typescript', 'javascript', 'go', 'kotlin',
+  'rust', 'ruby', 'csharp', 'c', 'cpp', 'swift', 'php', 'scala'
+])
+
+function isSourceLanguage(lang: string): boolean {
+  return SOURCE_LANGUAGES.has(lang.toLowerCase())
+}
+
 const LANGUAGE_COLORS: Record<string, string> = {
   TypeScript: '#3178c6',
   JavaScript: '#f7df1e',
@@ -59,7 +68,12 @@ export default function OverviewTab(): React.JSX.Element {
   }
 
   const { stats, documentation } = analysisResult
-  const totalLangLines = stats.languages.reduce((sum, l) => sum + l.lineCount, 0)
+
+  // Split languages into two tiers
+  const sourceLanguages = stats.languages.filter((l) => isSourceLanguage(l.language))
+  const configLanguages = stats.languages.filter((l) => !isSourceLanguage(l.language))
+  const totalSourceLines = sourceLanguages.reduce((sum, l) => sum + l.lineCount, 0)
+  const totalConfigLines = configLanguages.reduce((sum, l) => sum + l.lineCount, 0)
 
   // Stats cards data
   const statCards = [
@@ -134,42 +148,96 @@ export default function OverviewTab(): React.JSX.Element {
           className="mt-6"
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">Language Breakdown</h3>
-          <div className="flex h-3 overflow-hidden rounded-full bg-surface">
-            {stats.languages.map((lang) => {
-              const pct = totalLangLines > 0 ? (lang.lineCount / totalLangLines) * 100 : 0
-              if (pct < 0.5) return null
-              return (
-                <div
-                  key={lang.language}
-                  style={{
-                    width: `${pct}%`,
-                    backgroundColor: LANGUAGE_COLORS[lang.language] ?? LANGUAGE_COLORS.Other
-                  }}
-                  className="h-full first:rounded-l-full last:rounded-r-full"
-                  title={`${lang.language}: ${pct.toFixed(1)}%`}
-                />
-              )
-            })}
-          </div>
-          <div className="mt-2 flex flex-wrap gap-3">
-            {stats.languages.map((lang) => {
-              const pct = totalLangLines > 0 ? (lang.lineCount / totalLangLines) * 100 : 0
-              if (pct < 0.5) return null
-              return (
-                <div key={lang.language} className="flex items-center gap-1.5 text-[10px]">
-                  <span
-                    className="inline-block h-2 w-2 rounded-full"
-                    style={{
-                      backgroundColor: LANGUAGE_COLORS[lang.language] ?? LANGUAGE_COLORS.Other
-                    }}
-                  />
-                  <span className="text-text-secondary">
-                    {lang.language} {pct.toFixed(1)}%
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+
+          {/* Source Languages bar */}
+          {sourceLanguages.length > 0 && (
+            <div className="mb-4">
+              <p className="mb-1.5 text-[10px] uppercase tracking-wide text-text-secondary">
+                Source Languages
+              </p>
+              <div className="flex h-3 overflow-hidden rounded-full bg-surface">
+                {sourceLanguages.map((lang) => {
+                  const pct = totalSourceLines > 0 ? (lang.lineCount / totalSourceLines) * 100 : 0
+                  if (pct < 0.5) return null
+                  return (
+                    <div
+                      key={lang.language}
+                      style={{
+                        width: `${pct}%`,
+                        backgroundColor: LANGUAGE_COLORS[lang.language] ?? LANGUAGE_COLORS.Other
+                      }}
+                      className="h-full first:rounded-l-full last:rounded-r-full"
+                      title={`${lang.language}: ${pct.toFixed(1)}%`}
+                    />
+                  )
+                })}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {sourceLanguages.map((lang) => {
+                  const pct = totalSourceLines > 0 ? (lang.lineCount / totalSourceLines) * 100 : 0
+                  if (pct < 0.5) return null
+                  return (
+                    <div key={lang.language} className="flex items-center gap-1.5 text-[10px]">
+                      <span
+                        className="inline-block h-2 w-2 rounded-full"
+                        style={{
+                          backgroundColor: LANGUAGE_COLORS[lang.language] ?? LANGUAGE_COLORS.Other
+                        }}
+                      />
+                      <span className="text-text-secondary">
+                        {lang.language} {pct.toFixed(1)}%
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Config & Other bar */}
+          {configLanguages.length > 0 && (
+            <div>
+              <p className="mb-1.5 text-[10px] uppercase tracking-wide text-text-secondary/60">
+                Config &amp; Other
+              </p>
+              <div className="flex h-2 overflow-hidden rounded-full bg-surface">
+                {configLanguages.map((lang) => {
+                  const pct = totalConfigLines > 0 ? (lang.lineCount / totalConfigLines) * 100 : 0
+                  if (pct < 0.5) return null
+                  return (
+                    <div
+                      key={lang.language}
+                      style={{
+                        width: `${pct}%`,
+                        backgroundColor: LANGUAGE_COLORS[lang.language] ?? '#6b7280'
+                      }}
+                      className="h-full opacity-60 first:rounded-l-full last:rounded-r-full"
+                      title={`${lang.language}: ${pct.toFixed(1)}%`}
+                    />
+                  )
+                })}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {configLanguages.map((lang) => {
+                  const pct = totalConfigLines > 0 ? (lang.lineCount / totalConfigLines) * 100 : 0
+                  if (pct < 0.5) return null
+                  return (
+                    <div key={lang.language} className="flex items-center gap-1.5 text-[10px]">
+                      <span
+                        className="inline-block h-2 w-2 rounded-full opacity-60"
+                        style={{
+                          backgroundColor: LANGUAGE_COLORS[lang.language] ?? '#6b7280'
+                        }}
+                      />
+                      <span className="text-text-secondary/60">
+                        {lang.language} {pct.toFixed(1)}%
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
 
