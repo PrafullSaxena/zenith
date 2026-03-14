@@ -196,6 +196,11 @@ const api = {
       ipcRenderer.invoke('textcraft:exportPdf', data),
   },
   cortex: {
+    listRepos: (): Promise<unknown[]> => ipcRenderer.invoke('cortex:listRepos'),
+    saveRepo: (repo: unknown): Promise<void> => ipcRenderer.invoke('cortex:saveRepo', repo),
+    removeRepoById: (id: string): Promise<void> => ipcRenderer.invoke('cortex:removeRepoById', id),
+    updateRepoFields: (id: string, fields: Record<string, unknown>): Promise<void> =>
+      ipcRenderer.invoke('cortex:updateRepoFields', id, fields),
     fetchBranches: (url: string): Promise<string[]> =>
       ipcRenderer.invoke('cortex:fetchBranches', url),
     clone: (url: string, name: string): Promise<{ repoPath: string }> =>

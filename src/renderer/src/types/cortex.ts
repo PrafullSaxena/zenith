@@ -2,7 +2,7 @@
 
 export type RepoType = 'backend' | 'frontend' | 'data-engineering' | 'fullstack' | 'unknown'
 
-export type RepoStatus = 'idle' | 'cloning' | 'analyzing' | 'ready' | 'error'
+export type RepoStatus = 'idle' | 'cloning' | 'analyzing' | 'ready' | 'error' | 'needs-clone'
 
 export interface Repository {
   id: string // crypto.randomUUID() on add

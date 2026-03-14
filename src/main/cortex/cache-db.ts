@@ -42,6 +42,31 @@ export class AnalyzerDatabase {
         content,
         content_rowid='id'
       );
+
+      CREATE TABLE IF NOT EXISTS repos (
+        id TEXT PRIMARY KEY,
+        url TEXT NOT NULL,
+        name TEXT NOT NULL,
+        branch TEXT NOT NULL,
+        repoPath TEXT NOT NULL,
+        repoType TEXT DEFAULT 'unknown',
+        framework TEXT DEFAULT '',
+        language TEXT DEFAULT '',
+        commitSha TEXT DEFAULT '',
+        lastAnalyzed TEXT,
+        fileCount INTEGER DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS ai_insights (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        repoUrl TEXT NOT NULL,
+        branch TEXT NOT NULL,
+        commitSha TEXT NOT NULL,
+        agentId TEXT NOT NULL,
+        toonData TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        UNIQUE(repoUrl, branch, commitSha, agentId)
+      );
     `)
   }
 
@@ -166,6 +191,158 @@ export class AnalyzerDatabase {
       )
       .all(repoUrl, query) as { file_path: string; snippet: string }[]
     return rows.map((r) => ({ filePath: r.file_path, snippet: r.snippet }))
+  }
+
+  // --- Repo persistence ---
+
+  saveRepo(repo: {
+    id: string
+    url: string
+    name: string
+    branch: string
+    repoPath: string
+    repoType?: string
+    framework?: string
+    language?: string
+    commitSha?: string
+    lastAnalyzed?: string | null
+    fileCount?: number
+  }): void {
+    this.db
+      .prepare(
+        `INSERT OR REPLACE INTO repos (id, url, name, branch, repoPath, repoType, framework, language, commitSha, lastAnalyzed, fileCount)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(
+        repo.id,
+        repo.url,
+        repo.name,
+        repo.branch,
+        repo.repoPath,
+        repo.repoType ?? 'unknown',
+        repo.framework ?? '',
+        repo.language ?? '',
+        repo.commitSha ?? '',
+        repo.lastAnalyzed ?? null,
+        repo.fileCount ?? 0
+      )
+  }
+
+  listRepos(): Array<{
+    id: string
+    url: string
+    name: string
+    branch: string
+    repoPath: string
+    repoType: string
+    framework: string
+    language: string
+    commitSha: string
+    lastAnalyzed: string | null
+    fileCount: number
+  }> {
+    return this.db.prepare('SELECT * FROM repos').all() as Array<{
+      id: string
+      url: string
+      name: string
+      branch: string
+      repoPath: string
+      repoType: string
+      framework: string
+      language: string
+      commitSha: string
+      lastAnalyzed: string | null
+      fileCount: number
+    }>
+  }
+
+  removeRepo(id: string): void {
+    this.db.prepare('DELETE FROM repos WHERE id = ?').run(id)
+  }
+
+  updateRepo(id: string, fields: Record<string, unknown>): void {
+    const allowed = [
+      'url',
+      'name',
+      'branch',
+      'repoPath',
+      'repoType',
+      'framework',
+      'language',
+      'commitSha',
+      'lastAnalyzed',
+      'fileCount'
+    ]
+    const entries = Object.entries(fields).filter(([k]) => allowed.includes(k))
+    if (entries.length === 0) return
+
+    const setClauses = entries.map(([k]) => `${k} = ?`).join(', ')
+    const values = entries.map(([, v]) => v)
+    this.db.prepare(`UPDATE repos SET ${setClauses} WHERE id = ?`).run(...values, id)
+  }
+
+  getRepoById(
+    id: string
+  ): {
+    id: string
+    url: string
+    name: string
+    branch: string
+    repoPath: string
+    repoType: string
+    framework: string
+    language: string
+    commitSha: string
+    lastAnalyzed: string | null
+    fileCount: number
+  } | null {
+    return (
+      (this.db.prepare('SELECT * FROM repos WHERE id = ?').get(id) as {
+        id: string
+        url: string
+        name: string
+        branch: string
+        repoPath: string
+        repoType: string
+        framework: string
+        language: string
+        commitSha: string
+        lastAnalyzed: string | null
+        fileCount: number
+      } | undefined) ?? null
+    )
+  }
+
+  // --- AI Insights ---
+
+  saveInsights(
+    repoUrl: string,
+    branch: string,
+    commitSha: string,
+    agentId: string,
+    toonData: string
+  ): void {
+    this.db
+      .prepare(
+        `INSERT OR REPLACE INTO ai_insights (repoUrl, branch, commitSha, agentId, toonData, createdAt)
+         VALUES (?, ?, ?, ?, ?, datetime('now'))`
+      )
+      .run(repoUrl, branch, commitSha, agentId, toonData)
+  }
+
+  getInsights(repoUrl: string, branch: string, commitSha: string): string | null {
+    const row = this.db
+      .prepare(
+        'SELECT toonData FROM ai_insights WHERE repoUrl = ? AND branch = ? AND commitSha = ? ORDER BY createdAt DESC LIMIT 1'
+      )
+      .get(repoUrl, branch, commitSha) as { toonData: string } | undefined
+    return row?.toonData ?? null
+  }
+
+  clearInsights(repoUrl: string, branch: string): void {
+    this.db
+      .prepare('DELETE FROM ai_insights WHERE repoUrl = ? AND branch = ?')
+      .run(repoUrl, branch)
   }
 
   close(): void {

@@ -753,6 +753,36 @@ export function registerIpcHandlers(): void {
 
   // --- Cortex channels ---
 
+  // --- Cortex repo persistence ---
+
+  ipcMain.handle('cortex:listRepos', async () => {
+    const { analyzer } = getCortexInstances()
+    const repos = analyzer.cache.listRepos()
+    return repos.map((repo) => ({
+      ...repo,
+      status: fs.existsSync(repo.repoPath) ? ('idle' as const) : ('needs-clone' as const),
+      error: null
+    }))
+  })
+
+  ipcMain.handle('cortex:saveRepo', async (_event, repo) => {
+    const { analyzer } = getCortexInstances()
+    analyzer.cache.saveRepo(repo)
+  })
+
+  ipcMain.handle('cortex:removeRepoById', async (_event, id: string) => {
+    const { analyzer } = getCortexInstances()
+    analyzer.cache.removeRepo(id)
+  })
+
+  ipcMain.handle(
+    'cortex:updateRepoFields',
+    async (_event, id: string, fields: Record<string, unknown>) => {
+      const { analyzer } = getCortexInstances()
+      analyzer.cache.updateRepo(id, fields)
+    }
+  )
+
   // Fetch remote branches from a URL (before cloning)
   ipcMain.handle('cortex:fetchBranches', async (_event, url: string) => {
     const { git } = getCortexInstances()

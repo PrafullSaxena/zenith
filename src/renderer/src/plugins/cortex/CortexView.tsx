@@ -32,7 +32,14 @@ export default function CortexView(): React.JSX.Element {
   const activeRepoId = useCortexStore((s) => s.activeRepoId)
   const analysisResult = useCortexStore((s) => s.analysisResult)
 
+  const loadRepos = useCortexStore((s) => s.loadRepos)
+
   const activeRepo = repos.find((r) => r.id === activeRepoId)
+
+  // Hydrate persisted repos from SQLite on mount
+  useEffect(() => {
+    loadRepos()
+  }, [loadRepos])
 
   // Default to repos tab when no repos exist
   useEffect(() => {

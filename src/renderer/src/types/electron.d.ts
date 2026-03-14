@@ -110,6 +110,10 @@ export interface ElectronAPI {
     cancelAnalysis: (sessionId: string) => Promise<void>
   }
   cortex: {
+    listRepos: () => Promise<Array<import('./cortex').Repository>>
+    saveRepo: (repo: Partial<import('./cortex').Repository>) => Promise<void>
+    removeRepoById: (id: string) => Promise<void>
+    updateRepoFields: (id: string, fields: Record<string, unknown>) => Promise<void>
     fetchBranches: (url: string) => Promise<string[]>
     clone: (url: string, name: string) => Promise<{ repoPath: string }>
     analyze: (

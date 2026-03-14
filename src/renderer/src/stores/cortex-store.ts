@@ -35,6 +35,7 @@ interface CortexState {
   isQAStreaming: boolean
 
   // Actions
+  loadRepos: () => Promise<void>
   setActiveTab: (tab: CortexState['activeTab']) => void
   setInsightsSubTab: (tab: CortexState['insightsSubTab']) => void
   addRepo: (repo: Repository) => void
@@ -72,21 +73,33 @@ export const useCortexStore = create<CortexState>((set) => ({
   qaMessages: [],
   isQAStreaming: false,
 
+  loadRepos: async () => {
+    const repos = await window.api.cortex.listRepos()
+    set({ repos })
+  },
+
   setActiveTab: (tab) => set({ activeTab: tab }),
   setInsightsSubTab: (tab) => set({ insightsSubTab: tab }),
 
-  addRepo: (repo) => set((s) => ({ repos: [...s.repos, repo] })),
-  updateRepo: (id, updates) =>
+  addRepo: (repo) => {
+    set((s) => ({ repos: [...s.repos, repo] }))
+    window.api.cortex.saveRepo(repo)
+  },
+  updateRepo: (id, updates) => {
     set((s) => ({
       repos: s.repos.map((r) => (r.id === id ? { ...r, ...updates } : r))
-    })),
-  removeRepo: (id) =>
+    }))
+    window.api.cortex.updateRepoFields(id, updates)
+  },
+  removeRepo: (id) => {
     set((s) => ({
       repos: s.repos.filter((r) => r.id !== id),
       activeRepoId: s.activeRepoId === id ? null : s.activeRepoId,
       analysisResult:
         s.repos.find((r) => r.id === id)?.id === s.activeRepoId ? null : s.analysisResult
-    })),
+    }))
+    window.api.cortex.removeRepoById(id)
+  },
   setActiveRepo: (id) => set({ activeRepoId: id }),
   setAnalysisResult: (result) => set({ analysisResult: result }),
   setProgress: (progress) => set({ progress }),
