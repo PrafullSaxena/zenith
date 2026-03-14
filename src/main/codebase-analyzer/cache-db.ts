@@ -1,0 +1,159 @@
+import Database from 'better-sqlite3'
+import { app } from 'electron'
+import path from 'path'
+import fs from 'fs'
+
+export class AnalyzerDatabase {
+  private db: Database.Database
+
+  constructor() {
+    const dbPath = path.join(app.getPath('userData'), 'codebase-analyzer', 'analyzer.db')
+    // Ensure parent directory exists
+    const dir = path.dirname(dbPath)
+    fs.mkdirSync(dir, { recursive: true })
+    this.db = new Database(dbPath)
+    this.db.pragma('journal_mode = WAL')
+    this.db.pragma('foreign_keys = ON')
+    this.initSchema()
+  }
+
+  private initSchema(): void {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS analysis_cache (
+        id TEXT PRIMARY KEY,
+        repo_url TEXT NOT NULL,
+        branch TEXT NOT NULL,
+        commit_sha TEXT NOT NULL,
+        result_json TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(repo_url, branch)
+      );
+
+      CREATE TABLE IF NOT EXISTS file_index (
+        id INTEGER PRIMARY KEY,
+        cache_id TEXT NOT NULL REFERENCES analysis_cache(id) ON DELETE CASCADE,
+        file_path TEXT NOT NULL,
+        content TEXT NOT NULL,
+        language TEXT NOT NULL
+      );
+
+      CREATE VIRTUAL TABLE IF NOT EXISTS file_index_fts USING fts5(
+        file_path,
+        content,
+        content_rowid='id'
+      );
+    `)
+  }
+
+  getAnalysis(
+    repoUrl: string,
+    branch: string,
+    commitSha: string
+  ): Record<string, unknown> | null {
+    const row = this.db
+      .prepare(
+        'SELECT result_json FROM analysis_cache WHERE repo_url = ? AND branch = ? AND commit_sha = ?'
+      )
+      .get(repoUrl, branch, commitSha) as { result_json: string } | undefined
+    if (!row) return null
+    return JSON.parse(row.result_json)
+  }
+
+  saveAnalysis(
+    repoUrl: string,
+    branch: string,
+    commitSha: string,
+    result: Record<string, unknown>
+  ): string {
+    const id = `${repoUrl}:${branch}:${commitSha}`.replace(/[^a-zA-Z0-9:/_.-]/g, '_')
+
+    // Delete existing entry for this repo+branch (UNIQUE constraint)
+    this.db
+      .prepare('DELETE FROM analysis_cache WHERE repo_url = ? AND branch = ?')
+      .run(repoUrl, branch)
+
+    this.db
+      .prepare(
+        'INSERT INTO analysis_cache (id, repo_url, branch, commit_sha, result_json) VALUES (?, ?, ?, ?, ?)'
+      )
+      .run(id, repoUrl, branch, commitSha, JSON.stringify(result))
+
+    return id
+  }
+
+  deleteAnalysis(repoUrl: string, branch?: string): void {
+    if (branch) {
+      this.db
+        .prepare('DELETE FROM analysis_cache WHERE repo_url = ? AND branch = ?')
+        .run(repoUrl, branch)
+    } else {
+      this.db
+        .prepare('DELETE FROM analysis_cache WHERE repo_url = ?')
+        .run(repoUrl)
+    }
+  }
+
+  listCachedRepos(): { repoUrl: string; branch: string; commitSha: string; createdAt: string }[] {
+    return this.db
+      .prepare(
+        'SELECT repo_url, branch, commit_sha, created_at FROM analysis_cache ORDER BY created_at DESC'
+      )
+      .all() as { repo_url: string; branch: string; commit_sha: string; created_at: string }[]
+      .map((r) => ({
+        repoUrl: r.repo_url,
+        branch: r.branch,
+        commitSha: r.commit_sha,
+        createdAt: r.created_at
+      })) as { repoUrl: string; branch: string; commitSha: string; createdAt: string }[]
+  }
+
+  // --- File indexing for FTS5 search (used by Plan 13-02 analyzer and Plan 13-05 Q&A) ---
+
+  insertFileIndex(cacheId: string, filePath: string, content: string, language: string): void {
+    const info = this.db
+      .prepare(
+        'INSERT INTO file_index (cache_id, file_path, content, language) VALUES (?, ?, ?, ?)'
+      )
+      .run(cacheId, filePath, content, language)
+
+    // Sync FTS5 table
+    this.db
+      .prepare('INSERT INTO file_index_fts (rowid, file_path, content) VALUES (?, ?, ?)')
+      .run(info.lastInsertRowid, filePath, content)
+  }
+
+  clearFileIndex(cacheId: string): void {
+    // Get rowids to delete from FTS
+    const rows = this.db
+      .prepare('SELECT id FROM file_index WHERE cache_id = ?')
+      .all(cacheId) as { id: number }[]
+
+    for (const row of rows) {
+      this.db
+        .prepare('DELETE FROM file_index_fts WHERE rowid = ?')
+        .run(row.id)
+    }
+
+    this.db.prepare('DELETE FROM file_index WHERE cache_id = ?').run(cacheId)
+  }
+
+  searchFiles(repoUrl: string, query: string): { filePath: string; snippet: string }[] {
+    const rows = this.db
+      .prepare(
+        `
+      SELECT fi.file_path, snippet(file_index_fts, 1, '<mark>', '</mark>', '...', 64) AS snippet
+      FROM file_index_fts
+      JOIN file_index fi ON fi.id = file_index_fts.rowid
+      JOIN analysis_cache ac ON ac.id = fi.cache_id
+      WHERE ac.repo_url = ? AND file_index_fts MATCH ?
+      LIMIT 20
+    `
+      )
+      .all(repoUrl, query) as { file_path: string; snippet: string }[]
+    return rows.map((r) => ({ filePath: r.file_path, snippet: r.snippet }))
+  }
+
+  close(): void {
+    this.db.close()
+  }
+}
