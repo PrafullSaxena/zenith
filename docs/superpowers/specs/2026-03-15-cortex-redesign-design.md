@@ -29,6 +29,13 @@
 - `src/main/codebase-analyzer/` → `main/cortex/`
 - Registry entry, PluginId union, preload bridge, electron.d.ts, ipc-handlers.ts
 
+**Settings migration (one-time):**
+On first launch after rename, run a migration in the main process:
+1. Read any `plugins.codebase-analyzer.*` settings from electron-store
+2. Copy each to `plugins.cortex.*`
+3. Delete old `plugins.codebase-analyzer.*` keys
+4. This preserves the user's configured default AI agent and any other settings
+
 ---
 
 ## 2. Persistence — Repos Lost on Restart
@@ -219,6 +226,31 @@ Already partially supported. Enhanced with:
 
 ---
 
+## 7.5 React/TS Parser — Component Tree Enhancements
+
+The existing `fe-parser.ts` detects React components and builds a basic component tree. Enhancements needed:
+
+**Prop flow detection:**
+- Parse JSX attributes to extract passed props: `<Child name={value} onClick={handler} />`
+- Show prop names on edges between parent → child components
+- Detect spread props `{...props}` as "pass-through" indicator
+
+**React Router support:**
+- Detect `<Route path="..." element={<Component />} />` patterns
+- Build route tree alongside component tree
+- Show route paths on component nodes that are route targets
+
+**Hook detection improvements:**
+- Detect custom hooks (`use*` functions) and show as utility nodes
+- Show `useContext` connections (which components share context)
+- Detect `useEffect` with dependency arrays (side effect mapping)
+
+**State management:**
+- Detect Zustand/Redux store usage (`useStore`, `useSelector`, `useDispatch`)
+- Show which components connect to which stores
+
+---
+
 ## 8. Flow Visualization — Framework-Specific Graphs
 
 ### Flow Types by Framework
@@ -376,7 +408,28 @@ DEP|test|testcontainers|1.19.0
 
 ### TOON Format
 
-All AI interactions use TOON (pipe-delimited, one record per line) instead of JSON:
+All AI interactions use TOON (pipe-delimited, one record per line) instead of JSON.
+
+**TOON schema (record types):**
+
+| Record Type | Fields | Required |
+|-------------|--------|----------|
+| `SUMMARY` | description | Yes |
+| `ARCH` | pattern, framework, language, ...libs | Yes |
+| `PATTERN` | name, description | No |
+| `SECURITY` | type, description | No |
+| `CONFIG` | source, description | No |
+| `ASYNC` | type, description | No |
+| `TEST` | framework, ...details | No |
+| `INSIGHT` | severity(strength/concern), description | No |
+| `ENTITY` | name, kind, file:line, summary | No |
+| `DEP` | category, name, version | No |
+
+**Validation:** `toon-parser.ts` validates each line:
+- Skip empty lines and lines not matching `TYPE|...` format
+- Log warning for unknown record types but don't crash
+- If AI returns non-TOON output (JSON, markdown), attempt best-effort extraction of key info and show "AI response format unexpected" toast
+- Retry once with a more explicit "Respond ONLY in TOON format" system prompt suffix if first attempt fails
 - ~70-80% fewer tokens than equivalent JSON
 - Parsed client-side with simple `line.split('|')` logic
 - Same pattern already used by CodeReviewBot for review comments
@@ -391,6 +444,11 @@ RTK compresses command outputs by 60-90%. Integrate as optional optimization:
 - When building AI context, compress file content via `rtk read <file>` (spawned via child_process)
 - Compress git log/diff via `rtk git log` / `rtk git diff`
 - Falls back to raw content if RTK not installed
+
+**Error handling:**
+- If `rtk read` fails on a specific file, log warning and fall back to raw `fs.readFile` for that file only
+- If `probeCli('rtk')` succeeds but RTK consistently fails (3+ errors in one session), disable RTK for the session and show a toast: "RTK disabled due to errors — using raw content"
+- Version check: run `rtk --version` on probe, warn if version is unsupported
 
 **Settings UI:**
 - Show RTK status in Cortex settings: "Installed ✓" or "Not installed — [Install guide](https://github.com/rtk-ai/rtk)"
@@ -476,7 +534,8 @@ useEffect(() => {
 **Metrics computed:**
 - Total test files count
 - Total test methods/functions count
-- File-level coverage estimate: (source files with matching test file) / (total source files) × 100
+- **Test file coverage** estimate: (source files with matching test file) / (total source files) × 100
+  - Note: This is file-presence coverage, NOT execution-based line/branch coverage. UI labels it "Test File Coverage" with a tooltip explaining the distinction.
 - Test frameworks used (badges)
 
 **AI enhancement:** Ask AI to assess test quality and coverage gaps.
@@ -485,7 +544,8 @@ useEffect(() => {
 
 "Tests & Coverage" card:
 - Test count with framework badges
-- Animated progress ring showing estimated coverage %
+- Animated progress ring showing "Test File Coverage" %
+- Tooltip: "Percentage of source files that have a corresponding test file. Not execution-based coverage."
 - "Files without tests" expandable list (clickable → navigate to file)
 - Color coding: >70% green, 40-70% yellow, <40% red
 
@@ -514,7 +574,7 @@ CREATE TABLE IF NOT EXISTS ai_insights (
 ### Re-analyze Flow
 
 1. User clicks "Re-analyze" on repo card
-2. `git pull` to fetch latest changes
+2. `git fetch origin && git reset --hard origin/<branch>` (safe for app-managed clones, avoids merge conflicts from force-pushes)
 3. Check if commit SHA changed
 4. If changed: clear old cache entries, run full analysis + AI pass
 5. If unchanged: show "Already up to date" toast
@@ -583,16 +643,16 @@ Custom `AnimatedCounter` component:
 11. AnimatedCounter, staggered card animations
 12. FlowNode redesign (gradients, icons, animations)
 13. Animated edges
+14. Test card in Overview (pairs with Wave 2 test detection backend)
 
 ### Wave 4: Architecture Dashboard & AI
-14. Design page → Architecture Dashboard (3 sections)
-15. TOON prompt construction & parsing
-16. AI-powered insights with streaming UX
-17. RTK integration (optional)
+15. Design page → Architecture Dashboard (3 sections)
+16. TOON prompt construction & parsing
+17. AI-powered insights with streaming UX
+18. RTK integration (optional)
 
 ### Wave 5: Polish
-18. Re-analyze flow (git pull, cache clear, re-run)
-19. Test card in Overview
+19. Re-analyze flow (git fetch + reset, cache clear, re-run)
 20. Performance guardrails (virtualization, lazy loading, reduced motion)
 21. Export: React Flow → Mermaid conversion for PDF/MD/TXT
 
