@@ -17,14 +17,16 @@ export default function CodePanel(): React.JSX.Element {
     <div className="h-full">
       <PanelGroup direction="horizontal">
         {/* Left panel: File Tree */}
-        <Panel defaultSize={20} minSize={15} maxSize={35}>
-          <div className="h-full border-r border-border bg-surface">
+        <Panel defaultSize={25} minSize={20} maxSize={35}>
+          <div className="h-full overflow-x-auto border-r border-border bg-surface">
             <FileTree />
           </div>
         </Panel>
 
         {/* Resize handle */}
-        <PanelResizeHandle className="w-1 bg-border/40 hover:bg-accent/30 transition-colors" />
+        <PanelResizeHandle className="group w-2 cursor-col-resize flex items-center justify-center">
+          <div className="h-full w-px bg-border/40 transition-colors group-hover:w-0.5 group-hover:bg-accent/40" />
+        </PanelResizeHandle>
 
         {/* Right panel: Code Tabs + Code Viewer */}
         <Panel defaultSize={80}>

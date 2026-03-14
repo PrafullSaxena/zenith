@@ -188,7 +188,7 @@ export default function FileTree(): React.JSX.Element {
   const fileTree = analysisResult?.fileTree ?? []
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-w-0 flex-col overflow-x-auto">
       {/* Search input */}
       <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-elevated px-2 py-1.5 mx-2 mt-2 mb-1">
         <Search size={12} className="shrink-0 text-text-secondary/50" />
