@@ -14,11 +14,11 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Total Phases:** 13
 **Current Plan:** 6
 **Total Plans in Phase:** 6
-**Status:** Ready to execute
+**Status:** Phase complete — ready for verification
 **Last Activity:** 2026-03-14
 **Last Activity Description:** Completed 13-03 (Core UI -- View Shell, Repo Management, Insights Layout)
 
-**Progress:** [█████████░] 91%
+**Progress:** [█████████░] 93%
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 13-codebase-analyzer PP02 | 5min | 2 tasks | 8 files |
 | Phase 13-codebase-analyzer PP04 | 3min | 2 tasks | 7 files |
 | Phase 13-codebase-analyzer P05 | 4min | 2 tasks | 6 files |
+| Phase 13-codebase-analyzer PP06 | 7min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -204,6 +205,9 @@ Recent decisions affecting current work:
 - [Phase 13-codebase-analyzer]: Accumulator ref pattern (Option A) for streaming: useRef accumulates chunks, updates store on each chunk -- no store modification needed
 - [Phase 13-codebase-analyzer]: CodeMirror destroy-recreate on tab switch per PITFALLS.md: avoids display:none dimension calculation bugs
 - [Phase 13-codebase-analyzer]: Agent resolution follows nebula/db pattern via useSettingsStore + useAgentStore with fallback to first connected provider
+- [Phase 13-codebase-analyzer]: Template-based HLD generation (not AI-powered) for instant results without agent dependency
+- [Phase 13-codebase-analyzer]: designDoc field in store for cross-component HLD access between DesignDocTab and ExportDialog
+- [Phase 13-codebase-analyzer]: sanitizeMermaidLabel strips generics, pipes, quotes to prevent Mermaid parse errors; 40-char label truncation
 
 ### Pending Todos
 
@@ -217,6 +221,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-14T11:09:33.552Z
-**Stopped at:** Completed 13-05-PLAN.md
+**Last session:** 2026-03-14T11:19:09.294Z
+**Stopped at:** Completed 13-06-PLAN.md
 **Resume file:** None
