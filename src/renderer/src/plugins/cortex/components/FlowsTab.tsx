@@ -189,7 +189,15 @@ export default function FlowsTab(): React.JSX.Element {
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-text-secondary">
-            No flow data available for this selection
+            <div className="text-center">
+              <GitBranch size={32} className="mx-auto mb-2 opacity-40" />
+              <p>No flow data available for this selection</p>
+              {flowType === 'api' && analysisResult.routes.length > 0 && (
+                <p className="mt-1 text-xs text-text-secondary/60">
+                  Routes detected but handler entities could not be resolved — check parser output
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>

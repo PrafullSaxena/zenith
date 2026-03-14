@@ -280,7 +280,10 @@ export function buildAPIFlowNodes(
     if (nodes.length >= MAX_NODES) break
   }
 
-  // If no routes matched, add all entities of relevant kinds
+  // Fallback: show entity-kind graph when no handler chains were resolved.
+  // Triggers when:
+  //   (a) no routes exist at all (nodes.length === 0), OR
+  //   (b) routes exist but none of their handlers were matched (nodes still 0)
   if (nodes.length === 0) {
     for (const e of entities) {
       if (nodes.length >= MAX_NODES) break
