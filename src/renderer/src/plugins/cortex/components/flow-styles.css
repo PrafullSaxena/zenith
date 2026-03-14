@@ -26,6 +26,18 @@
   }
 }
 
+/* Animated dash edge */
+@keyframes cortex-flow-dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.cortex-animated-edge {
+  stroke-dasharray: 5 5;
+  animation: cortex-flow-dash 1s linear infinite;
+}
+
 /* MiniMap styling */
 .cortex-flow .react-flow__minimap {
   border: 1px solid var(--color-border);

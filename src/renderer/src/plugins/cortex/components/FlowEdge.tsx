@@ -1,9 +1,12 @@
 /**
- * FlowEdge -- Custom animated edge with flowing dot animation.
+ * FlowEdge -- Custom animated edge with gradient stroke, animated dash, and inline label.
  * Uses getSmoothStepPath for clean hierarchical layout edges.
  */
 import { memo } from 'react'
-import { BaseEdge, getSmoothStepPath, type EdgeProps } from '@xyflow/react'
+import { getSmoothStepPath, type EdgeProps } from '@xyflow/react'
+
+const GRADIENT_ID = 'cortex-edge-gradient'
+const ARROW_ID = 'cortex-edge-arrow'
 
 const FlowEdge = memo(function FlowEdge({
   id,
@@ -13,11 +16,9 @@ const FlowEdge = memo(function FlowEdge({
   targetY,
   sourcePosition,
   targetPosition,
-  style,
-  markerEnd,
   data
 }: EdgeProps) {
-  const [edgePath] = getSmoothStepPath({
+  const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
     targetX,
@@ -29,33 +30,80 @@ const FlowEdge = memo(function FlowEdge({
 
   const label = data?.label as string | undefined
 
+  // Unique IDs per edge to avoid SVG defs collisions
+  const gradientId = `${GRADIENT_ID}-${id}`
+  const arrowId = `${ARROW_ID}-${id}`
+
   return (
     <>
-      <BaseEdge
-        id={id}
-        path={edgePath}
-        markerEnd={markerEnd}
-        style={{
-          ...style,
-          stroke: 'oklch(72% 0.15 195 / 0.4)',
-          strokeWidth: 1.5
-        }}
+      {/* SVG defs: gradient + arrowhead */}
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="oklch(72% 0.15 195)" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="oklch(72% 0.15 195)" stopOpacity="0.8" />
+        </linearGradient>
+        <marker
+          id={arrowId}
+          markerWidth="8"
+          markerHeight="8"
+          refX="6"
+          refY="3"
+          orient="auto"
+          markerUnits="strokeWidth"
+        >
+          <path d="M0,0 L0,6 L8,3 z" fill="oklch(72% 0.15 195 / 0.6)" />
+        </marker>
+      </defs>
+
+      {/* Base path (subtle, full opacity for hit area) */}
+      <path
+        d={edgePath}
+        stroke={`url(#${gradientId})`}
+        strokeWidth={1.5}
+        fill="none"
+        strokeOpacity={0.35}
       />
-      {/* Flowing dot animation */}
-      <circle r={3} fill="oklch(72% 0.15 195)" className="opacity-80">
+
+      {/* Animated dashed overlay */}
+      <path
+        d={edgePath}
+        className="cortex-animated-edge"
+        stroke={`url(#${gradientId})`}
+        strokeWidth={1.5}
+        fill="none"
+        markerEnd={`url(#${arrowId})`}
+        strokeDasharray="5 5"
+      />
+
+      {/* Flowing dot */}
+      <circle r={2.5} fill="oklch(72% 0.15 195)" opacity={0.75}>
         <animateMotion dur="2s" repeatCount="indefinite" path={edgePath} />
       </circle>
-      {/* Optional label */}
+
+      {/* Edge label */}
       {label && (
-        <text>
-          <textPath
-            href={`#${id}`}
-            startOffset="50%"
-            textAnchor="middle"
-            className="fill-text-secondary/50 text-[8px]"
+        <text
+          x={labelX}
+          y={labelY}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className="fill-text-secondary"
+          style={{ fontSize: 8, pointerEvents: 'none' }}
+        >
+          <tspan
+            dx="0"
+            dy="0"
+            style={{
+              backgroundColor: 'transparent',
+              paintOrder: 'stroke',
+              stroke: 'var(--color-surface, #0f1117)',
+              strokeWidth: 3,
+              strokeLinejoin: 'round'
+            }}
           >
             {label}
-          </textPath>
+          </tspan>
+          {label}
         </text>
       )}
     </>
