@@ -31,6 +31,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useCortexStore } from '../../../stores/cortex-store'
+import { useAgentStore } from '../../../stores/agent-store'
 import InsightCard from './InsightCard'
 import type { ToonInsights } from '../../../stores/cortex-store'
 
@@ -405,6 +406,14 @@ export default function ArchitectureDashboard(): React.JSX.Element {
   const generateInsights = useCortexStore((s) => s.generateInsights)
   const activeRepoId = useCortexStore((s) => s.activeRepoId)
   const repos = useCortexStore((s) => s.repos)
+
+  // Ensure agent providers are loaded (handles direct navigation to Cortex)
+  useEffect(() => {
+    const store = useAgentStore.getState()
+    if (store.providers.length === 0) {
+      store.loadProviders()
+    }
+  }, [])
 
   // Auto-load cached insights on mount
   useEffect(() => {

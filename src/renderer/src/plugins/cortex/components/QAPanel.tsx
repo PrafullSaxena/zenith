@@ -7,6 +7,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Send, Search, FileCode, Loader2, Trash2 } from 'lucide-react'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
+import { useAgentStore } from '../../../stores/agent-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { QAMessage, RepoType } from '../../../types/cortex'
 
@@ -57,6 +58,14 @@ export default function QAPanel(): React.JSX.Element {
   const clearQA = useCortexStore((s) => s.clearQA)
   const openFile = useCortexStore((s) => s.openFile)
   const setActiveTab = useCortexStore((s) => s.setActiveTab)
+
+  // Ensure agent providers are loaded (handles direct navigation to Cortex)
+  useEffect(() => {
+    const store = useAgentStore.getState()
+    if (store.providers.length === 0) {
+      store.loadProviders()
+    }
+  }, [])
 
   // Auto-scroll on new messages
   useEffect(() => {
