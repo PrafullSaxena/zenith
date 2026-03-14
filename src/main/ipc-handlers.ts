@@ -1,6 +1,6 @@
 import { ipcMain, safeStorage, shell, BrowserWindow, dialog, app, net } from 'electron'
 import Store from 'electron-store'
-import { getSettings, getSetting, setSetting, resetSettings } from './settings-store'
+import { getSettings, getSetting, setSetting, resetSettings, settingsStore } from './settings-store'
 import { TokenManager } from './bitbucket/token-manager'
 import { listOpenPRs, getPRDiff, postInlineComment, postTopLevelComment, getDiffstatCount, testCredentials, basicAuthHeader } from './bitbucket/api'
 import { streamReview, cancelSdkReview, streamAnalysis } from './ai/stream'
@@ -16,16 +16,18 @@ import { NebulaDatabase } from './nebula/database'
 import { NoteFileStorage } from './nebula/file-storage'
 import { transcribeAudio } from './nebula/transcription'
 import { getApiKeyForProvider } from './ai/providers'
-import { GitService } from './codebase-analyzer/git-service'
-import { CodebaseAnalyzer } from './codebase-analyzer/analyzer'
+import { GitService } from './cortex/git-service'
+import { CodebaseAnalyzer } from './cortex/analyzer'
 import {
   generateArchitectureDiagram,
   generateAPIFlowDiagram,
   generateComponentTreeDiagram,
   generatePipelineDiagram,
   generateClassDiagram
-} from './codebase-analyzer/mermaid-generator'
-import { generateHLDDocument } from './codebase-analyzer/doc-generator'
+} from './cortex/mermaid-generator'
+import { generateHLDDocument } from './cortex/doc-generator'
+import { buildInsightsPrompt } from './cortex/toon-parser'
+import { isRtkAvailable } from './cortex/rtk-integration'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -45,16 +47,29 @@ const dbManager = new UnifiedDbManager()
 let nebulaDb: NebulaDatabase | null = null
 let nebulaFs: NoteFileStorage | null = null
 
-/** Lazy-initialized Codebase Analyzer instances. */
-let cbanGit: GitService | null = null
-let cbanAnalyzer: CodebaseAnalyzer | null = null
+/** Lazy-initialized Cortex instances. */
+let cortexGit: GitService | null = null
+let cortexAnalyzer: CodebaseAnalyzer | null = null
 
-function getCbanInstances(): { git: GitService; analyzer: CodebaseAnalyzer } {
-  if (!cbanGit || !cbanAnalyzer) {
-    cbanGit = new GitService()
-    cbanAnalyzer = new CodebaseAnalyzer()
+function getCortexInstances(): { git: GitService; analyzer: CodebaseAnalyzer } {
+  if (!cortexGit || !cortexAnalyzer) {
+    cortexGit = new GitService()
+    cortexAnalyzer = new CodebaseAnalyzer()
   }
-  return { git: cbanGit, analyzer: cbanAnalyzer }
+  return { git: cortexGit, analyzer: cortexAnalyzer }
+}
+
+/** One-time migration: move settings from plugins.codebase-analyzer to plugins.cortex */
+function migrateCortexSettings(): void {
+  const oldPrefix = 'plugins.codebase-analyzer'
+  const oldSettings = settingsStore.get(oldPrefix)
+  if (oldSettings && typeof oldSettings === 'object') {
+    const newPrefix = 'plugins.cortex'
+    for (const [key, value] of Object.entries(oldSettings as Record<string, unknown>)) {
+      settingsStore.set(`${newPrefix}.${key}`, value)
+    }
+    settingsStore.delete(oldPrefix)
+  }
 }
 
 function getNebulaInstances(): { db: NebulaDatabase; fs: NoteFileStorage } {
@@ -72,6 +87,9 @@ function getNebulaInstances(): { db: NebulaDatabase; fs: NoteFileStorage } {
  * Must be called before createWindow() so handlers are ready when renderer loads.
  */
 export function registerIpcHandlers(): void {
+  // One-time migration from old plugin id
+  migrateCortexSettings()
+
   // --- Settings channels ---
   ipcMain.handle('settings:getAll', () => getSettings())
 
@@ -735,40 +753,70 @@ export function registerIpcHandlers(): void {
     return Array.from(new Uint8Array(buffer))
   })
 
-  // --- Codebase Analyzer channels ---
+  // --- Cortex channels ---
+
+  // --- Cortex repo persistence ---
+
+  ipcMain.handle('cortex:listRepos', async () => {
+    const { analyzer } = getCortexInstances()
+    const repos = analyzer.cache.listRepos()
+    return repos.map((repo) => ({
+      ...repo,
+      status: fs.existsSync(repo.repoPath) ? ('idle' as const) : ('needs-clone' as const),
+      error: null
+    }))
+  })
+
+  ipcMain.handle('cortex:saveRepo', async (_event, repo) => {
+    const { analyzer } = getCortexInstances()
+    analyzer.cache.saveRepo(repo)
+  })
+
+  ipcMain.handle('cortex:removeRepoById', async (_event, id: string) => {
+    const { analyzer } = getCortexInstances()
+    analyzer.cache.removeRepo(id)
+  })
+
+  ipcMain.handle(
+    'cortex:updateRepoFields',
+    async (_event, id: string, fields: Record<string, unknown>) => {
+      const { analyzer } = getCortexInstances()
+      analyzer.cache.updateRepo(id, fields)
+    }
+  )
 
   // Fetch remote branches from a URL (before cloning)
-  ipcMain.handle('cban:fetchBranches', async (_event, url: string) => {
-    const { git } = getCbanInstances()
+  ipcMain.handle('cortex:fetchBranches', async (_event, url: string) => {
+    const { git } = getCortexInstances()
     return git.fetchRemoteBranches(url)
   })
 
   // Clone a repository
-  ipcMain.handle('cban:clone', async (event, url: string, name: string) => {
-    const { git } = getCbanInstances()
+  ipcMain.handle('cortex:clone', async (event, url: string, name: string) => {
+    const { git } = getCortexInstances()
     const win = BrowserWindow.fromWebContents(event.sender)
     return git.clone(url, name, (progress) => {
-      win?.webContents.send('cban:cloneProgress', progress)
+      win?.webContents.send('cortex:cloneProgress', progress)
     })
   })
 
   // Analyze a cloned repository
   ipcMain.handle(
-    'cban:analyze',
+    'cortex:analyze',
     async (event, repoPath: string, branch: string, repoUrl: string) => {
-      const { analyzer } = getCbanInstances()
+      const { analyzer } = getCortexInstances()
       const win = BrowserWindow.fromWebContents(event.sender)
       return analyzer.analyzeRepository(repoPath, branch, repoUrl, (progress) => {
-        win?.webContents.send('cban:analysisProgress', progress)
+        win?.webContents.send('cortex:analysisProgress', progress)
       })
     }
   )
 
   // Get file content from a cloned repo
   ipcMain.handle(
-    'cban:getFileContent',
+    'cortex:getFileContent',
     async (_event, repoPath: string, filePath: string) => {
-      const { git, analyzer } = getCbanInstances()
+      const { git, analyzer } = getCortexInstances()
       const content = await git.getFileContent(repoPath, filePath)
       const language = analyzer.detectLanguage(filePath)
       return {
@@ -781,29 +829,29 @@ export function registerIpcHandlers(): void {
   )
 
   // Remove a cloned repository
-  ipcMain.handle('cban:removeRepo', async (_event, repoPath: string) => {
-    const { git } = getCbanInstances()
+  ipcMain.handle('cortex:removeRepo', async (_event, repoPath: string) => {
+    const { git } = getCortexInstances()
     return git.removeRepo(repoPath)
   })
 
   // Get cached analysis
   ipcMain.handle(
-    'cban:getCachedAnalysis',
+    'cortex:getCachedAnalysis',
     async (_event, repoUrl: string, branch: string, commitSha: string) => {
-      const { analyzer } = getCbanInstances()
+      const { analyzer } = getCortexInstances()
       return analyzer.cache.getAnalysis(repoUrl, branch, commitSha)
     }
   )
 
   // Search code files (FTS5)
-  ipcMain.handle('cban:searchCode', async (_event, repoUrl: string, query: string) => {
-    const { analyzer } = getCbanInstances()
+  ipcMain.handle('cortex:searchCode', async (_event, repoUrl: string, query: string) => {
+    const { analyzer } = getCortexInstances()
     return analyzer.cache.searchFiles(repoUrl, query)
   })
 
-  // --- Codebase Analyzer HLD generation ---
-  ipcMain.handle('cban:generateHLD', async (_event, repoUrl: string, branch: string) => {
-    const { analyzer } = getCbanInstances()
+  // --- Cortex HLD generation ---
+  ipcMain.handle('cortex:generateHLD', async (_event, repoUrl: string, branch: string) => {
+    const { analyzer } = getCortexInstances()
     const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '') // latest
     if (!analysis) throw new Error('No analysis found. Analyze the repository first.')
 
@@ -840,6 +888,71 @@ export function registerIpcHandlers(): void {
     }
 
     return generateHLDDocument(typedAnalysis as Parameters<typeof generateHLDDocument>[0], diagrams)
+  })
+
+  // --- Cortex TOON insights ---
+
+  ipcMain.handle('cortex:generateInsights', async (_event, repoUrl: string, branch: string) => {
+    const { analyzer } = getCortexInstances()
+    const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '')
+    if (!analysis) throw new Error('No analysis found. Analyze first.')
+
+    const { system, user } = buildInsightsPrompt(analysis)
+    return { systemPrompt: system, userPrompt: user }
+  })
+
+  ipcMain.handle(
+    'cortex:saveInsights',
+    async (
+      _event,
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      agentId: string,
+      toonData: string
+    ) => {
+      const { analyzer } = getCortexInstances()
+      analyzer.cache.saveInsights(repoUrl, branch, commitSha, agentId, toonData)
+    }
+  )
+
+  ipcMain.handle(
+    'cortex:getInsights',
+    async (_event, repoUrl: string, branch: string, commitSha: string) => {
+      const { analyzer } = getCortexInstances()
+      return analyzer.cache.getInsights(repoUrl, branch, commitSha)
+    }
+  )
+
+  // Re-analyze: fetch latest from remote, reset, and re-run analysis
+  ipcMain.handle('cortex:reanalyze', async (event, repoId: string) => {
+    const { git, analyzer } = getCortexInstances()
+    const repo = analyzer.cache.getRepoById(repoId)
+    if (!repo) throw new Error('Repo not found')
+
+    // Fetch and reset to latest
+    const newSha = await git.fetchAndReset(repo.repoPath, repo.branch)
+    if (newSha === repo.commitSha) return { changed: false }
+
+    // Clear old cache
+    analyzer.cache.deleteAnalysis(repo.url, repo.branch)
+    analyzer.cache.clearInsights(repo.url, repo.branch)
+
+    // Re-analyze
+    const win = BrowserWindow.fromWebContents(event.sender)
+    const result = await analyzer.analyzeRepository(repo.repoPath, repo.branch, repo.url, (progress) => {
+      win?.webContents.send('cortex:analysisProgress', progress)
+    })
+
+    // Update repo record
+    analyzer.cache.updateRepo(repoId, { commitSha: newSha, lastAnalyzed: new Date().toISOString() })
+
+    return { changed: true, result }
+  })
+
+  // --- Cortex RTK probe ---
+  ipcMain.handle('cortex:probeRtk', async () => {
+    return isRtkAvailable()
   })
 
   // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---

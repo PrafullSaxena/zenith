@@ -4,12 +4,12 @@ import type { ComponentType, LazyExoticComponent } from 'react'
  * String literal union of all compiled-in plugin identifiers.
  * Used to enforce type-safe plugin references throughout the app.
  */
-export type PluginId = 'code-review-bot' | 'db-inspector' | 'launchpad' | 'nebula' | 'textcraft' | 'codebase-analyzer'
+export type PluginId = 'code-review-bot' | 'db-inspector' | 'launchpad' | 'nebula' | 'textcraft' | 'cortex'
 
 /**
  * Supported field types for plugin settings forms.
  */
-export type SettingsFieldType = 'text' | 'number' | 'boolean' | 'select' | 'password' | 'repo-list' | 'connection-list' | 'textarea' | 'directory'
+export type SettingsFieldType = 'text' | 'number' | 'boolean' | 'select' | 'password' | 'repo-list' | 'connection-list' | 'textarea' | 'directory' | 'agent-select'
 
 /**
  * Describes a single settings field for plugin-specific configuration.

@@ -109,34 +109,56 @@ export interface ElectronAPI {
     ) => Promise<{ started: boolean; sessionId: string }>
     cancelAnalysis: (sessionId: string) => Promise<void>
   }
-  cban: {
+  cortex: {
+    listRepos: () => Promise<Array<import('./cortex').Repository>>
+    saveRepo: (repo: Partial<import('./cortex').Repository>) => Promise<void>
+    removeRepoById: (id: string) => Promise<void>
+    updateRepoFields: (id: string, fields: Record<string, unknown>) => Promise<void>
     fetchBranches: (url: string) => Promise<string[]>
     clone: (url: string, name: string) => Promise<{ repoPath: string }>
     analyze: (
       repoPath: string,
       branch: string,
       repoUrl: string
-    ) => Promise<import('./codebase-analyzer').AnalysisResult>
+    ) => Promise<import('./cortex').AnalysisResult>
     getFileContent: (
       repoPath: string,
       filePath: string
-    ) => Promise<import('./codebase-analyzer').FileContent>
+    ) => Promise<import('./cortex').FileContent>
     removeRepo: (repoPath: string) => Promise<void>
     getCachedAnalysis: (
       repoUrl: string,
       branch: string,
       commitSha: string
-    ) => Promise<import('./codebase-analyzer').AnalysisResult | null>
+    ) => Promise<import('./cortex').AnalysisResult | null>
     searchCode: (
       repoUrl: string,
       query: string
     ) => Promise<{ filePath: string; snippet: string }[]>
     generateHLD: (repoUrl: string, branch: string) => Promise<string>
+    generateInsights: (
+      repoUrl: string,
+      branch: string
+    ) => Promise<{ systemPrompt: string; userPrompt: string }>
+    saveInsights: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      agentId: string,
+      toonData: string
+    ) => Promise<void>
+    getInsights: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string
+    ) => Promise<string | null>
+    reanalyze: (repoId: string) => Promise<{ changed: boolean; result?: import('./cortex').AnalysisResult }>
+    probeRtk: () => Promise<boolean>
     onCloneProgress: (
-      cb: (data: import('./codebase-analyzer').CloneProgress) => void
+      cb: (data: import('./cortex').CloneProgress) => void
     ) => void
     onAnalysisProgress: (
-      cb: (data: import('./codebase-analyzer').AnalysisProgress) => void
+      cb: (data: import('./cortex').AnalysisProgress) => void
     ) => void
     removeProgressListeners: () => void
   }

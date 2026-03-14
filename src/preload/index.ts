@@ -195,34 +195,49 @@ const api = {
     exportPdf: (data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }): Promise<{ filePath: string | null }> =>
       ipcRenderer.invoke('textcraft:exportPdf', data),
   },
-  cban: {
+  cortex: {
+    listRepos: (): Promise<unknown[]> => ipcRenderer.invoke('cortex:listRepos'),
+    saveRepo: (repo: unknown): Promise<void> => ipcRenderer.invoke('cortex:saveRepo', repo),
+    removeRepoById: (id: string): Promise<void> => ipcRenderer.invoke('cortex:removeRepoById', id),
+    updateRepoFields: (id: string, fields: Record<string, unknown>): Promise<void> =>
+      ipcRenderer.invoke('cortex:updateRepoFields', id, fields),
     fetchBranches: (url: string): Promise<string[]> =>
-      ipcRenderer.invoke('cban:fetchBranches', url),
+      ipcRenderer.invoke('cortex:fetchBranches', url),
     clone: (url: string, name: string): Promise<{ repoPath: string }> =>
-      ipcRenderer.invoke('cban:clone', url, name),
+      ipcRenderer.invoke('cortex:clone', url, name),
     analyze: (repoPath: string, branch: string, repoUrl: string): Promise<unknown> =>
-      ipcRenderer.invoke('cban:analyze', repoPath, branch, repoUrl),
+      ipcRenderer.invoke('cortex:analyze', repoPath, branch, repoUrl),
     getFileContent: (
       repoPath: string,
       filePath: string
     ): Promise<{ content: string; language: string; path: string; lineCount: number }> =>
-      ipcRenderer.invoke('cban:getFileContent', repoPath, filePath),
+      ipcRenderer.invoke('cortex:getFileContent', repoPath, filePath),
     removeRepo: (repoPath: string): Promise<void> =>
-      ipcRenderer.invoke('cban:removeRepo', repoPath),
+      ipcRenderer.invoke('cortex:removeRepo', repoPath),
     getCachedAnalysis: (
       repoUrl: string,
       branch: string,
       commitSha: string
     ): Promise<unknown> =>
-      ipcRenderer.invoke('cban:getCachedAnalysis', repoUrl, branch, commitSha),
+      ipcRenderer.invoke('cortex:getCachedAnalysis', repoUrl, branch, commitSha),
     searchCode: (repoUrl: string, query: string): Promise<unknown[]> =>
-      ipcRenderer.invoke('cban:searchCode', repoUrl, query),
+      ipcRenderer.invoke('cortex:searchCode', repoUrl, query),
     generateHLD: (repoUrl: string, branch: string): Promise<string> =>
-      ipcRenderer.invoke('cban:generateHLD', repoUrl, branch),
+      ipcRenderer.invoke('cortex:generateHLD', repoUrl, branch),
+    generateInsights: (repoUrl: string, branch: string): Promise<{ systemPrompt: string; userPrompt: string }> =>
+      ipcRenderer.invoke('cortex:generateInsights', repoUrl, branch),
+    saveInsights: (repoUrl: string, branch: string, commitSha: string, agentId: string, toonData: string): Promise<void> =>
+      ipcRenderer.invoke('cortex:saveInsights', repoUrl, branch, commitSha, agentId, toonData),
+    getInsights: (repoUrl: string, branch: string, commitSha: string): Promise<string | null> =>
+      ipcRenderer.invoke('cortex:getInsights', repoUrl, branch, commitSha),
+    reanalyze: (repoId: string): Promise<{ changed: boolean; result?: unknown }> =>
+      ipcRenderer.invoke('cortex:reanalyze', repoId),
+    probeRtk: (): Promise<boolean> =>
+      ipcRenderer.invoke('cortex:probeRtk'),
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ): void => {
-      ipcRenderer.on('cban:cloneProgress', (_e, data) => cb(data))
+      ipcRenderer.on('cortex:cloneProgress', (_e, data) => cb(data))
     },
     onAnalysisProgress: (
       cb: (data: {
@@ -233,11 +248,11 @@ const api = {
         totalFiles: number
       }) => void
     ): void => {
-      ipcRenderer.on('cban:analysisProgress', (_e, data) => cb(data))
+      ipcRenderer.on('cortex:analysisProgress', (_e, data) => cb(data))
     },
     removeProgressListeners: (): void => {
-      ipcRenderer.removeAllListeners('cban:cloneProgress')
-      ipcRenderer.removeAllListeners('cban:analysisProgress')
+      ipcRenderer.removeAllListeners('cortex:cloneProgress')
+      ipcRenderer.removeAllListeners('cortex:analysisProgress')
     },
   },
   nebula: {
