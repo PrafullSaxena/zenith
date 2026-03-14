@@ -7,6 +7,7 @@ import { FileText, Hash, Route, Component } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import AnimatedCounter from './AnimatedCounter'
+import TestCoverageCard from './TestCoverageCard'
 
 const cardVariants = {
   hidden: { opacity: 0, y: 16, scale: 0.96 },
@@ -309,6 +310,20 @@ export default function OverviewTab(): React.JSX.Element {
               )
             })}
           </div>
+        </motion.div>
+      )}
+
+      {/* Test coverage card */}
+      {analysisResult?.testStats && (
+        <motion.div
+          custom={statCards.length + 3}
+          initial="hidden"
+          animate="visible"
+          variants={cardVariants}
+          className="mt-6"
+        >
+          <h3 className="mb-3 text-xs font-semibold text-text-primary">Test Coverage</h3>
+          <TestCoverageCard stats={analysisResult.testStats} />
         </motion.div>
       )}
     </div>

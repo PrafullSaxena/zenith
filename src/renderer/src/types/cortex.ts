@@ -33,6 +33,15 @@ export interface BranchInfo {
 
 // === Analysis Result Types ===
 
+export interface TestStats {
+  testFiles: string[]
+  testCount: number
+  frameworks: string[]
+  filesCovered: string[]
+  filesUncovered: string[]
+  fileCoveragePercent: number
+}
+
 export interface AnalysisResult {
   repoId: string
   repoType: RepoType
@@ -47,6 +56,7 @@ export interface AnalysisResult {
   fileTree: FileNode[]
   stats: AnalysisStats
   documentation: string // AI-generated markdown overview
+  testStats?: TestStats
 }
 
 export interface CodeEntity {
