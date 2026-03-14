@@ -189,12 +189,32 @@ export function buildAPIFlowNodes(
 
   // Trace chains from each route handler
   for (const route of routes) {
-    // Find handler entity
-    const handler = entities.find(
+    // Find handler entity — try exact match first, then relaxed match
+    // Normalize path separators and strip leading ./ for comparison
+    const normPath = (p: string): string => p.replace(/\\/g, '/').replace(/^\.\//, '')
+    const routeFilePath = normPath(route.filePath)
+
+    let handler = entities.find(
       (e) =>
         e.name === route.handlerName &&
-        e.filePath === route.filePath
+        normPath(e.filePath) === routeFilePath
     )
+
+    if (!handler) {
+      // Relaxed match: same handler name, parent entity matches controller name
+      handler = entities.find(
+        (e) =>
+          e.name === route.handlerName &&
+          (e.parentId === null ||
+            entities.find(
+              (parent) =>
+                parent.id === e.parentId &&
+                (parent.name === route.controllerName ||
+                  normPath(parent.filePath) === routeFilePath)
+            ) !== undefined)
+      )
+    }
+
     if (!handler) continue
 
     // BFS from handler
