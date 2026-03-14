@@ -37,8 +37,11 @@ interface CodeEntity {
 }
 
 interface CallEdge {
-  from: string
-  to: string
+  id: string
+  callerId: string
+  calleeId: string
+  filePath: string
+  line: number
   type: 'inject' | 'call'
 }
 
@@ -439,7 +442,14 @@ export function parseJavaFiles(
       for (const typeName of injectedTypes) {
         const targetId = classNameToId.get(typeName)
         if (targetId && targetId !== classId) {
-          callEdges.push({ from: classId, to: targetId, type: 'inject' })
+          callEdges.push({
+            id: `${classId}->${targetId}`,
+            callerId: classId,
+            calleeId: targetId,
+            filePath: '',
+            line: 0,
+            type: 'inject'
+          })
         }
       }
     }
