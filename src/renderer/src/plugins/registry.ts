@@ -158,6 +158,16 @@ export const PLUGINS: readonly PluginDefinition[] = [
       }
     ],
     defaultAgent: null
+  },
+  {
+    id: 'codebase-analyzer' as PluginId,
+    name: 'CodebaseAnalyzer',
+    description: 'Analyze and document codebases with interactive flow visualizations',
+    icon: 'SearchCode',
+    route: '/codebase-analyzer',
+    component: React.lazy(() => import('./codebase-analyzer/CodebaseAnalyzerView')),
+    settingsSchema: [],
+    defaultAgent: null
   }
 ] as const
 

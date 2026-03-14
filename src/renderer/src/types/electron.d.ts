@@ -103,6 +103,36 @@ export interface ElectronAPI {
     ) => Promise<{ started: boolean; sessionId: string }>
     cancelAnalysis: (sessionId: string) => Promise<void>
   }
+  cban: {
+    fetchBranches: (url: string) => Promise<string[]>
+    clone: (url: string, name: string) => Promise<{ repoPath: string }>
+    analyze: (
+      repoPath: string,
+      branch: string,
+      repoUrl: string
+    ) => Promise<import('./codebase-analyzer').AnalysisResult>
+    getFileContent: (
+      repoPath: string,
+      filePath: string
+    ) => Promise<import('./codebase-analyzer').FileContent>
+    removeRepo: (repoPath: string) => Promise<void>
+    getCachedAnalysis: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string
+    ) => Promise<import('./codebase-analyzer').AnalysisResult | null>
+    searchCode: (
+      repoUrl: string,
+      query: string
+    ) => Promise<{ filePath: string; snippet: string }[]>
+    onCloneProgress: (
+      cb: (data: import('./codebase-analyzer').CloneProgress) => void
+    ) => void
+    onAnalysisProgress: (
+      cb: (data: import('./codebase-analyzer').AnalysisProgress) => void
+    ) => void
+    removeProgressListeners: () => void
+  }
   db: {
     testConnection: (
       params: {

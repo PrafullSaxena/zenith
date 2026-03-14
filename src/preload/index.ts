@@ -195,6 +195,49 @@ const api = {
     exportPdf: (data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }): Promise<{ filePath: string | null }> =>
       ipcRenderer.invoke('textcraft:exportPdf', data),
   },
+  cban: {
+    fetchBranches: (url: string): Promise<string[]> =>
+      ipcRenderer.invoke('cban:fetchBranches', url),
+    clone: (url: string, name: string): Promise<{ repoPath: string }> =>
+      ipcRenderer.invoke('cban:clone', url, name),
+    analyze: (repoPath: string, branch: string, repoUrl: string): Promise<unknown> =>
+      ipcRenderer.invoke('cban:analyze', repoPath, branch, repoUrl),
+    getFileContent: (
+      repoPath: string,
+      filePath: string
+    ): Promise<{ content: string; language: string; path: string; lineCount: number }> =>
+      ipcRenderer.invoke('cban:getFileContent', repoPath, filePath),
+    removeRepo: (repoPath: string): Promise<void> =>
+      ipcRenderer.invoke('cban:removeRepo', repoPath),
+    getCachedAnalysis: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string
+    ): Promise<unknown> =>
+      ipcRenderer.invoke('cban:getCachedAnalysis', repoUrl, branch, commitSha),
+    searchCode: (repoUrl: string, query: string): Promise<unknown[]> =>
+      ipcRenderer.invoke('cban:searchCode', repoUrl, query),
+    onCloneProgress: (
+      cb: (data: { stage: string; progress: number; detail: string }) => void
+    ): void => {
+      ipcRenderer.on('cban:cloneProgress', (_e, data) => cb(data))
+    },
+    onAnalysisProgress: (
+      cb: (data: {
+        phase: string
+        progress: number
+        detail: string
+        filesProcessed: number
+        totalFiles: number
+      }) => void
+    ): void => {
+      ipcRenderer.on('cban:analysisProgress', (_e, data) => cb(data))
+    },
+    removeProgressListeners: (): void => {
+      ipcRenderer.removeAllListeners('cban:cloneProgress')
+      ipcRenderer.removeAllListeners('cban:analysisProgress')
+    },
+  },
   nebula: {
     saveNote: (note: unknown): Promise<{ saved: boolean }> =>
       ipcRenderer.invoke('nebula:saveNote', note),

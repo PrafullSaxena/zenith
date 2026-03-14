@@ -16,6 +16,8 @@ import { NebulaDatabase } from './nebula/database'
 import { NoteFileStorage } from './nebula/file-storage'
 import { transcribeAudio } from './nebula/transcription'
 import { getApiKeyForProvider } from './ai/providers'
+import { GitService } from './codebase-analyzer/git-service'
+import { CodebaseAnalyzer } from './codebase-analyzer/analyzer'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -34,6 +36,18 @@ const dbManager = new UnifiedDbManager()
 /** Lazy-initialized Nebula database and file storage instances. */
 let nebulaDb: NebulaDatabase | null = null
 let nebulaFs: NoteFileStorage | null = null
+
+/** Lazy-initialized Codebase Analyzer instances. */
+let cbanGit: GitService | null = null
+let cbanAnalyzer: CodebaseAnalyzer | null = null
+
+function getCbanInstances(): { git: GitService; analyzer: CodebaseAnalyzer } {
+  if (!cbanGit || !cbanAnalyzer) {
+    cbanGit = new GitService()
+    cbanAnalyzer = new CodebaseAnalyzer()
+  }
+  return { git: cbanGit, analyzer: cbanAnalyzer }
+}
 
 function getNebulaInstances(): { db: NebulaDatabase; fs: NoteFileStorage } {
   if (!nebulaDb || !nebulaFs) {
@@ -711,6 +725,72 @@ export function registerIpcHandlers(): void {
     const buffer = noteFs.loadAudio(noteId)
     if (!buffer) return null
     return Array.from(new Uint8Array(buffer))
+  })
+
+  // --- Codebase Analyzer channels ---
+
+  // Fetch remote branches from a URL (before cloning)
+  ipcMain.handle('cban:fetchBranches', async (_event, url: string) => {
+    const { git } = getCbanInstances()
+    return git.fetchRemoteBranches(url)
+  })
+
+  // Clone a repository
+  ipcMain.handle('cban:clone', async (event, url: string, name: string) => {
+    const { git } = getCbanInstances()
+    const win = BrowserWindow.fromWebContents(event.sender)
+    return git.clone(url, name, (progress) => {
+      win?.webContents.send('cban:cloneProgress', progress)
+    })
+  })
+
+  // Analyze a cloned repository
+  ipcMain.handle(
+    'cban:analyze',
+    async (event, repoPath: string, branch: string, repoUrl: string) => {
+      const { analyzer } = getCbanInstances()
+      const win = BrowserWindow.fromWebContents(event.sender)
+      return analyzer.analyzeRepository(repoPath, branch, repoUrl, (progress) => {
+        win?.webContents.send('cban:analysisProgress', progress)
+      })
+    }
+  )
+
+  // Get file content from a cloned repo
+  ipcMain.handle(
+    'cban:getFileContent',
+    async (_event, repoPath: string, filePath: string) => {
+      const { git, analyzer } = getCbanInstances()
+      const content = await git.getFileContent(repoPath, filePath)
+      const language = analyzer.detectLanguage(filePath)
+      return {
+        content,
+        language,
+        path: filePath,
+        lineCount: content.split('\n').length
+      }
+    }
+  )
+
+  // Remove a cloned repository
+  ipcMain.handle('cban:removeRepo', async (_event, repoPath: string) => {
+    const { git } = getCbanInstances()
+    return git.removeRepo(repoPath)
+  })
+
+  // Get cached analysis
+  ipcMain.handle(
+    'cban:getCachedAnalysis',
+    async (_event, repoUrl: string, branch: string, commitSha: string) => {
+      const { analyzer } = getCbanInstances()
+      return analyzer.cache.getAnalysis(repoUrl, branch, commitSha)
+    }
+  )
+
+  // Search code files (FTS5)
+  ipcMain.handle('cban:searchCode', async (_event, repoUrl: string, query: string) => {
+    const { analyzer } = getCbanInstances()
+    return analyzer.cache.searchFiles(repoUrl, query)
   })
 
   // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---

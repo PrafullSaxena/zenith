@@ -11,7 +11,8 @@ import {
   Rocket,
   BookOpen,
   PenLine,
-  GripVertical
+  GripVertical,
+  SearchCode
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PLUGINS } from '../plugins/registry'
@@ -31,7 +32,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Info,
   Rocket,
   BookOpen,
-  PenLine
+  PenLine,
+  SearchCode
 }
 
 function SidebarIcon({
