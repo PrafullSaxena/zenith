@@ -136,6 +136,22 @@ export interface ElectronAPI {
       query: string
     ) => Promise<{ filePath: string; snippet: string }[]>
     generateHLD: (repoUrl: string, branch: string) => Promise<string>
+    generateInsights: (
+      repoUrl: string,
+      branch: string
+    ) => Promise<{ systemPrompt: string; userPrompt: string }>
+    saveInsights: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      agentId: string,
+      toonData: string
+    ) => Promise<void>
+    getInsights: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string
+    ) => Promise<string | null>
     onCloneProgress: (
       cb: (data: import('./cortex').CloneProgress) => void
     ) => void

@@ -26,6 +26,7 @@ import {
   generateClassDiagram
 } from './cortex/mermaid-generator'
 import { generateHLDDocument } from './cortex/doc-generator'
+import { buildInsightsPrompt } from './cortex/toon-parser'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -887,6 +888,40 @@ export function registerIpcHandlers(): void {
 
     return generateHLDDocument(typedAnalysis as Parameters<typeof generateHLDDocument>[0], diagrams)
   })
+
+  // --- Cortex TOON insights ---
+
+  ipcMain.handle('cortex:generateInsights', async (_event, repoUrl: string, branch: string) => {
+    const { analyzer } = getCortexInstances()
+    const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '')
+    if (!analysis) throw new Error('No analysis found. Analyze first.')
+
+    const { system, user } = buildInsightsPrompt(analysis)
+    return { systemPrompt: system, userPrompt: user }
+  })
+
+  ipcMain.handle(
+    'cortex:saveInsights',
+    async (
+      _event,
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      agentId: string,
+      toonData: string
+    ) => {
+      const { analyzer } = getCortexInstances()
+      analyzer.cache.saveInsights(repoUrl, branch, commitSha, agentId, toonData)
+    }
+  )
+
+  ipcMain.handle(
+    'cortex:getInsights',
+    async (_event, repoUrl: string, branch: string, commitSha: string) => {
+      const { analyzer } = getCortexInstances()
+      return analyzer.cache.getInsights(repoUrl, branch, commitSha)
+    }
+  )
 
   // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---
   ipcMain.handle('db:exportErDiagramPdf', async (_event, data: {

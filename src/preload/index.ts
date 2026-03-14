@@ -224,6 +224,12 @@ const api = {
       ipcRenderer.invoke('cortex:searchCode', repoUrl, query),
     generateHLD: (repoUrl: string, branch: string): Promise<string> =>
       ipcRenderer.invoke('cortex:generateHLD', repoUrl, branch),
+    generateInsights: (repoUrl: string, branch: string): Promise<{ systemPrompt: string; userPrompt: string }> =>
+      ipcRenderer.invoke('cortex:generateInsights', repoUrl, branch),
+    saveInsights: (repoUrl: string, branch: string, commitSha: string, agentId: string, toonData: string): Promise<void> =>
+      ipcRenderer.invoke('cortex:saveInsights', repoUrl, branch, commitSha, agentId, toonData),
+    getInsights: (repoUrl: string, branch: string, commitSha: string): Promise<string | null> =>
+      ipcRenderer.invoke('cortex:getInsights', repoUrl, branch, commitSha),
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ): void => {
