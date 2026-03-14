@@ -27,6 +27,7 @@ import {
 } from './cortex/mermaid-generator'
 import { generateHLDDocument } from './cortex/doc-generator'
 import { buildInsightsPrompt } from './cortex/toon-parser'
+import { isRtkAvailable } from './cortex/rtk-integration'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -922,6 +923,11 @@ export function registerIpcHandlers(): void {
       return analyzer.cache.getInsights(repoUrl, branch, commitSha)
     }
   )
+
+  // --- Cortex RTK probe ---
+  ipcMain.handle('cortex:probeRtk', async () => {
+    return isRtkAvailable()
+  })
 
   // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---
   ipcMain.handle('db:exportErDiagramPdf', async (_event, data: {

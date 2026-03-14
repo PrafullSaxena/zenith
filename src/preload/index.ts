@@ -230,6 +230,8 @@ const api = {
       ipcRenderer.invoke('cortex:saveInsights', repoUrl, branch, commitSha, agentId, toonData),
     getInsights: (repoUrl: string, branch: string, commitSha: string): Promise<string | null> =>
       ipcRenderer.invoke('cortex:getInsights', repoUrl, branch, commitSha),
+    probeRtk: (): Promise<boolean> =>
+      ipcRenderer.invoke('cortex:probeRtk'),
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ): void => {

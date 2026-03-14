@@ -152,6 +152,7 @@ export interface ElectronAPI {
       branch: string,
       commitSha: string
     ) => Promise<string | null>
+    probeRtk: () => Promise<boolean>
     onCloneProgress: (
       cb: (data: import('./cortex').CloneProgress) => void
     ) => void

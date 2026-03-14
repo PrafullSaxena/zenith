@@ -95,6 +95,7 @@ export interface ElectronAPI {
       toonData: string
     ) => Promise<void>
     getInsights: (repoUrl: string, branch: string, commitSha: string) => Promise<string | null>
+    probeRtk: () => Promise<boolean>
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ) => void

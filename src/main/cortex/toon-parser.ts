@@ -5,6 +5,8 @@
  * This makes it cheap to parse and token-efficient for LLM output.
  */
 
+import { isRtkAvailable } from './rtk-integration'
+
 export interface ToonInsights {
   summary: string
   architecture: { pattern: string; framework: string; language: string; libs: string[] }
@@ -249,7 +251,12 @@ export function buildInsightsPrompt(
     .map((e) => `${e.kind ?? 'entity'} ${e.name ?? ''} @ ${e.location ?? e.file ?? ''}`)
     .join('\n')
 
-  const userPrompt = `Analyze the following codebase and produce TOON output.
+  // Note RTK compression availability for context transparency
+  const rtkNote = isRtkAvailable()
+    ? '(context compressed via RTK)'
+    : '(RTK unavailable — raw context)'
+
+  const userPrompt = `Analyze the following codebase and produce TOON output. ${rtkNote}
 
 ## Repository Info
 - Type: ${repoType}
