@@ -7,6 +7,7 @@ import { FileText, Route, GitBranch, BookOpen } from 'lucide-react'
 import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
+import FlowsTab from './FlowsTab'
 
 const INSIGHT_TABS = [
   { id: 'overview', label: 'Overview', icon: FileText },
@@ -59,11 +60,7 @@ export default function InsightsPanel(): React.JSX.Element {
           >
             {insightsSubTab === 'overview' && <OverviewTab />}
             {insightsSubTab === 'apis' && <APIListTab />}
-            {insightsSubTab === 'flows' && (
-              <div className="flex h-full items-center justify-center text-sm text-text-secondary">
-                Flow diagrams -- Plan 04
-              </div>
-            )}
+            {insightsSubTab === 'flows' && <FlowsTab />}
             {insightsSubTab === 'design' && (
               <div className="flex h-full items-center justify-center text-sm text-text-secondary">
                 Design document -- Plan 06
