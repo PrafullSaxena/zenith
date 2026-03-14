@@ -5,7 +5,7 @@
  *   B) Insight Cards (responsive grid)
  *   C) Architecture Diagrams (tabbed, React Flow)
  */
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Brain,
@@ -16,7 +16,10 @@ import {
   Zap,
   Network,
   ArrowRightLeft,
-  Loader2
+  Loader2,
+  RefreshCw,
+  Lightbulb,
+  TestTube2
 } from 'lucide-react'
 import {
   ReactFlow,
@@ -29,89 +32,87 @@ import {
 import '@xyflow/react/dist/style.css'
 import { useCortexStore } from '../../../stores/cortex-store'
 import InsightCard from './InsightCard'
-
-// ── ToonInsights type (matches Task 16 shape) ──────────────────────────
-
-export interface ToonInsights {
-  summary: string
-  architecture: {
-    style: string // e.g. "Hexagonal Architecture", "Layered", "MVC"
-    techStack: string[]
-    modules: { id: string; label: string; group: string }[]
-    moduleDeps: { source: string; target: string; label?: string }[]
-  }
-  patterns: { name: string; description: string; files: string[] }[]
-  security: { pattern: string; description: string; files: string[] }[]
-  config: { source: string; description: string; files: string[] }[]
-  async: { pattern: string; description: string; files: string[] }[]
-  dependencies: {
-    name: string
-    version: string
-    category: string // e.g. "core", "test", "build", "util"
-  }[]
-  entities: { name: string; kind: string; filePath: string }[]
-}
+import type { ToonInsights } from '../../../stores/cortex-store'
 
 // ── Diagram tab IDs ─────────────────────────────────────────────────────
 
 const DIAGRAM_TABS = [
-  { id: 'modules', label: 'Module Dependencies', icon: Network },
+  { id: 'entities', label: 'Entity Graph', icon: Network },
   { id: 'layers', label: 'Layer Interaction', icon: Layers },
-  { id: 'dataflow', label: 'Data Flow', icon: ArrowRightLeft }
+  { id: 'dependencies', label: 'Dependency Map', icon: ArrowRightLeft }
 ] as const
 
 type DiagramTabId = (typeof DIAGRAM_TABS)[number]['id']
 
 // ── Helpers: build React Flow nodes/edges from insights ────────────────
 
-const MODULE_COLORS: Record<string, string> = {
-  core: '#3b82f6',
-  api: '#10b981',
+const KIND_COLORS: Record<string, string> = {
+  class: '#3b82f6',
   service: '#8b5cf6',
-  data: '#f59e0b',
-  infra: '#ef4444',
-  ui: '#ec4899',
-  test: '#6b7280',
+  controller: '#10b981',
+  repository: '#f59e0b',
+  component: '#ec4899',
+  function: '#64748b',
+  middleware: '#ef4444',
+  decorator: '#6b7280',
   default: '#64748b'
 }
 
-function buildModuleGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  const nodes: Node[] = insights.architecture.modules.map((m, i) => ({
-    id: m.id,
-    position: { x: (i % 4) * 220, y: Math.floor(i / 4) * 140 },
-    data: {
-      label: m.label
-    },
-    style: {
-      background: `${MODULE_COLORS[m.group] ?? MODULE_COLORS.default}22`,
-      border: `1px solid ${MODULE_COLORS[m.group] ?? MODULE_COLORS.default}66`,
-      borderRadius: 12,
-      padding: '8px 16px',
-      fontSize: 11,
-      color: '#e2e8f0',
-      fontWeight: 600
+/** Derive graph nodes/edges from entities */
+function buildEntityGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
+  const entities = insights.entities.slice(0, 20)
+  const nodes: Node[] = entities.map((e, i) => {
+    const color = KIND_COLORS[e.kind.toLowerCase()] ?? KIND_COLORS.default
+    return {
+      id: `entity-${i}`,
+      position: { x: (i % 4) * 220, y: Math.floor(i / 4) * 140 },
+      data: { label: `${e.name}\n(${e.kind})` },
+      style: {
+        background: `${color}22`,
+        border: `1px solid ${color}66`,
+        borderRadius: 12,
+        padding: '8px 16px',
+        fontSize: 11,
+        color: '#e2e8f0',
+        fontWeight: 600,
+        whiteSpace: 'pre-line' as const
+      }
     }
-  }))
+  })
 
-  const edges: Edge[] = insights.architecture.moduleDeps.map((d, i) => ({
-    id: `me-${i}`,
-    source: d.source,
-    target: d.target,
-    label: d.label ?? '',
-    animated: true,
-    style: { stroke: '#475569' },
-    labelStyle: { fill: '#94a3b8', fontSize: 9 }
-  }))
+  // Connect entities in the same location (file) with edges
+  const edges: Edge[] = []
+  const locationMap = new Map<string, number[]>()
+  entities.forEach((e, i) => {
+    const loc = e.location.split('/').slice(0, -1).join('/')
+    const list = locationMap.get(loc) ?? []
+    list.push(i)
+    locationMap.set(loc, list)
+  })
+  let edgeIdx = 0
+  for (const indices of locationMap.values()) {
+    for (let j = 1; j < indices.length; j++) {
+      edges.push({
+        id: `ee-${edgeIdx++}`,
+        source: `entity-${indices[j - 1]}`,
+        target: `entity-${indices[j]}`,
+        animated: true,
+        style: { stroke: '#475569' }
+      })
+    }
+  }
 
   return { nodes, edges }
 }
 
 function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  const groups = new Map<string, typeof insights.architecture.modules>()
-  for (const m of insights.architecture.modules) {
-    const list = groups.get(m.group) ?? []
-    list.push(m)
-    groups.set(m.group, list)
+  // Group entities by kind to form layers
+  const groups = new Map<string, typeof insights.entities>()
+  for (const e of insights.entities.slice(0, 30)) {
+    const kind = e.kind.toLowerCase()
+    const list = groups.get(kind) ?? []
+    list.push(e)
+    groups.set(kind, list)
   }
 
   const nodes: Node[] = []
@@ -119,13 +120,12 @@ function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[]
   let y = 0
   let layerIdx = 0
 
-  for (const [group, members] of groups) {
-    const color = MODULE_COLORS[group] ?? MODULE_COLORS.default
-    // Layer label node
+  for (const [kind, members] of groups) {
+    const color = KIND_COLORS[kind] ?? KIND_COLORS.default
     nodes.push({
-      id: `layer-${group}`,
+      id: `layer-${kind}`,
       position: { x: 0, y },
-      data: { label: group.toUpperCase() },
+      data: { label: kind.toUpperCase() },
       style: {
         background: `${color}15`,
         border: `1px dashed ${color}44`,
@@ -139,11 +139,11 @@ function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[]
       }
     })
 
-    members.forEach((m, mi) => {
+    members.slice(0, 5).forEach((m, mi) => {
       nodes.push({
-        id: m.id,
+        id: `layer-${kind}-${mi}`,
         position: { x: 150 + mi * 180, y },
-        data: { label: m.label },
+        data: { label: m.name },
         style: {
           background: `${color}22`,
           border: `1px solid ${color}55`,
@@ -157,13 +157,13 @@ function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[]
     })
 
     if (layerIdx > 0) {
-      const prevGroup = [...groups.keys()][layerIdx - 1]
-      const prevMembers = groups.get(prevGroup)
+      const prevKind = [...groups.keys()][layerIdx - 1]
+      const prevMembers = groups.get(prevKind)
       if (prevMembers && prevMembers.length > 0) {
         edges.push({
           id: `layer-e-${layerIdx}`,
-          source: prevMembers[0].id,
-          target: members[0].id,
+          source: `layer-${prevKind}-0`,
+          target: `layer-${kind}-0`,
           animated: true,
           style: { stroke: '#475569', strokeDasharray: '5 5' }
         })
@@ -177,32 +177,64 @@ function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[]
   return { nodes, edges }
 }
 
-function buildDataFlowGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  // Simple data flow: take moduleDeps and present with a vertical layout
-  const nodes: Node[] = insights.architecture.modules.map((m, i) => ({
-    id: m.id,
-    position: { x: (i % 3) * 240, y: Math.floor(i / 3) * 130 },
-    data: { label: m.label },
-    style: {
-      background: '#1e293b',
-      border: '1px solid #334155',
-      borderRadius: 10,
-      padding: '8px 16px',
-      fontSize: 11,
-      color: '#e2e8f0',
-      fontWeight: 500
-    }
-  }))
+function buildDependencyGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
+  const deps = insights.dependencies.slice(0, 20)
+  const catColors: Record<string, string> = {
+    runtime: '#3b82f6',
+    devdependency: '#8b5cf6',
+    core: '#10b981',
+    test: '#6b7280',
+    build: '#f59e0b',
+    util: '#ec4899'
+  }
 
-  const edges: Edge[] = insights.architecture.moduleDeps.map((d, i) => ({
-    id: `df-${i}`,
-    source: d.source,
-    target: d.target,
-    label: d.label ?? 'data',
-    animated: true,
-    style: { stroke: '#3b82f6' },
-    labelStyle: { fill: '#94a3b8', fontSize: 9 }
-  }))
+  // Center node for the project
+  const nodes: Node[] = [
+    {
+      id: 'project',
+      position: { x: 300, y: 200 },
+      data: { label: insights.architecture.framework || 'Project' },
+      style: {
+        background: '#3b82f622',
+        border: '2px solid #3b82f6',
+        borderRadius: 16,
+        padding: '10px 20px',
+        fontSize: 12,
+        color: '#e2e8f0',
+        fontWeight: 700
+      }
+    }
+  ]
+
+  const edges: Edge[] = []
+  const angleStep = (2 * Math.PI) / Math.max(deps.length, 1)
+
+  deps.forEach((dep, i) => {
+    const angle = i * angleStep
+    const radius = 180
+    const color = catColors[dep.category.toLowerCase()] ?? '#64748b'
+    nodes.push({
+      id: `dep-${i}`,
+      position: { x: 300 + Math.cos(angle) * radius, y: 200 + Math.sin(angle) * radius },
+      data: { label: `${dep.name}\n${dep.version}` },
+      style: {
+        background: `${color}22`,
+        border: `1px solid ${color}55`,
+        borderRadius: 10,
+        padding: '6px 12px',
+        fontSize: 10,
+        color: '#e2e8f0',
+        fontWeight: 500,
+        whiteSpace: 'pre-line' as const
+      }
+    })
+    edges.push({
+      id: `dep-e-${i}`,
+      source: 'project',
+      target: `dep-${i}`,
+      style: { stroke: `${color}66` }
+    })
+  })
 
   return { nodes, edges }
 }
@@ -261,7 +293,7 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
           <ul className="space-y-2">
             {insights.security.map((s, i) => (
               <li key={i} className="text-xs">
-                <span className="font-medium text-text-primary">{s.pattern}</span>
+                <span className="font-medium text-text-primary">{s.type}</span>
                 <p className="mt-0.5 text-[11px] text-text-secondary">{s.description}</p>
               </li>
             ))}
@@ -309,13 +341,55 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
           <ul className="space-y-2">
             {insights.async.map((a, i) => (
               <li key={i} className="text-xs">
-                <span className="font-medium text-text-primary">{a.pattern}</span>
+                <span className="font-medium text-text-primary">{a.type}</span>
                 <p className="mt-0.5 text-[11px] text-text-secondary">{a.description}</p>
               </li>
             ))}
           </ul>
         )}
       </InsightCard>
+
+      {/* Insights Card (strengths & concerns) */}
+      {insights.insights.length > 0 && (
+        <InsightCard title="Key Insights" icon={Lightbulb} delay={0.3}>
+          <ul className="space-y-2">
+            {insights.insights.map((ins, i) => (
+              <li key={i} className="text-xs">
+                <span
+                  className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${
+                    ins.severity === 'strength' ? 'bg-green-400' : 'bg-amber-400'
+                  }`}
+                />
+                <span className="font-medium text-text-primary">
+                  {ins.severity === 'strength' ? 'Strength' : 'Concern'}
+                </span>
+                <p className="mt-0.5 ml-3 text-[11px] text-text-secondary">{ins.description}</p>
+              </li>
+            ))}
+          </ul>
+        </InsightCard>
+      )}
+
+      {/* Tests Card */}
+      {insights.tests.framework && (
+        <InsightCard title="Testing" icon={TestTube2} delay={0.35}>
+          <div className="space-y-2">
+            <p className="text-xs">
+              <span className="font-medium text-text-primary">Framework:</span>{' '}
+              <span className="text-text-secondary">{insights.tests.framework}</span>
+            </p>
+            {insights.tests.details.length > 0 && (
+              <ul className="space-y-1">
+                {insights.tests.details.map((d, i) => (
+                  <li key={i} className="text-[11px] text-text-secondary">
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </InsightCard>
+      )}
     </div>
   )
 }
@@ -323,33 +397,49 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
 // ── Main Component ──────────────────────────────────────────────────────
 
 export default function ArchitectureDashboard(): React.JSX.Element {
-  const [activeDiagramTab, setActiveDiagramTab] = useState<DiagramTabId>('modules')
+  const [activeDiagramTab, setActiveDiagramTab] = useState<DiagramTabId>('entities')
 
   const analysisResult = useCortexStore((s) => s.analysisResult)
   const aiInsights = useCortexStore((s) => s.aiInsights)
   const isGeneratingInsights = useCortexStore((s) => s.isGeneratingInsights)
-  const setGeneratingInsights = useCortexStore((s) => s.setGeneratingInsights)
+  const generateInsights = useCortexStore((s) => s.generateInsights)
+  const activeRepoId = useCortexStore((s) => s.activeRepoId)
+  const repos = useCortexStore((s) => s.repos)
+
+  // Auto-load cached insights on mount
+  useEffect(() => {
+    if (!aiInsights && !isGeneratingInsights && activeRepoId) {
+      const repo = repos.find((r) => r.id === activeRepoId)
+      if (repo?.commitSha) {
+        generateInsights()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeRepoId])
 
   // Build graph data for the active diagram tab
   const diagramData = useMemo(() => {
     if (!aiInsights) return { nodes: [], edges: [] }
     switch (activeDiagramTab) {
-      case 'modules':
-        return buildModuleGraph(aiInsights)
+      case 'entities':
+        return buildEntityGraph(aiInsights)
       case 'layers':
         return buildLayerGraph(aiInsights)
-      case 'dataflow':
-        return buildDataFlowGraph(aiInsights)
+      case 'dependencies':
+        return buildDependencyGraph(aiInsights)
       default:
         return { nodes: [], edges: [] }
     }
   }, [aiInsights, activeDiagramTab])
 
   const handleGenerateInsights = useCallback(() => {
-    // Placeholder: actual generation comes in Task 17
-    setGeneratingInsights(true)
-    // The real implementation will call an IPC handler
-  }, [setGeneratingInsights])
+    generateInsights()
+  }, [generateInsights])
+
+  const handleRefreshInsights = useCallback(() => {
+    useCortexStore.getState().setAiInsights(null)
+    generateInsights()
+  }, [generateInsights])
 
   // No analysis data at all
   if (!analysisResult) {
@@ -394,12 +484,17 @@ export default function ArchitectureDashboard(): React.JSX.Element {
     )
   }
 
-  // Loading state
-  if (isGeneratingInsights) {
+  // Loading state with progressive content
+  if (isGeneratingInsights && !aiInsights) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3">
-        <Loader2 size={24} className="animate-spin text-accent" />
-        <p className="text-sm text-text-secondary">Generating architecture insights...</p>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+        >
+          <Brain size={28} className="text-accent" />
+        </motion.div>
+        <p className="text-sm text-text-secondary">Cortex is thinking...</p>
         <div className="mt-4 w-full max-w-2xl space-y-3 px-6">
           <div className="h-6 w-3/4 animate-pulse rounded bg-surface" />
           <div className="h-4 w-full animate-pulse rounded bg-surface" />
@@ -410,31 +505,71 @@ export default function ArchitectureDashboard(): React.JSX.Element {
     )
   }
 
-  // Full dashboard with insights
-  const insights = aiInsights!
+  // Full dashboard with insights (may still be streaming)
+  if (!aiInsights) return null
+  const insights = aiInsights
 
   return (
     <div className="h-full overflow-y-auto p-6 space-y-8">
+      {/* Streaming indicator */}
+      {isGeneratingInsights && (
+        <div className="flex items-center gap-2 rounded-lg bg-accent/10 px-3 py-2 text-xs text-accent">
+          <Loader2 size={14} className="animate-spin" />
+          Streaming insights... cards will populate progressively.
+        </div>
+      )}
+
       {/* ── Section A: Architecture Overview ─────────────────────── */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
       >
+        {/* Title row with refresh */}
+        <div className="mb-4 flex items-center gap-3">
+          <h3 className="text-sm font-semibold text-text-primary">Architecture Overview</h3>
+          <button
+            type="button"
+            onClick={handleRefreshInsights}
+            disabled={isGeneratingInsights}
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors disabled:opacity-40"
+            title="Refresh insights"
+          >
+            <RefreshCw size={11} className={isGeneratingInsights ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+        </div>
+
         {/* Badges row */}
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          {/* Architecture style badge */}
-          <span className="inline-flex items-center rounded-full bg-accent/15 px-3 py-1 text-[11px] font-semibold text-accent">
-            {insights.architecture.style}
-          </span>
+          {/* Architecture pattern badge */}
+          {insights.architecture.pattern && (
+            <span className="inline-flex items-center rounded-full bg-accent/15 px-3 py-1 text-[11px] font-semibold text-accent">
+              {insights.architecture.pattern}
+            </span>
+          )}
 
-          {/* Tech stack badges */}
-          {insights.architecture.techStack.map((tech) => (
+          {/* Framework badge */}
+          {insights.architecture.framework && (
+            <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary">
+              {insights.architecture.framework}
+            </span>
+          )}
+
+          {/* Language badge */}
+          {insights.architecture.language && (
+            <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary">
+              {insights.architecture.language}
+            </span>
+          )}
+
+          {/* Lib badges */}
+          {insights.architecture.libs.map((lib) => (
             <span
-              key={tech}
+              key={lib}
               className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary"
             >
-              {tech}
+              {lib}
             </span>
           ))}
         </div>
@@ -446,12 +581,12 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           </p>
         )}
 
-        {/* Interactive module graph */}
-        {insights.architecture.modules.length > 0 && (
+        {/* Interactive entity graph */}
+        {insights.entities.length > 0 && (
           <div className="h-64 overflow-hidden rounded-xl border border-border/60 bg-surface-elevated/40">
             <ReactFlow
-              nodes={buildModuleGraph(insights).nodes}
-              edges={buildModuleGraph(insights).edges}
+              nodes={buildEntityGraph(insights).nodes}
+              edges={buildEntityGraph(insights).edges}
               fitView
               proOptions={{ hideAttribution: true }}
               minZoom={0.3}

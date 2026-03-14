@@ -57,6 +57,57 @@ export interface ElectronAPI {
     onStreamDone: (cb: (data: { sessionId: string; usage?: { totalTokens: number; isEstimated: boolean } }) => void) => void
     onStreamError: (cb: (data: { sessionId: string; error: string }) => void) => void
     removeStreamListeners: () => void
+    startAnalysis: (
+      providerId: string,
+      modelName: string,
+      systemPrompt: string,
+      userPrompt: string,
+      sessionId: string,
+      command?: string
+    ) => Promise<{ started: boolean; sessionId: string }>
+    cancelAnalysis: (sessionId: string) => Promise<void>
+  }
+  cortex: {
+    listRepos: () => Promise<unknown[]>
+    saveRepo: (repo: unknown) => Promise<void>
+    removeRepoById: (id: string) => Promise<void>
+    updateRepoFields: (id: string, fields: Record<string, unknown>) => Promise<void>
+    fetchBranches: (url: string) => Promise<string[]>
+    clone: (url: string, name: string) => Promise<{ repoPath: string }>
+    analyze: (repoPath: string, branch: string, repoUrl: string) => Promise<unknown>
+    getFileContent: (
+      repoPath: string,
+      filePath: string
+    ) => Promise<{ content: string; language: string; path: string; lineCount: number }>
+    removeRepo: (repoPath: string) => Promise<void>
+    getCachedAnalysis: (repoUrl: string, branch: string, commitSha: string) => Promise<unknown>
+    searchCode: (repoUrl: string, query: string) => Promise<unknown[]>
+    generateHLD: (repoUrl: string, branch: string) => Promise<string>
+    generateInsights: (
+      repoUrl: string,
+      branch: string
+    ) => Promise<{ systemPrompt: string; userPrompt: string }>
+    saveInsights: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      agentId: string,
+      toonData: string
+    ) => Promise<void>
+    getInsights: (repoUrl: string, branch: string, commitSha: string) => Promise<string | null>
+    onCloneProgress: (
+      cb: (data: { stage: string; progress: number; detail: string }) => void
+    ) => void
+    onAnalysisProgress: (
+      cb: (data: {
+        phase: string
+        progress: number
+        detail: string
+        filesProcessed: number
+        totalFiles: number
+      }) => void
+    ) => void
+    removeProgressListeners: () => void
   }
   launchpad: {
     exportPdf: (estimation: unknown) => Promise<{ filePath: string | null }>

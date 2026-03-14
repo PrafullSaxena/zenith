@@ -6,9 +6,119 @@ import type {
   FileContent,
   QAMessage
 } from '../types/cortex'
-import type { ToonInsights } from '../plugins/cortex/components/ArchitectureDashboard'
 import { useAgentStore } from './agent-store'
 import { useSettingsStore } from './settings-store'
+
+// ── ToonInsights type (mirrors main-process toon-parser.ts) ────────────
+
+export interface ToonInsights {
+  summary: string
+  architecture: { pattern: string; framework: string; language: string; libs: string[] }
+  patterns: { name: string; description: string }[]
+  security: { type: string; description: string }[]
+  config: { source: string; description: string }[]
+  async: { type: string; description: string }[]
+  tests: { framework: string; details: string[] }
+  insights: { severity: 'strength' | 'concern'; description: string }[]
+  entities: { name: string; kind: string; location: string; summary: string }[]
+  dependencies: { category: string; name: string; version: string }[]
+}
+
+// ── Lightweight renderer-side TOON parser ──────────────────────────────
+
+function parseToonResponseRenderer(text: string): ToonInsights {
+  const result: ToonInsights = {
+    summary: '',
+    architecture: { pattern: '', framework: '', language: '', libs: [] },
+    patterns: [],
+    security: [],
+    config: [],
+    async: [],
+    tests: { framework: '', details: [] },
+    insights: [],
+    entities: [],
+    dependencies: []
+  }
+
+  for (const rawLine of text.split('\n')) {
+    const line = rawLine.trim()
+    if (!line) continue
+
+    const parts = line.split('|')
+    const type = (parts[0] ?? '').toUpperCase()
+
+    switch (type) {
+      case 'SUMMARY':
+        result.summary = parts.slice(1).join('|').trim()
+        break
+      case 'ARCH':
+        result.architecture = {
+          pattern: parts[1]?.trim() || '',
+          framework: parts[2]?.trim() || '',
+          language: parts[3]?.trim() || '',
+          libs: (parts[4]?.trim() || '').split(',').map((s) => s.trim()).filter(Boolean)
+        }
+        break
+      case 'PATTERN':
+        if (parts.length >= 3) {
+          result.patterns.push({ name: parts[1]?.trim() || '', description: parts[2]?.trim() || '' })
+        }
+        break
+      case 'SECURITY':
+        if (parts.length >= 3) {
+          result.security.push({ type: parts[1]?.trim() || '', description: parts[2]?.trim() || '' })
+        }
+        break
+      case 'CONFIG':
+        if (parts.length >= 3) {
+          result.config.push({ source: parts[1]?.trim() || '', description: parts[2]?.trim() || '' })
+        }
+        break
+      case 'ASYNC':
+        if (parts.length >= 3) {
+          result.async.push({ type: parts[1]?.trim() || '', description: parts[2]?.trim() || '' })
+        }
+        break
+      case 'TEST': {
+        const fw = parts[1]?.trim() || ''
+        const details = parts.slice(2).map((s) => s.trim()).filter(Boolean)
+        if (!result.tests.framework && fw) result.tests.framework = fw
+        result.tests.details.push(...details)
+        break
+      }
+      case 'INSIGHT': {
+        const rawSev = (parts[1]?.trim() || '').toLowerCase()
+        const severity: 'strength' | 'concern' = rawSev === 'strength' ? 'strength' : 'concern'
+        if (parts.length >= 3) {
+          result.insights.push({ severity, description: parts[2]?.trim() || '' })
+        }
+        break
+      }
+      case 'ENTITY':
+        if (parts.length >= 5) {
+          result.entities.push({
+            name: parts[1]?.trim() || '',
+            kind: parts[2]?.trim() || '',
+            location: parts[3]?.trim() || '',
+            summary: parts[4]?.trim() || ''
+          })
+        }
+        break
+      case 'DEP':
+        if (parts.length >= 4) {
+          result.dependencies.push({
+            category: parts[1]?.trim() || '',
+            name: parts[2]?.trim() || '',
+            version: parts[3]?.trim() || ''
+          })
+        }
+        break
+      default:
+        break
+    }
+  }
+  return result
+}
 
 interface CortexState {
   // Repos
@@ -63,6 +173,7 @@ interface CortexState {
   setDesignDoc: (doc: string) => void
   setAiInsights: (insights: ToonInsights | null) => void
   setGeneratingInsights: (v: boolean) => void
+  generateInsights: () => Promise<void>
   addQAMessage: (msg: QAMessage) => void
   updateLastQAMessage: (content: string) => void
   clearQA: () => void
@@ -201,6 +312,74 @@ export const useCortexStore = create<CortexState>((set, get) => ({
   setDesignDoc: (doc) => set({ designDoc: doc }),
   setAiInsights: (insights) => set({ aiInsights: insights }),
   setGeneratingInsights: (v) => set({ isGeneratingInsights: v }),
+
+  generateInsights: async () => {
+    const state = get()
+    const repo = state.repos.find((r) => r.id === state.activeRepoId)
+    if (!repo) return
+
+    const agent = getCortexAgent()
+    if (!agent) return
+
+    set({ isGeneratingInsights: true })
+    const sessionId = crypto.randomUUID()
+    let accumulated = ''
+
+    // Check cache first
+    try {
+      const cached = await window.api.cortex.getInsights(repo.url, repo.branch, repo.commitSha)
+      if (cached) {
+        set({ aiInsights: parseToonResponseRenderer(cached), isGeneratingInsights: false })
+        return
+      }
+    } catch {
+      /* no cached data */
+    }
+
+    // Get prompts from main process
+    const { systemPrompt, userPrompt } = await window.api.cortex.generateInsights(
+      repo.url,
+      repo.branch
+    )
+
+    // Set up stream listeners
+    window.api.ai.onStreamChunk(({ sessionId: sid, chunk }) => {
+      if (sid !== sessionId) return
+      accumulated += chunk
+      const partial = parseToonResponseRenderer(accumulated)
+      set({ aiInsights: partial })
+    })
+
+    window.api.ai.onStreamDone(({ sessionId: sid }) => {
+      if (sid !== sessionId) return
+      const final = parseToonResponseRenderer(accumulated)
+      set({ aiInsights: final, isGeneratingInsights: false })
+      // Cache the result
+      window.api.cortex.saveInsights(
+        repo.url,
+        repo.branch,
+        repo.commitSha,
+        agent.providerId,
+        accumulated
+      )
+      window.api.ai.removeStreamListeners()
+    })
+
+    window.api.ai.onStreamError(({ sessionId: sid }) => {
+      if (sid !== sessionId) return
+      set({ isGeneratingInsights: false })
+      window.api.ai.removeStreamListeners()
+    })
+
+    await window.api.ai.startAnalysis(
+      agent.providerId,
+      agent.model,
+      systemPrompt,
+      userPrompt,
+      sessionId,
+      agent.command
+    )
+  },
 
   addQAMessage: (msg) => set((s) => ({ qaMessages: [...s.qaMessages, msg] })),
   updateLastQAMessage: (content) =>
