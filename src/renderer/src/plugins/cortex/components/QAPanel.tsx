@@ -6,27 +6,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Send, Search, FileCode, Loader2, Trash2 } from 'lucide-react'
-import { useCortexStore } from '../../../../stores/cortex-store'
-import { useAgentStore } from '../../../../stores/agent-store'
-import { useSettingsStore } from '../../../../stores/settings-store'
+import { useCortexStore, getCortexAgent } from '../../../../stores/cortex-store'
 import MarkdownRenderer from '../../../../components/MarkdownRenderer'
 import type { QAMessage, RepoType } from '../../../../types/cortex'
-
-// ── Agent resolution (follows nebula/db pattern) ────────────────────
-
-function getCortexAgent(): { providerId: string; model: string; command?: string } | null {
-  const defaultAgentId = useSettingsStore.getState().getSetting(
-    'plugins.cortex.defaultAgent'
-  ) as string | undefined
-
-  const providers = useAgentStore.getState().providers
-  const agent = defaultAgentId
-    ? providers.find((p) => p.id === defaultAgentId)
-    : providers.find((p) => p.status === 'connected' || p.hasApiKey)
-
-  if (!agent) return null
-  return { providerId: agent.id, model: agent.model ?? agent.id, command: agent.command }
-}
 
 // ── Suggested questions by repo type ────────────────────────────────
 

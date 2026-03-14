@@ -6,6 +6,8 @@ import type {
   FileContent,
   QAMessage
 } from '../types/cortex'
+import { useAgentStore } from './agent-store'
+import { useSettingsStore } from './settings-store'
 
 interface CortexState {
   // Repos
@@ -55,6 +57,25 @@ interface CortexState {
   updateLastQAMessage: (content: string) => void
   clearQA: () => void
   setIsQAStreaming: (v: boolean) => void
+}
+
+/**
+ * Resolve the configured AI agent for Cortex.
+ * Checks `plugins.cortex.defaultAgent` in settings first; falls back to
+ * the first connected/available agent from the agent store.
+ */
+export function getCortexAgent(): { providerId: string; model: string; command?: string } | null {
+  const defaultAgentId = useSettingsStore.getState().getSetting(
+    'plugins.cortex.defaultAgent'
+  ) as string | undefined
+
+  const providers = useAgentStore.getState().providers
+  const agent = defaultAgentId
+    ? providers.find((p) => p.id === defaultAgentId)
+    : providers.find((p) => p.status === 'connected' || p.hasApiKey)
+
+  if (!agent) return null
+  return { providerId: agent.id, model: agent.model ?? agent.id, command: agent.command }
 }
 
 export const useCortexStore = create<CortexState>((set) => ({

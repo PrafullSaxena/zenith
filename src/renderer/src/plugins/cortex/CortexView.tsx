@@ -10,7 +10,7 @@
 import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Brain, LayoutDashboard, Code2, MessageSquare, FolderGit2 } from 'lucide-react'
-import { useCortexStore } from '../../stores/cortex-store'
+import { useCortexStore, getCortexAgent } from '../../stores/cortex-store'
 import RepoManager from './components/RepoManager'
 import InsightsPanel from './components/InsightsPanel'
 import CodePanel from './components/CodePanel'
@@ -89,6 +89,13 @@ export default function CortexView(): React.JSX.Element {
           )
         })}
       </div>
+
+      {/* No-agent banner */}
+      {!getCortexAgent() && (
+        <div className="mx-4 mt-2 rounded-lg bg-accent/10 px-3 py-2 text-[11px] text-accent">
+          Configure an AI Agent in Settings to unlock AI-powered insights
+        </div>
+      )}
 
       {/* Content */}
       <div className="min-h-0 flex-1 overflow-hidden">
