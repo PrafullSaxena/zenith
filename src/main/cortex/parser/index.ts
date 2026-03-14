@@ -157,12 +157,14 @@ export async function parseRepository(
       const javaResult: JavaParseResult = parseJavaFiles(javaFiles)
       entities.push(...(javaResult.entities as CodeEntity[]))
       routes.push(...(javaResult.routes as RouteInfo[]))
+      calls.push(...(javaResult.callEdges as CallEdge[]))
       reportProgress(javaFiles.length)
     } else if (language === 'python') {
       const pyFiles = await readFilesSafe(repoPath, validPaths, ['.py'])
       const pyResult: PythonParseResult = parsePythonFiles(pyFiles)
       entities.push(...(pyResult.entities as CodeEntity[]))
       routes.push(...(pyResult.routes as RouteInfo[]))
+      calls.push(...(pyResult.callEdges as CallEdge[]))
       reportProgress(pyFiles.length)
     }
   }
