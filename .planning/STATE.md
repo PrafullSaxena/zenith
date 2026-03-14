@@ -18,7 +18,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 **Last Activity:** 2026-03-14
 **Last Activity Description:** Completed 13-03 (Core UI -- View Shell, Repo Management, Insights Layout)
 
-**Progress:** [█████████░] 92%
+**Progress:** [█████████░] 94%
 
 ## Performance Metrics
 
@@ -75,6 +75,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | Phase 14-cortex-bugfix P04 | 8min | 4 tasks | 2 files |
 | Phase 14-cortex-bugfix P01 | 2min | 4 tasks | 3 files |
 | Phase 14 P3 | 3min | 3 tasks | 1 files |
+| Phase 14-cortex-bugfix P02 | 2min | 4 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -216,6 +217,9 @@ Recent decisions affecting current work:
 - [Phase 14-cortex-bugfix]: Canonical CallEdge type cast as CallEdge[] at aggregation boundary in index.ts — subparser types use narrower type subsets compatible at runtime
 - [Phase 14-cortex-bugfix]: Route path extraction rewritten to annotation-line finder pattern: scan backward for line starting with @Mapping, then parse args — handles all Spring Boot annotation variants including multi-value arrays
 - [Phase 14]: Static entity graph groups entities by kind into columns; AI insights section collapsible (not blocking) with AnimatePresence; Route summary navigates to handler on click
+- [Phase 14-cortex-bugfix]: normPath() helper keeps path normalization inline in handler-matching loop — backslash/leading-dot-slash normalization for cross-platform entity matching
+- [Phase 14-cortex-bugfix]: callEdgeTypeMap (Map<string, CallEdge['type']>) stores first-encountered type per caller-callee pair for O(1) edge type lookup during BFS flow traversal
+- [Phase 14-cortex-bugfix]: Dual-trigger fallback in buildAPIFlowNodes: entity-kind graph fires when nodes.length===0 after BFS — covers both zero-routes and routes-with-no-matched-handlers cases
 
 ### Pending Todos
 
@@ -229,6 +233,6 @@ None yet.
 
 ## Session Continuity
 
-**Last session:** 2026-03-14T22:09:47.986Z
-**Stopped at:** Completed 14-03-PLAN.md
+**Last session:** 2026-03-14T22:13:43.858Z
+**Stopped at:** Completed 14-02-PLAN.md
 **Resume file:** None
