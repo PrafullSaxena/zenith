@@ -1,24 +1,24 @@
 /**
  * DesignDocTab — Renders the generated HLD with Mermaid diagrams.
- * Calls cban:generateHLD IPC to generate document from analysis results,
+ * Calls cortex:generateHLD IPC to generate document from analysis results,
  * then renders via MarkdownRenderer (which handles mermaid fences).
- * Stores HLD content in the codebase-analyzer store for export access.
+ * Stores HLD content in the cortex store for export access.
  */
 import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { BookOpen, RefreshCw, Loader2 } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../../stores/cortex-store'
 import MarkdownRenderer from '../../../../components/MarkdownRenderer'
 
 export default function DesignDocTab(): React.JSX.Element {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const analysisResult = useCodebaseAnalyzerStore((s) => s.analysisResult)
-  const designDoc = useCodebaseAnalyzerStore((s) => s.designDoc)
-  const setDesignDoc = useCodebaseAnalyzerStore((s) => s.setDesignDoc)
-  const repos = useCodebaseAnalyzerStore((s) => s.repos)
-  const activeRepoId = useCodebaseAnalyzerStore((s) => s.activeRepoId)
+  const analysisResult = useCortexStore((s) => s.analysisResult)
+  const designDoc = useCortexStore((s) => s.designDoc)
+  const setDesignDoc = useCortexStore((s) => s.setDesignDoc)
+  const repos = useCortexStore((s) => s.repos)
+  const activeRepoId = useCortexStore((s) => s.activeRepoId)
 
   const activeRepo = repos.find((r) => r.id === activeRepoId)
 
@@ -29,7 +29,7 @@ export default function DesignDocTab(): React.JSX.Element {
     setError(null)
 
     try {
-      const doc = await window.api.cban.generateHLD(activeRepo.url, activeRepo.branch)
+      const doc = await window.api.cortex.generateHLD(activeRepo.url, activeRepo.branch)
       setDesignDoc(doc)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to generate HLD'

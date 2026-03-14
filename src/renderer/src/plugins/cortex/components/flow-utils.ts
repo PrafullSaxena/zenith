@@ -13,7 +13,7 @@ import type {
   FlowNodeData,
   FlowEdgeData,
   FlowNodeType
-} from '../../../types/codebase-analyzer'
+} from '../../../types/cortex'
 
 // ---- Layout ----
 

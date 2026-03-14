@@ -3,7 +3,7 @@
  * Each tab shows filename with extension-colored icon and close button.
  */
 import { X, FileCode } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../../stores/cortex-store'
 
 // ── Icon color by extension (shared with FileTree) ──────────────────
 
@@ -35,13 +35,13 @@ function getFileIconColor(name: string): string {
 }
 
 export default function CodeTabs(): React.JSX.Element {
-  const openFiles = useCodebaseAnalyzerStore((s) => s.openFiles)
-  const activeFilePath = useCodebaseAnalyzerStore((s) => s.activeFilePath)
-  const setActiveFile = useCodebaseAnalyzerStore((s) => s.setActiveFile)
-  const setFileContent = useCodebaseAnalyzerStore((s) => s.setFileContent)
-  const closeFile = useCodebaseAnalyzerStore((s) => s.closeFile)
-  const repos = useCodebaseAnalyzerStore((s) => s.repos)
-  const activeRepoId = useCodebaseAnalyzerStore((s) => s.activeRepoId)
+  const openFiles = useCortexStore((s) => s.openFiles)
+  const activeFilePath = useCortexStore((s) => s.activeFilePath)
+  const setActiveFile = useCortexStore((s) => s.setActiveFile)
+  const setFileContent = useCortexStore((s) => s.setFileContent)
+  const closeFile = useCortexStore((s) => s.closeFile)
+  const repos = useCortexStore((s) => s.repos)
+  const activeRepoId = useCortexStore((s) => s.activeRepoId)
 
   const handleTabClick = async (path: string): Promise<void> => {
     setActiveFile(path)
@@ -49,7 +49,7 @@ export default function CodeTabs(): React.JSX.Element {
     try {
       const repo = repos.find((r) => r.id === activeRepoId)
       if (!repo) return
-      const content = await window.api.cban.getFileContent(repo.repoPath, path)
+      const content = await window.api.cortex.getFileContent(repo.repoPath, path)
       setFileContent(content)
     } catch {
       // Silently handle

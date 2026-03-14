@@ -7,7 +7,7 @@ export class AnalyzerDatabase {
   private db: Database.Database
 
   constructor() {
-    const dbPath = path.join(app.getPath('userData'), 'codebase-analyzer', 'analyzer.db')
+    const dbPath = path.join(app.getPath('userData'), 'cortex', 'analyzer.db')
     // Ensure parent directory exists
     const dir = path.dirname(dbPath)
     fs.mkdirSync(dir, { recursive: true })

@@ -4,7 +4,7 @@
  */
 import { useState, useMemo } from 'react'
 import { GitBranch, Route, Component, Workflow, ChevronDown } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 import FlowDiagram from './FlowDiagram'
 import { buildAPIFlowNodes, buildComponentTreeNodes, buildPipelineNodes } from './flow-utils'
 
@@ -24,9 +24,9 @@ const FLOW_TYPES: FlowTypeOption[] = [
 ]
 
 export default function FlowsTab(): React.JSX.Element {
-  const analysisResult = useCodebaseAnalyzerStore((s) => s.analysisResult)
-  const openFile = useCodebaseAnalyzerStore((s) => s.openFile)
-  const setActiveTab = useCodebaseAnalyzerStore((s) => s.setActiveTab)
+  const analysisResult = useCortexStore((s) => s.analysisResult)
+  const openFile = useCortexStore((s) => s.openFile)
+  const setActiveTab = useCortexStore((s) => s.setActiveTab)
 
   const repoType = analysisResult?.repoType ?? 'unknown'
 

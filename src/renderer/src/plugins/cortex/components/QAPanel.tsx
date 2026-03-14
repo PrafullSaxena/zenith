@@ -6,17 +6,17 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Send, Search, FileCode, Loader2, Trash2 } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../../stores/cortex-store'
 import { useAgentStore } from '../../../../stores/agent-store'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import MarkdownRenderer from '../../../../components/MarkdownRenderer'
-import type { QAMessage, RepoType } from '../../../../types/codebase-analyzer'
+import type { QAMessage, RepoType } from '../../../../types/cortex'
 
 // ── Agent resolution (follows nebula/db pattern) ────────────────────
 
-function getCbanAgent(): { providerId: string; model: string; command?: string } | null {
+function getCortexAgent(): { providerId: string; model: string; command?: string } | null {
   const defaultAgentId = useSettingsStore.getState().getSetting(
-    'plugins.codebase-analyzer.defaultAgent'
+    'plugins.cortex.defaultAgent'
   ) as string | undefined
 
   const providers = useAgentStore.getState().providers
@@ -66,15 +66,15 @@ export default function QAPanel(): React.JSX.Element {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const accumulatorRef = useRef('')
 
-  const qaMessages = useCodebaseAnalyzerStore((s) => s.qaMessages)
-  const isQAStreaming = useCodebaseAnalyzerStore((s) => s.isQAStreaming)
-  const analysisResult = useCodebaseAnalyzerStore((s) => s.analysisResult)
-  const addQAMessage = useCodebaseAnalyzerStore((s) => s.addQAMessage)
-  const updateLastQAMessage = useCodebaseAnalyzerStore((s) => s.updateLastQAMessage)
-  const setIsQAStreaming = useCodebaseAnalyzerStore((s) => s.setIsQAStreaming)
-  const clearQA = useCodebaseAnalyzerStore((s) => s.clearQA)
-  const openFile = useCodebaseAnalyzerStore((s) => s.openFile)
-  const setActiveTab = useCodebaseAnalyzerStore((s) => s.setActiveTab)
+  const qaMessages = useCortexStore((s) => s.qaMessages)
+  const isQAStreaming = useCortexStore((s) => s.isQAStreaming)
+  const analysisResult = useCortexStore((s) => s.analysisResult)
+  const addQAMessage = useCortexStore((s) => s.addQAMessage)
+  const updateLastQAMessage = useCortexStore((s) => s.updateLastQAMessage)
+  const setIsQAStreaming = useCortexStore((s) => s.setIsQAStreaming)
+  const clearQA = useCortexStore((s) => s.clearQA)
+  const openFile = useCortexStore((s) => s.openFile)
+  const setActiveTab = useCortexStore((s) => s.setActiveTab)
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function QAPanel(): React.JSX.Element {
     async (question: string) => {
       if (!question.trim() || isQAStreaming || !analysisResult) return
 
-      const agent = getCbanAgent()
+      const agent = getCortexAgent()
       if (!agent) return
 
       // Add user message
@@ -201,7 +201,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
     ? getSuggestedQuestions(analysisResult.repoType)
     : []
 
-  const hasAgent = !!getCbanAgent()
+  const hasAgent = !!getCortexAgent()
 
   return (
     <div className="flex h-full flex-col">

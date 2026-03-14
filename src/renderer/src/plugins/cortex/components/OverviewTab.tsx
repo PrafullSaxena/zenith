@@ -4,7 +4,7 @@
  */
 import { motion } from 'framer-motion'
 import { FileText, Hash, Route, Component } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 
 const cardVariants = {
@@ -48,7 +48,7 @@ const ENTITY_ICONS: Record<string, string> = {
 }
 
 export default function OverviewTab(): React.JSX.Element {
-  const analysisResult = useCodebaseAnalyzerStore((s) => s.analysisResult)
+  const analysisResult = useCortexStore((s) => s.analysisResult)
 
   if (!analysisResult) {
     return (

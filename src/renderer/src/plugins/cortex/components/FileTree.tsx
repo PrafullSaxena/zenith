@@ -6,8 +6,8 @@
 import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, FileCode, Folder, FolderOpen, Search } from 'lucide-react'
-import type { FileNode } from '../../../../types/codebase-analyzer'
-import { useCodebaseAnalyzerStore } from '../../../../stores/codebase-analyzer-store'
+import type { FileNode } from '../../../../types/cortex'
+import { useCortexStore } from '../../../../stores/cortex-store'
 
 // ── Icon color map by file extension ────────────────────────────────
 
@@ -72,11 +72,11 @@ function FileTreeNode({
   depth: number
   filterTerm: string
 }): React.JSX.Element | null {
-  const openFile = useCodebaseAnalyzerStore((s) => s.openFile)
-  const setFileContent = useCodebaseAnalyzerStore((s) => s.setFileContent)
-  const activeFilePath = useCodebaseAnalyzerStore((s) => s.activeFilePath)
-  const repos = useCodebaseAnalyzerStore((s) => s.repos)
-  const activeRepoId = useCodebaseAnalyzerStore((s) => s.activeRepoId)
+  const openFile = useCortexStore((s) => s.openFile)
+  const setFileContent = useCortexStore((s) => s.setFileContent)
+  const activeFilePath = useCortexStore((s) => s.activeFilePath)
+  const repos = useCortexStore((s) => s.repos)
+  const activeRepoId = useCortexStore((s) => s.activeRepoId)
 
   const defaultOpen = filterTerm
     ? true
@@ -100,7 +100,7 @@ function FileTreeNode({
     try {
       const repo = repos.find((r) => r.id === activeRepoId)
       if (!repo) return
-      const content = await window.api.cban.getFileContent(repo.repoPath, node.path)
+      const content = await window.api.cortex.getFileContent(repo.repoPath, node.path)
       setFileContent(content)
     } catch {
       // Silently handle — file might be binary or inaccessible
@@ -181,7 +181,7 @@ function FileTreeNode({
 
 export default function FileTree(): React.JSX.Element {
   const [search, setSearch] = useState('')
-  const analysisResult = useCodebaseAnalyzerStore((s) => s.analysisResult)
+  const analysisResult = useCortexStore((s) => s.analysisResult)
 
   const filterTerm = useMemo(() => search.trim().toLowerCase(), [search])
 

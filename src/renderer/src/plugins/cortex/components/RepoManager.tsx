@@ -5,21 +5,21 @@
  */
 import { useState, useCallback } from 'react'
 import { Plus, FolderGit2 } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 import RepoCard from './RepoCard'
 import AddRepoDialog from './AddRepoDialog'
 
 export default function RepoManager(): React.JSX.Element {
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const repos = useCodebaseAnalyzerStore((s) => s.repos)
-  const activeRepoId = useCodebaseAnalyzerStore((s) => s.activeRepoId)
-  const setActiveRepo = useCodebaseAnalyzerStore((s) => s.setActiveRepo)
-  const setIsAnalyzing = useCodebaseAnalyzerStore((s) => s.setIsAnalyzing)
-  const setProgress = useCodebaseAnalyzerStore((s) => s.setProgress)
-  const setAnalysisResult = useCodebaseAnalyzerStore((s) => s.setAnalysisResult)
-  const updateRepo = useCodebaseAnalyzerStore((s) => s.updateRepo)
-  const removeRepo = useCodebaseAnalyzerStore((s) => s.removeRepo)
-  const setActiveTab = useCodebaseAnalyzerStore((s) => s.setActiveTab)
+  const repos = useCortexStore((s) => s.repos)
+  const activeRepoId = useCortexStore((s) => s.activeRepoId)
+  const setActiveRepo = useCortexStore((s) => s.setActiveRepo)
+  const setIsAnalyzing = useCortexStore((s) => s.setIsAnalyzing)
+  const setProgress = useCortexStore((s) => s.setProgress)
+  const setAnalysisResult = useCortexStore((s) => s.setAnalysisResult)
+  const updateRepo = useCortexStore((s) => s.updateRepo)
+  const removeRepo = useCortexStore((s) => s.removeRepo)
+  const setActiveTab = useCortexStore((s) => s.setActiveTab)
 
   const handleAnalyze = useCallback(
     async (repo: (typeof repos)[number]) => {
@@ -29,12 +29,12 @@ export default function RepoManager(): React.JSX.Element {
       setIsAnalyzing(true)
 
       // Set up progress listener
-      window.api.cban.onAnalysisProgress((data) => {
+      window.api.cortex.onAnalysisProgress((data) => {
         setProgress(data)
       })
 
       try {
-        const result = await window.api.cban.analyze(repo.repoPath, repo.branch, repo.url)
+        const result = await window.api.cortex.analyze(repo.repoPath, repo.branch, repo.url)
         setAnalysisResult(result)
         updateRepo(repo.id, {
           status: 'ready',
@@ -53,7 +53,7 @@ export default function RepoManager(): React.JSX.Element {
       } finally {
         setIsAnalyzing(false)
         setProgress(null)
-        window.api.cban.removeProgressListeners()
+        window.api.cortex.removeProgressListeners()
       }
     },
     [setActiveRepo, updateRepo, setIsAnalyzing, setProgress, setAnalysisResult, setActiveTab]
@@ -63,7 +63,7 @@ export default function RepoManager(): React.JSX.Element {
     async (repo: (typeof repos)[number]) => {
       if (repo.repoPath) {
         try {
-          await window.api.cban.removeRepo(repo.repoPath)
+          await window.api.cortex.removeRepo(repo.repoPath)
         } catch {
           // Best-effort cleanup
         }

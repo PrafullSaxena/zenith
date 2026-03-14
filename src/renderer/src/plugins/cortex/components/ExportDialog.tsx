@@ -5,7 +5,7 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, FileDown, AlignLeft, X, Download, Loader2 } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../../stores/cortex-store'
 
 type ExportFormat = 'markdown' | 'pdf' | 'plaintext'
 
@@ -27,9 +27,9 @@ const FORMAT_OPTIONS: { id: ExportFormat; label: string; icon: typeof FileText }
 ]
 
 export default function ExportDialog({ hldContent, onClose }: ExportDialogProps): React.JSX.Element {
-  const analysisResult = useCodebaseAnalyzerStore((s) => s.analysisResult)
-  const repos = useCodebaseAnalyzerStore((s) => s.repos)
-  const activeRepoId = useCodebaseAnalyzerStore((s) => s.activeRepoId)
+  const analysisResult = useCortexStore((s) => s.analysisResult)
+  const repos = useCortexStore((s) => s.repos)
+  const activeRepoId = useCortexStore((s) => s.activeRepoId)
 
   const activeRepo = repos.find((r) => r.id === activeRepoId)
   const repoName = activeRepo?.name ?? 'codebase'

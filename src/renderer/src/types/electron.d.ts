@@ -109,34 +109,34 @@ export interface ElectronAPI {
     ) => Promise<{ started: boolean; sessionId: string }>
     cancelAnalysis: (sessionId: string) => Promise<void>
   }
-  cban: {
+  cortex: {
     fetchBranches: (url: string) => Promise<string[]>
     clone: (url: string, name: string) => Promise<{ repoPath: string }>
     analyze: (
       repoPath: string,
       branch: string,
       repoUrl: string
-    ) => Promise<import('./codebase-analyzer').AnalysisResult>
+    ) => Promise<import('./cortex').AnalysisResult>
     getFileContent: (
       repoPath: string,
       filePath: string
-    ) => Promise<import('./codebase-analyzer').FileContent>
+    ) => Promise<import('./cortex').FileContent>
     removeRepo: (repoPath: string) => Promise<void>
     getCachedAnalysis: (
       repoUrl: string,
       branch: string,
       commitSha: string
-    ) => Promise<import('./codebase-analyzer').AnalysisResult | null>
+    ) => Promise<import('./cortex').AnalysisResult | null>
     searchCode: (
       repoUrl: string,
       query: string
     ) => Promise<{ filePath: string; snippet: string }[]>
     generateHLD: (repoUrl: string, branch: string) => Promise<string>
     onCloneProgress: (
-      cb: (data: import('./codebase-analyzer').CloneProgress) => void
+      cb: (data: import('./cortex').CloneProgress) => void
     ) => void
     onAnalysisProgress: (
-      cb: (data: import('./codebase-analyzer').AnalysisProgress) => void
+      cb: (data: import('./cortex').AnalysisProgress) => void
     ) => void
     removeProgressListeners: () => void
   }

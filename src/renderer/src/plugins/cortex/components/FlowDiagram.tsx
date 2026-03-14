@@ -60,7 +60,7 @@ export default function FlowDiagram({
   )
 
   return (
-    <div className="cban-flow h-full w-full rounded-xl border border-border bg-background">
+    <div className="cortex-flow h-full w-full rounded-xl border border-border bg-background">
       <ReactFlow
         nodes={nodes}
         edges={edges}

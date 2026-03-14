@@ -160,13 +160,20 @@ export const PLUGINS: readonly PluginDefinition[] = [
     defaultAgent: null
   },
   {
-    id: 'codebase-analyzer' as PluginId,
-    name: 'CodebaseAnalyzer',
+    id: 'cortex',
+    name: 'Cortex',
     description: 'Analyze and document codebases with interactive flow visualizations',
-    icon: 'SearchCode',
-    route: '/codebase-analyzer',
-    component: React.lazy(() => import('./codebase-analyzer/CodebaseAnalyzerView')),
-    settingsSchema: [],
+    icon: 'Brain',
+    route: '/cortex',
+    component: React.lazy(() => import('./cortex/CortexView')),
+    settingsSchema: [
+      {
+        key: 'defaultAgent',
+        label: 'Default AI Agent',
+        type: 'agent-select' as const,
+        defaultValue: null
+      }
+    ],
     defaultAgent: null
   }
 ] as const

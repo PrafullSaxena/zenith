@@ -3,7 +3,7 @@
  * Displays phase label, animated progress bar, and detail text.
  */
 import { motion } from 'framer-motion'
-import type { AnalysisProgress as AnalysisProgressType } from '../../../types/codebase-analyzer'
+import type { AnalysisProgress as AnalysisProgressType } from '../../../types/cortex'
 
 interface Props {
   progress: AnalysisProgressType

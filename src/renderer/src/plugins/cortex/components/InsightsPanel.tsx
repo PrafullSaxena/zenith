@@ -6,7 +6,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, Route, GitBranch, BookOpen, Download } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
@@ -21,9 +21,9 @@ const INSIGHT_TABS = [
 ] as const
 
 export default function InsightsPanel(): React.JSX.Element {
-  const insightsSubTab = useCodebaseAnalyzerStore((s) => s.insightsSubTab)
-  const setInsightsSubTab = useCodebaseAnalyzerStore((s) => s.setInsightsSubTab)
-  const designDoc = useCodebaseAnalyzerStore((s) => s.designDoc)
+  const insightsSubTab = useCortexStore((s) => s.insightsSubTab)
+  const setInsightsSubTab = useCortexStore((s) => s.setInsightsSubTab)
+  const designDoc = useCortexStore((s) => s.designDoc)
 
   const [showExport, setShowExport] = useState(false)
 

@@ -7,7 +7,7 @@ export class GitService {
   private baseDir: string
 
   constructor() {
-    this.baseDir = path.join(app.getPath('userData'), 'codebase-analyzer', 'repos')
+    this.baseDir = path.join(app.getPath('userData'), 'cortex', 'repos')
   }
 
   async ensureBaseDir(): Promise<void> {

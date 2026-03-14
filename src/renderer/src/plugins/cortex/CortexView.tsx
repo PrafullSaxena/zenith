@@ -1,36 +1,36 @@
 /**
- * CodebaseAnalyzerView -- Main plugin view component.
+ * CortexView -- Main plugin view component.
  * Default-exported for React.lazy() in registry.ts.
  *
  * Layout:
- *  - Header: SearchCode icon + title + active repo badge
+ *  - Header: Brain icon + title + active repo badge
  *  - Tab bar: Insights / Code / Ask / Repos
  *  - Tab content (full remaining height)
  */
 import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SearchCode, LayoutDashboard, Code2, MessageSquare, FolderGit2 } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../stores/codebase-analyzer-store'
+import { Brain, LayoutDashboard, Code2, MessageSquare, FolderGit2 } from 'lucide-react'
+import { useCortexStore } from '../../stores/cortex-store'
 import RepoManager from './components/RepoManager'
 import InsightsPanel from './components/InsightsPanel'
 import CodePanel from './components/CodePanel'
 import QAPanel from './components/QAPanel'
 
-type CbanTab = 'insights' | 'code' | 'qa' | 'repos'
+type CortexTab = 'insights' | 'code' | 'qa' | 'repos'
 
-const TABS: { id: CbanTab; label: string; icon: typeof LayoutDashboard }[] = [
+const TABS: { id: CortexTab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'insights', label: 'Insights', icon: LayoutDashboard },
   { id: 'code', label: 'Code', icon: Code2 },
   { id: 'qa', label: 'Ask', icon: MessageSquare },
   { id: 'repos', label: 'Repos', icon: FolderGit2 }
 ]
 
-export default function CodebaseAnalyzerView(): React.JSX.Element {
-  const activeTab = useCodebaseAnalyzerStore((s) => s.activeTab)
-  const setActiveTab = useCodebaseAnalyzerStore((s) => s.setActiveTab)
-  const repos = useCodebaseAnalyzerStore((s) => s.repos)
-  const activeRepoId = useCodebaseAnalyzerStore((s) => s.activeRepoId)
-  const analysisResult = useCodebaseAnalyzerStore((s) => s.analysisResult)
+export default function CortexView(): React.JSX.Element {
+  const activeTab = useCortexStore((s) => s.activeTab)
+  const setActiveTab = useCortexStore((s) => s.setActiveTab)
+  const repos = useCortexStore((s) => s.repos)
+  const activeRepoId = useCortexStore((s) => s.activeRepoId)
+  const analysisResult = useCortexStore((s) => s.analysisResult)
 
   const activeRepo = repos.find((r) => r.id === activeRepoId)
 
@@ -46,8 +46,8 @@ export default function CodebaseAnalyzerView(): React.JSX.Element {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div className="flex items-center gap-2">
-          <SearchCode size={18} className="text-accent" />
-          <h1 className="text-lg font-semibold text-text-primary">CodebaseAnalyzer</h1>
+          <Brain size={18} className="text-accent" />
+          <h1 className="text-lg font-semibold text-text-primary">Cortex</h1>
         </div>
 
         {activeRepo && (

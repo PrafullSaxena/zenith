@@ -5,13 +5,13 @@
  */
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { FileCode } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../../stores/cortex-store'
 import FileTree from './FileTree'
 import CodeTabs from './CodeTabs'
 import CodeViewer from './CodeViewer'
 
 export default function CodePanel(): React.JSX.Element {
-  const activeFilePath = useCodebaseAnalyzerStore((s) => s.activeFilePath)
+  const activeFilePath = useCortexStore((s) => s.activeFilePath)
 
   return (
     <div className="h-full">

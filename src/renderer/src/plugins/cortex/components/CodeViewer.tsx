@@ -8,7 +8,7 @@ import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { FileCode } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../../stores/cortex-store'
 import type { Extension } from '@codemirror/state'
 
 // ── Language extension loader ───────────────────────────────────────
@@ -64,9 +64,9 @@ async function getLanguageExtension(lang: string): Promise<Extension> {
 export default function CodeViewer(): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
-  const fileContent = useCodebaseAnalyzerStore((s) => s.fileContent)
-  const activeFilePath = useCodebaseAnalyzerStore((s) => s.activeFilePath)
-  const openFiles = useCodebaseAnalyzerStore((s) => s.openFiles)
+  const fileContent = useCortexStore((s) => s.fileContent)
+  const activeFilePath = useCortexStore((s) => s.activeFilePath)
+  const openFiles = useCortexStore((s) => s.openFiles)
 
   // Get language from openFiles list for the active file
   const activeFileEntry = openFiles.find((f) => f.path === activeFilePath)

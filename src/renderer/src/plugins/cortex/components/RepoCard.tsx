@@ -10,8 +10,8 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react'
-import type { Repository } from '../../../types/codebase-analyzer'
-import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
+import type { Repository } from '../../../types/cortex'
+import { useCortexStore } from '../../../stores/cortex-store'
 import AnalysisProgress from './AnalysisProgress'
 
 interface Props {
@@ -59,8 +59,8 @@ export default function RepoCard({
   onAnalyze,
   onRemove
 }: Props): React.JSX.Element {
-  const progress = useCodebaseAnalyzerStore((s) => s.progress)
-  const isAnalyzing = useCodebaseAnalyzerStore((s) => s.isAnalyzing)
+  const progress = useCortexStore((s) => s.progress)
+  const isAnalyzing = useCortexStore((s) => s.isAnalyzing)
   const isThisAnalyzing = isAnalyzing && isActive && repo.status === 'analyzing'
 
   return (

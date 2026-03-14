@@ -7,9 +7,9 @@ import { memo, useState } from 'react'
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 import { motion } from 'framer-motion'
 import * as Icons from 'lucide-react'
-import type { FlowNodeData } from '../../../types/codebase-analyzer'
+import type { FlowNodeData } from '../../../types/cortex'
 import { getStageColor } from './flow-utils'
-import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 
 function detectLanguage(filePath: string): string {
   const ext = filePath.split('.').pop()?.toLowerCase() ?? ''
@@ -23,8 +23,8 @@ function detectLanguage(filePath: string): string {
 
 const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>) {
   const [showTooltip, setShowTooltip] = useState(false)
-  const openFile = useCodebaseAnalyzerStore((s) => s.openFile)
-  const setActiveTab = useCodebaseAnalyzerStore((s) => s.setActiveTab)
+  const openFile = useCortexStore((s) => s.openFile)
+  const setActiveTab = useCortexStore((s) => s.setActiveTab)
 
   const colors = getStageColor(data.type)
   const IconComp = (Icons as Record<string, React.ComponentType<{ size?: number }>>)[data.icon] ?? Icons.Circle

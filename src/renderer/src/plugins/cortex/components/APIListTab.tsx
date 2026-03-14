@@ -4,8 +4,8 @@
  */
 import { useState, useMemo, useCallback } from 'react'
 import { Search, ArrowUpDown, Route } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
-import type { RouteInfo } from '../../../types/codebase-analyzer'
+import { useCortexStore } from '../../../stores/cortex-store'
+import type { RouteInfo } from '../../../types/cortex'
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'bg-green-500/15 text-green-400',
@@ -20,9 +20,9 @@ type SortKey = 'path' | 'method' | 'handlerName' | 'controllerName'
 type SortDir = 'asc' | 'desc'
 
 export default function APIListTab(): React.JSX.Element {
-  const routes = useCodebaseAnalyzerStore((s) => s.analysisResult?.routes ?? [])
-  const openFile = useCodebaseAnalyzerStore((s) => s.openFile)
-  const setActiveTab = useCodebaseAnalyzerStore((s) => s.setActiveTab)
+  const routes = useCortexStore((s) => s.analysisResult?.routes ?? [])
+  const openFile = useCortexStore((s) => s.openFile)
+  const setActiveTab = useCortexStore((s) => s.setActiveTab)
 
   const [filter, setFilter] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('path')

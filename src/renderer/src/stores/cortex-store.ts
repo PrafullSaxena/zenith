@@ -5,9 +5,9 @@ import type {
   AnalysisProgress,
   FileContent,
   QAMessage
-} from '../types/codebase-analyzer'
+} from '../types/cortex'
 
-interface CodebaseAnalyzerState {
+interface CortexState {
   // Repos
   repos: Repository[]
   activeRepoId: string | null
@@ -35,8 +35,8 @@ interface CodebaseAnalyzerState {
   isQAStreaming: boolean
 
   // Actions
-  setActiveTab: (tab: CodebaseAnalyzerState['activeTab']) => void
-  setInsightsSubTab: (tab: CodebaseAnalyzerState['insightsSubTab']) => void
+  setActiveTab: (tab: CortexState['activeTab']) => void
+  setInsightsSubTab: (tab: CortexState['insightsSubTab']) => void
   addRepo: (repo: Repository) => void
   updateRepo: (id: string, updates: Partial<Repository>) => void
   removeRepo: (id: string) => void
@@ -56,7 +56,7 @@ interface CodebaseAnalyzerState {
   setIsQAStreaming: (v: boolean) => void
 }
 
-export const useCodebaseAnalyzerStore = create<CodebaseAnalyzerState>((set) => ({
+export const useCortexStore = create<CortexState>((set) => ({
   repos: [],
   activeRepoId: null,
   analysisResult: null,

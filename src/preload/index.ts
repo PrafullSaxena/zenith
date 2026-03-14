@@ -195,34 +195,34 @@ const api = {
     exportPdf: (data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }): Promise<{ filePath: string | null }> =>
       ipcRenderer.invoke('textcraft:exportPdf', data),
   },
-  cban: {
+  cortex: {
     fetchBranches: (url: string): Promise<string[]> =>
-      ipcRenderer.invoke('cban:fetchBranches', url),
+      ipcRenderer.invoke('cortex:fetchBranches', url),
     clone: (url: string, name: string): Promise<{ repoPath: string }> =>
-      ipcRenderer.invoke('cban:clone', url, name),
+      ipcRenderer.invoke('cortex:clone', url, name),
     analyze: (repoPath: string, branch: string, repoUrl: string): Promise<unknown> =>
-      ipcRenderer.invoke('cban:analyze', repoPath, branch, repoUrl),
+      ipcRenderer.invoke('cortex:analyze', repoPath, branch, repoUrl),
     getFileContent: (
       repoPath: string,
       filePath: string
     ): Promise<{ content: string; language: string; path: string; lineCount: number }> =>
-      ipcRenderer.invoke('cban:getFileContent', repoPath, filePath),
+      ipcRenderer.invoke('cortex:getFileContent', repoPath, filePath),
     removeRepo: (repoPath: string): Promise<void> =>
-      ipcRenderer.invoke('cban:removeRepo', repoPath),
+      ipcRenderer.invoke('cortex:removeRepo', repoPath),
     getCachedAnalysis: (
       repoUrl: string,
       branch: string,
       commitSha: string
     ): Promise<unknown> =>
-      ipcRenderer.invoke('cban:getCachedAnalysis', repoUrl, branch, commitSha),
+      ipcRenderer.invoke('cortex:getCachedAnalysis', repoUrl, branch, commitSha),
     searchCode: (repoUrl: string, query: string): Promise<unknown[]> =>
-      ipcRenderer.invoke('cban:searchCode', repoUrl, query),
+      ipcRenderer.invoke('cortex:searchCode', repoUrl, query),
     generateHLD: (repoUrl: string, branch: string): Promise<string> =>
-      ipcRenderer.invoke('cban:generateHLD', repoUrl, branch),
+      ipcRenderer.invoke('cortex:generateHLD', repoUrl, branch),
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ): void => {
-      ipcRenderer.on('cban:cloneProgress', (_e, data) => cb(data))
+      ipcRenderer.on('cortex:cloneProgress', (_e, data) => cb(data))
     },
     onAnalysisProgress: (
       cb: (data: {
@@ -233,11 +233,11 @@ const api = {
         totalFiles: number
       }) => void
     ): void => {
-      ipcRenderer.on('cban:analysisProgress', (_e, data) => cb(data))
+      ipcRenderer.on('cortex:analysisProgress', (_e, data) => cb(data))
     },
     removeProgressListeners: (): void => {
-      ipcRenderer.removeAllListeners('cban:cloneProgress')
-      ipcRenderer.removeAllListeners('cban:analysisProgress')
+      ipcRenderer.removeAllListeners('cortex:cloneProgress')
+      ipcRenderer.removeAllListeners('cortex:analysisProgress')
     },
   },
   nebula: {

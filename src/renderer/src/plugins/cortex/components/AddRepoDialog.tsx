@@ -5,7 +5,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Loader2, FolderGit2 } from 'lucide-react'
-import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-store'
+import { useCortexStore } from '../../../stores/cortex-store'
 
 interface Props {
   open: boolean
@@ -30,9 +30,9 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
   const [error, setError] = useState<string | null>(null)
   const [cloning, setCloning] = useState(false)
 
-  const addRepo = useCodebaseAnalyzerStore((s) => s.addRepo)
-  const updateRepo = useCodebaseAnalyzerStore((s) => s.updateRepo)
-  const setActiveRepo = useCodebaseAnalyzerStore((s) => s.setActiveRepo)
+  const addRepo = useCortexStore((s) => s.addRepo)
+  const updateRepo = useCortexStore((s) => s.updateRepo)
+  const setActiveRepo = useCortexStore((s) => s.setActiveRepo)
 
   // Auto-extract name from URL on blur
   const handleUrlBlur = useCallback(async () => {
@@ -44,7 +44,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
     setLoadingBranches(true)
     setError(null)
     try {
-      const result = await window.api.cban.fetchBranches(url)
+      const result = await window.api.cortex.fetchBranches(url)
       setBranches(result)
       // Default to main or master
       const defaultBranch = result.find((b) => b === 'main') ?? result.find((b) => b === 'master') ?? result[0]
@@ -95,7 +95,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
     onClose()
 
     // Set up clone progress listener
-    window.api.cban.onCloneProgress((data) => {
+    window.api.cortex.onCloneProgress((data) => {
       updateRepo(id, {
         status: 'cloning',
         error: data.detail
@@ -103,7 +103,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
     })
 
     try {
-      const result = await window.api.cban.clone(url, name)
+      const result = await window.api.cortex.clone(url, name)
       updateRepo(id, {
         repoPath: result.repoPath,
         status: 'idle'
@@ -122,7 +122,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
           : message
       })
     } finally {
-      window.api.cban.removeProgressListeners()
+      window.api.cortex.removeProgressListeners()
       setCloning(false)
     }
   }
