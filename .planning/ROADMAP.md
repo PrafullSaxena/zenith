@@ -15,6 +15,7 @@
 | 11 | 3/3 | Complete    | 2026-03-10 | 0/3 |
 | 12 | TextCraft Plugin | 2 | Complete | 2/2 |
 | 13 | 6/6 | Complete   | 2026-03-14 | 1/6 |
+| 14 | 1/4 | In Progress|  | 0/4 |
 
 ## Phase 1: Foundation
 
@@ -169,6 +170,20 @@ Plans:
 - [ ] 13-04-PLAN.md -- Flow visualization: React Flow interactive diagrams with custom nodes/edges, dagre auto-layout, entrance animations
 - [ ] 13-05-PLAN.md -- Code section: file tree browser, CodeMirror code viewer with tabs, AI-powered natural language Q&A
 - [ ] 13-06-PLAN.md -- Export and polish: HLD generation with Mermaid diagrams, MD/PDF/TXT export, animations, skeleton loaders, error handling
+
+## Phase 14: Cortex Bug Fixes
+
+**Goal:** Fix 4 critical Cortex plugin bugs: empty API endpoints for BE repos, empty Flow diagrams, non-functional Architecture Dashboard without AI, and Ask section agent resolution failures.
+
+**Requirements:** [CBAN-04, CBAN-05, CBAN-07, CBAN-09]
+
+**Plans:** 1/4 plans executed
+
+Plans:
+- [ ] 14-01-PLAN.md -- Fix Java/Python parser route detection and CallEdge type mismatch + wire callEdges in parser index
+- [ ] 14-02-PLAN.md -- Fix Flow diagram to work with corrected call edges and add fallback entity-based flows
+- [ ] 14-03-PLAN.md -- Architecture Dashboard: show static diagrams from analysis data without requiring AI insights
+- [ ] 14-04-PLAN.md -- Fix Ask section agent resolution and add graceful error handling for missing agents
 
 ## Phase 6: Polish & Production
 
