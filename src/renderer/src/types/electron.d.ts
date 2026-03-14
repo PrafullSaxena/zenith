@@ -125,6 +125,7 @@ export interface ElectronAPI {
       repoUrl: string,
       query: string
     ) => Promise<{ filePath: string; snippet: string }[]>
+    generateHLD: (repoUrl: string, branch: string) => Promise<string>
     onCloneProgress: (
       cb: (data: import('./codebase-analyzer').CloneProgress) => void
     ) => void

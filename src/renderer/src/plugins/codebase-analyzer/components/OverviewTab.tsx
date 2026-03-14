@@ -184,7 +184,7 @@ export default function OverviewTab(): React.JSX.Element {
         <h3 className="mb-3 text-xs font-semibold text-text-primary">Documentation</h3>
         {documentation ? (
           <div className="rounded-xl border border-border/60 bg-surface-elevated/70 p-4">
-            <MarkdownRenderer content={documentation} />
+            <MarkdownRenderer text={documentation} />
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 rounded-xl border border-border/60 bg-surface-elevated/70 p-8 text-center">

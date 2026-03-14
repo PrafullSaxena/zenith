@@ -50,11 +50,26 @@ export class AnalyzerDatabase {
     branch: string,
     commitSha: string
   ): Record<string, unknown> | null {
+    // If commitSha is empty, fetch the latest analysis for this repo+branch
+    if (!commitSha) {
+      return this.getLatestAnalysis(repoUrl, branch)
+    }
     const row = this.db
       .prepare(
         'SELECT result_json FROM analysis_cache WHERE repo_url = ? AND branch = ? AND commit_sha = ?'
       )
       .get(repoUrl, branch, commitSha) as { result_json: string } | undefined
+    if (!row) return null
+    return JSON.parse(row.result_json)
+  }
+
+  /** Get the latest analysis for a repo+branch (ignoring commitSha) */
+  getLatestAnalysis(repoUrl: string, branch: string): Record<string, unknown> | null {
+    const row = this.db
+      .prepare(
+        'SELECT result_json FROM analysis_cache WHERE repo_url = ? AND branch = ? ORDER BY created_at DESC LIMIT 1'
+      )
+      .get(repoUrl, branch) as { result_json: string } | undefined
     if (!row) return null
     return JSON.parse(row.result_json)
   }

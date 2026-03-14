@@ -8,6 +8,7 @@ import { useCodebaseAnalyzerStore } from '../../../stores/codebase-analyzer-stor
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
+import DesignDocTab from './DesignDocTab'
 
 const INSIGHT_TABS = [
   { id: 'overview', label: 'Overview', icon: FileText },
@@ -61,11 +62,7 @@ export default function InsightsPanel(): React.JSX.Element {
             {insightsSubTab === 'overview' && <OverviewTab />}
             {insightsSubTab === 'apis' && <APIListTab />}
             {insightsSubTab === 'flows' && <FlowsTab />}
-            {insightsSubTab === 'design' && (
-              <div className="flex h-full items-center justify-center text-sm text-text-secondary">
-                Design document -- Plan 06
-              </div>
-            )}
+            {insightsSubTab === 'design' && <DesignDocTab />}
           </motion.div>
         </AnimatePresence>
       </div>

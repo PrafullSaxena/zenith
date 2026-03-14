@@ -217,6 +217,8 @@ const api = {
       ipcRenderer.invoke('cban:getCachedAnalysis', repoUrl, branch, commitSha),
     searchCode: (repoUrl: string, query: string): Promise<unknown[]> =>
       ipcRenderer.invoke('cban:searchCode', repoUrl, query),
+    generateHLD: (repoUrl: string, branch: string): Promise<string> =>
+      ipcRenderer.invoke('cban:generateHLD', repoUrl, branch),
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ): void => {

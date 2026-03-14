@@ -18,6 +18,14 @@ import { transcribeAudio } from './nebula/transcription'
 import { getApiKeyForProvider } from './ai/providers'
 import { GitService } from './codebase-analyzer/git-service'
 import { CodebaseAnalyzer } from './codebase-analyzer/analyzer'
+import {
+  generateArchitectureDiagram,
+  generateAPIFlowDiagram,
+  generateComponentTreeDiagram,
+  generatePipelineDiagram,
+  generateClassDiagram
+} from './codebase-analyzer/mermaid-generator'
+import { generateHLDDocument } from './codebase-analyzer/doc-generator'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -791,6 +799,47 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('cban:searchCode', async (_event, repoUrl: string, query: string) => {
     const { analyzer } = getCbanInstances()
     return analyzer.cache.searchFiles(repoUrl, query)
+  })
+
+  // --- Codebase Analyzer HLD generation ---
+  ipcMain.handle('cban:generateHLD', async (_event, repoUrl: string, branch: string) => {
+    const { analyzer } = getCbanInstances()
+    const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '') // latest
+    if (!analysis) throw new Error('No analysis found. Analyze the repository first.')
+
+    const typedAnalysis = analysis as unknown as {
+      repoId: string
+      repoType: string
+      framework: string
+      language: string
+      commitSha: string
+      entities: unknown[]
+      calls: unknown[]
+      routes: unknown[]
+      components: unknown[]
+      pipelines: unknown[]
+      fileTree: unknown[]
+      stats: {
+        totalFiles: number
+        totalLines: number
+        languages: { language: string; fileCount: number; lineCount: number }[]
+        entityCount: { kind: string; count: number }[]
+        routeCount: number
+        componentCount: number
+        pipelineCount: number
+      }
+      documentation: string
+    }
+
+    const diagrams = {
+      architecture: generateArchitectureDiagram(typedAnalysis as Parameters<typeof generateArchitectureDiagram>[0]),
+      apiFlow: generateAPIFlowDiagram(typedAnalysis as Parameters<typeof generateAPIFlowDiagram>[0]),
+      componentTree: generateComponentTreeDiagram(typedAnalysis as Parameters<typeof generateComponentTreeDiagram>[0]),
+      pipeline: generatePipelineDiagram(typedAnalysis as Parameters<typeof generatePipelineDiagram>[0]),
+      classDiagram: generateClassDiagram(typedAnalysis as Parameters<typeof generateClassDiagram>[0])
+    }
+
+    return generateHLDDocument(typedAnalysis as Parameters<typeof generateHLDDocument>[0], diagrams)
   })
 
   // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---
