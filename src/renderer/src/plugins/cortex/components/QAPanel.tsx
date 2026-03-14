@@ -203,7 +203,8 @@ Answer questions accurately. Reference specific files, functions, and line numbe
     ? getSuggestedQuestions(analysisResult.repoType)
     : []
 
-  const hasAgent = !!getCortexAgent()
+  const agent = getCortexAgent()
+  const hasAgent = !!agent
 
   return (
     <div className="flex h-full flex-col">
@@ -212,6 +213,11 @@ Answer questions accurately. Reference specific files, functions, and line numbe
         <div className="flex items-center gap-2">
           <Search size={14} className="text-accent" />
           <span className="text-xs font-medium text-text-primary">Codebase Q&A</span>
+          {agent && (
+            <span className="text-[10px] text-text-secondary">
+              Using: {agent.providerId}
+            </span>
+          )}
         </div>
         {qaMessages.length > 0 && (
           <button
