@@ -134,19 +134,32 @@ export default function OverviewTab(): React.JSX.Element {
       {/* Header with enrich button */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-text-primary">Overview</h2>
-        <button
-          type="button"
-          onClick={() => enrichEntities()}
-          disabled={!!entityEnrichmentProgress || isDigestBuilding}
-          className="flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-1.5 text-[11px] font-medium text-accent transition-colors hover:bg-accent/20 disabled:opacity-50"
-        >
-          <Sparkles size={12} />
-          {entityEnrichmentProgress
-            ? `Enriching... ${entityEnrichmentProgress.done}/${entityEnrichmentProgress.total}`
-            : isDigestBuilding
-              ? 'Building AI context...'
-              : 'Enrich with AI'}
-        </button>
+        {(() => {
+          const enrichedCount = analysisResult.entities.filter((e) => e.summary).length
+          const isEnriched = enrichedCount > 0 && !entityEnrichmentProgress && !isDigestBuilding
+          return (
+            <button
+              type="button"
+              onClick={() => enrichEntities()}
+              disabled={!!entityEnrichmentProgress || isDigestBuilding}
+              title="Use AI to generate summaries for all detected entities"
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
+                isEnriched
+                  ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                  : 'bg-accent/10 text-accent hover:bg-accent/20'
+              }`}
+            >
+              <Sparkles size={12} />
+              {entityEnrichmentProgress
+                ? `Enriching... ${entityEnrichmentProgress.done}/${entityEnrichmentProgress.total}`
+                : isDigestBuilding
+                  ? 'Building AI context...'
+                  : isEnriched
+                    ? `Enriched (${enrichedCount} entities)`
+                    : 'Enrich with AI'}
+            </button>
+          )
+        })()}
       </div>
       {/* Stats cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

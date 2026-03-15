@@ -354,6 +354,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
                             key={i}
                             type="button"
                             onClick={() => handleSourceClick(src.path, src.line)}
+                            title={`Open ${src.path}:${src.line}`}
                             className="flex items-center gap-1 text-[10px] text-accent/70 hover:text-accent transition-colors"
                           >
                             <FileCode size={10} />
@@ -396,6 +397,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             type="button"
             onClick={() => handleSend(input)}
             disabled={!input.trim() || isQAStreaming || !hasAgent}
+            title="Send message"
             className="rounded-md bg-accent/15 p-1.5 text-accent hover:bg-accent/25 disabled:opacity-40 transition-colors"
           >
             {isQAStreaming ? (

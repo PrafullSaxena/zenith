@@ -1,6 +1,6 @@
 /**
  * InsightsPanel -- Container for the insights section with sub-tab navigation.
- * Sub-tabs: Overview, APIs, Flows, Architecture, Design Doc, Graph
+ * Sub-tabs: Overview, APIs, Flows, Architecture, Diagrams, Graph
  * Includes Export button for documentation export when design doc is available.
  */
 import { lazy, Suspense, useState } from 'react'
@@ -10,7 +10,7 @@ import {
   Route,
   GitBranch,
   Network,
-  BookOpen,
+  BarChart3,
   Share2,
   Download,
   Loader2
@@ -20,7 +20,7 @@ import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
 import ArchitectureDashboard from './ArchitectureDashboard'
-import DesignDocTab from './DesignDocTab'
+import DiagramsTab from './DiagramsTab'
 import ExportDialog from './ExportDialog'
 
 const MindGraphTab = lazy(() => import('./MindGraphTab'))
@@ -30,7 +30,7 @@ const INSIGHT_TABS = [
   { id: 'apis', label: 'APIs', icon: Route },
   { id: 'flows', label: 'Flows', icon: GitBranch },
   { id: 'architecture', label: 'Architecture', icon: Network },
-  { id: 'design', label: 'Design', icon: BookOpen },
+  { id: 'diagrams', label: 'Diagrams', icon: BarChart3 },
   { id: 'graph', label: 'Graph', icon: Share2 }
 ] as const
 
@@ -65,6 +65,7 @@ export default function InsightsPanel(): React.JSX.Element {
                 key={tab.id}
                 type="button"
                 onClick={() => setInsightsSubTab(tab.id)}
+                title={tab.label}
                 className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
                   isActive
                     ? 'bg-accent/15 text-accent'
@@ -107,7 +108,7 @@ export default function InsightsPanel(): React.JSX.Element {
             {insightsSubTab === 'apis' && <APIListTab />}
             {insightsSubTab === 'flows' && <FlowsTab />}
             {insightsSubTab === 'architecture' && <ArchitectureDashboard />}
-            {insightsSubTab === 'design' && <DesignDocTab />}
+            {insightsSubTab === 'diagrams' && <DiagramsTab />}
             {insightsSubTab === 'graph' && (
               <Suspense fallback={<TabFallback />}>
                 <MindGraphTab />

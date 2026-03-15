@@ -221,12 +221,28 @@ export function buildAPIFlowNodes(
       )
     }
 
+    if (!handler) {
+      // Last resort: match by handler name only (first match)
+      handler = entities.find((e) => e.name === route.handlerName)
+    }
+
     if (!handler) continue
 
     // BFS from handler — also seed with parent class to follow injection edges
     const seedIds = [handler.id]
     if (handler.parentId && entityById.has(handler.parentId)) {
       seedIds.push(handler.parentId)
+    }
+    // Also seed with sibling methods of the parent class to find more connections
+    if (handler.parentId) {
+      for (const e of entities) {
+        if (e.parentId === handler.parentId && e.kind === 'method' && e.id !== handler.id) {
+          // Check if this method has outgoing calls to other entities
+          if (callMap.has(e.id)) {
+            seedIds.push(e.id)
+          }
+        }
+      }
     }
     const queue = [...seedIds]
     const visited = new Set<string>()

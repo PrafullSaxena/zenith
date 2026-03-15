@@ -255,7 +255,7 @@ interface CortexState {
 
   // UI State
   activeTab: 'insights' | 'code' | 'qa' | 'repos'
-  insightsSubTab: 'overview' | 'apis' | 'flows' | 'architecture' | 'design' | 'graph'
+  insightsSubTab: 'overview' | 'apis' | 'flows' | 'architecture' | 'diagrams' | 'graph'
 
   // Code viewer
   openFiles: { path: string; language: string }[]
@@ -326,6 +326,7 @@ interface CortexState {
   enrichEntities: () => Promise<void>
   validateAnalysis: () => Promise<void>
   generateHLD: () => Promise<void>
+  restoreEnrichments: () => Promise<void>
 }
 
 /**
@@ -772,10 +773,11 @@ export const useCortexStore = create<CortexState>((set, get) => ({
   validateAnalysis: async () => {
     const state = get()
     const repo = state.repos.find((r) => r.id === state.activeRepoId)
-    if (!repo || !state.analysisResult) return
+    if (!repo) throw new Error('No active repository selected')
+    if (!state.analysisResult) throw new Error('No analysis results available — analyze a repository first')
 
     const agent = getCortexAgent()
-    if (!agent) return
+    if (!agent) throw new Error('No AI agent configured — set one up in Settings')
 
     // Build digest first if needed
     if (!state.digest) {
@@ -971,6 +973,104 @@ Files: ${state.analysisResult.testStats.testFiles}, Cases: ${state.analysisResul
     )
   },
 
+  restoreEnrichments: async () => {
+    const state = get()
+    const repo = state.repos.find((r) => r.id === state.activeRepoId)
+    if (!repo || !state.analysisResult || !repo.commitSha) return
+
+    try {
+      // Restore entity summaries
+      const summaryData = await window.api.cortex.getEnrichment(
+        repo.url,
+        repo.branch,
+        repo.commitSha,
+        'entity_summaries'
+      )
+      if (summaryData) {
+        const summaries: Record<string, string> = JSON.parse(summaryData)
+        const currentResult = get().analysisResult
+        if (currentResult) {
+          const updatedEntities = currentResult.entities.map((e) => {
+            const summary = summaries[e.id] ?? e.summary
+            return summary !== e.summary ? { ...e, summary } : e
+          })
+          set({ analysisResult: { ...currentResult, entities: updatedEntities } })
+        }
+      }
+
+      // Restore digest
+      const digestData = await window.api.cortex.getEnrichment(
+        repo.url,
+        repo.branch,
+        repo.commitSha,
+        'digest'
+      )
+      if (digestData) {
+        const parsed = parseDigestToonRenderer(digestData)
+        set({ digest: parsed })
+      }
+
+      // Restore HLD
+      const hldData = await window.api.cortex.getEnrichment(
+        repo.url,
+        repo.branch,
+        repo.commitSha,
+        'hld'
+      )
+      if (hldData) {
+        set({ hldContent: hldData })
+      }
+
+      // Restore validations
+      const validationData = await window.api.cortex.getEnrichment(
+        repo.url,
+        repo.branch,
+        repo.commitSha,
+        'validations'
+      )
+      if (validationData) {
+        const corrections: ValidationCorrection[] = []
+        for (const rawLine of validationData.split('\n')) {
+          const line = rawLine.trim()
+          if (!line) continue
+          const parts = line.split('|')
+          const type = parts[0]?.toUpperCase() ?? ''
+
+          const typeMap: Record<string, ValidationCorrection['type']> = {
+            MISSING_ROUTE: 'missing_route',
+            MISSING_EDGE: 'missing_edge',
+            KIND_CORRECTION: 'kind_correction',
+            ROUTE_CORRECTION: 'route_correction',
+            DEAD_ROUTE: 'dead_route'
+          }
+
+          const correctionType = typeMap[type]
+          if (!correctionType) continue
+
+          const kv: Record<string, string> = {}
+          for (const p of parts.slice(1)) {
+            const idx = p.indexOf(':')
+            if (idx > 0) kv[p.slice(0, idx).trim()] = p.slice(idx + 1).trim()
+          }
+
+          corrections.push({
+            id: crypto.randomUUID(),
+            type: correctionType,
+            description: parts.slice(1, -1).join(' | '),
+            reason: kv.reason ?? '',
+            data: kv,
+            status: 'pending'
+          })
+        }
+        if (corrections.length > 0) {
+          set({ validationResults: corrections })
+        }
+      }
+    } catch (err) {
+      console.warn('[Cortex] Failed to restore enrichments from cache:', err)
+    }
+  },
+
   reanalyze: async (repoId: string) => {
     const state = get()
     const repo = state.repos.find((r) => r.id === repoId)
@@ -1003,6 +1103,10 @@ Files: ${state.analysisResult.testStats.testFiles}, Cases: ${state.analysisResul
           analysisResult: s.activeRepoId === repoId ? result : s.analysisResult,
           isAnalyzing: false
         }))
+        // Restore cached enrichments for updated analysis
+        if (get().activeRepoId === repoId) {
+          get().restoreEnrichments()
+        }
       } else {
         // Already up to date
         set((s) => ({

@@ -3,8 +3,8 @@
  * Shows interactive React Flow diagrams for API flows, component trees, and data pipelines.
  */
 import { useState, useMemo } from 'react'
-import { GitBranch, Route, Component, Workflow, ChevronDown, ShieldCheck } from 'lucide-react'
-import { useCortexStore } from '../../../stores/cortex-store'
+import { GitBranch, Route, Component, Workflow, ChevronDown, ShieldCheck, Loader2 } from 'lucide-react'
+import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import FlowDiagram from './FlowDiagram'
 import { buildAPIFlowNodes, buildComponentTreeNodes, buildPipelineNodes } from './flow-utils'
 import ValidationPanel from './ValidationPanel'
@@ -29,6 +29,11 @@ export default function FlowsTab(): React.JSX.Element {
   const openFile = useCortexStore((s) => s.openFile)
   const setActiveTab = useCortexStore((s) => s.setActiveTab)
   const validateAnalysis = useCortexStore((s) => s.validateAnalysis)
+  const validationResults = useCortexStore((s) => s.validationResults)
+
+  const [isValidating, setIsValidating] = useState(false)
+  const [validationDone, setValidationDone] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const repoType = analysisResult?.repoType ?? 'unknown'
 
@@ -160,11 +165,51 @@ export default function FlowsTab(): React.JSX.Element {
         {/* Validate button */}
         <button
           type="button"
-          onClick={() => validateAnalysis()}
-          className="flex items-center gap-1 rounded-lg bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-400 transition-colors hover:bg-amber-500/20"
+          onClick={async () => {
+            if (!getCortexAgent()) {
+              alert('Configure an AI agent in Settings to use validation')
+              return
+            }
+            setIsValidating(true)
+            setValidationError(null)
+            setValidationDone(false)
+            try {
+              await validateAnalysis()
+              setValidationDone(true)
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err)
+              setValidationError(msg)
+              console.error('[Cortex] Validation failed:', err)
+            } finally {
+              setIsValidating(false)
+            }
+          }}
+          disabled={isValidating}
+          title={
+            !getCortexAgent()
+              ? 'Requires AI agent — configure in Settings'
+              : 'Use AI to validate flow analysis'
+          }
+          className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors disabled:opacity-50 ${
+            validationError
+              ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+              : validationResults.length > 0
+                ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                : validationDone
+                  ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                  : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
+          }`}
         >
-          <ShieldCheck size={12} />
-          Validate
+          {isValidating ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
+          {isValidating
+            ? 'Validating...'
+            : validationError
+              ? 'Validation Failed'
+              : validationResults.length > 0
+                ? `Validated (${validationResults.length})`
+                : validationDone
+                  ? 'Validated ✓'
+                  : 'Validate'}
         </button>
 
         {/* Endpoint selector for API flow */}
@@ -241,6 +286,7 @@ function FlowTypeSelector({
             key={t.id}
             type="button"
             onClick={() => onSelect(t.id)}
+            title={t.label}
             className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
               isActive
                 ? 'bg-accent/15 text-accent'

@@ -115,7 +115,7 @@ export interface ElectronAPI {
     removeRepoById: (id: string) => Promise<void>
     updateRepoFields: (id: string, fields: Record<string, unknown>) => Promise<void>
     fetchBranches: (url: string) => Promise<string[]>
-    clone: (url: string, name: string) => Promise<{ repoPath: string }>
+    clone: (url: string, name: string, branch?: string) => Promise<{ repoPath: string }>
     analyze: (
       repoPath: string,
       branch: string,

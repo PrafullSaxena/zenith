@@ -8,7 +8,7 @@
  *     - InsightCards grid (dependencies, security, patterns, etc.)
  *     - Architecture Diagrams (tabbed React Flow from aiInsights)
  */
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useMemo, useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Brain,
@@ -18,7 +18,7 @@ import {
   Settings,
   Zap,
   Network,
-  ArrowRightLeft,
+  BookOpen,
   Loader2,
   RefreshCw,
   Lightbulb,
@@ -43,6 +43,7 @@ import '@xyflow/react/dist/style.css'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { useAgentStore } from '../../../stores/agent-store'
 import InsightCard from './InsightCard'
+import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { ToonInsights } from '../../../stores/cortex-store'
 import type { AnalysisResult, RouteInfo } from '../../../types/cortex'
 
@@ -72,16 +73,6 @@ const METHOD_COLORS: Record<string, string> = {
   DELETE: '#ef4444',
   ALL: '#64748b'
 }
-
-// ── Diagram tab IDs ─────────────────────────────────────────────────────
-
-const DIAGRAM_TABS = [
-  { id: 'entities', label: 'Entity Graph', icon: Network },
-  { id: 'layers', label: 'Layer Interaction', icon: Layers },
-  { id: 'dependencies', label: 'Dependency Map', icon: ArrowRightLeft }
-] as const
-
-type DiagramTabId = (typeof DIAGRAM_TABS)[number]['id']
 
 // ── Helpers: build React Flow graph from raw analysisResult ────────────
 
@@ -185,176 +176,6 @@ function buildStaticEntityGraph(analysisResult: AnalysisResult): { nodes: Node[]
     }
   }
 
-  return { nodes, edges }
-}
-
-// ── Helpers: build React Flow graphs from AI insights ──────────────────
-
-function buildEntityGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  const entities = insights.entities.slice(0, 20)
-  const nodes: Node[] = entities.map((e, i) => {
-    const color = KIND_COLORS[e.kind.toLowerCase()] ?? KIND_COLORS.default
-    return {
-      id: `entity-${i}`,
-      position: { x: (i % 4) * 220, y: Math.floor(i / 4) * 140 },
-      data: { label: `${e.name}\n(${e.kind})` },
-      style: {
-        background: `${color}22`,
-        border: `1px solid ${color}66`,
-        borderRadius: 12,
-        padding: '8px 16px',
-        fontSize: 11,
-        color: '#e2e8f0',
-        fontWeight: 600,
-        whiteSpace: 'pre-line' as const
-      }
-    }
-  })
-
-  const edges: Edge[] = []
-  const locationMap = new Map<string, number[]>()
-  entities.forEach((e, i) => {
-    const loc = e.location.split('/').slice(0, -1).join('/')
-    const list = locationMap.get(loc) ?? []
-    list.push(i)
-    locationMap.set(loc, list)
-  })
-  let edgeIdx = 0
-  for (const indices of locationMap.values()) {
-    for (let j = 1; j < indices.length; j++) {
-      edges.push({
-        id: `ee-${edgeIdx++}`,
-        source: `entity-${indices[j - 1]}`,
-        target: `entity-${indices[j]}`,
-        animated: true,
-        style: { stroke: '#475569' }
-      })
-    }
-  }
-  return { nodes, edges }
-}
-
-function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  const groups = new Map<string, typeof insights.entities>()
-  for (const e of insights.entities.slice(0, 30)) {
-    const kind = e.kind.toLowerCase()
-    const list = groups.get(kind) ?? []
-    list.push(e)
-    groups.set(kind, list)
-  }
-
-  const nodes: Node[] = []
-  const edges: Edge[] = []
-  let y = 0
-  let layerIdx = 0
-
-  for (const [kind, members] of groups) {
-    const color = KIND_COLORS[kind] ?? KIND_COLORS.default
-    nodes.push({
-      id: `layer-${kind}`,
-      position: { x: 0, y },
-      data: { label: kind.toUpperCase() },
-      style: {
-        background: `${color}15`,
-        border: `1px dashed ${color}44`,
-        borderRadius: 12,
-        padding: '6px 14px',
-        fontSize: 10,
-        color: `${color}`,
-        fontWeight: 700,
-        letterSpacing: '0.05em',
-        width: 120
-      }
-    })
-    members.slice(0, 5).forEach((m, mi) => {
-      nodes.push({
-        id: `layer-${kind}-${mi}`,
-        position: { x: 150 + mi * 180, y },
-        data: { label: m.name },
-        style: {
-          background: `${color}22`,
-          border: `1px solid ${color}55`,
-          borderRadius: 10,
-          padding: '8px 14px',
-          fontSize: 11,
-          color: '#e2e8f0',
-          fontWeight: 500
-        }
-      })
-    })
-    if (layerIdx > 0) {
-      const prevKind = [...groups.keys()][layerIdx - 1]
-      const prevMembers = groups.get(prevKind)
-      if (prevMembers && prevMembers.length > 0) {
-        edges.push({
-          id: `layer-e-${layerIdx}`,
-          source: `layer-${prevKind}-0`,
-          target: `layer-${kind}-0`,
-          animated: true,
-          style: { stroke: '#475569', strokeDasharray: '5 5' }
-        })
-      }
-    }
-    y += 120
-    layerIdx++
-  }
-  return { nodes, edges }
-}
-
-function buildDependencyGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  const deps = insights.dependencies.slice(0, 20)
-  const catColors: Record<string, string> = {
-    runtime: '#3b82f6',
-    devdependency: '#8b5cf6',
-    core: '#10b981',
-    test: '#6b7280',
-    build: '#f59e0b',
-    util: '#ec4899'
-  }
-  const nodes: Node[] = [
-    {
-      id: 'project',
-      position: { x: 300, y: 200 },
-      data: { label: insights.architecture.framework || 'Project' },
-      style: {
-        background: '#3b82f622',
-        border: '2px solid #3b82f6',
-        borderRadius: 16,
-        padding: '10px 20px',
-        fontSize: 12,
-        color: '#e2e8f0',
-        fontWeight: 700
-      }
-    }
-  ]
-  const edges: Edge[] = []
-  const angleStep = (2 * Math.PI) / Math.max(deps.length, 1)
-  deps.forEach((dep, i) => {
-    const angle = i * angleStep
-    const radius = 180
-    const color = catColors[dep.category.toLowerCase()] ?? '#64748b'
-    nodes.push({
-      id: `dep-${i}`,
-      position: { x: 300 + Math.cos(angle) * radius, y: 200 + Math.sin(angle) * radius },
-      data: { label: `${dep.name}\n${dep.version}` },
-      style: {
-        background: `${color}22`,
-        border: `1px solid ${color}55`,
-        borderRadius: 10,
-        padding: '6px 12px',
-        fontSize: 10,
-        color: '#e2e8f0',
-        fontWeight: 500,
-        whiteSpace: 'pre-line' as const
-      }
-    })
-    edges.push({
-      id: `dep-e-${i}`,
-      source: 'project',
-      target: `dep-${i}`,
-      style: { stroke: `${color}66` }
-    })
-  })
   return { nodes, edges }
 }
 
@@ -686,7 +507,6 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
 // ── Main Component ──────────────────────────────────────────────────────
 
 export default function ArchitectureDashboard(): React.JSX.Element {
-  const [activeDiagramTab, setActiveDiagramTab] = useState<DiagramTabId>('entities')
   const [aiSectionExpanded, setAiSectionExpanded] = useState(false)
 
   const analysisResult = useCortexStore((s) => s.analysisResult)
@@ -696,6 +516,13 @@ export default function ArchitectureDashboard(): React.JSX.Element {
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
   const activeRepoId = useCortexStore((s) => s.activeRepoId)
   const repos = useCortexStore((s) => s.repos)
+
+  // HLD / Design Doc state
+  const hldContent = useCortexStore((s) => s.hldContent)
+  const designDoc = useCortexStore((s) => s.designDoc)
+  const isHLDGenerating = useCortexStore((s) => s.isHLDGenerating)
+  const generateHLD = useCortexStore((s) => s.generateHLD)
+  const displayContent = hldContent || designDoc
 
   // Ensure agent providers are loaded (handles direct navigation to Cortex)
   useEffect(() => {
@@ -729,21 +556,6 @@ export default function ArchitectureDashboard(): React.JSX.Element {
     if (!analysisResult || analysisResult.entities.length === 0) return { nodes: [], edges: [] }
     return buildStaticEntityGraph(analysisResult)
   }, [analysisResult])
-
-  // Build AI diagram data
-  const aiDiagramData = useMemo(() => {
-    if (!aiInsights) return { nodes: [], edges: [] }
-    switch (activeDiagramTab) {
-      case 'entities':
-        return buildEntityGraph(aiInsights)
-      case 'layers':
-        return buildLayerGraph(aiInsights)
-      case 'dependencies':
-        return buildDependencyGraph(aiInsights)
-      default:
-        return { nodes: [], edges: [] }
-    }
-  }, [aiInsights, activeDiagramTab])
 
   const hasAgent = !!getCortexAgent()
 
@@ -848,6 +660,66 @@ export default function ArchitectureDashboard(): React.JSX.Element {
         </motion.section>
       )}
 
+      {/* ── Design Document (HLD) ─────────────────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.12 }}
+      >
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BookOpen size={14} className="text-accent/70" />
+            <h3 className="text-sm font-semibold text-text-primary">Design Document</h3>
+            {isHLDGenerating && (
+              <Loader2 size={12} className="animate-spin text-accent" />
+            )}
+          </div>
+          {displayContent && (
+            <button
+              type="button"
+              onClick={() => generateHLD()}
+              disabled={isHLDGenerating}
+              className="flex items-center gap-1 rounded-md bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent hover:bg-accent/25 transition-colors disabled:opacity-50"
+              title="Regenerate design document"
+            >
+              <RefreshCw size={11} />
+              Regenerate
+            </button>
+          )}
+        </div>
+        {displayContent ? (
+          <div className="rounded-xl border border-border/60 bg-surface-elevated/70 p-5">
+            <MarkdownRenderer text={displayContent} />
+          </div>
+        ) : isHLDGenerating ? (
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-border/40 bg-surface/40 py-8">
+            <Loader2 size={24} className="animate-spin text-accent" />
+            <p className="text-xs text-text-secondary">Generating design document...</p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border/40 bg-surface/40 p-5 text-center">
+            <BookOpen size={28} className="mx-auto mb-2 text-text-secondary/30" />
+            <p className="text-xs text-text-secondary">
+              Generate a High Level Design document with architecture diagrams and API flows.
+            </p>
+            {hasAgent ? (
+              <button
+                type="button"
+                onClick={() => generateHLD()}
+                className="mt-3 rounded-lg bg-accent/15 px-4 py-2 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
+                title="Generate design document using AI"
+              >
+                Generate Design Document
+              </button>
+            ) : (
+              <p className="mt-2 text-[10px] text-text-secondary/60">
+                Configure an AI agent in Settings to generate design documents
+              </p>
+            )}
+          </div>
+        )}
+      </motion.section>
+
       {/* ── Section B: AI-Powered Insights (collapsible) ─────── */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
@@ -859,6 +731,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           type="button"
           className="group mb-3 flex w-full items-center gap-2 text-left"
           onClick={() => setAiSectionExpanded((v) => !v)}
+          title="Toggle AI-powered insights section"
         >
           <Brain size={15} className="text-accent/70" />
           <h3 className="flex-1 text-sm font-semibold text-text-primary">AI-Powered Insights</h3>
@@ -892,12 +765,13 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                       <div className="flex flex-col items-start gap-3">
                         <p className="text-xs text-text-secondary">
                           Generate AI-powered architecture insights: design patterns, security analysis,
-                          dependency mapping, and richer interactive diagrams.
+                          and dependency mapping.
                         </p>
                         <button
                           type="button"
                           onClick={handleGenerateInsights}
                           className="rounded-lg bg-accent/15 px-4 py-2 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
+                          title="Generate architecture insights using AI"
                         >
                           Generate Architecture Insights
                         </button>
@@ -994,55 +868,6 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                     <div>
                       <h4 className="mb-3 text-xs font-semibold text-text-primary">Architecture Insights</h4>
                       <InsightCardsGrid insights={aiInsights} />
-                    </div>
-
-                    {/* AI Diagram Tabs */}
-                    <div>
-                      <h4 className="mb-3 text-xs font-semibold text-text-primary">Architecture Diagrams</h4>
-                      <div className="mb-3 flex items-center gap-1">
-                        {DIAGRAM_TABS.map((tab) => {
-                          const Icon = tab.icon
-                          const isActive = activeDiagramTab === tab.id
-                          return (
-                            <button
-                              key={tab.id}
-                              type="button"
-                              onClick={() => setActiveDiagramTab(tab.id)}
-                              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                                isActive
-                                  ? 'bg-accent/15 text-accent'
-                                  : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
-                              }`}
-                            >
-                              <Icon size={12} />
-                              {tab.label}
-                            </button>
-                          )
-                        })}
-                      </div>
-                      <div className="h-80 overflow-hidden rounded-xl border border-border/60 bg-surface-elevated/40">
-                        {aiDiagramData.nodes.length === 0 ? (
-                          <div className="flex h-full items-center justify-center text-xs text-text-secondary">
-                            No diagram data available for this view
-                          </div>
-                        ) : (
-                          <ReactFlow
-                            key={activeDiagramTab}
-                            nodes={aiDiagramData.nodes}
-                            edges={aiDiagramData.edges}
-                            fitView
-                            proOptions={{ hideAttribution: true }}
-                            minZoom={0.3}
-                            maxZoom={2}
-                          >
-                            <Background gap={20} size={1} color="#1e293b" />
-                            <Controls
-                              showInteractive={false}
-                              className="!bg-surface !border-border/60 !rounded-lg [&>button]:!bg-surface [&>button]:!border-border/40 [&>button]:!text-text-secondary"
-                            />
-                          </ReactFlow>
-                        )}
-                      </div>
                     </div>
                   </>
                 )}

@@ -203,8 +203,8 @@ const api = {
       ipcRenderer.invoke('cortex:updateRepoFields', id, fields),
     fetchBranches: (url: string): Promise<string[]> =>
       ipcRenderer.invoke('cortex:fetchBranches', url),
-    clone: (url: string, name: string): Promise<{ repoPath: string }> =>
-      ipcRenderer.invoke('cortex:clone', url, name),
+    clone: (url: string, name: string, branch?: string): Promise<{ repoPath: string }> =>
+      ipcRenderer.invoke('cortex:clone', url, name, branch),
     analyze: (repoPath: string, branch: string, repoUrl: string): Promise<unknown> =>
       ipcRenderer.invoke('cortex:analyze', repoPath, branch, repoUrl),
     getFileContent: (

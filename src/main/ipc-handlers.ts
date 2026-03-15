@@ -795,10 +795,10 @@ export function registerIpcHandlers(): void {
   })
 
   // Clone a repository
-  ipcMain.handle('cortex:clone', async (event, url: string, name: string) => {
+  ipcMain.handle('cortex:clone', async (event, url: string, name: string, branch?: string) => {
     const { git } = getCortexInstances()
     const win = BrowserWindow.fromWebContents(event.sender)
-    return git.clone(url, name, (progress) => {
+    return git.clone(url, name, branch, (progress) => {
       win?.webContents.send('cortex:cloneProgress', progress)
     })
   })

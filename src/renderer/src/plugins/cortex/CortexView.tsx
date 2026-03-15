@@ -95,6 +95,7 @@ export default function CortexView(): React.JSX.Element {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
+              title={tab.label}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 isActive
                   ? 'bg-accent/15 text-accent'

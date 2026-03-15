@@ -21,6 +21,7 @@ export class GitService {
   async clone(
     url: string,
     name: string,
+    branch?: string,
     onProgress?: (data: { stage: string; progress: number; detail: string }) => void
   ): Promise<{ repoPath: string }> {
     await this.ensureBaseDir()
@@ -81,7 +82,11 @@ export class GitService {
       stdout.on('data', () => {})
     })
 
-    await git.env(gitEnv).clone(url, name, ['--depth', '100', '--single-branch'])
+    const cloneArgs = ['--depth', '100', '--single-branch']
+    if (branch) {
+      cloneArgs.push('--branch', branch)
+    }
+    await git.env(gitEnv).clone(url, name, cloneArgs)
 
     onProgress?.({ stage: 'done', progress: 100, detail: 'Clone complete' })
 

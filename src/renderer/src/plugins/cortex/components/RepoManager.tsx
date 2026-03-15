@@ -20,6 +20,7 @@ export default function RepoManager(): React.JSX.Element {
   const updateRepo = useCortexStore((s) => s.updateRepo)
   const removeRepo = useCortexStore((s) => s.removeRepo)
   const setActiveTab = useCortexStore((s) => s.setActiveTab)
+  const restoreEnrichments = useCortexStore((s) => s.restoreEnrichments)
 
   const handleAnalyze = useCallback(
     async (repo: (typeof repos)[number]) => {
@@ -47,6 +48,8 @@ export default function RepoManager(): React.JSX.Element {
         })
         // Auto-switch to insights tab
         setActiveTab('insights')
+        // Restore any previously cached enrichments (entity summaries, digest, HLD, validations)
+        restoreEnrichments()
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Analysis failed'
         updateRepo(repo.id, { status: 'error', error: message })
@@ -56,7 +59,7 @@ export default function RepoManager(): React.JSX.Element {
         window.api.cortex.removeProgressListeners()
       }
     },
-    [setActiveRepo, updateRepo, setIsAnalyzing, setProgress, setAnalysisResult, setActiveTab]
+    [setActiveRepo, updateRepo, setIsAnalyzing, setProgress, setAnalysisResult, setActiveTab, restoreEnrichments]
   )
 
   const handleRemove = useCallback(
@@ -81,6 +84,7 @@ export default function RepoManager(): React.JSX.Element {
         <button
           type="button"
           onClick={() => setShowAddDialog(true)}
+          title="Add a new repository"
           className="flex items-center gap-1.5 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25"
         >
           <Plus size={14} />
@@ -115,6 +119,7 @@ export default function RepoManager(): React.JSX.Element {
           <button
             type="button"
             onClick={() => setShowAddDialog(true)}
+            title="Add a new repository"
             className="mt-2 flex items-center gap-1.5 rounded-lg bg-accent/15 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/25"
           >
             <Plus size={16} />

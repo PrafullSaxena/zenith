@@ -142,6 +142,7 @@ export default function RepoCard({
               e.stopPropagation()
               onAnalyze()
             }}
+            title="Analyze this repository"
             className="flex items-center gap-1 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25"
           >
             <Play size={12} />
@@ -166,6 +167,7 @@ export default function RepoCard({
               e.stopPropagation()
               onRemove()
             }}
+            title="Remove repository"
             className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-text-secondary transition-colors hover:bg-error/10 hover:text-error"
           >
             <Trash2 size={12} />

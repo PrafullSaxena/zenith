@@ -3,8 +3,8 @@
  * Filterable, sortable table with method badges and file links.
  */
 import { useState, useMemo, useCallback } from 'react'
-import { Search, ArrowUpDown, Route, ShieldCheck } from 'lucide-react'
-import { useCortexStore } from '../../../stores/cortex-store'
+import { Search, ArrowUpDown, Route, ShieldCheck, Loader2 } from 'lucide-react'
+import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import type { RouteInfo } from '../../../types/cortex'
 import ValidationPanel from './ValidationPanel'
 
@@ -22,12 +22,17 @@ type SortDir = 'asc' | 'desc'
 
 export default function APIListTab(): React.JSX.Element {
   const routes = useCortexStore((s) => s.analysisResult?.routes ?? [])
+  const analysisResult = useCortexStore((s) => s.analysisResult)
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
   const validateAnalysis = useCortexStore((s) => s.validateAnalysis)
+  const validationResults = useCortexStore((s) => s.validationResults)
 
   const [filter, setFilter] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('path')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
+  const [isValidating, setIsValidating] = useState(false)
+  const [validationDone, setValidationDone] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const handleSort = useCallback(
     (key: SortKey) => {
@@ -115,12 +120,63 @@ export default function APIListTab(): React.JSX.Element {
         {/* Validate button */}
         <button
           type="button"
-          onClick={() => validateAnalysis()}
-          className="flex items-center gap-1 rounded-lg bg-amber-500/10 px-2.5 py-1.5 text-[11px] font-medium text-amber-400 transition-colors hover:bg-amber-500/20"
+          onClick={async () => {
+            if (!getCortexAgent()) {
+              alert('Configure an AI agent in Settings to use validation')
+              return
+            }
+            if (!analysisResult) {
+              alert('Analyze a repository first before running validation')
+              return
+            }
+            setIsValidating(true)
+            setValidationError(null)
+            setValidationDone(false)
+            try {
+              await validateAnalysis()
+              setValidationDone(true)
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err)
+              setValidationError(msg)
+              console.error('[Cortex] Validation failed:', err)
+            } finally {
+              setIsValidating(false)
+            }
+          }}
+          disabled={isValidating}
+          title={
+            !getCortexAgent()
+              ? 'Requires AI agent — configure in Settings'
+              : !analysisResult
+                ? 'Analyze a repository first'
+                : 'Use AI to validate detected endpoints'
+          }
+          className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
+            validationError
+              ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+              : validationResults.length > 0
+                ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                : validationDone
+                  ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                  : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
+          }`}
         >
-          <ShieldCheck size={12} />
-          Validate
+          {isValidating ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
+          {isValidating
+            ? 'Validating...'
+            : validationError
+              ? 'Validation Failed'
+              : validationResults.length > 0
+                ? `Validated (${validationResults.length} findings)`
+                : validationDone
+                  ? 'Validated ✓ No issues'
+                  : 'Validate'}
         </button>
+        {validationError && (
+          <span className="text-[10px] text-red-400" title={validationError}>
+            ⚠ {validationError.length > 40 ? validationError.slice(0, 40) + '…' : validationError}
+          </span>
+        )}
         {/* Search filter */}
         <div className="relative">
           <Search

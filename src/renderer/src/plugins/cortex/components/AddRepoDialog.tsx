@@ -103,7 +103,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
     })
 
     try {
-      const result = await window.api.cortex.clone(url, name)
+      const result = await window.api.cortex.clone(url, name, branch)
       updateRepo(id, {
         repoPath: result.repoPath,
         status: 'idle'
@@ -156,6 +156,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
             <button
               type="button"
               onClick={onClose}
+              title="Close"
               className="rounded-lg p-1 text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
             >
               <X size={16} />
@@ -234,6 +235,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
             <button
               type="button"
               onClick={onClose}
+              title="Cancel"
               className="rounded-lg px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
             >
               Cancel
@@ -242,6 +244,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
               type="button"
               onClick={handleSubmit}
               disabled={!isValidRepoUrl(url) || !name || !branch || cloning}
+              title="Clone the repository and add it to Cortex"
               className="flex items-center gap-1.5 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {cloning && <Loader2 size={12} className="animate-spin" />}

@@ -76,13 +76,33 @@ function buildGraphData(
     color: KIND_COLORS[e.kind] ?? DEFAULT_COLOR
   }))
 
-  const links: GraphLink[] = calls
-    .filter((c) => entityIds.has(c.callerId) && entityIds.has(c.calleeId))
-    .map((c) => ({
-      source: c.callerId,
-      target: c.calleeId,
-      type: c.type
-    }))
+  // When methods are hidden, lift method edges to parent entities
+  const links: GraphLink[] = []
+  const seenLinks = new Set<string>()
+
+  if (showMethods) {
+    for (const c of calls) {
+      if (entityIds.has(c.callerId) && entityIds.has(c.calleeId)) {
+        links.push({ source: c.callerId, target: c.calleeId, type: c.type })
+      }
+    }
+  } else {
+    const entityById = new Map(entities.map((e) => [e.id, e]))
+    for (const c of calls) {
+      let sourceId = c.callerId
+      let targetId = c.calleeId
+      const caller = entityById.get(sourceId)
+      if (caller && caller.kind === 'method' && caller.parentId) sourceId = caller.parentId
+      const callee = entityById.get(targetId)
+      if (callee && callee.kind === 'method' && callee.parentId) targetId = callee.parentId
+      if (sourceId === targetId) continue
+      if (!entityIds.has(sourceId) || !entityIds.has(targetId)) continue
+      const key = `${sourceId}->${targetId}`
+      if (seenLinks.has(key)) continue
+      seenLinks.add(key)
+      links.push({ source: sourceId, target: targetId, type: c.type })
+    }
+  }
 
   return { nodes, links }
 }
@@ -147,6 +167,7 @@ export default function MindGraphTab(): React.JSX.Element {
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
 
   const [search, setSearch] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
   const [showMethods, setShowMethods] = useState(false)
   const [highlightedNodes, setHighlightedNodes] = useState<Set<string>>(new Set())
   const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null)
@@ -176,21 +197,48 @@ export default function MindGraphTab(): React.JSX.Element {
     return buildGraphData(analysisResult.entities, analysisResult.calls, showMethods)
   }, [analysisResult, showMethods])
 
-  // Search & highlight
+  // Search across ALL entities (including methods even if hidden) for suggestions
+  const allNodes = useMemo<GraphNode[]>(() => {
+    if (!analysisResult) return []
+    return analysisResult.entities.map((e) => ({
+      id: e.id,
+      name: e.name,
+      kind: e.kind,
+      filePath: e.filePath,
+      line: e.line,
+      summary: e.summary ?? '',
+      val: getNodeSize(e.kind),
+      color: KIND_COLORS[e.kind] ?? DEFAULT_COLOR
+    }))
+  }, [analysisResult])
+
   const searchResults = useMemo(() => {
     if (!search.trim()) return []
     const q = search.toLowerCase()
-    return graphData.nodes.filter(
+    return allNodes.filter(
       (n) => n.name.toLowerCase().includes(q) || n.kind.toLowerCase().includes(q)
     )
-  }, [search, graphData.nodes])
+  }, [search, allNodes])
 
   const handleSearchSelect = useCallback(
     (node: GraphNode) => {
-      const allNodeIds = new Set(graphData.nodes.map((n) => n.id))
-      const connected = getConnectedNodeIds(node.id, graphData.links, allNodeIds)
-      setHighlightedNodes(connected)
+      // Auto-enable methods if a method entity is selected
+      if (node.kind === 'method' && !showMethods) {
+        setShowMethods(true)
+      }
+
+      // Use a timeout to let graphData update if showMethods changed
+      setTimeout(() => {
+        const currentData = showMethods || node.kind === 'method'
+          ? buildGraphData(analysisResult?.entities ?? [], analysisResult?.calls ?? [], true)
+          : graphData
+        const allNodeIds = new Set(currentData.nodes.map((n) => n.id))
+        const connected = getConnectedNodeIds(node.id, currentData.links, allNodeIds)
+        setHighlightedNodes(connected)
+      }, 0)
+
       setSearch(node.name)
+      setShowDropdown(false)
 
       // Center on selected node
       if (graphRef.current && node.x !== undefined && node.y !== undefined) {
@@ -198,11 +246,12 @@ export default function MindGraphTab(): React.JSX.Element {
         graphRef.current.zoom(3, 500)
       }
     },
-    [graphData]
+    [graphData, showMethods, analysisResult]
   )
 
   const clearSearch = useCallback(() => {
     setSearch('')
+    setShowDropdown(false)
     setHighlightedNodes(new Set())
   }, [])
 
@@ -323,6 +372,7 @@ export default function MindGraphTab(): React.JSX.Element {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
+              setShowDropdown(true)
               if (!e.target.value) setHighlightedNodes(new Set())
             }}
             placeholder="Search entities..."
@@ -339,7 +389,7 @@ export default function MindGraphTab(): React.JSX.Element {
           )}
 
           {/* Search dropdown */}
-          {search && searchResults.length > 0 && !highlightedNodes.has(searchResults[0]?.id ?? '') && (
+          {search && searchResults.length > 0 && showDropdown && (
             <div className="absolute left-0 top-full z-50 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-border bg-surface shadow-lg">
               {searchResults.slice(0, 15).map((node) => (
                 <button
