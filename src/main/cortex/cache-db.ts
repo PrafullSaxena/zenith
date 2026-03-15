@@ -67,6 +67,18 @@ export class AnalyzerDatabase {
         createdAt TEXT NOT NULL,
         UNIQUE(repoUrl, branch, commitSha, agentId)
       );
+
+      CREATE TABLE IF NOT EXISTS ai_enrichment (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        repoUrl TEXT NOT NULL,
+        branch TEXT NOT NULL,
+        commitSha TEXT NOT NULL,
+        enrichmentType TEXT NOT NULL,
+        agentId TEXT NOT NULL,
+        data TEXT NOT NULL,
+        createdAt TEXT DEFAULT (datetime('now')),
+        UNIQUE(repoUrl, branch, commitSha, enrichmentType, agentId)
+      );
     `)
   }
 
@@ -343,6 +355,57 @@ export class AnalyzerDatabase {
     this.db
       .prepare('DELETE FROM ai_insights WHERE repoUrl = ? AND branch = ?')
       .run(repoUrl, branch)
+  }
+
+  // --- AI Enrichment ---
+
+  saveEnrichment(
+    repoUrl: string,
+    branch: string,
+    commitSha: string,
+    enrichmentType: string,
+    agentId: string,
+    data: string
+  ): void {
+    this.db
+      .prepare(
+        `INSERT OR REPLACE INTO ai_enrichment (repoUrl, branch, commitSha, enrichmentType, agentId, data, createdAt)
+         VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`
+      )
+      .run(repoUrl, branch, commitSha, enrichmentType, agentId, data)
+  }
+
+  getEnrichment(
+    repoUrl: string,
+    branch: string,
+    commitSha: string,
+    enrichmentType: string
+  ): string | null {
+    const row = this.db
+      .prepare(
+        'SELECT data FROM ai_enrichment WHERE repoUrl = ? AND branch = ? AND commitSha = ? AND enrichmentType = ? ORDER BY createdAt DESC LIMIT 1'
+      )
+      .get(repoUrl, branch, commitSha, enrichmentType) as { data: string } | undefined
+    return row?.data ?? null
+  }
+
+  clearEnrichments(repoUrl: string, branch: string): void {
+    this.db
+      .prepare('DELETE FROM ai_enrichment WHERE repoUrl = ? AND branch = ?')
+      .run(repoUrl, branch)
+  }
+
+  clearEnrichmentByType(
+    repoUrl: string,
+    branch: string,
+    commitSha: string,
+    enrichmentType: string
+  ): void {
+    this.db
+      .prepare(
+        'DELETE FROM ai_enrichment WHERE repoUrl = ? AND branch = ? AND commitSha = ? AND enrichmentType = ?'
+      )
+      .run(repoUrl, branch, commitSha, enrichmentType)
   }
 
   close(): void {

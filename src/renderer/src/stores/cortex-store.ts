@@ -4,7 +4,9 @@ import type {
   AnalysisResult,
   AnalysisProgress,
   FileContent,
-  QAMessage
+  QAMessage,
+  DigestResult,
+  ValidationCorrection
 } from '../types/cortex'
 import { useAgentStore } from './agent-store'
 import { useSettingsStore } from './settings-store'
@@ -152,6 +154,16 @@ interface CortexState {
   qaMessages: QAMessage[]
   isQAStreaming: boolean
 
+  // AI Enrichment
+  digest: DigestResult | null
+  isDigestBuilding: boolean
+  entityEnrichmentProgress: { done: number; total: number } | null
+  validationResults: ValidationCorrection[]
+  suppressedRoutes: Set<number>
+  hldContent: string
+  hldSections: { index: number; content: string; isGenerating: boolean }[]
+  isHLDGenerating: boolean
+
   // Actions
   loadRepos: () => Promise<void>
   setActiveTab: (tab: CortexState['activeTab']) => void
@@ -179,6 +191,17 @@ interface CortexState {
   clearQA: () => void
   setIsQAStreaming: (v: boolean) => void
   reanalyze: (repoId: string) => Promise<void>
+
+  // AI Enrichment actions
+  setDigest: (digest: DigestResult | null) => void
+  setIsDigestBuilding: (v: boolean) => void
+  setEntityEnrichmentProgress: (p: { done: number; total: number } | null) => void
+  setValidationResults: (results: ValidationCorrection[]) => void
+  updateValidationStatus: (id: string, status: ValidationCorrection['status']) => void
+  setSuppressedRoutes: (routes: Set<number>) => void
+  setHLDContent: (content: string) => void
+  setHLDSections: (sections: { index: number; content: string; isGenerating: boolean }[]) => void
+  setIsHLDGenerating: (v: boolean) => void
 }
 
 /**
@@ -218,6 +241,16 @@ export const useCortexStore = create<CortexState>((set, get) => ({
   isGeneratingInsights: false,
   qaMessages: [],
   isQAStreaming: false,
+
+  // AI Enrichment
+  digest: null,
+  isDigestBuilding: false,
+  entityEnrichmentProgress: null,
+  validationResults: [],
+  suppressedRoutes: new Set(),
+  hldContent: '',
+  hldSections: [],
+  isHLDGenerating: false,
 
   loadRepos: async () => {
     const repos = await window.api.cortex.listRepos()
@@ -391,6 +424,22 @@ export const useCortexStore = create<CortexState>((set, get) => ({
     }),
   clearQA: () => set({ qaMessages: [] }),
   setIsQAStreaming: (v) => set({ isQAStreaming: v }),
+
+  // AI Enrichment actions
+  setDigest: (digest) => set({ digest }),
+  setIsDigestBuilding: (v) => set({ isDigestBuilding: v }),
+  setEntityEnrichmentProgress: (p) => set({ entityEnrichmentProgress: p }),
+  setValidationResults: (results) => set({ validationResults: results }),
+  updateValidationStatus: (id, status) =>
+    set((s) => ({
+      validationResults: s.validationResults.map((v) =>
+        v.id === id ? { ...v, status } : v
+      )
+    })),
+  setSuppressedRoutes: (routes) => set({ suppressedRoutes: routes }),
+  setHLDContent: (content) => set({ hldContent: content }),
+  setHLDSections: (sections) => set({ hldSections: sections }),
+  setIsHLDGenerating: (v) => set({ isHLDGenerating: v }),
 
   reanalyze: async (repoId: string) => {
     const state = get()

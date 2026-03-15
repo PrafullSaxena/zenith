@@ -96,6 +96,25 @@ export interface ElectronAPI {
     ) => Promise<void>
     getInsights: (repoUrl: string, branch: string, commitSha: string) => Promise<string | null>
     probeRtk: () => Promise<boolean>
+    // AI Enrichment
+    buildDigest: (
+      repoUrl: string,
+      branch: string
+    ) => Promise<{ data: string | null; cached: boolean }>
+    saveEnrichment: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      enrichmentType: string,
+      agentId: string,
+      data: string
+    ) => Promise<void>
+    getEnrichment: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      enrichmentType: string
+    ) => Promise<string | null>
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ) => void

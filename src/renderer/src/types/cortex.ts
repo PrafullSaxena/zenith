@@ -240,3 +240,72 @@ export interface RepoClassification {
   entryPoints: string[]
   signals: string[] // human-readable reasons
 }
+
+// ── AI Enrichment types ──────────────────────────────────────────────
+
+export type EnrichmentType = 'digest' | 'entity_summaries' | 'validations' | 'hld'
+
+export interface DigestMeta {
+  architecture: string
+  entryPoints: number
+  layers: number
+}
+
+export interface DigestEntity {
+  id: string
+  correctedKind: string
+  name: string
+  importance: 'high' | 'medium' | 'low'
+  summary: string
+}
+
+export interface DigestMissingEdge {
+  fromEntity: string
+  toEntity: string
+  reason: string
+}
+
+export interface DigestCorrection {
+  entityId: string
+  field: string
+  oldValue: string
+  newValue: string
+  reason: string
+}
+
+export interface DigestPattern {
+  name: string
+  entities: string[]
+  confidence: 'high' | 'medium' | 'low'
+}
+
+export interface DigestBoundary {
+  name: string
+  entities: string[]
+}
+
+export interface DigestResult {
+  meta: DigestMeta | null
+  entities: DigestEntity[]
+  missingEdges: DigestMissingEdge[]
+  corrections: DigestCorrection[]
+  patterns: DigestPattern[]
+  boundaries: DigestBoundary[]
+  rawText: string
+}
+
+export type ValidationCorrectionType =
+  | 'missing_edge'
+  | 'missing_route'
+  | 'kind_correction'
+  | 'route_correction'
+  | 'dead_route'
+
+export interface ValidationCorrection {
+  id: string
+  type: ValidationCorrectionType
+  description: string
+  reason: string
+  data: Record<string, unknown>
+  status: 'pending' | 'accepted' | 'dismissed'
+}

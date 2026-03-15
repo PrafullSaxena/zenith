@@ -17,7 +17,7 @@ import { NoteFileStorage } from './nebula/file-storage'
 import { transcribeAudio } from './nebula/transcription'
 import { getApiKeyForProvider } from './ai/providers'
 import { GitService } from './cortex/git-service'
-import { CodebaseAnalyzer } from './cortex/analyzer'
+import { CodebaseAnalyzer, PARSER_VERSION } from './cortex/analyzer'
 import {
   generateArchitectureDiagram,
   generateAPIFlowDiagram,
@@ -834,12 +834,17 @@ export function registerIpcHandlers(): void {
     return git.removeRepo(repoPath)
   })
 
-  // Get cached analysis
+  // Get cached analysis (returns null if parser version is stale)
   ipcMain.handle(
     'cortex:getCachedAnalysis',
     async (_event, repoUrl: string, branch: string, commitSha: string) => {
       const { analyzer } = getCortexInstances()
-      return analyzer.cache.getAnalysis(repoUrl, branch, commitSha)
+      const cached = analyzer.cache.getAnalysis(repoUrl, branch, commitSha)
+      if (!cached) return null
+      // Reject stale cache entries from older parser versions
+      const cachedVersion = (cached as Record<string, unknown>)._parserVersion as number | undefined
+      if (cachedVersion !== PARSER_VERSION) return null
+      return cached
     }
   )
 
@@ -949,6 +954,59 @@ export function registerIpcHandlers(): void {
 
     return { changed: true, result }
   })
+
+  // --- Cortex AI Enrichment ---
+
+  // Build or return cached codebase digest
+  ipcMain.handle(
+    'cortex:buildDigest',
+    async (_event, repoUrl: string, branch: string) => {
+      const { analyzer } = getCortexInstances()
+      const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '')
+      if (!analysis) throw new Error('No analysis found. Analyze the repository first.')
+
+      const commitSha = (analysis as Record<string, unknown>).commitSha as string
+
+      // Check for cached digest
+      const cached = analyzer.cache.getEnrichment(repoUrl, branch, commitSha, 'digest')
+      if (cached) return { data: cached, cached: true }
+
+      // Will be fully implemented in Phase 1 — for now return null
+      return { data: null, cached: false }
+    }
+  )
+
+  // Save enrichment data
+  ipcMain.handle(
+    'cortex:saveEnrichment',
+    async (
+      _event,
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      enrichmentType: string,
+      agentId: string,
+      data: string
+    ) => {
+      const { analyzer } = getCortexInstances()
+      analyzer.cache.saveEnrichment(repoUrl, branch, commitSha, enrichmentType, agentId, data)
+    }
+  )
+
+  // Get cached enrichment
+  ipcMain.handle(
+    'cortex:getEnrichment',
+    async (
+      _event,
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      enrichmentType: string
+    ) => {
+      const { analyzer } = getCortexInstances()
+      return analyzer.cache.getEnrichment(repoUrl, branch, commitSha, enrichmentType)
+    }
+  )
 
   // --- Cortex RTK probe ---
   ipcMain.handle('cortex:probeRtk', async () => {

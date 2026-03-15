@@ -234,6 +234,36 @@ const api = {
       ipcRenderer.invoke('cortex:reanalyze', repoId),
     probeRtk: (): Promise<boolean> =>
       ipcRenderer.invoke('cortex:probeRtk'),
+    // AI Enrichment
+    buildDigest: (
+      repoUrl: string,
+      branch: string
+    ): Promise<{ data: string | null; cached: boolean }> =>
+      ipcRenderer.invoke('cortex:buildDigest', repoUrl, branch),
+    saveEnrichment: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      enrichmentType: string,
+      agentId: string,
+      data: string
+    ): Promise<void> =>
+      ipcRenderer.invoke(
+        'cortex:saveEnrichment',
+        repoUrl,
+        branch,
+        commitSha,
+        enrichmentType,
+        agentId,
+        data
+      ),
+    getEnrichment: (
+      repoUrl: string,
+      branch: string,
+      commitSha: string,
+      enrichmentType: string
+    ): Promise<string | null> =>
+      ipcRenderer.invoke('cortex:getEnrichment', repoUrl, branch, commitSha, enrichmentType),
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ): void => {
