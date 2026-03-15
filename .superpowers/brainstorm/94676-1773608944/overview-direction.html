@@ -1,0 +1,180 @@
+<h2>Overview Tab — Design Direction</h2>
+<p class="subtitle">The first thing users see after analysis. Which approach feels right for Cortex?</p>
+
+<div class="cards">
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #0a0a0f 0%, #111827 100%); padding: 24px; min-height: 280px;">
+      <!-- Glassmorphism stat cards mockup -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div style="background: rgba(255,255,255,0.04); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px;">
+          <div style="font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Total Files</div>
+          <div style="font-size: 28px; font-weight: 700; color: #e2e8f0; margin-top: 4px;">1,247</div>
+          <div style="height: 3px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 2px; margin-top: 8px; width: 65%;"></div>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px;">
+          <div style="font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">API Endpoints</div>
+          <div style="font-size: 28px; font-weight: 700; color: #e2e8f0; margin-top: 4px;">42</div>
+          <div style="height: 3px; background: linear-gradient(90deg, #10b981, #06b6d4); border-radius: 2px; margin-top: 8px; width: 40%;"></div>
+        </div>
+      </div>
+      <!-- Language ring mockup -->
+      <div style="display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(#3178c6 0% 45%, #f7df1e 45% 65%, #3572a5 65% 80%, #6b7280 80% 100%); display: flex; align-items: center; justify-content: center;">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #111827;"></div>
+        </div>
+        <div style="flex: 1;">
+          <div style="font-size: 11px; font-weight: 600; color: #e2e8f0;">Language Distribution</div>
+          <div style="display: flex; gap: 12px; margin-top: 6px;">
+            <span style="font-size: 10px; color: #3178c6;">TS 45%</span>
+            <span style="font-size: 10px; color: #f7df1e;">JS 20%</span>
+            <span style="font-size: 10px; color: #3572a5;">Py 15%</span>
+          </div>
+        </div>
+      </div>
+      <!-- Entity pills -->
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+        <div style="background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 20px; padding: 4px 12px; font-size: 10px; color: #60a5fa;">12 Controllers</div>
+        <div style="background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.25); border-radius: 20px; padding: 4px 12px; font-size: 10px; color: #a78bfa;">28 Services</div>
+        <div style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); border-radius: 20px; padding: 4px 12px; font-size: 10px; color: #34d399;">8 Repos</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Glass Dashboard</h3>
+      <p>Glassmorphism cards with gradient accents, donut chart for languages, pill badges for entities. Clean, modern, Linear-inspired.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #0a0a0f 0%, #0f172a 100%); padding: 24px; min-height: 280px;">
+      <!-- Hero stat with animated ring -->
+      <div style="text-align: center; margin-bottom: 16px;">
+        <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
+          <svg viewBox="0 0 100 100" style="width: 100px; height: 100px; transform: rotate(-90deg);">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="6"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="url(#grad1)" stroke-width="6" stroke-dasharray="198 66" stroke-linecap="round"/>
+            <defs><linearGradient id="grad1"><stop offset="0%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs>
+          </svg>
+          <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="font-size: 22px; font-weight: 700; color: #e2e8f0;">87%</div>
+            <div style="font-size: 8px; color: #64748b;">HEALTH</div>
+          </div>
+        </div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 8px;">Code Health Score</div>
+      </div>
+      <!-- Stat row -->
+      <div style="display: flex; justify-content: space-around; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+        <div style="text-align: center;">
+          <div style="font-size: 20px; font-weight: 700; color: #06b6d4;">1.2K</div>
+          <div style="font-size: 9px; color: #64748b;">FILES</div>
+        </div>
+        <div style="width: 1px; background: rgba(255,255,255,0.06);"></div>
+        <div style="text-align: center;">
+          <div style="font-size: 20px; font-weight: 700; color: #8b5cf6;">42</div>
+          <div style="font-size: 9px; color: #64748b;">APIS</div>
+        </div>
+        <div style="width: 1px; background: rgba(255,255,255,0.06);"></div>
+        <div style="text-align: center;">
+          <div style="font-size: 20px; font-weight: 700; color: #10b981;">156</div>
+          <div style="font-size: 9px; color: #64748b;">ENTITIES</div>
+        </div>
+      </div>
+      <!-- Mini sparkline area -->
+      <div style="margin-top: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 12px;">
+        <div style="font-size: 10px; color: #64748b; margin-bottom: 8px;">Entity Distribution</div>
+        <div style="display: flex; align-items: end; gap: 4px; height: 40px;">
+          <div style="flex: 1; background: linear-gradient(to top, rgba(59,130,246,0.3), rgba(59,130,246,0.05)); border-radius: 3px 3px 0 0; height: 85%;"></div>
+          <div style="flex: 1; background: linear-gradient(to top, rgba(139,92,246,0.3), rgba(139,92,246,0.05)); border-radius: 3px 3px 0 0; height: 60%;"></div>
+          <div style="flex: 1; background: linear-gradient(to top, rgba(16,185,129,0.3), rgba(16,185,129,0.05)); border-radius: 3px 3px 0 0; height: 40%;"></div>
+          <div style="flex: 1; background: linear-gradient(to top, rgba(245,158,11,0.3), rgba(245,158,11,0.05)); border-radius: 3px 3px 0 0; height: 30%;"></div>
+          <div style="flex: 1; background: linear-gradient(to top, rgba(236,72,153,0.3), rgba(236,72,153,0.05)); border-radius: 3px 3px 0 0; height: 20%;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Health-Centric Hero</h3>
+      <p>Central health score ring as hero element, compact stat row, gradient bar charts for entity distribution. Data tells the story visually.</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #0a0a0f 0%, #111827 100%); padding: 24px; min-height: 280px;">
+      <!-- Bento grid layout -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; gap: 8px;">
+        <!-- Large stat card spanning full width -->
+        <div style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(139,92,246,0.08)); border: 1px solid rgba(6,182,212,0.15); border-radius: 14px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em;">Repository Analysis</div>
+            <div style="font-size: 11px; font-weight: 600; color: #e2e8f0; margin-top: 2px;">spring-boot-microservice</div>
+          </div>
+          <div style="display: flex; gap: 16px;">
+            <div style="text-align: right;">
+              <div style="font-size: 18px; font-weight: 700; color: #06b6d4;">1,247</div>
+              <div style="font-size: 8px; color: #64748b;">files</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 18px; font-weight: 700; color: #8b5cf6;">89K</div>
+              <div style="font-size: 8px; color: #64748b;">lines</div>
+            </div>
+          </div>
+        </div>
+        <!-- Language card -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px;">
+          <div style="font-size: 9px; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Languages</div>
+          <div style="height: 6px; border-radius: 3px; background: #1e293b; overflow: hidden; display: flex;">
+            <div style="width: 45%; background: #3178c6;"></div>
+            <div style="width: 20%; background: #b07219;"></div>
+            <div style="width: 15%; background: #3572a5;"></div>
+            <div style="width: 20%; background: #6b7280;"></div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
+            <span style="font-size: 9px; color: #94a3b8;">TS</span>
+            <span style="font-size: 9px; color: #94a3b8;">Java</span>
+            <span style="font-size: 9px; color: #94a3b8;">Py</span>
+          </div>
+        </div>
+        <!-- Entities mini grid -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px;">
+          <div style="font-size: 9px; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Entities</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+            <div style="font-size: 10px;"><span style="color: #60a5fa; font-weight: 600;">12</span> <span style="color: #64748b;">ctrl</span></div>
+            <div style="font-size: 10px;"><span style="color: #a78bfa; font-weight: 600;">28</span> <span style="color: #64748b;">svc</span></div>
+            <div style="font-size: 10px;"><span style="color: #34d399; font-weight: 600;">8</span> <span style="color: #64748b;">repo</span></div>
+            <div style="font-size: 10px;"><span style="color: #fbbf24; font-weight: 600;">42</span> <span style="color: #64748b;">api</span></div>
+          </div>
+        </div>
+        <!-- Docs preview -->
+        <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;">
+          <div style="font-size: 9px; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Documentation</div>
+          <div style="font-size: 10px; color: #94a3b8; line-height: 1.5;">This microservice handles user authentication and session management via JWT tokens with refresh rotation...</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C: Bento Grid</h3>
+      <p>Apple-inspired bento layout with varying card sizes. Dense information display, gradient hero banner, compact entity grid. Maximum info density with visual hierarchy.</p>
+    </div>
+  </div>
+</div>
+
+<div class="pros-cons" style="margin-top: 24px;">
+  <div class="pros">
+    <h4>My Recommendation: A + C hybrid</h4>
+    <ul>
+      <li>Glass cards from A for stats (premium feel)</li>
+      <li>Bento grid layout from C (information density)</li>
+      <li>Donut chart from A for languages</li>
+      <li>Spring animations on all cards (staggered entrance)</li>
+    </ul>
+  </div>
+  <div class="cons">
+    <h4>Why not B?</h4>
+    <ul>
+      <li>Health score requires subjective metrics we don't have</li>
+      <li>Hero element takes too much vertical space</li>
+      <li>Less information density than A or C</li>
+    </ul>
+  </div>
+</div>
