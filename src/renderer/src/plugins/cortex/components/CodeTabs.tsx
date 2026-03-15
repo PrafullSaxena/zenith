@@ -64,7 +64,7 @@ export default function CodeTabs(): React.JSX.Element {
   if (openFiles.length === 0) return <></>
 
   return (
-    <div className="flex items-center gap-0.5 border-b border-border bg-surface px-2 overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border">
+    <div className="flex items-center gap-0.5 border-b border-white/[0.06] bg-white/[0.02] px-2 overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border">
       {openFiles.map((file) => {
         const filename = file.path.split('/').pop() ?? file.path
         const isActive = file.path === activeFilePath
@@ -75,8 +75,8 @@ export default function CodeTabs(): React.JSX.Element {
             onClick={() => handleTabClick(file.path)}
             className={`group flex shrink-0 items-center gap-1.5 px-3 py-2 text-[11px] transition-colors ${
               isActive
-                ? 'bg-surface-elevated border-t-2 border-t-accent text-text-primary'
-                : 'border-t-2 border-t-transparent text-text-secondary hover:text-text-primary hover:bg-surface-elevated/50'
+                ? 'bg-surface-elevated border-b-2 border-b-accent text-text-primary'
+                : 'border-b-2 border-b-transparent text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
             }`}
           >
             <FileCode size={12} className={getFileIconColor(filename)} />
