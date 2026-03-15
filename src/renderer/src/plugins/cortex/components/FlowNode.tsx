@@ -205,14 +205,19 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
         whileHover={reducedMotion ? undefined : { scale: 1.02 }}
         transition={{ duration: 0.15 }}
         onClick={handleClick}
-        className={`cursor-pointer rounded-lg border ${border} bg-gradient-to-br ${gradient} px-3 py-2 shadow-lg ${glow} backdrop-blur-sm`}
+        className={`relative overflow-hidden cursor-pointer rounded-xl border ${border} bg-white/[0.03] backdrop-blur-xl px-3 py-2 shadow-lg ${glow}`}
         style={{ minWidth: 200, maxWidth: 240 }}
       >
+        <div className={`absolute left-0 inset-y-0 w-1 rounded-l-xl bg-gradient-to-b ${gradient}`} />
+
         {/* Header */}
         <div className="flex items-center gap-1.5">
           <Icon size={12} className={`shrink-0 ${textColor}`} />
           <span className="flex-1 truncate text-[11px] font-semibold text-text-primary">
             {data.label}
+          </span>
+          <span className={`shrink-0 rounded-full bg-surface px-1.5 py-0.5 text-[8px] font-mono ${textColor}`}>
+            {data.type}
           </span>
           <ChevronRight size={10} className="shrink-0 text-text-secondary/50" />
         </div>
@@ -239,7 +244,7 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
       {/* Tooltip */}
       {showTooltip && (
         <div
-          className="absolute left-1/2 bottom-full z-50 mb-2 -translate-x-1/2 rounded-lg border border-border bg-surface-elevated p-3 shadow-xl"
+          className="absolute left-1/2 bottom-full z-50 mb-2 -translate-x-1/2 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-2xl p-3 shadow-xl"
           style={{ minWidth: 250, maxWidth: 320 }}
         >
           <div className="flex items-center gap-1.5 mb-1.5">
