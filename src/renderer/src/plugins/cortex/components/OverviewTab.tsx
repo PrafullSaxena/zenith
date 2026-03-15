@@ -10,26 +10,8 @@ import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import AnimatedCounter from './AnimatedCounter'
 import TestCoverageCard from './TestCoverageCard'
 import { usePrefersReducedMotion } from './useReducedMotion'
-
-function useCardVariants(): {
-  hidden: object
-  visible: (i: number) => object
-} {
-  const reducedMotion = usePrefersReducedMotion()
-  return {
-    hidden: { opacity: 0, y: reducedMotion ? 0 : 16, scale: reducedMotion ? 1 : 0.96 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        delay: reducedMotion ? 0 : i * 0.08,
-        duration: reducedMotion ? 0.15 : 0.35,
-        ease: [0.25, 0.46, 0.45, 0.94]
-      }
-    })
-  }
-}
+import { GLASS_CARD, getKindColor, useCardVariants as useSharedCardVariants } from '../cortex-theme'
+import DonutChart from './DonutChart'
 
 const SOURCE_LANGUAGES = new Set([
   'java', 'python', 'typescript', 'javascript', 'go', 'kotlin',
@@ -55,23 +37,9 @@ const LANGUAGE_COLORS: Record<string, string> = {
   Other: '#6b7280'
 }
 
-const ENTITY_ICONS: Record<string, string> = {
-  controller: 'text-blue-400',
-  service: 'text-green-400',
-  repository: 'text-purple-400',
-  function: 'text-amber-400',
-  class: 'text-cyan-400',
-  method: 'text-teal-400',
-  component: 'text-pink-400',
-  middleware: 'text-orange-400',
-  route: 'text-red-400',
-  decorator: 'text-indigo-400',
-  dag: 'text-yellow-400',
-  task: 'text-lime-400'
-}
-
 export default function OverviewTab(): React.JSX.Element {
-  const cardVariants = useCardVariants()
+  const reducedMotion = usePrefersReducedMotion()
+  const variants = useSharedCardVariants(reducedMotion)
   const analysisResult = useCortexStore((s) => s.analysisResult)
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
   const enrichEntities = useCortexStore((s) => s.enrichEntities)
@@ -102,13 +70,17 @@ export default function OverviewTab(): React.JSX.Element {
       label: 'Total Files',
       value: stats.totalFiles,
       icon: FileText,
-      color: 'text-blue-400'
+      color: 'text-blue-400',
+      accentFrom: '#3b82f6',
+      accentTo: '#06b6d4'
     },
     {
       label: 'Total Lines',
       value: stats.totalLines,
       icon: Hash,
-      color: 'text-green-400'
+      color: 'text-green-400',
+      accentFrom: '#10b981',
+      accentTo: '#34d399'
     },
     ...(stats.routeCount > 0
       ? [
@@ -116,7 +88,9 @@ export default function OverviewTab(): React.JSX.Element {
             label: 'API Endpoints',
             value: stats.routeCount,
             icon: Route,
-            color: 'text-amber-400'
+            color: 'text-amber-400',
+            accentFrom: '#f59e0b',
+            accentTo: '#fbbf24'
           }
         ]
       : []),
@@ -126,7 +100,9 @@ export default function OverviewTab(): React.JSX.Element {
             label: 'Components',
             value: stats.componentCount,
             icon: Component,
-            color: 'text-purple-400'
+            color: 'text-purple-400',
+            accentFrom: '#a855f7',
+            accentTo: '#c084fc'
           }
         ]
       : [])
@@ -187,9 +163,10 @@ export default function OverviewTab(): React.JSX.Element {
               custom={i}
               initial="hidden"
               animate="visible"
-              variants={cardVariants}
-              className="rounded-xl border border-border/60 bg-surface-elevated/70 p-4"
+              variants={variants}
+              className={`${GLASS_CARD} relative overflow-hidden p-4`}
             >
+              <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: `linear-gradient(90deg, ${card.accentFrom}, ${card.accentTo})` }} />
               <div className="flex items-center gap-2">
                 <Icon size={14} className={card.color} />
                 <span className="text-[10px] uppercase tracking-wide text-text-secondary">
@@ -210,52 +187,44 @@ export default function OverviewTab(): React.JSX.Element {
           custom={statCards.length}
           initial="hidden"
           animate="visible"
-          variants={cardVariants}
+          variants={variants}
           className="mt-6"
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">Language Breakdown</h3>
 
-          {/* Source Languages bar */}
+          {/* Source Languages donut */}
           {sourceLanguages.length > 0 && (
             <div className="mb-4">
               <p className="mb-1.5 text-[10px] uppercase tracking-wide text-text-secondary">
                 Source Languages
               </p>
-              <div className="flex h-3 overflow-hidden rounded-full bg-surface">
-                {sourceLanguages.map((lang) => {
-                  const pct = totalSourceLines > 0 ? (lang.lineCount / totalSourceLines) * 100 : 0
-                  if (pct < 0.5) return null
-                  return (
-                    <div
-                      key={lang.language}
-                      style={{
-                        width: `${pct}%`,
-                        backgroundColor: LANGUAGE_COLORS[lang.language] ?? LANGUAGE_COLORS.Other
-                      }}
-                      className="h-full first:rounded-l-full last:rounded-r-full"
-                      title={`${lang.language}: ${pct.toFixed(1)}%`}
-                    />
-                  )
-                })}
-              </div>
-              <div className="mt-2 flex flex-wrap gap-3">
-                {sourceLanguages.map((lang) => {
-                  const pct = totalSourceLines > 0 ? (lang.lineCount / totalSourceLines) * 100 : 0
-                  if (pct < 0.5) return null
-                  return (
-                    <div key={lang.language} className="flex items-center gap-1.5 text-[10px]">
-                      <span
-                        className="inline-block h-2 w-2 rounded-full"
-                        style={{
-                          backgroundColor: LANGUAGE_COLORS[lang.language] ?? LANGUAGE_COLORS.Other
-                        }}
-                      />
-                      <span className="text-text-secondary">
-                        {lang.language} {pct.toFixed(1)}%
-                      </span>
-                    </div>
-                  )
-                })}
+              <div className="flex items-start gap-6">
+                <DonutChart
+                  segments={sourceLanguages.map((l) => ({
+                    label: l.language,
+                    value: l.lineCount,
+                    color: LANGUAGE_COLORS[l.language] ?? LANGUAGE_COLORS.Other
+                  }))}
+                  size={120}
+                  strokeWidth={14}
+                />
+                <div className="flex flex-1 flex-wrap gap-3">
+                  {sourceLanguages.map((lang) => {
+                    const pct = totalSourceLines > 0 ? (lang.lineCount / totalSourceLines) * 100 : 0
+                    if (pct < 0.5) return null
+                    return (
+                      <div key={lang.language} className="flex items-center gap-1.5 text-[10px]">
+                        <span
+                          className="inline-block h-2 w-2 rounded-full"
+                          style={{ backgroundColor: LANGUAGE_COLORS[lang.language] ?? LANGUAGE_COLORS.Other }}
+                        />
+                        <span className="text-text-secondary">
+                          {lang.language} {pct.toFixed(1)}%
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )}
@@ -312,16 +281,16 @@ export default function OverviewTab(): React.JSX.Element {
         custom={statCards.length + 1}
         initial="hidden"
         animate="visible"
-        variants={cardVariants}
+        variants={variants}
         className="mt-6"
       >
         <h3 className="mb-3 text-xs font-semibold text-text-primary">Documentation</h3>
         {documentation ? (
-          <div className="rounded-xl border border-border/60 bg-surface-elevated/70 p-4">
+          <div className={`${GLASS_CARD} p-4`}>
             <MarkdownRenderer text={documentation} />
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 rounded-xl border border-border/60 bg-surface-elevated/70 p-8 text-center">
+          <div className={`${GLASS_CARD} flex flex-col items-center gap-2 p-8 text-center`}>
             <FileText size={24} className="text-text-secondary opacity-30" />
             <p className="text-xs text-text-secondary">
               Documentation will be generated during analysis with an AI agent configured
@@ -336,7 +305,7 @@ export default function OverviewTab(): React.JSX.Element {
           custom={statCards.length + 2}
           initial="hidden"
           animate="visible"
-          variants={cardVariants}
+          variants={variants}
           className="mt-6"
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">
@@ -349,7 +318,7 @@ export default function OverviewTab(): React.JSX.Element {
               return (
                 <div
                   key={file.path}
-                  className="rounded-xl border border-border/60 bg-surface-elevated/70"
+                  className={`${GLASS_CARD}`}
                 >
                   <button
                     type="button"
@@ -379,38 +348,29 @@ export default function OverviewTab(): React.JSX.Element {
           custom={statCards.length + 2}
           initial="hidden"
           animate="visible"
-          variants={cardVariants}
+          variants={variants}
           className="mt-6"
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">Entity Breakdown</h3>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            {stats.entityCount.map((entity, i) => {
+          <div className="flex flex-wrap gap-2">
+            {stats.entityCount.map((entity) => {
+              const colors = getKindColor(entity.kind)
               const firstEntity = analysisResult?.entities.find((e) => e.kind === entity.kind)
               const isClickable = !!firstEntity
               return (
-                <motion.div
+                <motion.button
                   key={entity.kind}
-                  custom={i}
-                  initial="hidden"
-                  animate="visible"
-                  variants={cardVariants}
-                  className={`rounded-lg border border-border/40 bg-surface-elevated/50 px-3 py-2 ${isClickable ? 'cursor-pointer transition-colors hover:border-accent/40 hover:bg-surface-elevated' : ''}`}
-                  onClick={
-                    isClickable
-                      ? () => navigateToFile(firstEntity.filePath, firstEntity.line)
-                      : undefined
-                  }
+                  type="button"
+                  whileHover={{ y: -1 }}
+                  onClick={isClickable ? () => navigateToFile(firstEntity.filePath, firstEntity.line) : undefined}
+                  className={`flex items-center gap-2 rounded-xl px-3 py-1.5 ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
+                  style={{ background: colors.bg, border: `1px solid ${colors.border}` }}
                 >
-                  <AnimatedCounter
-                    value={entity.count}
-                    className="text-lg font-bold text-text-primary"
-                  />
-                  <p
-                    className={`text-[10px] capitalize ${ENTITY_ICONS[entity.kind] ?? 'text-text-secondary'}`}
-                  >
+                  <span className="text-sm font-bold" style={{ color: colors.text }}>{entity.count}</span>
+                  <span className="text-[10px] capitalize" style={{ color: colors.text, opacity: 0.7 }}>
                     {entity.kind === 'dag' ? 'DAGs' : `${entity.kind}s`}
-                  </p>
-                </motion.div>
+                  </span>
+                </motion.button>
               )
             })}
           </div>
@@ -423,7 +383,7 @@ export default function OverviewTab(): React.JSX.Element {
           custom={statCards.length + 3}
           initial="hidden"
           animate="visible"
-          variants={cardVariants}
+          variants={variants}
           className="mt-6"
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">Test Coverage</h3>
