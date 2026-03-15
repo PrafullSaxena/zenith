@@ -3,7 +3,7 @@
  * Stats cards, language breakdown, documentation section, entity breakdown.
  */
 import { motion } from 'framer-motion'
-import { FileText, Hash, Route, Component } from 'lucide-react'
+import { FileText, Hash, Route, Component, Sparkles } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import AnimatedCounter from './AnimatedCounter'
@@ -73,6 +73,9 @@ export default function OverviewTab(): React.JSX.Element {
   const cardVariants = useCardVariants()
   const analysisResult = useCortexStore((s) => s.analysisResult)
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
+  const enrichEntities = useCortexStore((s) => s.enrichEntities)
+  const entityEnrichmentProgress = useCortexStore((s) => s.entityEnrichmentProgress)
+  const isDigestBuilding = useCortexStore((s) => s.isDigestBuilding)
 
   if (!analysisResult) {
     return (
@@ -128,6 +131,23 @@ export default function OverviewTab(): React.JSX.Element {
 
   return (
     <div className="h-full overflow-y-auto p-6">
+      {/* Header with enrich button */}
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-text-primary">Overview</h2>
+        <button
+          type="button"
+          onClick={() => enrichEntities()}
+          disabled={!!entityEnrichmentProgress || isDigestBuilding}
+          className="flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-1.5 text-[11px] font-medium text-accent transition-colors hover:bg-accent/20 disabled:opacity-50"
+        >
+          <Sparkles size={12} />
+          {entityEnrichmentProgress
+            ? `Enriching... ${entityEnrichmentProgress.done}/${entityEnrichmentProgress.total}`
+            : isDigestBuilding
+              ? 'Building AI context...'
+              : 'Enrich with AI'}
+        </button>
+      </div>
       {/* Stats cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {statCards.map((card, i) => {

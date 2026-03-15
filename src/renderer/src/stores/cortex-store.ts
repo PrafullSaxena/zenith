@@ -223,6 +223,25 @@ function parseKV(parts: string[]): Record<string, string> {
   return result
 }
 
+// ── Lightweight renderer-side Entity Summary parser ──────────────────
+
+function parseEntitySummariesRenderer(text: string): Map<string, string> {
+  const summaries = new Map<string, string>()
+  for (const rawLine of text.split('\n')) {
+    const line = rawLine.trim()
+    if (!line.startsWith('ENTITY_SUMMARY')) continue
+    const parts = line.split('|')
+    if (parts.length >= 3) {
+      const entityId = parts[1]?.trim() ?? ''
+      const summaryPart = parts.slice(2).join('|')
+      const match = summaryPart.match(/summary:(.+)/)
+      const summary = match ? match[1].trim() : summaryPart.trim()
+      if (entityId && summary) summaries.set(entityId, summary)
+    }
+  }
+  return summaries
+}
+
 interface CortexState {
   // Repos
   repos: Repository[]
@@ -304,6 +323,7 @@ interface CortexState {
   setHLDSections: (sections: { index: number; content: string; isGenerating: boolean }[]) => void
   setIsHLDGenerating: (v: boolean) => void
   buildDigest: () => Promise<void>
+  enrichEntities: () => Promise<void>
 }
 
 /**
@@ -632,6 +652,116 @@ export const useCortexStore = create<CortexState>((set, get) => ({
     } catch {
       set({ isDigestBuilding: false })
     }
+  },
+
+  enrichEntities: async () => {
+    const state = get()
+    const repo = state.repos.find((r) => r.id === state.activeRepoId)
+    if (!repo || !state.analysisResult) return
+
+    const agent = getCortexAgent()
+    if (!agent) return
+
+    // Build digest first if needed
+    if (!state.digest) {
+      await get().buildDigest()
+    }
+
+    // Collect IDs already summarized by digest
+    const digestSummaryIds = (get().digest?.entities ?? [])
+      .filter((e) => e.summary)
+      .map((e) => e.id)
+
+    // Also collect IDs already summarized in analysisResult
+    const alreadySummarized = state.analysisResult.entities
+      .filter((e) => e.summary)
+      .map((e) => e.id)
+
+    const existingIds = [...new Set([...digestSummaryIds, ...alreadySummarized])]
+
+    // Get batches from main process
+    const batches = await window.api.cortex.buildEntityBatches(
+      repo.url,
+      repo.branch,
+      existingIds
+    )
+
+    if (batches.length === 0) {
+      set({ entityEnrichmentProgress: null })
+      return
+    }
+
+    const totalEntities = batches.reduce((sum, b) => sum + b.entityIds.length, 0)
+    let completedEntities = 0
+    const allSummaries = new Map<string, string>()
+
+    set({ entityEnrichmentProgress: { done: 0, total: totalEntities } })
+
+    // Process batches sequentially
+    for (const batch of batches) {
+      const sessionId = crypto.randomUUID()
+      let accumulated = ''
+
+      await new Promise<void>((resolve) => {
+        window.api.ai.onStreamChunk(({ sessionId: sid, chunk }) => {
+          if (sid !== sessionId) return
+          accumulated += chunk
+        })
+
+        window.api.ai.onStreamDone(({ sessionId: sid }) => {
+          if (sid !== sessionId) return
+          const batchSummaries = parseEntitySummariesRenderer(accumulated)
+          for (const [id, summary] of batchSummaries) {
+            allSummaries.set(id, summary)
+          }
+          completedEntities += batch.entityIds.length
+          set({ entityEnrichmentProgress: { done: completedEntities, total: totalEntities } })
+          window.api.ai.removeStreamListeners()
+          resolve()
+        })
+
+        window.api.ai.onStreamError(({ sessionId: sid }) => {
+          if (sid !== sessionId) return
+          completedEntities += batch.entityIds.length
+          set({ entityEnrichmentProgress: { done: completedEntities, total: totalEntities } })
+          window.api.ai.removeStreamListeners()
+          resolve()
+        })
+
+        window.api.ai.startAnalysis(
+          agent.providerId,
+          agent.model,
+          batch.systemPrompt,
+          batch.userPrompt,
+          sessionId,
+          agent.command
+        )
+      })
+    }
+
+    // Merge summaries into analysisResult
+    const currentResult = get().analysisResult
+    if (currentResult) {
+      const updatedEntities = currentResult.entities.map((e) => {
+        const summary = allSummaries.get(e.id) ?? e.summary
+        return summary !== e.summary ? { ...e, summary } : e
+      })
+      set({
+        analysisResult: { ...currentResult, entities: updatedEntities },
+        entityEnrichmentProgress: null
+      })
+    }
+
+    // Cache all summaries
+    const summaryData = JSON.stringify(Object.fromEntries(allSummaries))
+    window.api.cortex.saveEnrichment(
+      repo.url,
+      repo.branch,
+      repo.commitSha,
+      'entity_summaries',
+      agent.providerId,
+      summaryData
+    )
   },
 
   reanalyze: async (repoId: string) => {

@@ -271,6 +271,12 @@ const api = {
       enrichmentType: string
     ): Promise<string | null> =>
       ipcRenderer.invoke('cortex:getEnrichment', repoUrl, branch, commitSha, enrichmentType),
+    buildEntityBatches: (
+      repoUrl: string,
+      branch: string,
+      existingSummaryIds: string[]
+    ): Promise<Array<{ entityIds: string[]; systemPrompt: string; userPrompt: string }>> =>
+      ipcRenderer.invoke('cortex:buildEntityBatches', repoUrl, branch, existingSummaryIds),
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ): void => {

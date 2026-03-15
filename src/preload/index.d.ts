@@ -122,6 +122,11 @@ export interface ElectronAPI {
       commitSha: string,
       enrichmentType: string
     ) => Promise<string | null>
+    buildEntityBatches: (
+      repoUrl: string,
+      branch: string,
+      existingSummaryIds: string[]
+    ) => Promise<Array<{ entityIds: string[]; systemPrompt: string; userPrompt: string }>>
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ) => void

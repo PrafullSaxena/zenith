@@ -29,6 +29,7 @@ import { generateHLDDocument } from './cortex/doc-generator'
 import { buildInsightsPrompt } from './cortex/toon-parser'
 import { isRtkAvailable } from './cortex/rtk-integration'
 import { buildStaticDigest, buildDigestRefinementPrompt, buildDigestUserPrompt } from './cortex/digest-builder'
+import { buildEntityBatches } from './cortex/entity-enricher'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -1046,6 +1047,39 @@ export function registerIpcHandlers(): void {
     ) => {
       const { analyzer } = getCortexInstances()
       return analyzer.cache.getEnrichment(repoUrl, branch, commitSha, enrichmentType)
+    }
+  )
+
+  // Build entity summary batches for AI processing
+  ipcMain.handle(
+    'cortex:buildEntityBatches',
+    async (_event, repoUrl: string, branch: string, existingSummaryIds: string[]) => {
+      const { git, analyzer } = getCortexInstances()
+      const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '')
+      if (!analysis) throw new Error('No analysis found.')
+
+      const typedAnalysis = analysis as Record<string, unknown>
+      const entities = typedAnalysis.entities as Array<{
+        id: string; name: string; kind: string; filePath: string;
+        line: number; endLine: number; summary: string
+      }>
+
+      const repos = analyzer.cache.listRepos()
+      const repo = repos.find((r) => r.url === repoUrl && r.branch === branch)
+      if (!repo) throw new Error('Repository not found')
+
+      const batches = await buildEntityBatches(
+        entities,
+        new Set(existingSummaryIds),
+        repo.repoPath,
+        git
+      )
+
+      return batches.map((b) => ({
+        entityIds: b.entities.map((e) => e.id),
+        systemPrompt: b.systemPrompt,
+        userPrompt: b.userPrompt
+      }))
     }
   )
 
