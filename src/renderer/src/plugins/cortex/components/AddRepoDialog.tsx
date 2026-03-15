@@ -6,6 +6,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Loader2, FolderGit2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
+import { GLASS_CARD } from '../cortex-theme'
 
 interface Props {
   open: boolean
@@ -136,7 +137,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-2xl"
         onClick={onClose}
       >
         <motion.div
@@ -144,7 +145,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 8 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="w-[520px] rounded-xl border border-border bg-surface p-6 shadow-2xl"
+          className={`w-[520px] p-6 shadow-2xl ${GLASS_CARD}`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -176,7 +177,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
                 onChange={(e) => setUrl(e.target.value)}
                 onBlur={handleUrlBlur}
                 placeholder="https://github.com/org/repo.git"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-accent/40 focus:outline-none focus:ring-1 focus:ring-accent/20"
               />
             </div>
 
@@ -188,7 +189,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
                   value={branch}
                   onChange={(e) => setBranch(e.target.value)}
                   disabled={branches.length === 0}
-                  className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30 disabled:opacity-50"
+                  className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary focus:border-accent/40 focus:outline-none focus:ring-1 focus:ring-accent/20 disabled:opacity-50"
                 >
                   {branches.length === 0 && (
                     <option value="">
@@ -220,7 +221,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="my-repo"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-accent/40 focus:outline-none focus:ring-1 focus:ring-accent/20"
               />
             </div>
 
