@@ -223,8 +223,12 @@ export function buildAPIFlowNodes(
 
     if (!handler) continue
 
-    // BFS from handler
-    const queue = [handler.id]
+    // BFS from handler — also seed with parent class to follow injection edges
+    const seedIds = [handler.id]
+    if (handler.parentId && entityById.has(handler.parentId)) {
+      seedIds.push(handler.parentId)
+    }
+    const queue = [...seedIds]
     const visited = new Set<string>()
 
     while (queue.length > 0 && nodes.length < MAX_NODES) {

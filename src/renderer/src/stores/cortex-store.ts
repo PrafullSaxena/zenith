@@ -255,7 +255,7 @@ interface CortexState {
 
   // UI State
   activeTab: 'insights' | 'code' | 'qa' | 'repos'
-  insightsSubTab: 'overview' | 'apis' | 'flows' | 'design'
+  insightsSubTab: 'overview' | 'apis' | 'flows' | 'architecture' | 'design' | 'graph'
 
   // Code viewer
   openFiles: { path: string; language: string }[]
@@ -598,59 +598,62 @@ export const useCortexStore = create<CortexState>((set, get) => ({
         return
       }
 
-      // Pass 2: Stream AI refinement
+      // Pass 2: Stream AI refinement — wrapped in Promise so callers
+      // (e.g. enrichEntities) wait until streaming actually completes.
       const sessionId = crypto.randomUUID()
       let accumulated = ''
 
-      window.api.ai.onStreamChunk(({ sessionId: sid, chunk }) => {
-        if (sid !== sessionId) return
-        accumulated += chunk
-        const partial = parseDigestToonRenderer(accumulated)
-        set({ digest: partial })
-      })
+      await new Promise<void>((resolve) => {
+        window.api.ai.onStreamChunk(({ sessionId: sid, chunk }) => {
+          if (sid !== sessionId) return
+          accumulated += chunk
+          const partial = parseDigestToonRenderer(accumulated)
+          set({ digest: partial })
+        })
 
-      window.api.ai.onStreamDone(({ sessionId: sid }) => {
-        if (sid !== sessionId) return
-        const final = parseDigestToonRenderer(accumulated)
-        set({ digest: final, isDigestBuilding: false })
-        // Cache the result
-        if (response.commitSha) {
-          window.api.cortex.saveEnrichment(
-            repo.url,
-            repo.branch,
-            response.commitSha,
-            'digest',
-            agent.providerId,
-            accumulated
-          )
-        }
-        window.api.ai.removeStreamListeners()
-      })
+        window.api.ai.onStreamDone(({ sessionId: sid }) => {
+          if (sid !== sessionId) return
+          const final = parseDigestToonRenderer(accumulated)
+          set({ digest: final, isDigestBuilding: false })
+          if (response.commitSha) {
+            window.api.cortex.saveEnrichment(
+              repo.url,
+              repo.branch,
+              response.commitSha,
+              'digest',
+              agent.providerId,
+              accumulated
+            )
+          }
+          window.api.ai.removeStreamListeners()
+          resolve()
+        })
 
-      window.api.ai.onStreamError(({ sessionId: sid }) => {
-        if (sid !== sessionId) return
-        // Fallback to raw digest on error
-        const fallback: DigestResult = {
-          meta: null,
-          entities: [],
-          missingEdges: [],
-          corrections: [],
-          patterns: [],
-          boundaries: [],
-          rawText: response.rawDigest ?? ''
-        }
-        set({ digest: fallback, isDigestBuilding: false })
-        window.api.ai.removeStreamListeners()
-      })
+        window.api.ai.onStreamError(({ sessionId: sid }) => {
+          if (sid !== sessionId) return
+          const fallback: DigestResult = {
+            meta: null,
+            entities: [],
+            missingEdges: [],
+            corrections: [],
+            patterns: [],
+            boundaries: [],
+            rawText: response.rawDigest ?? ''
+          }
+          set({ digest: fallback, isDigestBuilding: false })
+          window.api.ai.removeStreamListeners()
+          resolve()
+        })
 
-      await window.api.ai.startAnalysis(
-        agent.providerId,
-        agent.model,
-        response.systemPrompt!,
-        response.userPrompt!,
-        sessionId,
-        agent.command
-      )
+        window.api.ai.startAnalysis(
+          agent.providerId,
+          agent.model,
+          response.systemPrompt!,
+          response.userPrompt!,
+          sessionId,
+          agent.command
+        )
+      })
     } catch {
       set({ isDigestBuilding: false })
     }

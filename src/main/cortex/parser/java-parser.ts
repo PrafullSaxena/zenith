@@ -124,28 +124,48 @@ const MAPPING_ANNOTATIONS: Record<string, RouteInfo['method']> = {
   PatchMapping: 'PATCH'
 }
 
+// JAX-RS method annotations
+const JAXRS_METHOD_ANNOTATIONS: Record<string, RouteInfo['method']> = {
+  GET: 'GET',
+  POST: 'POST',
+  PUT: 'PUT',
+  DELETE: 'DELETE',
+  PATCH: 'PATCH'
+}
+
 export function parseJavaFile(
   content: string,
   filePath: string,
   arch: JavaArchitecture = 'layered'
-): Omit<JavaParseResult, 'architecture'> & { constructorParams: Map<string, string[]> } {
+): Omit<JavaParseResult, 'architecture'> & {
+  constructorParams: Map<string, string[]>
+  fieldInjections: Map<string, string[]>
+} {
   const entities: CodeEntity[] = []
   const routes: RouteInfo[] = []
   const callEdges: CallEdge[] = []
   // Map from class entity id -> list of injected type names (from constructor params)
   const constructorParams = new Map<string, string[]>()
+  // Map from class entity id -> list of injected type names (from @Autowired / @Inject fields)
+  const fieldInjections = new Map<string, string[]>()
 
   const stripped = stripComments(content)
   const lines = stripped.split('\n')
 
   // Detect controller and base path
   let isController = false
+  let isJaxRsResource = false
   let controllerName = ''
   let basePath = ''
 
-  // Check for @RestController or @Controller
+  // Check for Spring @RestController or @Controller
   if (/@(RestController|Controller)\b/.test(stripped)) {
     isController = true
+  }
+
+  // Check for JAX-RS @Path on class level
+  if (/@Path\s*\(/.test(stripped)) {
+    isJaxRsResource = true
   }
 
   // Extract @RequestMapping base path on class
@@ -154,8 +174,20 @@ export function parseJavaFile(
     basePath = basePathMatch[1]
   }
 
-  // Extract class declarations
-  const classRegex = /^(\s*)(public\s+)?(abstract\s+)?(class|interface|enum)\s+(\w+)/
+  // Extract JAX-RS @Path base path on class (before class declaration)
+  if (!basePath) {
+    const jaxRsPathMatch = stripped.match(/@Path\s*\(\s*["']([^"']+)["']\s*\)[\s\S]{0,200}?(class|interface)\s/)
+    if (jaxRsPathMatch) {
+      basePath = jaxRsPathMatch[1]
+    }
+  }
+
+  // Try to find Swagger/OpenAPI base path from @Api(value=...) or @Tag
+  const swaggerApiMatch = stripped.match(/@Api\s*\(\s*(?:value\s*=\s*)?["']([^"']+)["']/)
+  const swaggerTag = swaggerApiMatch ? swaggerApiMatch[1] : ''
+
+  // Extract class declarations — handles generics, implements, extends
+  const classRegex = /^(\s*)(public\s+)?(abstract\s+)?(final\s+)?(class|interface|enum)\s+(\w+)/
   let currentClassId: string | null = null
   let currentClassName: string | null = null
 
@@ -166,7 +198,7 @@ export function parseJavaFile(
     // Class declaration
     const classMatch = line.match(classRegex)
     if (classMatch) {
-      const className = classMatch[5]
+      const className = classMatch[6]
       controllerName = className
       currentClassName = className
 
@@ -264,6 +296,34 @@ export function parseJavaFile(
             constructorParams.set(currentClassId, injectedTypes)
           }
         }
+      }
+    }
+
+    // Field injection detection: @Autowired or @Inject on field declarations
+    if (currentClassId) {
+      const fieldLine = line.trim()
+      const fieldInjectMatch = fieldLine.match(
+        /^\s*(?:@Autowired|@Inject|@Resource)\s*(?:\(.*?\))?\s*(?:private|protected|public)?\s+([\w<>\[\]?,\s]+)\s+(\w+)\s*;/
+      )
+      // Also detect the pattern where @Autowired is on the preceding line
+      if (!fieldInjectMatch) {
+        const prevTrimmed = i > 0 ? lines[i - 1].trim() : ''
+        if (prevTrimmed.startsWith('@Autowired') || prevTrimmed.startsWith('@Inject') || prevTrimmed.startsWith('@Resource')) {
+          const plainFieldMatch = fieldLine.match(
+            /^\s*(?:private|protected|public)\s+([\w<>\[\]?,\s]+)\s+(\w+)\s*;/
+          )
+          if (plainFieldMatch) {
+            const typeName = plainFieldMatch[1].replace(/[<>[\]]/g, '').trim()
+            const existing = fieldInjections.get(currentClassId) ?? []
+            existing.push(typeName)
+            fieldInjections.set(currentClassId, existing)
+          }
+        }
+      } else {
+        const typeName = fieldInjectMatch[1].replace(/[<>[\]]/g, '').trim()
+        const existing = fieldInjections.get(currentClassId) ?? []
+        existing.push(typeName)
+        fieldInjections.set(currentClassId, existing)
       }
     }
 
@@ -430,10 +490,72 @@ export function parseJavaFile(
           }
         }
       }
+
+      // JAX-RS route detection: @GET, @POST, etc. with optional @Path
+      if (isJaxRsResource) {
+        for (const dec of decorators) {
+          const jaxRsMethod = JAXRS_METHOD_ANNOTATIONS[dec]
+          if (jaxRsMethod) {
+            // Look for @Path on this method
+            let methodPath = ''
+            for (let j = i - 1; j >= 0 && j >= i - 8; j--) {
+              const prevLine = lines[j].trim()
+              const pathMatch = prevLine.match(/@Path\s*\(\s*["']([^"']+)["']\s*\)/)
+              if (pathMatch) {
+                methodPath = pathMatch[1]
+                break
+              }
+              if (prevLine.length > 0 && !prevLine.startsWith('@')) break
+            }
+
+            const normalizedBase = basePath.startsWith('/') ? basePath : '/' + basePath
+            const normalizedRoute = methodPath
+              ? (methodPath.startsWith('/') ? methodPath : '/' + methodPath)
+              : ''
+            const fullPath = normalizedBase + normalizedRoute
+
+            routes.push({
+              method: jaxRsMethod,
+              path: methodPath,
+              handlerName: methodName,
+              controllerName,
+              filePath,
+              line: lineNum,
+              fullPath
+            })
+            break // Only emit one route per method
+          }
+        }
+      }
+
+      // Extract Swagger/OpenAPI operation summary for method
+      const swaggerSummary = extractSwaggerSummary(lines, i)
+      if (swaggerSummary) {
+        // Attach to the method entity we just created
+        const methodEntity = entities[entities.length - 1]
+        if (methodEntity && methodEntity.name === methodName) {
+          methodEntity.summary = swaggerSummary
+        }
+      }
     }
   }
 
-  return { entities, routes, callEdges, constructorParams }
+  return { entities, routes, callEdges, constructorParams, fieldInjections }
+}
+
+/** Extract summary from Swagger @ApiOperation or OpenAPI @Operation annotations */
+function extractSwaggerSummary(lines: string[], methodLineIdx: number): string {
+  for (let j = methodLineIdx - 1; j >= 0 && j >= methodLineIdx - 10; j--) {
+    const prevLine = lines[j].trim()
+    // OpenAPI 3.x: @Operation(summary = "...")
+    const opMatch = prevLine.match(/@Operation\s*\(.*?summary\s*=\s*["']([^"']+)["']/)
+    if (opMatch) return opMatch[1]
+    // Swagger 2.x: @ApiOperation("...") or @ApiOperation(value = "...")
+    const apiOpMatch = prevLine.match(/@ApiOperation\s*\(\s*(?:value\s*=\s*)?["']([^"']+)["']/)
+    if (apiOpMatch) return apiOpMatch[1]
+    if (prevLine.length > 0 && !prevLine.startsWith('@')) break
+  }
+  return ''
 }
 
 export function parseJavaFiles(
@@ -480,6 +602,27 @@ export function parseJavaFiles(
             line: 0,
             type: 'inject'
           })
+        }
+      }
+    }
+
+    // Resolve field injection edges (@Autowired, @Inject, @Resource)
+    for (const [classId, injectedTypes] of result.fieldInjections) {
+      for (const typeName of injectedTypes) {
+        const targetId = classNameToId.get(typeName)
+        if (targetId && targetId !== classId) {
+          const edgeId = `${classId}->${targetId}`
+          // Avoid duplicate edges from constructor + field injection
+          if (!callEdges.some((e) => e.id === edgeId)) {
+            callEdges.push({
+              id: edgeId,
+              callerId: classId,
+              calleeId: targetId,
+              filePath: '',
+              line: 0,
+              type: 'inject'
+            })
+          }
         }
       }
     }

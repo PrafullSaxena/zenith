@@ -190,6 +190,16 @@ export class AnalyzerDatabase {
   }
 
   searchFiles(repoUrl: string, query: string): { filePath: string; snippet: string }[] {
+    // Sanitize FTS5 query: remove special chars, wrap each word in double quotes
+    const sanitized = query
+      .replace(/['"(){}[\]*:^~!@#$%&]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((word) => `"${word}"`)
+      .join(' ')
+
+    if (!sanitized) return []
+
     const rows = this.db
       .prepare(
         `
@@ -201,7 +211,7 @@ export class AnalyzerDatabase {
       LIMIT 20
     `
       )
-      .all(repoUrl, query) as { file_path: string; snippet: string }[]
+      .all(repoUrl, sanitized) as { file_path: string; snippet: string }[]
     return rows.map((r) => ({ filePath: r.file_path, snippet: r.snippet }))
   }
 

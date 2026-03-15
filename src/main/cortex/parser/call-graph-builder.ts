@@ -15,6 +15,17 @@ interface CodeEntity {
     | 'decorator'
     | 'dag'
     | 'task'
+    | 'configuration'
+    | 'aspect'
+    | 'filter'
+    | 'port-in'
+    | 'port-out'
+    | 'web-adapter'
+    | 'db-adapter'
+    | 'http-adapter'
+    | 'error-handler'
+    | 'client-impl'
+    | 'shared'
   filePath: string
   line: number
   endLine: number

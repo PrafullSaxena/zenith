@@ -1,31 +1,56 @@
 /**
  * InsightsPanel -- Container for the insights section with sub-tab navigation.
- * Sub-tabs: Overview, APIs, Flows, Design Doc
+ * Sub-tabs: Overview, APIs, Flows, Architecture, Design Doc, Graph
  * Includes Export button for documentation export when design doc is available.
  */
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, Route, GitBranch, BookOpen, Download } from 'lucide-react'
+import {
+  FileText,
+  Route,
+  GitBranch,
+  Network,
+  BookOpen,
+  Share2,
+  Download,
+  Loader2
+} from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
 import ArchitectureDashboard from './ArchitectureDashboard'
+import DesignDocTab from './DesignDocTab'
 import ExportDialog from './ExportDialog'
+
+const MindGraphTab = lazy(() => import('./MindGraphTab'))
 
 const INSIGHT_TABS = [
   { id: 'overview', label: 'Overview', icon: FileText },
   { id: 'apis', label: 'APIs', icon: Route },
   { id: 'flows', label: 'Flows', icon: GitBranch },
-  { id: 'design', label: 'Design', icon: BookOpen }
+  { id: 'architecture', label: 'Architecture', icon: Network },
+  { id: 'design', label: 'Design', icon: BookOpen },
+  { id: 'graph', label: 'Graph', icon: Share2 }
 ] as const
+
+function TabFallback(): React.JSX.Element {
+  return (
+    <div className="flex h-full items-center justify-center">
+      <Loader2 size={20} className="animate-spin text-accent" />
+    </div>
+  )
+}
 
 export default function InsightsPanel(): React.JSX.Element {
   const insightsSubTab = useCortexStore((s) => s.insightsSubTab)
   const setInsightsSubTab = useCortexStore((s) => s.setInsightsSubTab)
   const designDoc = useCortexStore((s) => s.designDoc)
+  const hldContent = useCortexStore((s) => s.hldContent)
 
   const [showExport, setShowExport] = useState(false)
+
+  const exportContent = hldContent || designDoc
 
   return (
     <div className="flex h-full flex-col">
@@ -54,7 +79,7 @@ export default function InsightsPanel(): React.JSX.Element {
         </div>
 
         {/* Export button — visible when HLD is generated */}
-        {designDoc && (
+        {exportContent && (
           <button
             type="button"
             onClick={() => setShowExport(true)}
@@ -81,15 +106,21 @@ export default function InsightsPanel(): React.JSX.Element {
             {insightsSubTab === 'overview' && <OverviewTab />}
             {insightsSubTab === 'apis' && <APIListTab />}
             {insightsSubTab === 'flows' && <FlowsTab />}
-            {insightsSubTab === 'design' && <ArchitectureDashboard />}
+            {insightsSubTab === 'architecture' && <ArchitectureDashboard />}
+            {insightsSubTab === 'design' && <DesignDocTab />}
+            {insightsSubTab === 'graph' && (
+              <Suspense fallback={<TabFallback />}>
+                <MindGraphTab />
+              </Suspense>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* Export dialog */}
-      {showExport && designDoc && (
+      {showExport && exportContent && (
         <ExportDialog
-          hldContent={designDoc}
+          hldContent={exportContent}
           onClose={() => setShowExport(false)}
         />
       )}
