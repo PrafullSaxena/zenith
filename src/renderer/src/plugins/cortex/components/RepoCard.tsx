@@ -17,6 +17,7 @@ import {
 import type { Repository } from '../../../types/cortex'
 import { useCortexStore } from '../../../stores/cortex-store'
 import AnalysisProgress from './AnalysisProgress'
+import { GLASS_CARD, REPO_TYPE_GRADIENTS } from '../cortex-theme'
 
 interface Props {
   repo: Repository
@@ -28,11 +29,11 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<Repository['status'], string> = {
-  idle: 'border-border/60 bg-surface-elevated/70',
-  cloning: 'border-blue-500/30 bg-surface-elevated/70',
-  analyzing: 'border-warning/30 bg-surface-elevated/70',
-  ready: 'border-success/30 bg-surface-elevated/70',
-  error: 'border-error/30 bg-surface-elevated/70'
+  idle: `${GLASS_CARD}`,
+  cloning: `${GLASS_CARD} !border-blue-500/30`,
+  analyzing: `${GLASS_CARD} !border-warning/30`,
+  ready: `${GLASS_CARD} !border-success/30`,
+  error: `${GLASS_CARD} !border-error/30`
 }
 
 const REPO_TYPE_COLORS: Record<string, string> = {
@@ -75,12 +76,15 @@ export default function RepoCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.2)' }}
       transition={{ delay: index * 0.08, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
       onClick={onSelect}
-      className={`cursor-pointer rounded-xl border p-4 transition-colors ${STATUS_STYLES[repo.status]} ${
+      className={`relative cursor-pointer overflow-hidden p-4 transition-colors ${STATUS_STYLES[repo.status]} ${
         isActive ? 'ring-1 ring-accent/40' : ''
       }`}
     >
+      {/* Gradient top accent */}
+      <div className={`absolute inset-x-0 top-0 h-[3px] rounded-t-2xl bg-gradient-to-r ${REPO_TYPE_GRADIENTS[repo.repoType] ?? REPO_TYPE_GRADIENTS.unknown}`} />
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">

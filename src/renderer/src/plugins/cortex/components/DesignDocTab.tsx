@@ -6,6 +6,7 @@
 import { motion } from 'framer-motion'
 import { BookOpen, RefreshCw, Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
+import { GLASS_CARD, GLASS_SURFACE } from '../cortex-theme'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 
 export default function DesignDocTab(): React.JSX.Element {
@@ -34,7 +35,7 @@ export default function DesignDocTab(): React.JSX.Element {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
-          className="text-center"
+          className={`${GLASS_CARD} p-8 text-center`}
         >
           <BookOpen size={36} className="mx-auto mb-3 text-text-secondary/30" />
           <h3 className="text-sm font-semibold text-text-primary">Design Document</h3>
@@ -61,13 +62,13 @@ export default function DesignDocTab(): React.JSX.Element {
         <Loader2 size={24} className="animate-spin text-accent" />
         <p className="text-sm text-text-secondary">Generating design document...</p>
         <div className="mt-4 w-full max-w-2xl space-y-3 px-6">
-          <div className="h-6 w-3/4 animate-pulse rounded bg-surface" />
-          <div className="h-4 w-full animate-pulse rounded bg-surface" />
-          <div className="h-4 w-5/6 animate-pulse rounded bg-surface" />
-          <div className="h-32 w-full animate-pulse rounded bg-surface" />
-          <div className="h-4 w-2/3 animate-pulse rounded bg-surface" />
-          <div className="h-4 w-full animate-pulse rounded bg-surface" />
-          <div className="h-24 w-full animate-pulse rounded bg-surface" />
+          <div className="h-6 w-3/4 animate-pulse rounded bg-white/[0.04]" />
+          <div className="h-4 w-full animate-pulse rounded bg-white/[0.04]" />
+          <div className="h-4 w-5/6 animate-pulse rounded bg-white/[0.04]" />
+          <div className="h-32 w-full animate-pulse rounded bg-white/[0.04]" />
+          <div className="h-4 w-2/3 animate-pulse rounded bg-white/[0.04]" />
+          <div className="h-4 w-full animate-pulse rounded bg-white/[0.04]" />
+          <div className="h-24 w-full animate-pulse rounded bg-white/[0.04]" />
         </div>
       </div>
     )
@@ -77,7 +78,7 @@ export default function DesignDocTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-2">
+      <div className={`flex items-center justify-between ${GLASS_SURFACE} px-6 py-2`}>
         <div className="flex items-center gap-2">
           <BookOpen size={14} className="text-accent" />
           <span className="text-xs font-medium text-text-primary">High Level Design</span>

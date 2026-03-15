@@ -41,38 +41,12 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
+import { GLASS_CARD, getKindColor, getMethodColor } from '../cortex-theme'
 import { useAgentStore } from '../../../stores/agent-store'
 import InsightCard from './InsightCard'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { ToonInsights } from '../../../stores/cortex-store'
 import type { AnalysisResult, RouteInfo } from '../../../types/cortex'
-
-// ── Color constants ──────────────────────────────────────────────────────
-
-const KIND_COLORS: Record<string, string> = {
-  class: '#3b82f6',
-  service: '#8b5cf6',
-  controller: '#10b981',
-  repository: '#f59e0b',
-  component: '#ec4899',
-  function: '#64748b',
-  middleware: '#ef4444',
-  decorator: '#6b7280',
-  method: '#6b7280',
-  route: '#10b981',
-  dag: '#f59e0b',
-  task: '#8b5cf6',
-  default: '#64748b'
-}
-
-const METHOD_COLORS: Record<string, string> = {
-  GET: '#10b981',
-  POST: '#3b82f6',
-  PUT: '#f59e0b',
-  PATCH: '#8b5cf6',
-  DELETE: '#ef4444',
-  ALL: '#64748b'
-}
 
 // ── Helpers: build React Flow graph from raw analysisResult ────────────
 
@@ -116,7 +90,7 @@ function buildStaticEntityGraph(analysisResult: AnalysisResult): { nodes: Node[]
 
   sortedKinds.forEach((kind, colIdx) => {
     const kindEntities = byKind.get(kind) ?? []
-    const color = KIND_COLORS[kind] ?? KIND_COLORS.default
+    const colors = getKindColor(kind)
     const x = colIdx * COLUMN_WIDTH
 
     // Column header node
@@ -126,12 +100,12 @@ function buildStaticEntityGraph(analysisResult: AnalysisResult): { nodes: Node[]
       data: { label: kind.toUpperCase() },
       selectable: false,
       style: {
-        background: `${color}15`,
-        border: `1px dashed ${color}44`,
+        background: colors.bg,
+        border: `1px dashed ${colors.border}`,
         borderRadius: 8,
         padding: '4px 12px',
         fontSize: 9,
-        color,
+        color: colors.text,
         fontWeight: 700,
         letterSpacing: '0.08em',
         width: 180
@@ -146,8 +120,8 @@ function buildStaticEntityGraph(analysisResult: AnalysisResult): { nodes: Node[]
         position: { x, y: (rowIdx + 1) * ROW_HEIGHT },
         data: { label: e.name },
         style: {
-          background: `${color}22`,
-          border: `1px solid ${color}55`,
+          background: colors.bg,
+          border: `1px solid ${colors.border}`,
           borderRadius: 10,
           padding: '6px 14px',
           fontSize: 11,
@@ -243,16 +217,16 @@ function CodeStructureOverview({ analysisResult }: { analysisResult: AnalysisRes
       {entityBadges.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {entityBadges.map((ec) => {
-            const color = KIND_COLORS[ec.kind.toLowerCase()] ?? KIND_COLORS.default
+            const colors = getKindColor(ec.kind.toLowerCase())
             return (
               <span
                 key={ec.kind}
                 className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-medium"
-                style={{ background: `${color}20`, color }}
+                style={{ background: colors.bg, color: colors.text }}
               >
                 <span
                   className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: color }}
+                  style={{ background: colors.text }}
                 />
                 {ec.kind}
                 <span className="ml-0.5 opacity-70">{ec.count}</span>
@@ -303,12 +277,12 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
       {/* Method distribution */}
       <div className="flex flex-wrap gap-2">
         {methodCounts.map(([method, count]) => {
-          const color = METHOD_COLORS[method] ?? '#64748b'
+          const mc = getMethodColor(method)
           return (
             <span
               key={method}
               className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-semibold"
-              style={{ background: `${color}20`, color }}
+              style={{ background: mc.bg, color: mc.text }}
             >
               {method}
               <span className="ml-0.5 opacity-70">{count}</span>
@@ -318,9 +292,9 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
       </div>
 
       {/* Route list */}
-      <div className="divide-y divide-border/30 rounded-lg border border-border/40 bg-surface/50">
+      <div className={`${GLASS_CARD} divide-y divide-white/[0.04]`}>
         {topRoutes.map((route, i) => {
-          const color = METHOD_COLORS[route.method] ?? '#64748b'
+          const mc = getMethodColor(route.method)
           return (
             <button
               key={i}
@@ -330,7 +304,7 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
             >
               <span
                 className="shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold"
-                style={{ background: `${color}20`, color }}
+                style={{ background: mc.bg, color: mc.text }}
               >
                 {route.method}
               </span>
@@ -612,7 +586,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           <p className="mb-3 text-[11px] text-text-tertiary">
             Grouped by kind — controllers, services, repositories. Edges show call/injection relationships.
           </p>
-          <div className="h-72 overflow-hidden rounded-xl border border-border/60 bg-surface-elevated/40">
+          <div className={`h-72 overflow-hidden ${GLASS_CARD}`}>
             {staticEntityGraph.nodes.length === 0 ? (
               <div className="flex h-full items-center justify-center text-xs text-text-secondary">
                 No entity data available
@@ -688,16 +662,16 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           )}
         </div>
         {displayContent ? (
-          <div className="rounded-xl border border-border/60 bg-surface-elevated/70 p-5">
+          <div className={`${GLASS_CARD} p-5`}>
             <MarkdownRenderer text={displayContent} />
           </div>
         ) : isHLDGenerating ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-border/40 bg-surface/40 py-8">
+          <div className={`flex flex-col items-center gap-3 ${GLASS_CARD} py-8`}>
             <Loader2 size={24} className="animate-spin text-accent" />
             <p className="text-xs text-text-secondary">Generating design document...</p>
           </div>
         ) : (
-          <div className="rounded-xl border border-border/40 bg-surface/40 p-5 text-center">
+          <div className={`${GLASS_CARD} p-5 text-center`}>
             <BookOpen size={28} className="mx-auto mb-2 text-text-secondary/30" />
             <p className="text-xs text-text-secondary">
               Generate a High Level Design document with architecture diagrams and API flows.
@@ -760,7 +734,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
               <div className="space-y-6">
                 {/* Generate / Refresh controls */}
                 {!aiInsights && !isGeneratingInsights && (
-                  <div className="rounded-xl border border-border/40 bg-surface/40 p-5">
+                  <div className={`${GLASS_CARD} p-5`}>
                     {hasAgent ? (
                       <div className="flex flex-col items-start gap-3">
                         <p className="text-xs text-text-secondary">
@@ -797,9 +771,9 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                     </motion.div>
                     <p className="text-xs text-text-secondary">Cortex is thinking...</p>
                     <div className="mt-2 w-full max-w-lg space-y-2">
-                      <div className="h-5 w-3/4 animate-pulse rounded bg-surface" />
-                      <div className="h-4 w-full animate-pulse rounded bg-surface" />
-                      <div className="h-4 w-5/6 animate-pulse rounded bg-surface" />
+                      <div className="h-5 w-3/4 animate-pulse rounded bg-white/[0.04]" />
+                      <div className="h-4 w-full animate-pulse rounded bg-white/[0.04]" />
+                      <div className="h-4 w-5/6 animate-pulse rounded bg-white/[0.04]" />
                     </div>
                   </div>
                 )}

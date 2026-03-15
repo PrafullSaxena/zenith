@@ -3,11 +3,13 @@
  * Shows interactive React Flow diagrams for API flows, component trees, and data pipelines.
  */
 import { useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { GitBranch, Route, Component, Workflow, ChevronDown, ShieldCheck, Loader2 } from 'lucide-react'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import FlowDiagram from './FlowDiagram'
 import { buildAPIFlowNodes, buildComponentTreeNodes, buildPipelineNodes } from './flow-utils'
 import ValidationPanel from './ValidationPanel'
+import { GLASS_SURFACE } from '../cortex-theme'
 
 type FlowType = 'api' | 'components' | 'pipeline'
 
@@ -155,7 +157,7 @@ export default function FlowsTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Top bar: flow type selector + endpoint filter */}
-      <div className="flex items-center gap-3 border-b border-border px-4 py-2">
+      <div className={`flex items-center gap-3 ${GLASS_SURFACE} px-4 py-2`}>
         <FlowTypeSelector
           availableTypes={availableTypes}
           flowType={flowType}
@@ -218,7 +220,7 @@ export default function FlowsTab(): React.JSX.Element {
             <select
               value={selectedEndpoint}
               onChange={(e) => setSelectedEndpoint(e.target.value)}
-              className="appearance-none rounded-lg border border-border bg-surface px-3 py-1 pr-7 text-[11px] text-text-primary outline-none focus:border-accent"
+              className="appearance-none rounded-lg border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-3 py-1 pr-7 text-[11px] text-text-primary outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
             >
               <option value="__all__">All endpoints ({endpoints.length})</option>
               {endpoints.map((ep) => (
@@ -286,15 +288,21 @@ function FlowTypeSelector({
             key={t.id}
             type="button"
             onClick={() => onSelect(t.id)}
-            title={t.label}
-            className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
-              isActive
-                ? 'bg-accent/15 text-accent'
-                : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+            className={`relative flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              isActive ? 'text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
             }`}
           >
-            <Icon size={12} />
-            {t.label}
+            {isActive && (
+              <motion.div
+                layoutId="cortex-flow-tab"
+                className="absolute inset-0 rounded-lg bg-accent/12"
+                transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
+              />
+            )}
+            <span className="relative z-10 flex items-center gap-1">
+              <Icon size={12} />
+              {t.label}
+            </span>
           </button>
         )
       })}

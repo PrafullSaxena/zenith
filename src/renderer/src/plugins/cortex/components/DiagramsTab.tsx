@@ -16,24 +16,10 @@ import {
   type Edge
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import { motion } from 'framer-motion'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { AnalysisResult, CodeEntity } from '../../../types/cortex'
-
-const KIND_COLORS: Record<string, string> = {
-  class: '#3b82f6',
-  service: '#8b5cf6',
-  controller: '#10b981',
-  repository: '#f59e0b',
-  component: '#ec4899',
-  function: '#64748b',
-  middleware: '#ef4444',
-  decorator: '#6b7280',
-  method: '#6b7280',
-  route: '#10b981',
-  dag: '#f59e0b',
-  task: '#8b5cf6',
-  default: '#64748b'
-}
+import { getKindColor, GLASS_SURFACE } from '../cortex-theme'
 
 const DIAGRAM_TABS = [
   { id: 'entities', label: 'Entity Graph', icon: Network },
@@ -51,20 +37,22 @@ function buildEntityGraph(result: AnalysisResult): { nodes: Node[]; edges: Edge[
 
   const cols = Math.max(Math.ceil(Math.sqrt(topEntities.length)), 4)
   const nodes: Node[] = topEntities.slice(0, 40).map((e, i) => {
-    const color = KIND_COLORS[e.kind] ?? KIND_COLORS.default
+    const color = getKindColor(e.kind)
     return {
       id: e.id,
       position: { x: (i % cols) * 240, y: Math.floor(i / cols) * 120 },
       data: { label: `${e.name}\n(${e.kind})` },
       style: {
-        background: `${color}22`,
-        border: `1px solid ${color}66`,
-        borderRadius: 12,
-        padding: '8px 16px',
+        background: color.bg,
+        border: `1px solid ${color.border}`,
+        borderRadius: 14,
+        padding: '10px 16px',
         fontSize: 11,
         color: '#e2e8f0',
         fontWeight: 600,
-        whiteSpace: 'pre-line' as const
+        whiteSpace: 'pre-line' as const,
+        backdropFilter: 'blur(8px)',
+        boxShadow: `0 4px 20px ${color.glow}`
       }
     }
   })
@@ -149,22 +137,24 @@ function buildLayerGraph(result: AnalysisResult): { nodes: Node[]; edges: Edge[]
   for (const kind of orderedKinds) {
     const members = groups.get(kind)
     if (!members) continue
-    const color = KIND_COLORS[kind] ?? KIND_COLORS.default
+    const color = getKindColor(kind)
 
     nodes.push({
       id: `layer-${kind}`,
       position: { x: 0, y },
       data: { label: kind.toUpperCase() },
       style: {
-        background: `${color}15`,
-        border: `1px dashed ${color}44`,
+        background: color.bg,
+        border: `1px dashed ${color.border}`,
         borderRadius: 12,
         padding: '6px 14px',
         fontSize: 10,
-        color: `${color}`,
+        color: color.text,
         fontWeight: 700,
         letterSpacing: '0.05em',
-        width: 120
+        width: 120,
+        backdropFilter: 'blur(8px)',
+        boxShadow: `0 4px 20px ${color.glow}`
       }
     })
 
@@ -174,13 +164,15 @@ function buildLayerGraph(result: AnalysisResult): { nodes: Node[]; edges: Edge[]
         position: { x: 150 + mi * 200, y },
         data: { label: m.name },
         style: {
-          background: `${color}22`,
-          border: `1px solid ${color}55`,
+          background: color.bg,
+          border: `1px solid ${color.border}`,
           borderRadius: 10,
           padding: '8px 14px',
           fontSize: 11,
           color: '#e2e8f0',
-          fontWeight: 500
+          fontWeight: 500,
+          backdropFilter: 'blur(8px)',
+          boxShadow: `0 4px 20px ${color.glow}`
         }
       })
     })
@@ -213,19 +205,22 @@ function buildDependencyGraph(result: AnalysisResult): { nodes: Node[]; edges: E
   const entityKinds = result.stats.entityCount
   if (entityKinds.length === 0) return { nodes: [], edges: [] }
 
+  const projectColor = getKindColor('class')
   const nodes: Node[] = [
     {
       id: 'project',
       position: { x: 300, y: 250 },
       data: { label: result.framework || 'Project' },
       style: {
-        background: '#3b82f622',
-        border: '2px solid #3b82f6',
+        background: projectColor.bg,
+        border: `2px solid ${projectColor.border}`,
         borderRadius: 16,
         padding: '10px 20px',
         fontSize: 12,
         color: '#e2e8f0',
-        fontWeight: 700
+        fontWeight: 700,
+        backdropFilter: 'blur(8px)',
+        boxShadow: `0 4px 24px ${projectColor.glow}`
       }
     }
   ]
@@ -235,27 +230,29 @@ function buildDependencyGraph(result: AnalysisResult): { nodes: Node[]; edges: E
   entityKinds.forEach((ek, i) => {
     const angle = i * angleStep - Math.PI / 2
     const radius = 200
-    const color = KIND_COLORS[ek.kind] ?? KIND_COLORS.default
+    const color = getKindColor(ek.kind)
     nodes.push({
       id: `ek-${i}`,
       position: { x: 300 + Math.cos(angle) * radius, y: 250 + Math.sin(angle) * radius },
       data: { label: `${ek.kind}\n(${ek.count})` },
       style: {
-        background: `${color}22`,
-        border: `1px solid ${color}55`,
+        background: color.bg,
+        border: `1px solid ${color.border}`,
         borderRadius: 10,
         padding: '6px 12px',
         fontSize: 10,
         color: '#e2e8f0',
         fontWeight: 500,
-        whiteSpace: 'pre-line' as const
+        whiteSpace: 'pre-line' as const,
+        backdropFilter: 'blur(8px)',
+        boxShadow: `0 4px 20px ${color.glow}`
       }
     })
     edges.push({
       id: `ek-e-${i}`,
       source: 'project',
       target: `ek-${i}`,
-      style: { stroke: `${color}66` }
+      style: { stroke: color.border }
     })
   })
 
@@ -331,7 +328,7 @@ export default function DiagramsTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
+      <div className={`flex items-center justify-between px-4 py-2 ${GLASS_SURFACE}`}>
         <div className="flex items-center gap-1">
           {DIAGRAM_TABS.map((tab) => {
             const Icon = tab.icon
@@ -341,15 +338,21 @@ export default function DiagramsTab(): React.JSX.Element {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveDiagramTab(tab.id)}
-                title={tab.label}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                  isActive
-                    ? 'bg-accent/15 text-accent'
-                    : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+                className={`relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                  isActive ? 'text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
                 }`}
               >
-                <Icon size={12} />
-                {tab.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="cortex-diagram-tab"
+                    className="absolute inset-0 rounded-lg bg-accent/12"
+                    transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <Icon size={12} />
+                  {tab.label}
+                </span>
               </button>
             )
           })}
@@ -360,7 +363,8 @@ export default function DiagramsTab(): React.JSX.Element {
       </div>
 
       {/* Diagram */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden relative">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.03)_0%,transparent_70%)]" />
         {diagramData.nodes.length === 0 ? (
           <div className="flex h-full items-center justify-center text-xs text-text-secondary">
             No entities detected for diagram visualization
@@ -375,10 +379,10 @@ export default function DiagramsTab(): React.JSX.Element {
             minZoom={0.3}
             maxZoom={2}
           >
-            <Background gap={20} size={1} color="#1e293b" />
+            <Background gap={20} size={1} color="#1e293b" variant="dots" />
             <Controls
               showInteractive={false}
-              className="!bg-surface !border-border/60 !rounded-lg [&>button]:!bg-surface [&>button]:!border-border/40 [&>button]:!text-text-secondary"
+              className="!bg-white/[0.03] !backdrop-blur-xl !border-white/[0.08] !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/[0.06] [&>button]:!text-text-secondary"
             />
           </ReactFlow>
         )}

@@ -4,6 +4,7 @@
  */
 import { motion } from 'framer-motion'
 import type { AnalysisProgress as AnalysisProgressType } from '../../../types/cortex'
+import { GLASS_CARD } from '../cortex-theme'
 
 interface Props {
   progress: AnalysisProgressType
@@ -18,12 +19,21 @@ const PHASE_LABELS: Record<AnalysisProgressType['phase'], string> = {
   done: 'Complete'
 }
 
+const PHASE_BAR_COLORS: Record<AnalysisProgressType['phase'], string> = {
+  cloning: 'bg-blue-400',
+  scanning: 'bg-accent',
+  parsing: 'bg-warning',
+  indexing: 'bg-cyan-400',
+  documenting: 'bg-purple-400',
+  done: 'bg-success'
+}
+
 export default function AnalysisProgress({ progress }: Props): React.JSX.Element {
   const label = PHASE_LABELS[progress.phase] ?? progress.phase
-  const barColor = progress.phase === 'parsing' ? 'bg-warning' : 'bg-accent'
+  const barColor = PHASE_BAR_COLORS[progress.phase] ?? 'bg-accent'
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className={`flex flex-col gap-1.5 rounded-xl p-2.5 ${GLASS_CARD}`}>
       <div className="flex items-center justify-between text-[10px]">
         <span className="font-medium text-text-primary">{label}</span>
         <span className="text-text-secondary">{Math.round(progress.progress)}%</span>

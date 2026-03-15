@@ -57,7 +57,7 @@ export default function CodePanel(): React.JSX.Element {
     <div className="flex h-full">
       {/* Left panel: File Tree */}
       <div
-        className="h-full shrink-0 overflow-x-auto border-r border-border bg-surface"
+        className="h-full shrink-0 overflow-x-auto border-r border-white/[0.06] bg-white/[0.02]"
         style={{ width: sidebarWidth }}
       >
         <FileTree />
@@ -69,9 +69,13 @@ export default function CodePanel(): React.JSX.Element {
         aria-orientation="vertical"
         tabIndex={0}
         onMouseDown={onMouseDown}
-        className="group h-full w-1.5 shrink-0 cursor-col-resize flex items-center justify-center hover:bg-accent/20 transition-colors"
+        className="flex w-2 cursor-col-resize items-center justify-center hover:bg-accent/10 transition-colors"
       >
-        <div className="h-full w-px bg-border/40 transition-colors group-hover:bg-accent/50" />
+        <div className="flex flex-col gap-1">
+          <div className="h-1 w-1 rounded-full bg-text-secondary/30" />
+          <div className="h-1 w-1 rounded-full bg-text-secondary/30" />
+          <div className="h-1 w-1 rounded-full bg-text-secondary/30" />
+        </div>
       </div>
 
       {/* Right panel: Code Tabs + Code Viewer */}

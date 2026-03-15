@@ -24,9 +24,12 @@ function getFileIconColor(name: string): string {
     case '.jsx':
       return 'text-yellow-400'
     case '.java':
-      return 'text-red-400'
+    case '.kt':
+      return 'text-amber-400'
     case '.py':
       return 'text-green-400'
+    case '.go':
+      return 'text-cyan-400'
     case '.json':
       return 'text-amber-400'
     case '.sql':
@@ -172,8 +175,8 @@ function FileTreeNode({
         onClick={handleClick}
         className={`flex w-full items-center gap-1.5 py-0.5 text-xs transition-colors ${
           isSelected
-            ? 'bg-accent/15 text-accent'
-            : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+            ? 'border-l-[3px] border-accent bg-accent/[0.06] text-accent'
+            : 'text-text-secondary hover:bg-white/[0.03] hover:text-text-primary'
         }`}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
@@ -208,7 +211,8 @@ function FileTreeNode({
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="overflow-hidden"
+              className="overflow-hidden border-l border-border/30"
+              style={{ marginLeft: `${depth * 16 + 16}px` }}
             >
               {visibleChildren.map((child) => (
                 <FileTreeNode
@@ -259,8 +263,8 @@ function VirtualRow({ index, style, data }: ListChildComponentProps<VirtualRowDa
         onClick={handleClick}
         className={`flex w-full items-center gap-1.5 py-0.5 text-xs transition-colors ${
           isSelected
-            ? 'bg-accent/15 text-accent'
-            : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+            ? 'border-l-[3px] border-accent bg-accent/[0.06] text-accent'
+            : 'text-text-secondary hover:bg-white/[0.03] hover:text-text-primary'
         }`}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >

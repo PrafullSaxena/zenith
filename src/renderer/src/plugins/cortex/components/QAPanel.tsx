@@ -10,6 +10,7 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { useAgentStore } from '../../../stores/agent-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { QAMessage, RepoType } from '../../../types/cortex'
+import { GLASS_CARD, GLASS_SURFACE } from '../cortex-theme'
 
 // ── Suggested questions by repo type ────────────────────────────────
 
@@ -274,7 +275,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
+      <div className={`${GLASS_SURFACE} flex items-center justify-between px-4 py-2`}>
         <div className="flex items-center gap-2">
           <Search size={14} className="text-accent" />
           <span className="text-xs font-medium text-text-primary">Codebase Q&A</span>
@@ -288,7 +289,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
           <button
             type="button"
             onClick={clearQA}
-            className="rounded p-1 text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors"
+            className="rounded p-1 text-text-secondary hover:bg-white/[0.06] hover:text-text-primary transition-colors"
             title="Clear chat"
           >
             <Trash2 size={13} />
@@ -317,7 +318,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
                   type="button"
                   onClick={() => handleSend(q)}
                   disabled={isQAStreaming || !hasAgent}
-                  className="rounded-lg border border-border/60 bg-surface-elevated/50 px-4 py-2 text-xs text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors text-left disabled:opacity-40"
+                  className={`${GLASS_CARD} px-4 py-2.5 text-xs text-text-secondary hover:bg-white/[0.06] hover:text-text-primary transition-all text-left disabled:opacity-40`}
                 >
                   {q}
                 </button>
@@ -337,8 +338,8 @@ Answer questions accurately. Reference specific files, functions, and line numbe
               <div
                 className={`max-w-[85%] ${
                   msg.role === 'user'
-                    ? 'bg-accent/15 text-text-primary rounded-xl px-4 py-3'
-                    : 'border border-border/60 bg-surface-elevated text-text-primary rounded-xl px-4 py-3'
+                    ? 'bg-accent/[0.08] border border-accent/[0.15] rounded-2xl px-4 py-3 border-l-[3px] border-l-accent/40'
+                    : `${GLASS_CARD} px-4 py-3`
                 }`}
               >
                 {msg.role === 'user' ? (
@@ -355,22 +356,25 @@ Answer questions accurately. Reference specific files, functions, and line numbe
                             type="button"
                             onClick={() => handleSourceClick(src.path, src.line)}
                             title={`Open ${src.path}:${src.line}`}
-                            className="flex items-center gap-1 text-[10px] text-accent/70 hover:text-accent transition-colors"
+                            className="flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 text-[10px] text-accent/80 hover:bg-white/[0.08] hover:text-accent transition-all hover:-translate-y-0.5"
                           >
                             <FileCode size={10} />
-                            <span>
-                              {src.path}:{src.line}
-                            </span>
+                            <span>{src.path}:{src.line}</span>
                           </button>
                         ))}
                       </div>
                     )}
                   </div>
                 ) : (
-                  /* Streaming placeholder */
-                  <div className="flex items-center gap-2 py-1">
-                    <Loader2 size={14} className="animate-spin text-accent" />
-                    <span className="text-xs text-text-secondary">Thinking...</span>
+                  /* Typing indicator */
+                  <div className="flex items-center gap-1.5 px-2 py-2">
+                    {[0, 1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="h-1.5 w-1.5 rounded-full bg-accent/60"
+                        style={{ animation: `typing-dot 1.2s infinite ${i * 0.2}s` }}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
@@ -381,8 +385,8 @@ Answer questions accurately. Reference specific files, functions, and line numbe
       </div>
 
       {/* Input area */}
-      <div className="border-t border-border bg-surface p-3">
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-elevated px-3 py-2">
+      <div className={`${GLASS_SURFACE} p-3`}>
+        <div className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/[0.08] px-3 py-2 focus-within:border-accent/30">
           <Search size={14} className="shrink-0 text-text-secondary/50" />
           <input
             type="text"
@@ -398,7 +402,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             onClick={() => handleSend(input)}
             disabled={!input.trim() || isQAStreaming || !hasAgent}
             title="Send message"
-            className="rounded-md bg-accent/15 p-1.5 text-accent hover:bg-accent/25 disabled:opacity-40 transition-colors"
+            className="rounded-lg bg-accent/15 p-1.5 text-accent hover:bg-accent/25 active:scale-95 disabled:opacity-40 transition-all"
           >
             {isQAStreaming ? (
               <Loader2 size={14} className="animate-spin" />

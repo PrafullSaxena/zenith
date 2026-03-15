@@ -3,19 +3,12 @@
  * Filterable, sortable table with method badges and file links.
  */
 import { useState, useMemo, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Search, ArrowUpDown, Route, ShieldCheck, Loader2 } from 'lucide-react'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import type { RouteInfo } from '../../../types/cortex'
 import ValidationPanel from './ValidationPanel'
-
-const METHOD_COLORS: Record<string, string> = {
-  GET: 'bg-green-500/15 text-green-400',
-  POST: 'bg-blue-500/15 text-blue-400',
-  PUT: 'bg-amber-500/15 text-amber-400',
-  DELETE: 'bg-red-500/15 text-red-400',
-  PATCH: 'bg-purple-500/15 text-purple-400',
-  ALL: 'bg-gray-500/15 text-gray-400'
-}
+import { GLASS_CARD, GLASS_SURFACE, getMethodColor } from '../cortex-theme'
 
 type SortKey = 'path' | 'method' | 'handlerName' | 'controllerName'
 type SortDir = 'asc' | 'desc'
@@ -188,16 +181,16 @@ export default function APIListTab(): React.JSX.Element {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter endpoints..."
-            className="w-56 rounded-lg border border-border bg-background py-1.5 pl-7 pr-3 text-[11px] text-text-primary placeholder:text-text-secondary/50 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+            className="w-56 rounded-lg border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl py-1.5 pl-7 pr-3 text-[11px] text-text-primary placeholder:text-text-secondary/50 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
           />
         </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto rounded-lg border border-border">
+      <div className={`flex-1 overflow-auto ${GLASS_CARD} overflow-hidden`}>
         <table className="w-full text-xs">
-          <thead className="sticky top-0 bg-surface-elevated/50 text-[10px] uppercase tracking-wider text-text-secondary">
+          <thead className="sticky top-0 bg-white/[0.03] text-[10px] uppercase tracking-wider text-text-secondary">
             <tr>
               <SortHeader label="Method" field="method" />
               <SortHeader label="Path" field="path" />
@@ -211,14 +204,20 @@ export default function APIListTab(): React.JSX.Element {
             {filteredRoutes.map((route, i) => (
               <tr
                 key={`${route.method}-${route.fullPath}-${i}`}
-                className="border-b border-border/40 transition-colors even:bg-surface-elevated/30 hover:bg-surface-elevated/40"
+                className="border-b border-border/40 transition-colors even:bg-white/[0.02] hover:bg-white/[0.04]"
               >
                 <td className="px-3 py-2">
-                  <span
-                    className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${METHOD_COLORS[route.method] ?? METHOD_COLORS.ALL}`}
-                  >
-                    {route.method}
-                  </span>
+                  {(() => {
+                    const mc = getMethodColor(route.method)
+                    return (
+                      <span
+                        className="inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                        style={{ background: mc.bg, color: mc.text, border: `1px solid ${mc.border}` }}
+                      >
+                        {route.method}
+                      </span>
+                    )
+                  })()}
                 </td>
                 <td className="px-3 py-2 font-mono text-xs text-text-primary">
                   {route.fullPath}

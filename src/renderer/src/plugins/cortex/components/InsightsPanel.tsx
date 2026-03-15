@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
+import { GLASS_SURFACE } from '../cortex-theme'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
@@ -55,7 +56,7 @@ export default function InsightsPanel(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Sub-tab bar */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-2">
+      <div className={`${GLASS_SURFACE} flex items-center justify-between px-6 py-2`}>
         <div className="flex items-center gap-1">
           {INSIGHT_TABS.map((tab) => {
             const Icon = tab.icon
@@ -65,15 +66,21 @@ export default function InsightsPanel(): React.JSX.Element {
                 key={tab.id}
                 type="button"
                 onClick={() => setInsightsSubTab(tab.id)}
-                title={tab.label}
-                className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                  isActive
-                    ? 'bg-accent/15 text-accent'
-                    : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+                className={`relative flex items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                  isActive ? 'text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
                 }`}
               >
-                <Icon size={12} />
-                {tab.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="cortex-insight-tab"
+                    className="absolute inset-0 rounded-lg bg-accent/12"
+                    transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1">
+                  <Icon size={12} />
+                  {tab.label}
+                </span>
               </button>
             )
           })}
@@ -101,7 +108,7 @@ export default function InsightsPanel(): React.JSX.Element {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="h-full"
           >
             {insightsSubTab === 'overview' && <OverviewTab />}

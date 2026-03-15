@@ -15,6 +15,7 @@ import RepoManager from './components/RepoManager'
 import InsightsPanel from './components/InsightsPanel'
 import CodePanel from './components/CodePanel'
 import QAPanel from './components/QAPanel'
+import { GLASS_SURFACE } from './cortex-theme'
 
 type CortexTab = 'insights' | 'code' | 'qa' | 'repos'
 
@@ -53,7 +54,6 @@ export default function CortexView(): React.JSX.Element {
   // Auto-load cached analysis when selecting a previously analyzed repo
   useEffect(() => {
     if (!activeRepo || !activeRepo.commitSha || analysisResult) return
-    // Repo was previously analyzed but analysis result not in memory — load from cache
     window.api.cortex
       .getCachedAnalysis(activeRepo.url, activeRepo.branch, activeRepo.commitSha)
       .then((cached) => {
@@ -69,16 +69,19 @@ export default function CortexView(): React.JSX.Element {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+      <div className={`${GLASS_SURFACE} flex items-center justify-between px-6 py-3`}>
         <div className="flex items-center gap-2">
           <Brain size={18} className="text-accent" />
-          <h1 className="text-lg font-semibold text-text-primary">Cortex</h1>
+          <h1 className="bg-gradient-to-r from-text-primary to-accent bg-clip-text text-lg font-semibold text-transparent">
+            Cortex
+          </h1>
         </div>
 
         {activeRepo && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-secondary">{activeRepo.name}</span>
-            <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
+            <span className="flex items-center gap-1.5 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
               {activeRepo.branch}
             </span>
           </div>
@@ -95,15 +98,21 @@ export default function CortexView(): React.JSX.Element {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              title={tab.label}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                isActive
-                  ? 'bg-accent/15 text-accent'
-                  : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+              className={`relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                isActive ? 'text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
               }`}
             >
-              <Icon size={14} />
-              {tab.label}
+              {isActive && (
+                <motion.div
+                  layoutId="cortex-main-tab"
+                  className="absolute inset-0 rounded-lg bg-accent/12"
+                  transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1.5">
+                <Icon size={14} />
+                {tab.label}
+              </span>
             </button>
           )
         })}
@@ -117,14 +126,14 @@ export default function CortexView(): React.JSX.Element {
       )}
 
       {/* Content */}
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="h-full"
           >
             {activeTab === 'repos' && <RepoManager />}
@@ -179,7 +188,7 @@ export default function CortexView(): React.JSX.Element {
 
       {/* Status bar */}
       {activeRepo && analysisResult && (
-        <div className="flex items-center justify-between border-t border-border bg-surface px-4 py-1 text-[10px] text-text-secondary">
+        <div className="flex items-center justify-between border-t border-border/40 bg-surface-elevated/30 backdrop-blur-sm px-4 py-1 text-[10px] text-text-secondary">
           <div className="flex items-center gap-3">
             <span>{activeRepo.name}</span>
             <span className="text-text-secondary/50">/</span>
@@ -193,6 +202,7 @@ export default function CortexView(): React.JSX.Element {
           </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
               <span
                 className="inline-block h-1.5 w-1.5 rounded-full"
                 style={{ backgroundColor: getRepoTypeDotColor(analysisResult.repoType) }}

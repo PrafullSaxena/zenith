@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { ChevronDown, ChevronUp, TestTube } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { TestStats } from '../../../types/cortex'
+import { GLASS_CARD } from '../cortex-theme'
 
 interface TestCoverageCardProps {
   stats: TestStats
@@ -40,7 +41,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
   const visibleUncovered = filesUncovered.slice(0, 10)
 
   return (
-    <div className="rounded-xl border border-border/60 bg-surface-elevated/70 p-4">
+    <div className={`${GLASS_CARD} p-4`}>
       {/* Header */}
       <div className="mb-4 flex items-center gap-2">
         <TestTube size={14} className="text-text-secondary" />
@@ -102,7 +103,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
               {frameworks.map((fw) => (
                 <span
                   key={fw}
-                  className="rounded-full border border-border/60 bg-surface px-2 py-0.5 text-[10px] font-medium text-text-secondary"
+                  className="rounded-full bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 text-[10px] font-medium text-text-secondary"
                 >
                   {fw}
                 </span>
@@ -140,7 +141,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
               {visibleUncovered.map((filePath) => (
                 <li key={filePath}>
                   <button
-                    className="w-full truncate rounded px-1 py-0.5 text-left text-[11px] text-text-secondary transition-colors hover:bg-surface hover:text-text-primary"
+                    className="w-full truncate rounded px-1 py-0.5 text-left text-[11px] text-text-secondary transition-colors hover:bg-white/[0.03] hover:text-text-primary"
                     onClick={() => navigateToFile(filePath)}
                     title={filePath}
                   >
