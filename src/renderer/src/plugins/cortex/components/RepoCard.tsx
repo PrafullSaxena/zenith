@@ -2,6 +2,7 @@
  * RepoCard -- Individual repository card with status indicator and actions.
  */
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 import {
   FolderGit2,
   Trash2,
@@ -9,7 +10,9 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  GitPullRequest,
+  Sparkles
 } from 'lucide-react'
 import type { Repository } from '../../../types/cortex'
 import { useCortexStore } from '../../../stores/cortex-store'
@@ -63,7 +66,10 @@ export default function RepoCard({
   const progress = useCortexStore((s) => s.progress)
   const isAnalyzing = useCortexStore((s) => s.isAnalyzing)
   const reanalyze = useCortexStore((s) => s.reanalyze)
+  const enrichEntities = useCortexStore((s) => s.enrichEntities)
   const isThisAnalyzing = isAnalyzing && isActive && repo.status === 'analyzing'
+  const [isFetching, setIsFetching] = useState(false)
+  const [isRunningFullAI, setIsRunningFullAI] = useState(false)
 
   return (
     <motion.div
@@ -135,31 +141,67 @@ export default function RepoCard({
 
       {/* Action buttons */}
       {!isThisAnalyzing && repo.status !== 'cloning' && (
-        <div className="mt-3 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onAnalyze()
-            }}
-            title="Analyze this repository"
-            className="flex items-center gap-1 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25"
-          >
-            <Play size={12} />
-            Analyze
-          </button>
-          {repo.status === 'ready' && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {repo.status !== 'ready' && (
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation()
-                reanalyze(repo.id)
+                onAnalyze()
               }}
-              title="Re-analyze (fetch latest from remote)"
-              className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent"
+              title="Run static analysis on this repository"
+              className="flex items-center gap-1 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25"
             >
-              <RefreshCw size={12} />
+              <Play size={12} />
+              Analyze
             </button>
+          )}
+          {repo.status === 'ready' && (
+            <>
+              <button
+                type="button"
+                disabled={isFetching}
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  setIsFetching(true)
+                  try {
+                    await reanalyze(repo.id)
+                  } finally {
+                    setIsFetching(false)
+                  }
+                }}
+                title="Fetch latest changes from remote and re-run static analysis"
+                className="flex items-center gap-1 rounded-lg bg-accent/15 px-2.5 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25 disabled:opacity-50"
+              >
+                {isFetching ? <Loader2 size={12} className="animate-spin" /> : <GitPullRequest size={12} />}
+                Fetch Changes
+              </button>
+              <button
+                type="button"
+                disabled={isRunningFullAI}
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  setIsRunningFullAI(true)
+                  try {
+                    // Re-analyze first (fetches latest + clears cache + re-runs static analysis)
+                    await reanalyze(repo.id)
+                    // Then run AI enrichment (entity summaries, digest, etc.)
+                    try {
+                      await enrichEntities()
+                    } catch {
+                      // AI enrichment may fail if no agent configured — that's ok
+                    }
+                  } finally {
+                    setIsRunningFullAI(false)
+                  }
+                }}
+                title="Invalidate all cache, re-run static + AI analysis"
+                className="flex items-center gap-1 rounded-lg bg-purple-500/15 px-2.5 py-1.5 text-xs font-medium text-purple-400 transition-colors hover:bg-purple-500/25 disabled:opacity-50"
+              >
+                {isRunningFullAI ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                Run AI Analysis
+              </button>
+            </>
           )}
           <button
             type="button"

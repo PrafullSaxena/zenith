@@ -663,10 +663,11 @@ export const useCortexStore = create<CortexState>((set, get) => ({
   enrichEntities: async () => {
     const state = get()
     const repo = state.repos.find((r) => r.id === state.activeRepoId)
-    if (!repo || !state.analysisResult) return
+    if (!repo) throw new Error('No active repository selected')
+    if (!state.analysisResult) throw new Error('No analysis results available — analyze a repository first')
 
     const agent = getCortexAgent()
-    if (!agent) return
+    if (!agent) throw new Error('No AI agent configured — set one up in Settings → AI Agents')
 
     // Build digest first if needed
     if (!state.digest) {

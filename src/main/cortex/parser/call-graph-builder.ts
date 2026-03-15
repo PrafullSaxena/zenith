@@ -52,8 +52,7 @@ export interface CallGraph {
 
 /**
  * Build a call graph from entities and call edges.
- * Validates edges (removes edges where source or target doesn't exist)
- * and detects cycles.
+ * Validates edges, and infers class-to-class edges from method-level calls.
  */
 export function buildCallGraph(entities: CodeEntity[], calls: CallEdge[]): CallGraph {
   const nodes = new Map<string, CodeEntity>()
@@ -64,12 +63,39 @@ export function buildCallGraph(entities: CodeEntity[], calls: CallEdge[]): CallG
 
   // Validate edges: remove edges referencing non-existent entities
   const validEdges = calls.filter((edge) => {
-    const callerExists = nodes.has(edge.callerId)
-    const calleeExists = nodes.has(edge.calleeId)
-    return callerExists && calleeExists
+    return nodes.has(edge.callerId) && nodes.has(edge.calleeId)
   })
 
-  return { nodes, edges: validEdges }
+  // Infer class-to-class edges from method-level calls.
+  // If method A (parent ClassX) calls method B (parent ClassY), add ClassX -> ClassY edge.
+  const inferredEdges: CallEdge[] = []
+  const seenInferred = new Set<string>()
+
+  for (const edge of validEdges) {
+    const caller = nodes.get(edge.callerId)
+    const callee = nodes.get(edge.calleeId)
+    if (!caller || !callee) continue
+
+    const callerParentId = caller.kind === 'method' && caller.parentId ? caller.parentId : null
+    const calleeParentId = callee.kind === 'method' && callee.parentId ? callee.parentId : null
+
+    if (callerParentId && calleeParentId && callerParentId !== calleeParentId) {
+      const key = `${callerParentId}->${calleeParentId}`
+      if (!seenInferred.has(key) && nodes.has(callerParentId) && nodes.has(calleeParentId)) {
+        seenInferred.add(key)
+        inferredEdges.push({
+          id: `inferred:${key}`,
+          callerId: callerParentId,
+          calleeId: calleeParentId,
+          filePath: '',
+          line: 0,
+          type: 'inferred'
+        })
+      }
+    }
+  }
+
+  return { nodes, edges: [...validEdges, ...inferredEdges] }
 }
 
 /**

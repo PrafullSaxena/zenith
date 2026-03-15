@@ -1,16 +1,12 @@
 /**
- * DiagramsTab — AI-powered architecture diagrams (entity graph, layer interaction, dependency map).
- * Extracted from ArchitectureDashboard to its own dedicated tab.
+ * DiagramsTab — Architecture diagrams built from actual analysis data.
+ * Shows entity graph (from CodeEntity + CallEdge), layer interaction, and dependency map.
  */
-import { useState, useMemo, useCallback, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useMemo } from 'react'
 import {
-  Brain,
   Network,
   Layers,
-  ArrowRightLeft,
-  Loader2,
-  RefreshCw
+  ArrowRightLeft
 } from 'lucide-react'
 import {
   ReactFlow,
@@ -20,9 +16,8 @@ import {
   type Edge
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
-import { useAgentStore } from '../../../stores/agent-store'
-import type { ToonInsights } from '../../../stores/cortex-store'
+import { useCortexStore } from '../../../stores/cortex-store'
+import type { AnalysisResult, CodeEntity } from '../../../types/cortex'
 
 const KIND_COLORS: Record<string, string> = {
   class: '#3b82f6',
@@ -48,13 +43,18 @@ const DIAGRAM_TABS = [
 
 type DiagramTabId = (typeof DIAGRAM_TABS)[number]['id']
 
-function buildEntityGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  const entities = insights.entities.slice(0, 20)
-  const nodes: Node[] = entities.map((e, i) => {
-    const color = KIND_COLORS[e.kind.toLowerCase()] ?? KIND_COLORS.default
+/** Build entity graph from real entities and call edges */
+function buildEntityGraph(result: AnalysisResult): { nodes: Node[]; edges: Edge[] } {
+  const topEntities = result.entities.filter(
+    (e) => e.kind !== 'method' && e.kind !== 'function' && e.kind !== 'decorator'
+  )
+
+  const cols = Math.max(Math.ceil(Math.sqrt(topEntities.length)), 4)
+  const nodes: Node[] = topEntities.slice(0, 40).map((e, i) => {
+    const color = KIND_COLORS[e.kind] ?? KIND_COLORS.default
     return {
-      id: `entity-${i}`,
-      position: { x: (i % 4) * 220, y: Math.floor(i / 4) * 140 },
+      id: e.id,
+      position: { x: (i % cols) * 240, y: Math.floor(i / cols) * 120 },
       data: { label: `${e.name}\n(${e.kind})` },
       style: {
         background: `${color}22`,
@@ -69,45 +69,88 @@ function buildEntityGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[
     }
   })
 
+  const nodeIds = new Set(nodes.map((n) => n.id))
   const edges: Edge[] = []
-  const locationMap = new Map<string, number[]>()
-  entities.forEach((e, i) => {
-    const loc = e.location.split('/').slice(0, -1).join('/')
-    const list = locationMap.get(loc) ?? []
-    list.push(i)
-    locationMap.set(loc, list)
-  })
-  let edgeIdx = 0
-  for (const indices of locationMap.values()) {
-    for (let j = 1; j < indices.length; j++) {
-      edges.push({
-        id: `ee-${edgeIdx++}`,
-        source: `entity-${indices[j - 1]}`,
-        target: `entity-${indices[j]}`,
-        animated: true,
-        style: { stroke: '#475569' }
-      })
-    }
+  const seenEdges = new Set<string>()
+  const entityById = new Map(result.entities.map((e) => [e.id, e]))
+
+  for (const call of result.calls) {
+    let sourceId = call.callerId
+    let targetId = call.calleeId
+
+    const caller = entityById.get(sourceId)
+    if (caller && caller.kind === 'method' && caller.parentId) sourceId = caller.parentId
+    const callee = entityById.get(targetId)
+    if (callee && callee.kind === 'method' && callee.parentId) targetId = callee.parentId
+
+    if (sourceId === targetId) continue
+    if (!nodeIds.has(sourceId) || !nodeIds.has(targetId)) continue
+
+    const key = `${sourceId}->${targetId}`
+    if (seenEdges.has(key)) continue
+    seenEdges.add(key)
+
+    const color = call.type === 'inject' ? '#8b5cf6' : call.type === 'inferred' ? '#64748b' : '#475569'
+    edges.push({
+      id: `ee-${edges.length}`,
+      source: sourceId,
+      target: targetId,
+      animated: call.type === 'inject',
+      label: call.type !== 'call' ? call.type : undefined,
+      style: { stroke: color },
+      labelStyle: { fontSize: 9, fill: '#94a3b8' }
+    })
   }
+
   return { nodes, edges }
 }
 
-function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  const groups = new Map<string, typeof insights.entities>()
-  for (const e of insights.entities.slice(0, 30)) {
-    const kind = e.kind.toLowerCase()
-    const list = groups.get(kind) ?? []
+/** Build layer interaction diagram from real entities grouped by kind */
+function buildLayerGraph(result: AnalysisResult): { nodes: Node[]; edges: Edge[] } {
+  const groups = new Map<string, CodeEntity[]>()
+  for (const e of result.entities) {
+    if (e.kind === 'method' || e.kind === 'function' || e.kind === 'decorator') continue
+    const list = groups.get(e.kind) ?? []
     list.push(e)
-    groups.set(kind, list)
+    groups.set(e.kind, list)
   }
+
+  const layerOrder = ['controller', 'web-adapter', 'middleware', 'service', 'port-in', 'port-out', 'repository', 'db-adapter', 'class', 'component', 'configuration', 'dag', 'task']
+  const orderedKinds = [...groups.keys()].sort((a, b) => {
+    const ai = layerOrder.indexOf(a)
+    const bi = layerOrder.indexOf(b)
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
+  })
 
   const nodes: Node[] = []
   const edges: Edge[] = []
   let y = 0
-  let layerIdx = 0
 
-  for (const [kind, members] of groups) {
+  const entityById = new Map(result.entities.map((e) => [e.id, e]))
+  const layerConnections = new Map<string, Set<string>>()
+
+  for (const call of result.calls) {
+    let sourceId = call.callerId
+    let targetId = call.calleeId
+    const caller = entityById.get(sourceId)
+    if (caller?.kind === 'method' && caller.parentId) sourceId = caller.parentId
+    const callee = entityById.get(targetId)
+    if (callee?.kind === 'method' && callee.parentId) targetId = callee.parentId
+
+    const sourceEntity = entityById.get(sourceId)
+    const targetEntity = entityById.get(targetId)
+    if (!sourceEntity || !targetEntity || sourceEntity.kind === targetEntity.kind) continue
+
+    const conns = layerConnections.get(sourceEntity.kind) ?? new Set()
+    conns.add(targetEntity.kind)
+    layerConnections.set(sourceEntity.kind, conns)
+  }
+
+  for (const kind of orderedKinds) {
+    const members = groups.get(kind)
+    if (!members) continue
     const color = KIND_COLORS[kind] ?? KIND_COLORS.default
+
     nodes.push({
       id: `layer-${kind}`,
       position: { x: 0, y },
@@ -124,10 +167,11 @@ function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[]
         width: 120
       }
     })
+
     members.slice(0, 5).forEach((m, mi) => {
       nodes.push({
         id: `layer-${kind}-${mi}`,
-        position: { x: 150 + mi * 180, y },
+        position: { x: 150 + mi * 200, y },
         data: { label: m.name },
         style: {
           background: `${color}22`,
@@ -140,40 +184,40 @@ function buildLayerGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[]
         }
       })
     })
-    if (layerIdx > 0) {
-      const prevKind = [...groups.keys()][layerIdx - 1]
-      const prevMembers = groups.get(prevKind)
-      if (prevMembers && prevMembers.length > 0) {
+
+    y += 120
+  }
+
+  let edgeIdx = 0
+  for (const [sourceKind, targetKinds] of layerConnections) {
+    for (const targetKind of targetKinds) {
+      const sourceMembers = groups.get(sourceKind)
+      const targetMembers = groups.get(targetKind)
+      if (sourceMembers && sourceMembers.length > 0 && targetMembers && targetMembers.length > 0) {
         edges.push({
-          id: `layer-e-${layerIdx}`,
-          source: `layer-${prevKind}-0`,
-          target: `layer-${kind}-0`,
+          id: `layer-e-${edgeIdx++}`,
+          source: `layer-${sourceKind}-0`,
+          target: `layer-${targetKind}-0`,
           animated: true,
           style: { stroke: '#475569', strokeDasharray: '5 5' }
         })
       }
     }
-    y += 120
-    layerIdx++
   }
+
   return { nodes, edges }
 }
 
-function buildDependencyGraph(insights: ToonInsights): { nodes: Node[]; edges: Edge[] } {
-  const deps = insights.dependencies.slice(0, 20)
-  const catColors: Record<string, string> = {
-    runtime: '#3b82f6',
-    devdependency: '#8b5cf6',
-    core: '#10b981',
-    test: '#6b7280',
-    build: '#f59e0b',
-    util: '#ec4899'
-  }
+/** Build dependency graph showing entity kind distribution with inter-kind connections */
+function buildDependencyGraph(result: AnalysisResult): { nodes: Node[]; edges: Edge[] } {
+  const entityKinds = result.stats.entityCount
+  if (entityKinds.length === 0) return { nodes: [], edges: [] }
+
   const nodes: Node[] = [
     {
       id: 'project',
-      position: { x: 300, y: 200 },
-      data: { label: insights.architecture.framework || 'Project' },
+      position: { x: 300, y: 250 },
+      data: { label: result.framework || 'Project' },
       style: {
         background: '#3b82f622',
         border: '2px solid #3b82f6',
@@ -186,15 +230,16 @@ function buildDependencyGraph(insights: ToonInsights): { nodes: Node[]; edges: E
     }
   ]
   const edges: Edge[] = []
-  const angleStep = (2 * Math.PI) / Math.max(deps.length, 1)
-  deps.forEach((dep, i) => {
-    const angle = i * angleStep
-    const radius = 180
-    const color = catColors[dep.category.toLowerCase()] ?? '#64748b'
+
+  const angleStep = (2 * Math.PI) / Math.max(entityKinds.length, 1)
+  entityKinds.forEach((ek, i) => {
+    const angle = i * angleStep - Math.PI / 2
+    const radius = 200
+    const color = KIND_COLORS[ek.kind] ?? KIND_COLORS.default
     nodes.push({
-      id: `dep-${i}`,
-      position: { x: 300 + Math.cos(angle) * radius, y: 200 + Math.sin(angle) * radius },
-      data: { label: `${dep.name}\n${dep.version}` },
+      id: `ek-${i}`,
+      position: { x: 300 + Math.cos(angle) * radius, y: 250 + Math.sin(angle) * radius },
+      data: { label: `${ek.kind}\n(${ek.count})` },
       style: {
         background: `${color}22`,
         border: `1px solid ${color}55`,
@@ -207,122 +252,78 @@ function buildDependencyGraph(insights: ToonInsights): { nodes: Node[]; edges: E
       }
     })
     edges.push({
-      id: `dep-e-${i}`,
+      id: `ek-e-${i}`,
       source: 'project',
-      target: `dep-${i}`,
+      target: `ek-${i}`,
       style: { stroke: `${color}66` }
     })
   })
+
+  // Add inter-kind edges based on actual call graph
+  const entityById = new Map(result.entities.map((e) => [e.id, e]))
+  const kindToKind = new Map<string, Set<string>>()
+
+  for (const call of result.calls) {
+    const caller = entityById.get(call.callerId)
+    const callee = entityById.get(call.calleeId)
+    if (!caller || !callee) continue
+
+    const callerKind = caller.kind === 'method' && caller.parentId
+      ? (entityById.get(caller.parentId)?.kind ?? caller.kind)
+      : caller.kind
+    const calleeKind = callee.kind === 'method' && callee.parentId
+      ? (entityById.get(callee.parentId)?.kind ?? callee.kind)
+      : callee.kind
+
+    if (callerKind === calleeKind) continue
+    const conns = kindToKind.get(callerKind) ?? new Set()
+    conns.add(calleeKind)
+    kindToKind.set(callerKind, conns)
+  }
+
+  const kindIndexMap = new Map(entityKinds.map((ek, i) => [ek.kind, i]))
+  let edgeId = entityKinds.length
+  for (const [sourceKind, targetKinds] of kindToKind) {
+    const si = kindIndexMap.get(sourceKind)
+    if (si === undefined) continue
+    for (const targetKind of targetKinds) {
+      const ti = kindIndexMap.get(targetKind)
+      if (ti === undefined) continue
+      edges.push({
+        id: `ek-e-${edgeId++}`,
+        source: `ek-${si}`,
+        target: `ek-${ti}`,
+        animated: true,
+        style: { stroke: '#47556944', strokeDasharray: '4 4' }
+      })
+    }
+  }
+
   return { nodes, edges }
 }
 
 export default function DiagramsTab(): React.JSX.Element {
   const [activeDiagramTab, setActiveDiagramTab] = useState<DiagramTabId>('entities')
-
   const analysisResult = useCortexStore((s) => s.analysisResult)
-  const aiInsights = useCortexStore((s) => s.aiInsights)
-  const isGeneratingInsights = useCortexStore((s) => s.isGeneratingInsights)
-  const generateInsights = useCortexStore((s) => s.generateInsights)
-  const activeRepoId = useCortexStore((s) => s.activeRepoId)
-  const repos = useCortexStore((s) => s.repos)
-
-  useEffect(() => {
-    const store = useAgentStore.getState()
-    if (store.providers.length === 0) {
-      store.loadProviders()
-    }
-  }, [])
-
-  // Auto-load cached insights if not loaded
-  useEffect(() => {
-    if (!aiInsights && !isGeneratingInsights && activeRepoId) {
-      const repo = repos.find((r) => r.id === activeRepoId)
-      const agent = getCortexAgent()
-      if (repo?.commitSha && agent) {
-        generateInsights()
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeRepoId])
 
   const diagramData = useMemo(() => {
-    if (!aiInsights) return { nodes: [], edges: [] }
+    if (!analysisResult) return { nodes: [], edges: [] }
     switch (activeDiagramTab) {
       case 'entities':
-        return buildEntityGraph(aiInsights)
+        return buildEntityGraph(analysisResult)
       case 'layers':
-        return buildLayerGraph(aiInsights)
+        return buildLayerGraph(analysisResult)
       case 'dependencies':
-        return buildDependencyGraph(aiInsights)
+        return buildDependencyGraph(analysisResult)
       default:
         return { nodes: [], edges: [] }
     }
-  }, [aiInsights, activeDiagramTab])
-
-  const hasAgent = !!getCortexAgent()
-
-  const handleGenerateInsights = useCallback(() => {
-    generateInsights()
-  }, [generateInsights])
-
-  const handleRefreshInsights = useCallback(() => {
-    useCortexStore.getState().setAiInsights(null)
-    generateInsights()
-  }, [generateInsights])
+  }, [analysisResult, activeDiagramTab])
 
   if (!analysisResult) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-text-secondary">
         No analysis data available
-      </div>
-    )
-  }
-
-  // Not yet generated
-  if (!aiInsights && !isGeneratingInsights) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="text-center"
-        >
-          <Brain size={36} className="mx-auto mb-3 text-text-secondary/30" />
-          <h3 className="text-sm font-semibold text-text-primary">Architecture Diagrams</h3>
-          <p className="mt-1 max-w-xs text-xs text-text-secondary">
-            Generate AI-powered diagrams: entity graphs, layer interactions, and dependency maps.
-          </p>
-          {hasAgent ? (
-            <button
-              type="button"
-              onClick={handleGenerateInsights}
-              className="mt-4 rounded-lg bg-accent/15 px-4 py-2 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
-              title="Generate architecture diagrams using AI"
-            >
-              Generate Diagrams
-            </button>
-          ) : (
-            <p className="mt-3 text-[11px] text-text-secondary/70">
-              Configure an AI agent in Settings to generate diagrams
-            </p>
-          )}
-        </motion.div>
-      </div>
-    )
-  }
-
-  // Loading
-  if (isGeneratingInsights && !aiInsights) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-3">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        >
-          <Brain size={24} className="text-accent" />
-        </motion.div>
-        <p className="text-xs text-text-secondary">Generating architecture diagrams...</p>
       </div>
     )
   }
@@ -353,32 +354,16 @@ export default function DiagramsTab(): React.JSX.Element {
             )
           })}
         </div>
-
-        <div className="flex items-center gap-2">
-          {isGeneratingInsights && (
-            <span className="flex items-center gap-1 text-[10px] text-accent">
-              <Loader2 size={10} className="animate-spin" />
-              Streaming...
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={handleRefreshInsights}
-            disabled={isGeneratingInsights}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors disabled:opacity-40"
-            title="Refresh diagrams"
-          >
-            <RefreshCw size={10} className={isGeneratingInsights ? 'animate-spin' : ''} />
-            Refresh
-          </button>
-        </div>
+        <span className="text-[10px] text-text-secondary">
+          {diagramData.nodes.length} nodes / {diagramData.edges.length} edges
+        </span>
       </div>
 
       {/* Diagram */}
       <div className="flex-1 overflow-hidden">
         {diagramData.nodes.length === 0 ? (
           <div className="flex h-full items-center justify-center text-xs text-text-secondary">
-            No diagram data available for this view
+            No entities detected for diagram visualization
           </div>
         ) : (
           <ReactFlow

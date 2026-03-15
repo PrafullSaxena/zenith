@@ -78,11 +78,15 @@ function getDecoratorNames(node: ts.Node): string[] {
     const mods = ts.getDecorators(node)
     if (mods) {
       for (const d of mods) {
-        if (ts.isCallExpression(d.expression)) {
-          const expr = d.expression.expression
-          decorators.push(expr.getText())
-        } else {
-          decorators.push(d.expression.getText())
+        try {
+          if (ts.isCallExpression(d.expression)) {
+            const expr = d.expression.expression
+            decorators.push(ts.isIdentifier(expr) ? expr.text : expr.getText())
+          } else {
+            decorators.push(ts.isIdentifier(d.expression) ? d.expression.text : d.expression.getText())
+          }
+        } catch {
+          // getText() can fail for detached nodes — skip
         }
       }
     }
@@ -98,7 +102,11 @@ function getDecoratorArg(node: ts.Node, decoratorName: string): string | null {
 
   for (const d of mods) {
     if (ts.isCallExpression(d.expression)) {
-      const name = d.expression.expression.getText()
+      let name = ''
+      try {
+        const expr = d.expression.expression
+        name = ts.isIdentifier(expr) ? expr.text : expr.getText()
+      } catch { continue }
       if (name === decoratorName && d.expression.arguments.length > 0) {
         const arg = d.expression.arguments[0]
         if (ts.isStringLiteral(arg)) {
@@ -115,10 +123,11 @@ function getParameters(
   checker: ts.TypeChecker
 ): { name: string; type: string }[] {
   return node.parameters.map((p) => {
-    const name = p.name.getText()
+    let name = 'unknown'
+    try { name = ts.isIdentifier(p.name) ? p.name.text : p.name.getText() } catch { /* skip */ }
     let type = 'any'
     if (p.type) {
-      type = p.type.getText()
+      try { type = p.type.getText() } catch { /* skip */ }
     } else {
       try {
         const sym = checker.getSymbolAtLocation(p.name)
@@ -139,7 +148,7 @@ function getReturnType(
   checker: ts.TypeChecker
 ): string {
   if (node.type) {
-    return node.type.getText()
+    try { return node.type.getText() } catch { /* skip */ }
   }
   try {
     const sig = checker.getSignatureFromDeclaration(node)
@@ -157,6 +166,8 @@ export function parseTypeScriptProject(rootDir: string, filePaths: string[]): TS
   const entities: CodeEntity[] = []
   const calls: CallEdge[] = []
   const routes: RouteInfo[] = []
+  // Track constructor injection: classEntityId -> injected type names
+  const constructorInjections = new Map<string, string[]>()
 
   const compilerOptions: ts.CompilerOptions = {
     target: ts.ScriptTarget.ES2022,
@@ -238,6 +249,23 @@ export function parseTypeScriptProject(rootDir: string, filePaths: string[]): TS
           parentId: null
         })
 
+        // Detect constructor injection (NestJS/Angular pattern)
+        // e.g. constructor(private userService: UserService, private repo: UserRepo)
+        for (const member of node.members) {
+          if (ts.isConstructorDeclaration(member)) {
+            const injectedTypes: string[] = []
+            for (const param of member.parameters) {
+              if (param.type && ts.isTypeReferenceNode(param.type)) {
+                const typeName = param.type.typeName.getText()
+                injectedTypes.push(typeName)
+              }
+            }
+            if (injectedTypes.length > 0) {
+              constructorInjections.set(entityId, injectedTypes)
+            }
+          }
+        }
+
         contextStack.push(entityId)
         ts.forEachChild(node, visit)
         contextStack.pop()
@@ -248,7 +276,9 @@ export function parseTypeScriptProject(rootDir: string, filePaths: string[]): TS
 
       // Method declarations
       if (ts.isMethodDeclaration(node) && node.name) {
-        const methodName = node.name.getText()
+        let methodName = ''
+        try { methodName = ts.isIdentifier(node.name) ? node.name.text : node.name.getText() } catch { /* skip */ }
+        if (!methodName) { ts.forEachChild(node, visit); return }
         const decorators = getDecoratorNames(node)
         const entityId = buildEntityId(relPath, methodName, line)
         const parentId = contextStack.length > 0 ? contextStack[contextStack.length - 1] : null
@@ -449,6 +479,31 @@ export function parseTypeScriptProject(rootDir: string, filePaths: string[]): TS
     }
 
     visit(sourceFile)
+  }
+
+  // Resolve constructor injection edges: classEntityId -> target class entity
+  const classNameToId = new Map<string, string>()
+  for (const e of entities) {
+    if (e.parentId === null && (e.kind === 'class' || e.kind === 'controller' || e.kind === 'service' || e.kind === 'repository' || e.kind === 'middleware')) {
+      classNameToId.set(e.name, e.id)
+    }
+  }
+
+  for (const [classId, injectedTypes] of constructorInjections) {
+    for (const typeName of injectedTypes) {
+      const targetId = classNameToId.get(typeName)
+      if (targetId && targetId !== classId) {
+        callEdgeCounter++
+        calls.push({
+          id: `inject:${callEdgeCounter}`,
+          callerId: classId,
+          calleeId: targetId,
+          filePath: '',
+          line: 0,
+          type: 'inject'
+        })
+      }
+    }
   }
 
   return { entities, calls, routes }

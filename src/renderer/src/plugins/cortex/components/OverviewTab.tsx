@@ -2,8 +2,9 @@
  * OverviewTab -- Displays auto-generated documentation and repo statistics.
  * Stats cards, language breakdown, documentation section, entity breakdown.
  */
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { FileText, Hash, Route, Component, Sparkles } from 'lucide-react'
+import { FileText, Hash, Route, Component, Sparkles, BookOpen, ChevronDown, ChevronRight } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import AnimatedCounter from './AnimatedCounter'
@@ -76,6 +77,8 @@ export default function OverviewTab(): React.JSX.Element {
   const enrichEntities = useCortexStore((s) => s.enrichEntities)
   const entityEnrichmentProgress = useCortexStore((s) => s.entityEnrichmentProgress)
   const isDigestBuilding = useCortexStore((s) => s.isDigestBuilding)
+  const [enrichError, setEnrichError] = useState<string | null>(null)
+  const [expandedMdFile, setExpandedMdFile] = useState<string | null>(null)
 
   if (!analysisResult) {
     return (
@@ -140,7 +143,15 @@ export default function OverviewTab(): React.JSX.Element {
           return (
             <button
               type="button"
-              onClick={() => enrichEntities()}
+              onClick={async () => {
+                setEnrichError(null)
+                try {
+                  await enrichEntities()
+                } catch (err) {
+                  const msg = err instanceof Error ? err.message : String(err)
+                  setEnrichError(msg)
+                }
+              }}
               disabled={!!entityEnrichmentProgress || isDigestBuilding}
               title="Use AI to generate summaries for all detected entities"
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
@@ -160,6 +171,11 @@ export default function OverviewTab(): React.JSX.Element {
             </button>
           )
         })()}
+        {enrichError && (
+          <span className="text-[10px] text-red-400" title={enrichError}>
+            ⚠ {enrichError}
+          </span>
+        )}
       </div>
       {/* Stats cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -313,6 +329,49 @@ export default function OverviewTab(): React.JSX.Element {
           </div>
         )}
       </motion.div>
+
+      {/* Repository Markdown Files */}
+      {analysisResult.markdownFiles && analysisResult.markdownFiles.length > 0 && (
+        <motion.div
+          custom={statCards.length + 2}
+          initial="hidden"
+          animate="visible"
+          variants={cardVariants}
+          className="mt-6"
+        >
+          <h3 className="mb-3 text-xs font-semibold text-text-primary">
+            <BookOpen size={12} className="mr-1 inline-block" />
+            Repository Documentation
+          </h3>
+          <div className="space-y-2">
+            {analysisResult.markdownFiles.map((file) => {
+              const isExpanded = expandedMdFile === file.path
+              return (
+                <div
+                  key={file.path}
+                  className="rounded-xl border border-border/60 bg-surface-elevated/70"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setExpandedMdFile(isExpanded ? null : file.path)}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs font-medium text-text-primary hover:bg-surface-elevated"
+                  >
+                    {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                    <FileText size={12} className="text-text-secondary" />
+                    {file.name}
+                    <span className="text-[10px] text-text-secondary">{file.path}</span>
+                  </button>
+                  {isExpanded && (
+                    <div className="border-t border-border/40 px-4 py-3">
+                      <MarkdownRenderer text={file.content} />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Entity breakdown */}
       {stats.entityCount.length > 0 && (

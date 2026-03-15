@@ -55,7 +55,8 @@ export interface AnalysisResult {
   pipelines: PipelineInfo[] // DE repos
   fileTree: FileNode[]
   stats: AnalysisStats
-  documentation: string // AI-generated markdown overview
+  documentation: string // Auto-generated markdown overview
+  markdownFiles: { name: string; path: string; content: string }[] // Root-level .md files
   testStats?: TestStats
 }
 

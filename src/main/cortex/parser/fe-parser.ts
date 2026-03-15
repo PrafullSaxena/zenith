@@ -114,7 +114,7 @@ export function parseFrontendProject(rootDir: string, filePaths: string[]): FEPa
             if (param.type && ts.isTypeLiteralNode(param.type)) {
               for (const member of param.type.members) {
                 if (ts.isPropertySignature(member) && member.name) {
-                  props.push(member.name.getText())
+                  try { props.push(member.name.getText()) } catch { /* skip */ }
                 }
               }
             } else if (
@@ -123,7 +123,7 @@ export function parseFrontendProject(rootDir: string, filePaths: string[]): FEPa
             ) {
               for (const element of param.name.elements) {
                 if (ts.isBindingElement(element) && element.name) {
-                  props.push(element.name.getText())
+                  try { props.push(element.name.getText()) } catch { /* skip */ }
                 }
               }
             }
@@ -156,7 +156,7 @@ export function parseFrontendProject(rootDir: string, filePaths: string[]): FEPa
                 if (param.name && ts.isObjectBindingPattern(param.name)) {
                   for (const element of param.name.elements) {
                     if (ts.isBindingElement(element) && element.name) {
-                      props.push(element.name.getText())
+                      try { props.push(element.name.getText()) } catch { /* skip */ }
                     }
                   }
                 }
@@ -168,7 +168,16 @@ export function parseFrontendProject(rootDir: string, filePaths: string[]): FEPa
 
       // JSX elements — detect children components and Route elements
       if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
-        const tagName = node.tagName.getText()
+        let tagName = ''
+        try {
+          tagName = ts.isIdentifier(node.tagName) ? node.tagName.text : node.tagName.getText()
+        } catch {
+          // tagName.getText() can fail for detached nodes — skip
+        }
+        if (!tagName) {
+          ts.forEachChild(node, visit)
+          return
+        }
 
         // Capital-letter tags are component references
         if (/^[A-Z]/.test(tagName) && !children.includes(tagName)) {
@@ -182,7 +191,12 @@ export function parseFrontendProject(rootDir: string, filePaths: string[]): FEPa
 
           for (const attr of node.attributes.properties) {
             if (!ts.isJsxAttribute(attr) || !attr.name) continue
-            const attrName = attr.name.getText()
+            let attrName = ''
+            try {
+              attrName = ts.isIdentifier(attr.name) ? attr.name.text : attr.name.getText()
+            } catch {
+              continue
+            }
 
             if (attrName === 'path' && attr.initializer) {
               if (ts.isStringLiteral(attr.initializer)) {
@@ -204,7 +218,9 @@ export function parseFrontendProject(rootDir: string, filePaths: string[]): FEPa
                 // element={<Component/>} or component={Component}
                 const expr = attr.initializer.expression
                 if (ts.isJsxSelfClosingElement(expr)) {
-                  element = expr.tagName.getText()
+                  try {
+                    element = ts.isIdentifier(expr.tagName) ? expr.tagName.text : expr.tagName.getText()
+                  } catch { /* skip */ }
                 } else if (ts.isIdentifier(expr)) {
                   element = expr.text
                 }
