@@ -41,12 +41,30 @@ export default function CortexView(): React.JSX.Element {
     loadRepos()
   }, [loadRepos])
 
+  const setAnalysisResult = useCortexStore((s) => s.setAnalysisResult)
+
   // Default to repos tab when no repos exist
   useEffect(() => {
     if (repos.length === 0 && activeTab !== 'repos') {
       setActiveTab('repos')
     }
   }, [repos.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-load cached analysis when selecting a previously analyzed repo
+  useEffect(() => {
+    if (!activeRepo || !activeRepo.commitSha || analysisResult) return
+    // Repo was previously analyzed but analysis result not in memory — load from cache
+    window.api.cortex
+      .getCachedAnalysis(activeRepo.url, activeRepo.branch, activeRepo.commitSha)
+      .then((cached) => {
+        if (cached) {
+          setAnalysisResult(cached as import('../../types/cortex').AnalysisResult)
+        }
+      })
+      .catch(() => {
+        /* cache miss — user will need to re-analyze */
+      })
+  }, [activeRepo?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-background">

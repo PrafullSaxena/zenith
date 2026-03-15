@@ -41,6 +41,12 @@ interface FileNode {
   size: number
 }
 
+/**
+ * Parser version — increment whenever parser logic changes to
+ * automatically invalidate stale cached analysis results.
+ */
+export const PARSER_VERSION = 2
+
 /** Maximum number of files to index for FTS5 search */
 const MAX_INDEX_FILES = 5000
 
@@ -78,14 +84,20 @@ export class CodebaseAnalyzer {
     })
     const cached = this.cache.getAnalysis(repoUrl, branch, commitSha)
     if (cached) {
-      onProgress?.({
-        phase: 'done',
-        progress: 100,
-        detail: 'Loaded from cache',
-        filesProcessed: 0,
-        totalFiles: 0
-      })
-      return cached as unknown as AnalysisResult
+      // Invalidate cache if parser version has changed
+      const cachedVersion = (cached as Record<string, unknown>)._parserVersion as number | undefined
+      if (cachedVersion === PARSER_VERSION) {
+        onProgress?.({
+          phase: 'done',
+          progress: 100,
+          detail: 'Loaded from cache',
+          filesProcessed: 0,
+          totalFiles: 0
+        })
+        return cached as unknown as AnalysisResult
+      }
+      // Stale cache — delete and re-analyze
+      this.cache.deleteAnalysis(repoUrl, branch)
     }
 
     // 3. Get file tree
@@ -181,11 +193,12 @@ export class CodebaseAnalyzer {
       filesProcessed: totalFiles,
       totalFiles
     })
+    const cachePayload = { ...result, _parserVersion: PARSER_VERSION } as unknown as Record<string, unknown>
     const cacheId = this.cache.saveAnalysis(
       repoUrl,
       branch,
       commitSha,
-      result as unknown as Record<string, unknown>
+      cachePayload
     )
 
     // 10. Index files for FTS search
