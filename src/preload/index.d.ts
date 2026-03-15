@@ -100,7 +100,14 @@ export interface ElectronAPI {
     buildDigest: (
       repoUrl: string,
       branch: string
-    ) => Promise<{ data: string | null; cached: boolean }>
+    ) => Promise<{
+      data: string | null
+      cached: boolean
+      rawDigest?: string
+      systemPrompt?: string
+      userPrompt?: string
+      commitSha?: string
+    }>
     saveEnrichment: (
       repoUrl: string,
       branch: string,

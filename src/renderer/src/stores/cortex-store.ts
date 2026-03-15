@@ -122,6 +122,107 @@ function parseToonResponseRenderer(text: string): ToonInsights {
   return result
 }
 
+// ── Lightweight renderer-side Digest TOON parser ─────────────────────
+
+function parseDigestToonRenderer(text: string): DigestResult {
+  const result: DigestResult = {
+    meta: null,
+    entities: [],
+    missingEdges: [],
+    corrections: [],
+    patterns: [],
+    boundaries: [],
+    rawText: text
+  }
+
+  for (const rawLine of text.split('\n')) {
+    const line = rawLine.trim()
+    if (!line) continue
+
+    const parts = line.split('|')
+    const type = (parts[0] ?? '').toUpperCase()
+
+    switch (type) {
+      case 'DIGEST_META': {
+        const props = parseKV(parts.slice(1))
+        result.meta = {
+          architecture: props.architecture ?? '',
+          entryPoints: parseInt(props.entryPoints ?? '0', 10),
+          layers: parseInt(props.layers ?? '0', 10)
+        }
+        break
+      }
+      case 'DIGEST_ENTITY': {
+        if (parts.length >= 4) {
+          const props = parseKV(parts.slice(4))
+          result.entities.push({
+            id: parts[1]?.trim() ?? '',
+            correctedKind: parts[2]?.trim() ?? '',
+            name: parts[3]?.trim() ?? '',
+            importance: (props.importance ?? 'medium') as 'high' | 'medium' | 'low',
+            summary: props.summary ?? ''
+          })
+        }
+        break
+      }
+      case 'DIGEST_MISSING_EDGE': {
+        if (parts.length >= 3) {
+          const props = parseKV(parts.slice(3))
+          result.missingEdges.push({
+            fromEntity: parts[1]?.trim() ?? '',
+            toEntity: parts[2]?.trim() ?? '',
+            reason: props.reason ?? ''
+          })
+        }
+        break
+      }
+      case 'DIGEST_CORRECTION': {
+        const props = parseKV(parts.slice(1))
+        result.corrections.push({
+          entityId: props.entityId ?? '',
+          field: props.field ?? '',
+          oldValue: props.old ?? '',
+          newValue: props.new ?? '',
+          reason: props.reason ?? ''
+        })
+        break
+      }
+      case 'DIGEST_PATTERN': {
+        const props = parseKV(parts.slice(1))
+        result.patterns.push({
+          name: props.name ?? '',
+          entities: (props.entities ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+          confidence: (props.confidence ?? 'medium') as 'high' | 'medium' | 'low'
+        })
+        break
+      }
+      case 'DIGEST_BOUNDARY': {
+        const props = parseKV(parts.slice(1))
+        result.boundaries.push({
+          name: props.name ?? '',
+          entities: (props.entities ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+        })
+        break
+      }
+      default:
+        break
+    }
+  }
+
+  return result
+}
+
+function parseKV(parts: string[]): Record<string, string> {
+  const result: Record<string, string> = {}
+  for (const part of parts) {
+    const idx = part.indexOf(':')
+    if (idx > 0) {
+      result[part.slice(0, idx).trim()] = part.slice(idx + 1).trim()
+    }
+  }
+  return result
+}
+
 interface CortexState {
   // Repos
   repos: Repository[]
@@ -202,6 +303,7 @@ interface CortexState {
   setHLDContent: (content: string) => void
   setHLDSections: (sections: { index: number; content: string; isGenerating: boolean }[]) => void
   setIsHLDGenerating: (v: boolean) => void
+  buildDigest: () => Promise<void>
 }
 
 /**
@@ -440,6 +542,97 @@ export const useCortexStore = create<CortexState>((set, get) => ({
   setHLDContent: (content) => set({ hldContent: content }),
   setHLDSections: (sections) => set({ hldSections: sections }),
   setIsHLDGenerating: (v) => set({ isHLDGenerating: v }),
+
+  buildDigest: async () => {
+    const state = get()
+    const repo = state.repos.find((r) => r.id === state.activeRepoId)
+    if (!repo) return
+
+    const agent = getCortexAgent()
+    set({ isDigestBuilding: true })
+
+    try {
+      const response = await window.api.cortex.buildDigest(repo.url, repo.branch)
+
+      // If cached, parse and set immediately
+      if (response.cached && response.data) {
+        const parsed = parseDigestToonRenderer(response.data)
+        set({ digest: parsed, isDigestBuilding: false })
+        return
+      }
+
+      // No agent configured — use raw digest as fallback (no AI refinement)
+      if (!agent) {
+        const fallback: DigestResult = {
+          meta: null,
+          entities: [],
+          missingEdges: [],
+          corrections: [],
+          patterns: [],
+          boundaries: [],
+          rawText: response.rawDigest ?? ''
+        }
+        set({ digest: fallback, isDigestBuilding: false })
+        return
+      }
+
+      // Pass 2: Stream AI refinement
+      const sessionId = crypto.randomUUID()
+      let accumulated = ''
+
+      window.api.ai.onStreamChunk(({ sessionId: sid, chunk }) => {
+        if (sid !== sessionId) return
+        accumulated += chunk
+        const partial = parseDigestToonRenderer(accumulated)
+        set({ digest: partial })
+      })
+
+      window.api.ai.onStreamDone(({ sessionId: sid }) => {
+        if (sid !== sessionId) return
+        const final = parseDigestToonRenderer(accumulated)
+        set({ digest: final, isDigestBuilding: false })
+        // Cache the result
+        if (response.commitSha) {
+          window.api.cortex.saveEnrichment(
+            repo.url,
+            repo.branch,
+            response.commitSha,
+            'digest',
+            agent.providerId,
+            accumulated
+          )
+        }
+        window.api.ai.removeStreamListeners()
+      })
+
+      window.api.ai.onStreamError(({ sessionId: sid }) => {
+        if (sid !== sessionId) return
+        // Fallback to raw digest on error
+        const fallback: DigestResult = {
+          meta: null,
+          entities: [],
+          missingEdges: [],
+          corrections: [],
+          patterns: [],
+          boundaries: [],
+          rawText: response.rawDigest ?? ''
+        }
+        set({ digest: fallback, isDigestBuilding: false })
+        window.api.ai.removeStreamListeners()
+      })
+
+      await window.api.ai.startAnalysis(
+        agent.providerId,
+        agent.model,
+        response.systemPrompt!,
+        response.userPrompt!,
+        sessionId,
+        agent.command
+      )
+    } catch {
+      set({ isDigestBuilding: false })
+    }
+  },
 
   reanalyze: async (repoId: string) => {
     const state = get()

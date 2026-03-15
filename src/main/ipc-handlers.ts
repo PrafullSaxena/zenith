@@ -28,6 +28,7 @@ import {
 import { generateHLDDocument } from './cortex/doc-generator'
 import { buildInsightsPrompt } from './cortex/toon-parser'
 import { isRtkAvailable } from './cortex/rtk-integration'
+import { buildStaticDigest, buildDigestRefinementPrompt, buildDigestUserPrompt } from './cortex/digest-builder'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -960,19 +961,59 @@ export function registerIpcHandlers(): void {
   // Build or return cached codebase digest
   ipcMain.handle(
     'cortex:buildDigest',
-    async (_event, repoUrl: string, branch: string) => {
-      const { analyzer } = getCortexInstances()
+    async (event, repoUrl: string, branch: string) => {
+      const { git, analyzer } = getCortexInstances()
       const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '')
       if (!analysis) throw new Error('No analysis found. Analyze the repository first.')
 
-      const commitSha = (analysis as Record<string, unknown>).commitSha as string
+      const typedAnalysis = analysis as Record<string, unknown>
+      const commitSha = typedAnalysis.commitSha as string
 
       // Check for cached digest
       const cached = analyzer.cache.getEnrichment(repoUrl, branch, commitSha, 'digest')
       if (cached) return { data: cached, cached: true }
 
-      // Will be fully implemented in Phase 1 — for now return null
-      return { data: null, cached: false }
+      // Pass 1: Build static digest
+      const win = BrowserWindow.fromWebContents(event.sender)
+      win?.webContents.send('cortex:analysisProgress', {
+        phase: 'enriching',
+        progress: 10,
+        detail: 'Building AI context...',
+        filesProcessed: 0,
+        totalFiles: 0
+      })
+
+      // Get repoPath from repos table
+      const repos = analyzer.cache.listRepos()
+      const repo = repos.find((r) => r.url === repoUrl && r.branch === branch)
+      if (!repo) throw new Error('Repository not found in database')
+
+      const rawDigest = await buildStaticDigest(
+        typedAnalysis as unknown as Parameters<typeof buildStaticDigest>[0],
+        repo.repoPath,
+        git
+      )
+
+      win?.webContents.send('cortex:analysisProgress', {
+        phase: 'enriching',
+        progress: 30,
+        detail: 'Static digest built, preparing AI refinement...',
+        filesProcessed: 0,
+        totalFiles: 0
+      })
+
+      // Return raw digest + prompts for renderer to stream via AI
+      const systemPrompt = buildDigestRefinementPrompt()
+      const userPrompt = buildDigestUserPrompt(rawDigest)
+
+      return {
+        data: null,
+        cached: false,
+        rawDigest,
+        systemPrompt,
+        userPrompt,
+        commitSha
+      }
     }
   )
 
