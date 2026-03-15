@@ -115,6 +115,49 @@ export default function QAPanel(): React.JSX.Element {
       accumulatorRef.current = ''
 
       // Build system prompt with codebase context
+      let enrichmentContext = ''
+
+      // Progressive context — include available enrichments
+      const digest = useCortexStore.getState().digest
+      const hldContent = useCortexStore.getState().hldContent
+
+      if (digest) {
+        const patterns = digest.patterns.map((p) => `${p.name}: ${p.entities.join(', ')}`).join('\n')
+        const boundaries = digest.boundaries.map((b) => `${b.name}: ${b.entities.join(', ')}`).join('\n')
+        if (patterns) enrichmentContext += `\nArchitectural Patterns:\n${patterns}`
+        if (boundaries) enrichmentContext += `\nLayer Boundaries:\n${boundaries}`
+      }
+
+      // Include entity summaries (up to 100)
+      const summarizedEntities = analysisResult.entities
+        .filter((e) => e.summary)
+        .slice(0, 100)
+        .map((e) => `${e.name} (${e.kind}): ${e.summary}`)
+        .join('\n')
+      if (summarizedEntities) {
+        enrichmentContext += `\nEntity Descriptions:\n${summarizedEntities}`
+      }
+
+      // Include HLD overview if available
+      if (hldContent) {
+        const overviewSection = hldContent.split('## 2.')[0] ?? ''
+        if (overviewSection.length < 2000) {
+          enrichmentContext += `\nArchitecture Overview:\n${overviewSection}`
+        }
+      }
+
+      // Include conversation history (last 5 Q+A pairs)
+      const recentHistory = qaMessages.slice(-10)
+      let historyText = ''
+      for (const msg of recentHistory) {
+        const prefix = msg.role === 'user' ? 'Q' : 'A'
+        const content = msg.content.slice(0, 400)
+        historyText += `${prefix}: ${content}\n`
+      }
+      if (historyText) {
+        enrichmentContext += `\nPrevious conversation:\n${historyText}`
+      }
+
       const systemPrompt = `You are a codebase expert analyzing a ${analysisResult.repoType} repository.
 Repository type: ${analysisResult.repoType}, Framework: ${analysisResult.framework}, Language: ${analysisResult.language}
 
@@ -126,13 +169,34 @@ Repository type: ${analysisResult.repoType}, Framework: ${analysisResult.framewo
 ## Key Entities (top 50)
 ${analysisResult.entities
   .slice(0, 50)
-  .map((e) => `- ${e.kind}: ${e.name} (${e.filePath}:${e.line})`)
+  .map((e) => `- ${e.kind}: ${e.name} (${e.filePath}:${e.line})${e.summary ? ' — ' + e.summary : ''}`)
   .join('\n')}
 
 ## API Endpoints
 ${analysisResult.routes.map((r) => `- ${r.method} ${r.fullPath} -> ${r.handlerName} (${r.filePath}:${r.line})`).join('\n')}
+${enrichmentContext}
 
 Answer questions accurately. Reference specific files, functions, and line numbers. Format responses in markdown.`
+
+      // Retrieve relevant source code via FTS5
+      const activeRepo = useCortexStore.getState().repos.find(
+        (r) => r.id === useCortexStore.getState().activeRepoId
+      )
+      let codeContext = ''
+      if (activeRepo) {
+        try {
+          const searchResults = await window.api.cortex.searchCode(activeRepo.url, question.trim()) as Array<{ filePath: string; snippet: string }>
+          if (searchResults.length > 0) {
+            const snippets = searchResults.slice(0, 5)
+            codeContext = '\n\nRelevant code snippets:\n' +
+              snippets.map((s) => `--- ${s.filePath} ---\n${s.snippet}`).join('\n\n')
+          }
+        } catch {
+          // FTS search optional — continue without code context
+        }
+      }
+
+      const userPrompt = question.trim() + codeContext
 
       const sessionId = crypto.randomUUID()
 
@@ -166,7 +230,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
           agent.providerId,
           agent.model,
           systemPrompt,
-          question.trim(),
+          userPrompt,
           sessionId,
           agent.command
         )
@@ -180,6 +244,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
     [
       isQAStreaming,
       analysisResult,
+      qaMessages,
       addQAMessage,
       updateLastQAMessage,
       setIsQAStreaming

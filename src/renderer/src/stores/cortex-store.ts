@@ -325,6 +325,7 @@ interface CortexState {
   buildDigest: () => Promise<void>
   enrichEntities: () => Promise<void>
   validateAnalysis: () => Promise<void>
+  generateHLD: () => Promise<void>
 }
 
 /**
@@ -860,6 +861,111 @@ export const useCortexStore = create<CortexState>((set, get) => ({
         agent.command
       )
     })
+  },
+
+  generateHLD: async () => {
+    const state = get()
+    const repo = state.repos.find((r) => r.id === state.activeRepoId)
+    if (!repo || !state.analysisResult) return
+
+    const agent = getCortexAgent()
+    if (!agent) return
+
+    // Build digest first if needed
+    if (!state.digest) {
+      await get().buildDigest()
+    }
+
+    set({ isHLDGenerating: true, hldContent: '' })
+
+    // Build context from all available enrichments
+    const digest = get().digest
+    const summaries = state.analysisResult.entities
+      .filter((e) => e.summary)
+      .map((e) => `${e.name} (${e.kind}): ${e.summary}`)
+      .slice(0, 50)
+      .join('\n')
+
+    const routes = state.analysisResult.routes
+      .map((r) => `${r.method} ${r.fullPath} → ${r.handlerName}`)
+      .join('\n')
+
+    const systemPrompt = `You are a technical writer generating a High-Level Design document for a codebase. Write in markdown with Mermaid diagrams where helpful.
+
+Generate these sections in order:
+## 1. Overview
+## 2. Architecture
+## 3. API Surface
+## 4. Data Flow
+## 5. Component Interactions
+## 6. Testing Strategy
+## 7. Security & Configuration
+## 8. Deployment Considerations
+
+Rules:
+- Use clear, technical prose.
+- Include Mermaid diagrams in code blocks where they add value.
+- Reference specific entities and routes by name.
+- Be concise but thorough.`
+
+    const userPrompt = `Generate the HLD for this codebase:
+
+Framework: ${state.analysisResult.framework}
+Language: ${state.analysisResult.language}
+Type: ${state.analysisResult.repoType}
+
+${digest?.rawText ? `## Codebase Digest\n${digest.rawText.slice(0, 8000)}` : ''}
+
+## Entity Summaries
+${summaries || '(not yet enriched)'}
+
+## API Routes
+${routes || '(none detected)'}
+
+## Patterns
+${digest?.patterns?.map((p) => `${p.name} (${p.confidence}): ${p.entities.join(', ')}`).join('\n') || '(none detected)'}
+
+## Test Stats
+Files: ${state.analysisResult.testStats.testFiles}, Cases: ${state.analysisResult.testStats.testCount}, Coverage: ${Math.round(state.analysisResult.testStats.fileCoveredPct ?? 0)}%`
+
+    const sessionId = crypto.randomUUID()
+    let accumulated = ''
+
+    window.api.ai.onStreamChunk(({ sessionId: sid, chunk }) => {
+      if (sid !== sessionId) return
+      accumulated += chunk
+      set({ hldContent: accumulated })
+    })
+
+    window.api.ai.onStreamDone(({ sessionId: sid }) => {
+      if (sid !== sessionId) return
+      set({ hldContent: accumulated, isHLDGenerating: false })
+      // Cache
+      window.api.cortex.saveEnrichment(
+        repo.url,
+        repo.branch,
+        repo.commitSha,
+        'hld',
+        agent.providerId,
+        accumulated
+      )
+      window.api.ai.removeStreamListeners()
+    })
+
+    window.api.ai.onStreamError(({ sessionId: sid }) => {
+      if (sid !== sessionId) return
+      set({ isHLDGenerating: false })
+      window.api.ai.removeStreamListeners()
+    })
+
+    await window.api.ai.startAnalysis(
+      agent.providerId,
+      agent.model,
+      systemPrompt,
+      userPrompt,
+      sessionId,
+      agent.command
+    )
   },
 
   reanalyze: async (repoId: string) => {

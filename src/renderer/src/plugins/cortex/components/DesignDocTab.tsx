@@ -1,43 +1,22 @@
 /**
  * DesignDocTab — Renders the generated HLD with Mermaid diagrams.
- * Calls cortex:generateHLD IPC to generate document from analysis results,
- * then renders via MarkdownRenderer (which handles mermaid fences).
- * Stores HLD content in the cortex store for export access.
+ * Uses AI streaming via the cortex store's generateHLD action.
+ * Renders via MarkdownRenderer (which handles mermaid fences).
  */
-import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { BookOpen, RefreshCw, Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 
 export default function DesignDocTab(): React.JSX.Element {
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
   const analysisResult = useCortexStore((s) => s.analysisResult)
+  const hldContent = useCortexStore((s) => s.hldContent)
+  const isHLDGenerating = useCortexStore((s) => s.isHLDGenerating)
+  const generateHLD = useCortexStore((s) => s.generateHLD)
   const designDoc = useCortexStore((s) => s.designDoc)
-  const setDesignDoc = useCortexStore((s) => s.setDesignDoc)
-  const repos = useCortexStore((s) => s.repos)
-  const activeRepoId = useCortexStore((s) => s.activeRepoId)
 
-  const activeRepo = repos.find((r) => r.id === activeRepoId)
-
-  const handleGenerate = useCallback(async () => {
-    if (!activeRepo || isGenerating) return
-
-    setIsGenerating(true)
-    setError(null)
-
-    try {
-      const doc = await window.api.cortex.generateHLD(activeRepo.url, activeRepo.branch)
-      setDesignDoc(doc)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to generate HLD'
-      setError(message)
-    } finally {
-      setIsGenerating(false)
-    }
-  }, [activeRepo, isGenerating, setDesignDoc])
+  // Use AI-streamed HLD if available, otherwise fall back to static designDoc
+  const displayContent = hldContent || designDoc
 
   if (!analysisResult) {
     return (
@@ -48,7 +27,7 @@ export default function DesignDocTab(): React.JSX.Element {
   }
 
   // Empty state — no HLD generated yet
-  if (!designDoc && !isGenerating) {
+  if (!displayContent && !isHLDGenerating) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4">
         <motion.div
@@ -63,12 +42,9 @@ export default function DesignDocTab(): React.JSX.Element {
             Generate a High Level Design document with architecture diagrams,
             API flows, component trees, and class relationships.
           </p>
-          {error && (
-            <p className="mt-2 text-xs text-red-400">{error}</p>
-          )}
           <button
             type="button"
-            onClick={handleGenerate}
+            onClick={() => generateHLD()}
             className="mt-4 rounded-lg bg-accent/15 px-4 py-2 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
           >
             Generate Design Document
@@ -78,8 +54,8 @@ export default function DesignDocTab(): React.JSX.Element {
     )
   }
 
-  // Loading state with skeleton placeholders
-  if (isGenerating) {
+  // Streaming state — show partial content as it arrives
+  if (isHLDGenerating && !displayContent) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <Loader2 size={24} className="animate-spin text-accent" />
@@ -97,7 +73,7 @@ export default function DesignDocTab(): React.JSX.Element {
     )
   }
 
-  // HLD content rendered
+  // HLD content rendered (including while streaming)
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -105,11 +81,14 @@ export default function DesignDocTab(): React.JSX.Element {
         <div className="flex items-center gap-2">
           <BookOpen size={14} className="text-accent" />
           <span className="text-xs font-medium text-text-primary">High Level Design</span>
+          {isHLDGenerating && (
+            <Loader2 size={12} className="animate-spin text-accent" />
+          )}
         </div>
         <button
           type="button"
-          onClick={handleGenerate}
-          disabled={isGenerating}
+          onClick={() => generateHLD()}
+          disabled={isHLDGenerating}
           className="flex items-center gap-1 rounded-md bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent hover:bg-accent/25 transition-colors disabled:opacity-50"
         >
           <RefreshCw size={11} />
@@ -119,17 +98,12 @@ export default function DesignDocTab(): React.JSX.Element {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        {error && (
-          <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-2 text-xs text-red-400">
-            {error}
-          </div>
-        )}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <MarkdownRenderer text={designDoc} />
+          <MarkdownRenderer text={displayContent} />
         </motion.div>
       </div>
     </div>
