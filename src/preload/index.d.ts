@@ -127,6 +127,11 @@ export interface ElectronAPI {
       branch: string,
       existingSummaryIds: string[]
     ) => Promise<Array<{ entityIds: string[]; systemPrompt: string; userPrompt: string }>>
+    buildValidationPrompts: (
+      repoUrl: string,
+      branch: string,
+      digestText: string
+    ) => Promise<{ systemPrompt: string; userPrompt: string; commitSha: string }>
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ) => void

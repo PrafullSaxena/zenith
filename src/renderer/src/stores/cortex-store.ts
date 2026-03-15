@@ -324,6 +324,7 @@ interface CortexState {
   setIsHLDGenerating: (v: boolean) => void
   buildDigest: () => Promise<void>
   enrichEntities: () => Promise<void>
+  validateAnalysis: () => Promise<void>
 }
 
 /**
@@ -762,6 +763,103 @@ export const useCortexStore = create<CortexState>((set, get) => ({
       agent.providerId,
       summaryData
     )
+  },
+
+  validateAnalysis: async () => {
+    const state = get()
+    const repo = state.repos.find((r) => r.id === state.activeRepoId)
+    if (!repo || !state.analysisResult) return
+
+    const agent = getCortexAgent()
+    if (!agent) return
+
+    // Build digest first if needed
+    if (!state.digest) {
+      await get().buildDigest()
+    }
+
+    const digestText = get().digest?.rawText ?? ''
+    const { systemPrompt, userPrompt, commitSha } =
+      await window.api.cortex.buildValidationPrompts(repo.url, repo.branch, digestText)
+
+    const sessionId = crypto.randomUUID()
+    let accumulated = ''
+
+    await new Promise<void>((resolve) => {
+      window.api.ai.onStreamChunk(({ sessionId: sid, chunk }) => {
+        if (sid !== sessionId) return
+        accumulated += chunk
+      })
+
+      window.api.ai.onStreamDone(({ sessionId: sid }) => {
+        if (sid !== sessionId) return
+
+        // Parse validation TOON
+        const corrections: ValidationCorrection[] = []
+        for (const rawLine of accumulated.split('\n')) {
+          const line = rawLine.trim()
+          if (!line) continue
+          const parts = line.split('|')
+          const type = parts[0]?.toUpperCase() ?? ''
+
+          const typeMap: Record<string, ValidationCorrection['type']> = {
+            MISSING_ROUTE: 'missing_route',
+            MISSING_EDGE: 'missing_edge',
+            KIND_CORRECTION: 'kind_correction',
+            ROUTE_CORRECTION: 'route_correction',
+            DEAD_ROUTE: 'dead_route'
+          }
+
+          const correctionType = typeMap[type]
+          if (!correctionType) continue
+
+          const kv: Record<string, string> = {}
+          for (const p of parts.slice(1)) {
+            const idx = p.indexOf(':')
+            if (idx > 0) kv[p.slice(0, idx).trim()] = p.slice(idx + 1).trim()
+          }
+
+          corrections.push({
+            id: crypto.randomUUID(),
+            type: correctionType,
+            description: parts.slice(1, -1).join(' | '),
+            reason: kv.reason ?? '',
+            data: kv,
+            status: 'pending'
+          })
+        }
+
+        set({ validationResults: corrections })
+
+        // Cache validations
+        window.api.cortex.saveEnrichment(
+          repo.url,
+          repo.branch,
+          commitSha,
+          'validations',
+          agent.providerId,
+          accumulated
+        )
+
+        window.api.ai.removeStreamListeners()
+        resolve()
+      })
+
+      window.api.ai.onStreamError(({ sessionId: sid }) => {
+        if (sid !== sessionId) return
+        window.api.ai.removeStreamListeners()
+        resolve()
+      })
+
+      window.api.ai.startAnalysis(
+        agent.providerId,
+        agent.model,
+        systemPrompt,
+        userPrompt,
+        sessionId,
+        agent.command
+      )
+    })
   },
 
   reanalyze: async (repoId: string) => {

@@ -3,10 +3,11 @@
  * Shows interactive React Flow diagrams for API flows, component trees, and data pipelines.
  */
 import { useState, useMemo } from 'react'
-import { GitBranch, Route, Component, Workflow, ChevronDown } from 'lucide-react'
+import { GitBranch, Route, Component, Workflow, ChevronDown, ShieldCheck } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import FlowDiagram from './FlowDiagram'
 import { buildAPIFlowNodes, buildComponentTreeNodes, buildPipelineNodes } from './flow-utils'
+import ValidationPanel from './ValidationPanel'
 
 type FlowType = 'api' | 'components' | 'pipeline'
 
@@ -27,6 +28,7 @@ export default function FlowsTab(): React.JSX.Element {
   const analysisResult = useCortexStore((s) => s.analysisResult)
   const openFile = useCortexStore((s) => s.openFile)
   const setActiveTab = useCortexStore((s) => s.setActiveTab)
+  const validateAnalysis = useCortexStore((s) => s.validateAnalysis)
 
   const repoType = analysisResult?.repoType ?? 'unknown'
 
@@ -155,6 +157,16 @@ export default function FlowsTab(): React.JSX.Element {
           onSelect={setFlowType}
         />
 
+        {/* Validate button */}
+        <button
+          type="button"
+          onClick={() => validateAnalysis()}
+          className="flex items-center gap-1 rounded-lg bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-400 transition-colors hover:bg-amber-500/20"
+        >
+          <ShieldCheck size={12} />
+          Validate
+        </button>
+
         {/* Endpoint selector for API flow */}
         {flowType === 'api' && endpoints.length > 0 && (
           <div className="relative ml-auto">
@@ -201,6 +213,9 @@ export default function FlowsTab(): React.JSX.Element {
           </div>
         )}
       </div>
+
+      {/* Validation results */}
+      <ValidationPanel />
     </div>
   )
 }

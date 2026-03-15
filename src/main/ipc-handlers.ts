@@ -30,6 +30,7 @@ import { buildInsightsPrompt } from './cortex/toon-parser'
 import { isRtkAvailable } from './cortex/rtk-integration'
 import { buildStaticDigest, buildDigestRefinementPrompt, buildDigestUserPrompt } from './cortex/digest-builder'
 import { buildEntityBatches } from './cortex/entity-enricher'
+import { buildValidationPrompt, buildValidationUserPrompt } from './cortex/analysis-validator'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -1080,6 +1081,34 @@ export function registerIpcHandlers(): void {
         systemPrompt: b.systemPrompt,
         userPrompt: b.userPrompt
       }))
+    }
+  )
+
+  // Build validation prompts for AI review
+  ipcMain.handle(
+    'cortex:buildValidationPrompts',
+    async (_event, repoUrl: string, branch: string, digestText: string) => {
+      const { analyzer } = getCortexInstances()
+      const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '')
+      if (!analysis) throw new Error('No analysis found.')
+
+      const typedAnalysis = analysis as Record<string, unknown>
+      const routes = typedAnalysis.routes as Array<Record<string, unknown>>
+      const calls = typedAnalysis.calls as Array<Record<string, unknown>>
+
+      const routesText = routes
+        .map((r, i) => `[${i}] ${r.method} ${r.fullPath} → ${r.handlerName} (${r.controllerName})`)
+        .join('\n')
+
+      const edgesText = calls
+        .map((c) => `${c.callerId} → ${c.calleeId} (${c.type})`)
+        .join('\n')
+
+      return {
+        systemPrompt: buildValidationPrompt(),
+        userPrompt: buildValidationUserPrompt(digestText, routesText, edgesText),
+        commitSha: typedAnalysis.commitSha as string
+      }
     }
   )
 

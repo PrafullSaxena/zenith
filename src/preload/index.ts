@@ -277,6 +277,12 @@ const api = {
       existingSummaryIds: string[]
     ): Promise<Array<{ entityIds: string[]; systemPrompt: string; userPrompt: string }>> =>
       ipcRenderer.invoke('cortex:buildEntityBatches', repoUrl, branch, existingSummaryIds),
+    buildValidationPrompts: (
+      repoUrl: string,
+      branch: string,
+      digestText: string
+    ): Promise<{ systemPrompt: string; userPrompt: string; commitSha: string }> =>
+      ipcRenderer.invoke('cortex:buildValidationPrompts', repoUrl, branch, digestText),
     onCloneProgress: (
       cb: (data: { stage: string; progress: number; detail: string }) => void
     ): void => {

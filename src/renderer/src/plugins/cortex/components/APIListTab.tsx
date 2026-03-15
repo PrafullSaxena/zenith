@@ -3,9 +3,10 @@
  * Filterable, sortable table with method badges and file links.
  */
 import { useState, useMemo, useCallback } from 'react'
-import { Search, ArrowUpDown, Route } from 'lucide-react'
+import { Search, ArrowUpDown, Route, ShieldCheck } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { RouteInfo } from '../../../types/cortex'
+import ValidationPanel from './ValidationPanel'
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'bg-green-500/15 text-green-400',
@@ -22,6 +23,7 @@ type SortDir = 'asc' | 'desc'
 export default function APIListTab(): React.JSX.Element {
   const routes = useCortexStore((s) => s.analysisResult?.routes ?? [])
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
+  const validateAnalysis = useCortexStore((s) => s.validateAnalysis)
 
   const [filter, setFilter] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('path')
@@ -109,6 +111,16 @@ export default function APIListTab(): React.JSX.Element {
           </span>
         </div>
 
+        <div className="flex items-center gap-2">
+        {/* Validate button */}
+        <button
+          type="button"
+          onClick={() => validateAnalysis()}
+          className="flex items-center gap-1 rounded-lg bg-amber-500/10 px-2.5 py-1.5 text-[11px] font-medium text-amber-400 transition-colors hover:bg-amber-500/20"
+        >
+          <ShieldCheck size={12} />
+          Validate
+        </button>
         {/* Search filter */}
         <div className="relative">
           <Search
@@ -122,6 +134,7 @@ export default function APIListTab(): React.JSX.Element {
             placeholder="Filter endpoints..."
             className="w-56 rounded-lg border border-border bg-background py-1.5 pl-7 pr-3 text-[11px] text-text-primary placeholder:text-text-secondary/50 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
           />
+        </div>
         </div>
       </div>
 
@@ -182,6 +195,9 @@ export default function APIListTab(): React.JSX.Element {
           </tbody>
         </table>
       </div>
+
+      {/* Validation results */}
+      <ValidationPanel />
     </div>
   )
 }
