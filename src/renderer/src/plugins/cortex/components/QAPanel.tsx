@@ -10,7 +10,7 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { useAgentStore } from '../../../stores/agent-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { QAMessage, RepoType } from '../../../types/cortex'
-import { GlassCard, GlassSurface, GlassChat, type GlassChatMessage } from '@renderer/components/ui'
+import { GlassCard, GlassSurface } from '@renderer/components/ui'
 
 // ── Suggested questions by repo type ────────────────────────────────
 
