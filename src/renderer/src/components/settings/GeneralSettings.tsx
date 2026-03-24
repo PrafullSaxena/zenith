@@ -2,11 +2,20 @@ import { useEffect } from 'react'
 import { Check } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { PLUGINS } from '../../plugins/registry'
-import { GlassCard } from '@renderer/components/ui'
+import { GlassCard, GlassBadge } from '@renderer/components/ui'
 import { getClassicThemes, getNewThemes } from '@renderer/lib/theme-metadata'
 import type { ThemeMeta } from '@renderer/lib/theme-metadata'
 import { SettingsField } from './SettingsField'
 import type { SettingsField as SettingsFieldDef } from '../../types/plugin'
+
+// ---------------------------------------------------------------------------
+// Theme crossfade — adds a brief transition class on theme switch
+// ---------------------------------------------------------------------------
+
+function triggerThemeCrossfade(): void {
+  document.documentElement.classList.add('theme-transitioning')
+  setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 350)
+}
 
 // ---------------------------------------------------------------------------
 // ThemeCard — inline sub-component for the visual theme selector grid
@@ -37,8 +46,34 @@ function ThemeCard({
           />
         ))}
       </div>
-      {isActive && (
+
+      {/* Mini glass preview strip */}
+      <div
+        className="mt-2 h-5 w-20 rounded-sm overflow-hidden relative"
+        style={{ backgroundColor: theme.colors.bg }}
+      >
+        <div
+          className="absolute inset-0.5 rounded-sm border"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            borderColor: 'rgba(255,255,255,0.08)'
+          }}
+        />
+        <div
+          className="absolute bottom-0 left-1 right-1 h-px"
+          style={{ backgroundColor: theme.colors.accent }}
+        />
+      </div>
+
+      {/* Active check icon OR NEW badge for new collection themes */}
+      {isActive ? (
         <Check size={14} className="absolute top-2 right-2 text-accent" />
+      ) : (
+        theme.section === 'new' && (
+          <GlassBadge variant="accent" className="absolute top-2 right-2 text-[10px]">
+            NEW
+          </GlassBadge>
+        )
       )}
     </GlassCard>
   )
@@ -163,7 +198,7 @@ export function GeneralSettings(): React.JSX.Element {
                   key={theme.value}
                   theme={theme}
                   isActive={currentTheme === theme.value}
-                  onSelect={() => setSetting('general.theme', theme.value)}
+                  onSelect={() => { triggerThemeCrossfade(); setSetting('general.theme', theme.value); }}
                 />
               ))}
             </div>
@@ -177,7 +212,7 @@ export function GeneralSettings(): React.JSX.Element {
                     key={theme.value}
                     theme={theme}
                     isActive={currentTheme === theme.value}
-                    onSelect={() => setSetting('general.theme', theme.value)}
+                    onSelect={() => { triggerThemeCrossfade(); setSetting('general.theme', theme.value); }}
                   />
                 ))}
               </div>

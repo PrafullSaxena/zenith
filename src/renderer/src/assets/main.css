@@ -1252,3 +1252,18 @@ body {
   letter-spacing: 0.02em;
   font-family: var(--font-mono);
 }
+
+/* ── Theme crossfade transition ──────────────────────────────── */
+/* Applied briefly via JS class toggle on theme switch to avoid
+   transitions on initial page load. Targets key color properties
+   on html, body, and root for a smooth ~300ms color morph. */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition:
+    background-color 300ms var(--ease-smooth, ease),
+    color 300ms var(--ease-smooth, ease),
+    border-color 300ms var(--ease-smooth, ease),
+    box-shadow 300ms var(--ease-smooth, ease) !important;
+}
