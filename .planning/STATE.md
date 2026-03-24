@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 2 of 7 (Glass Component Library)
-Plan: 2 of 5 in current phase (2 complete)
+Plan: 3 of 5 in current phase (3 complete)
 Status: Executing Phase 2
-Last activity: 2026-03-25 — Completed 02-02 (Compound Glass Components)
+Last activity: 2026-03-25 — Completed 02-03 (Overlay Glass Components + Barrel Export)
 
-Progress: [████------] 2/5 plans
+Progress: [██████----] 3/5 plans
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 2.4min
-- Total execution time: 12min
+- Total plans completed: 6
+- Average duration: 2.3min
+- Total execution time: 14min
 
 **By Phase:**
 
@@ -32,9 +32,10 @@ Progress: [████------] 2/5 plans
 | Phase 01 P03 | 1min | 2 tasks | 1 files |
 | Phase 02 P01 | 2min | 2 tasks | 5 files |
 | Phase 02 P02 | 2min | 2 tasks | 5 files |
+| Phase 02 P03 | 2min | 2 tasks | 4 files |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (5min), 01-02 (2min), 01-03 (1min), 02-01 (2min), 02-02 (2min)
+- Last 5 plans: 01-02 (2min), 01-03 (1min), 02-01 (2min), 02-02 (2min), 02-03 (2min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 - [02-02]: GlassCard conditionally renders motion.div only for interactive variant, plain div for default/selected to avoid motion overhead
 - [02-02]: GlassSelect uses inline absolute positioning (not portal) per research recommendation
 - [02-02]: GlassTab uses layoutId="activeTab" for framer-motion layout animation sliding underline
+- [02-03]: GlassModal defines animation variants inline (not from motion.ts) to get explicit exit variants with 120ms close timing
+- [02-03]: GlassToast uses AnimatePresence popLayout mode for smooth reordering on dismiss
+- [02-03]: Toast auto-dismiss uses setTimeout with remaining-time tracking rather than requestAnimationFrame
 
 ### Pending Todos
 
@@ -75,5 +79,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 02-02-PLAN.md (Compound Glass Components)
+Stopped at: Completed 02-03-PLAN.md (Overlay Glass Components + Barrel Export)
 Resume file: None

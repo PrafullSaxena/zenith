@@ -26,8 +26,8 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 - [x] **COMP-05**: GlassSelect component with glass dropdown and selected accent
 - [x] **COMP-06**: GlassTab component with sliding underline animation
 - [x] **COMP-07**: GlassBadge component with success, error, warning, info, accent, neutral variants
-- [ ] **COMP-08**: GlassModal component with backdrop blur and scale entrance/exit
-- [ ] **COMP-09**: GlassToast component with slide entrance, auto-dismiss progress bar, and type variants
+- [x] **COMP-08**: GlassModal component with backdrop blur and scale entrance/exit
+- [x] **COMP-09**: GlassToast component with slide entrance, auto-dismiss progress bar, and type variants
 - [x] **COMP-10**: GlassSkeleton component with shimmer animation and text/card/circle/table variants
 - [x] **COMP-11**: EmptyState component with floating SVG illustration, parallax mouse effect, and CTA button
 
@@ -127,8 +127,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COMP-05 | Phase 2 | Complete |
 | COMP-06 | Phase 2 | Complete |
 | COMP-07 | Phase 2 | Complete |
-| COMP-08 | Phase 2 | Pending |
-| COMP-09 | Phase 2 | Pending |
+| COMP-08 | Phase 2 | Complete |
+| COMP-09 | Phase 2 | Complete |
 | COMP-10 | Phase 2 | Complete |
 | COMP-11 | Phase 2 | Complete |
 | THEME-01 | Phase 5 | Pending |
