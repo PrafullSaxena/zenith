@@ -2,104 +2,123 @@
  * TextCraftView -- Main view for the TextCraft AI text refinement plugin.
  *
  * Layout:
- *  - Header: plugin title with PenLine icon + tab bar (Refine / History)
- *  - Refine tab: Three-panel content: InputPanel (left), ControlsPanel (middle), OutputPanel (right)
+ *  - Header: PluginHeader with Wand2 icon, gradient title, and GlassTab bar (Refine / History)
+ *  - Refine tab: Three-panel resizable layout: InputPanel (left), ControlsPanel (middle), OutputPanel (right)
  *  - History tab: Full-width HistoryPanel showing saved refinements
  *
  * Default-exported for React.lazy() compatibility in the plugin registry.
  */
 
-import { useState } from 'react'
-import { PenLine, Clock } from 'lucide-react'
-import { useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { Wand2, Clock } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { pageTransition } from '@renderer/lib/motion'
+import { PluginHeader, GlassResizeHandle } from '@renderer/components/ui'
+import type { PluginHeaderTab } from '@renderer/components/ui'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import InputPanel from './InputPanel'
 import ControlsPanel from './ControlsPanel'
 import OutputPanel from './OutputPanel'
 import HistoryPanel from './HistoryPanel'
 
-type TextCraftTab = 'refine' | 'history'
+const tabs: PluginHeaderTab[] = [
+  { id: 'refine', label: 'Refine', icon: Wand2 },
+  { id: 'history', label: 'History', icon: Clock }
+]
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
 
 export default function TextCraftView(): React.JSX.Element {
-  const [activeTab, setActiveTab] = useState<TextCraftTab>('refine')
-  const historyCount = useTextCraftStore((s) => s.history.length)
+  const [activeTab, setActiveTab] = useState('refine')
+  const [leftWidth, setLeftWidth] = useState(33)
+  const [rightWidth, setRightWidth] = useState(33)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const containerWidthRef = useRef(800)
 
   // Load history on mount
   useEffect(() => {
     useTextCraftStore.getState().loadHistory()
   }, [])
 
+  // Track container width via ResizeObserver
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        containerWidthRef.current = entry.contentRect.width
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const handleLeftResize = useCallback((dx: number) => {
+    setLeftWidth((prev) => clamp(prev + (dx * 100) / containerWidthRef.current, 20, 50))
+  }, [])
+
+  const handleRightResize = useCallback((dx: number) => {
+    setRightWidth((prev) => clamp(prev - (dx * 100) / containerWidthRef.current, 20, 50))
+  }, [])
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
       {/* Header + tab bar */}
-      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-        <div className="flex items-center gap-2">
-          <PenLine size={18} className="text-accent" />
-          <h1 className="text-lg font-semibold text-text-primary">TextCraft</h1>
-          <span className="text-xs text-text-secondary">AI Text Refinement</span>
-        </div>
+      <PluginHeader
+        icon={Wand2}
+        title="TextCraft"
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
-        {/* Tab bar */}
-        <div className="flex items-center gap-1 ml-6">
-          <button
-            type="button"
-            onClick={() => setActiveTab('refine')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              activeTab === 'refine'
-                ? 'bg-accent/15 text-accent'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/60'
-            }`}
-          >
-            <PenLine size={12} />
-            Refine
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('history')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              activeTab === 'history'
-                ? 'bg-accent/15 text-accent'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/60'
-            }`}
-          >
-            <Clock size={12} />
-            History
-            {historyCount > 0 && (
-              <span className={`text-[10px] px-1 py-0.5 rounded-full leading-none ${
-                activeTab === 'history' ? 'bg-accent/20 text-accent' : 'bg-surface-elevated text-text-secondary/60'
-              }`}>
-                {historyCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Tab content */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Tab content with AnimatePresence page transitions */}
+      <AnimatePresence mode="wait">
         {activeTab === 'refine' ? (
-          <>
+          <motion.div
+            key="refine"
+            variants={pageTransition}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="flex flex-1 overflow-hidden"
+            ref={containerRef}
+          >
             {/* Left: Input */}
-            <div className="flex-1 overflow-hidden border-r border-border">
+            <div style={{ width: leftWidth + '%' }} className="shrink-0 overflow-hidden">
               <InputPanel />
             </div>
 
+            <GlassResizeHandle onResize={handleLeftResize} />
+
             {/* Middle: Controls */}
-            <div className="w-64 shrink-0 overflow-y-auto border-r border-border">
+            <div className="flex-1 overflow-hidden">
               <ControlsPanel />
             </div>
 
+            <GlassResizeHandle onResize={handleRightResize} />
+
             {/* Right: Output */}
-            <div className="flex-1 overflow-hidden">
+            <div style={{ width: rightWidth + '%' }} className="shrink-0 overflow-hidden">
               <OutputPanel />
             </div>
-          </>
+          </motion.div>
         ) : (
-          <div className="flex-1 overflow-hidden">
+          <motion.div
+            key="history"
+            variants={pageTransition}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="flex flex-1 overflow-hidden"
+          >
             <HistoryPanel />
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   )
 }

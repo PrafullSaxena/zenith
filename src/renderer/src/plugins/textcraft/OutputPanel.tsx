@@ -5,12 +5,13 @@
  * copy modes (formatted markdown & clean plain text), PDF export,
  * and word/character count footer.
  *
- * Four states: empty (no session), streaming (live markdown + indicator),
+ * Four states: empty (EmptyState), streaming (GlassSkeleton shimmer + live markdown),
  * complete (final markdown + copy buttons), error (red message).
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { Check, Sparkles, FileText, AlignLeft, Copy, FileDown, ChevronDown, ChevronRight, ChevronsUpDown, Loader2, BookOpen } from 'lucide-react'
+import { Check, FileText, AlignLeft, Copy, FileDown, ChevronDown, ChevronRight, ChevronsUpDown, Loader2, BookOpen } from 'lucide-react'
+import { GlassCard, GlassSkeleton, EmptyState } from '@renderer/components/ui'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import { renderAllMermaidBlocks } from '../../lib/mermaid-to-png'
 import { markdownToTiptapJson } from '../../lib/markdown-to-tiptap'
@@ -39,72 +40,39 @@ async function writeClipboard(text: string): Promise<void> {
 /**
  * Strips markdown syntax from text, producing clean plain text that
  * preserves newlines, indentation, and bullet structure.
- *
- * Handles: headers, bold, italic, strikethrough, inline code, code blocks,
- * links, images, blockquotes, horizontal rules, and list markers.
  */
 function stripMarkdown(md: string): string {
   let text = md
 
-  // Remove fenced code block markers (``` or ~~~) but keep content
   text = text.replace(/^```[\w-]*\n?/gm, '')
   text = text.replace(/^~~~[\w-]*\n?/gm, '')
-
-  // Remove heading markers: ## Title → Title
   text = text.replace(/^#{1,6}\s+/gm, '')
-
-  // Remove bold/italic markers: **text** / __text__ / *text* / _text_
   text = text.replace(/\*\*\*(.+?)\*\*\*/g, '$1')
   text = text.replace(/___(.+?)___/g, '$1')
   text = text.replace(/\*\*(.+?)\*\*/g, '$1')
   text = text.replace(/__(.+?)__/g, '$1')
   text = text.replace(/\*(.+?)\*/g, '$1')
   text = text.replace(/_(.+?)_/g, '$1')
-
-  // Remove strikethrough: ~~text~~ → text
   text = text.replace(/~~(.+?)~~/g, '$1')
-
-  // Remove inline code backticks: `code` → code
   text = text.replace(/`(.+?)`/g, '$1')
-
-  // Convert links: [text](url) → text
   text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-
-  // Remove images: ![alt](url) → alt
   text = text.replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
-
-  // Remove blockquote markers: > text → text
   text = text.replace(/^>\s?/gm, '')
-
-  // Convert markdown list markers to plain bullets:  - item → • item, * item → • item
   text = text.replace(/^(\s*)[-*]\s+/gm, '$1• ')
-
-  // Keep numbered lists as-is (1. item)
-
-  // Remove horizontal rules (---, ***, ___)
   text = text.replace(/^[-*_]{3,}\s*$/gm, '')
-
-  // Collapse 3+ consecutive blank lines to 2
   text = text.replace(/\n{3,}/g, '\n\n')
 
   return text.trim()
 }
 
-// ── Collapsible section parser ───────────────────────────────────────
+// -- Collapsible section parser -----------------------------------------------
 
 interface MarkdownSection {
-  /** Heading text (empty for preamble content before first heading) */
   heading: string
-  /** Heading level: 1 for #, 2 for ##, 3 for ### (0 for preamble) */
   level: number
-  /** Raw markdown content under this heading (excluding the heading line) */
   content: string
 }
 
-/**
- * Splits markdown into sections based on H1/H2/H3 headings.
- * The first section may have level=0 if content precedes the first heading.
- */
 function splitIntoSections(md: string): MarkdownSection[] {
   const sections: MarkdownSection[] = []
   const lines = md.split('\n')
@@ -116,7 +84,6 @@ function splitIntoSections(md: string): MarkdownSection[] {
     const h3 = line.match(/^### (.+)$/)
 
     if (h1 || h2 || h3) {
-      // Save previous section if it has content
       if (current.heading || current.content.trim()) {
         sections.push({ ...current, content: current.content.trimEnd() })
       }
@@ -129,7 +96,6 @@ function splitIntoSections(md: string): MarkdownSection[] {
       current.content += (current.content ? '\n' : '') + line
     }
   }
-  // Push the last section
   if (current.heading || current.content.trim()) {
     sections.push({ ...current, content: current.content.trimEnd() })
   }
@@ -137,7 +103,7 @@ function splitIntoSections(md: string): MarkdownSection[] {
   return sections
 }
 
-// ────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 export default function OutputPanel(): React.JSX.Element {
   const session = useTextCraftStore((s) => s.session)
@@ -157,7 +123,6 @@ export default function OutputPanel(): React.JSX.Element {
   const wordCount = rawText.trim() ? rawText.trim().split(/\s+/).length : 0
   const charCount = rawText.length
 
-  // Parse sections for collapsible view (only when complete)
   const sections = useMemo(() => splitIntoSections(rawText), [rawText])
   const hasSections = isComplete && sections.filter((s) => s.level > 0).length > 1
 
@@ -198,7 +163,6 @@ export default function OutputPanel(): React.JSX.Element {
     }
   }, [allCollapsed, sections])
 
-  /** Copy markdown source (formatted with markdown syntax) */
   const handleCopyFormatted = useCallback(async (): Promise<void> => {
     if (!rawText) return
     await writeClipboard(rawText)
@@ -206,7 +170,6 @@ export default function OutputPanel(): React.JSX.Element {
     setTimeout(() => setCopiedMode(null), 2000)
   }, [rawText])
 
-  /** Copy clean plain text — no markdown characters, just text with structure */
   const handleCopyRaw = useCallback(async (): Promise<void> => {
     if (!rawText) return
     await writeClipboard(stripMarkdown(rawText))
@@ -214,16 +177,13 @@ export default function OutputPanel(): React.JSX.Element {
     setTimeout(() => setCopiedMode(null), 2000)
   }, [rawText])
 
-  /** Export as PDF via native pdfmake (main process → save dialog → file) */
   const handleExportPDF = useCallback(async (): Promise<void> => {
     if (!rawText || isExporting) return
     setIsExporting(true)
     try {
-      // Read PDF style to determine mermaid theme (light for colored/traditional, dark for pretty)
       const settings = await window.api.settings.getAll()
       const pdfStyle = (settings?.['general.pdfStyle'] as string) ?? 'colored'
       const lightMode = pdfStyle !== 'pretty'
-      // Pre-render mermaid diagrams to PNG for embedding in PDF
       const mermaidImages = await renderAllMermaidBlocks(rawText, lightMode)
       await window.api.app.exportPdf({
         markdown: rawText,
@@ -236,7 +196,6 @@ export default function OutputPanel(): React.JSX.Element {
 
   const [savedAsNote, setSavedAsNote] = useState(false)
 
-  /** Save input + config + output as a new Nebula note */
   const handleSaveAsNote = useCallback(async (): Promise<void> => {
     if (!rawText || !session) return
     const opts = session.options
@@ -244,7 +203,6 @@ export default function OutputPanel(): React.JSX.Element {
     const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     const noteTitle = `TextCraft: ${formatLabel} — ${date}`
 
-    // Build markdown with Input, Config, and Output sections
     const configLines = [
       `**Tones:** ${opts.tones.join(', ')}`,
       `**Format:** ${formatLabel}`,
@@ -285,96 +243,73 @@ export default function OutputPanel(): React.JSX.Element {
   const showActions = (isComplete || hasOutput) && !isStreaming
 
   return (
-    <div className="flex h-full flex-col">
+    <GlassCard className="flex flex-col h-full overflow-hidden rounded-none border-x-0 border-t-0">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border/50">
-        <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide">
+      <div className="flex items-center justify-between pb-2">
+        <div className="text-xs font-medium text-text-secondary uppercase tracking-wider px-1">
           Output
-        </h2>
+        </div>
 
         {/* Action buttons -- visible when output is ready */}
         {showActions && (
           <div className="flex items-center gap-1">
-            {/* Collapse/Expand All — only when multiple sections exist */}
             {hasSections && (
               <>
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-surface-elevated text-text-secondary hover:text-text-primary transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
                   title={allCollapsed ? 'Expand all sections' : 'Collapse all sections'}
                 >
                   <ChevronsUpDown size={13} />
                   <span>{allCollapsed ? 'Expand' : 'Collapse'}</span>
                 </button>
-                <div className="h-4 w-px bg-border/40 mx-0.5" />
+                <div className="h-4 w-px bg-white/[0.08] mx-0.5" />
               </>
             )}
 
-            {/* Copy Raw (plain text) */}
             <button
               type="button"
               onClick={() => void handleCopyRaw()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-surface-elevated text-text-secondary hover:text-text-primary transition-colors"
-              title="Copy plain text (no markdown, just clean text with newlines and bullets)"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
+              title="Copy plain text"
             >
-              {copiedMode === 'raw' ? (
-                <Check size={13} className="text-success" />
-              ) : (
-                <AlignLeft size={13} />
-              )}
+              {copiedMode === 'raw' ? <Check size={13} className="text-success" /> : <AlignLeft size={13} />}
               <span>{copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}</span>
             </button>
 
-            {/* Copy Formatted (markdown source) */}
             <button
               type="button"
               onClick={() => void handleCopyFormatted()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-surface-elevated text-text-secondary hover:text-text-primary transition-colors"
-              title="Copy markdown source (with formatting syntax)"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
+              title="Copy markdown source"
             >
-              {copiedMode === 'formatted' ? (
-                <Check size={13} className="text-success" />
-              ) : (
-                <FileText size={13} />
-              )}
+              {copiedMode === 'formatted' ? <Check size={13} className="text-success" /> : <FileText size={13} />}
               <span>{copiedMode === 'formatted' ? 'Copied!' : 'Markdown'}</span>
             </button>
 
-            {/* Separator */}
-            <div className="h-4 w-px bg-border/40 mx-0.5" />
+            <div className="h-4 w-px bg-white/[0.08] mx-0.5" />
 
-            {/* Export as PDF */}
             <button
               type="button"
               onClick={() => void handleExportPDF()}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-surface-elevated text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
-              title="Export as PDF (save to file)"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
+              title="Export as PDF"
             >
-              {isExporting ? (
-                <Loader2 size={13} className="animate-spin" />
-              ) : (
-                <FileDown size={13} />
-              )}
-              <span>{isExporting ? 'Exporting…' : 'PDF'}</span>
+              {isExporting ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
+              <span>{isExporting ? 'Exporting...' : 'PDF'}</span>
             </button>
 
-            {/* Separator */}
-            <div className="h-4 w-px bg-border/40 mx-0.5" />
+            <div className="h-4 w-px bg-white/[0.08] mx-0.5" />
 
-            {/* Save as Nebula note */}
             <button
               type="button"
               onClick={() => void handleSaveAsNote()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-surface-elevated text-text-secondary hover:text-text-primary transition-colors"
-              title="Save as Nebula note (input + config + output)"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
+              title="Save as Nebula note"
             >
-              {savedAsNote ? (
-                <Check size={13} className="text-success" />
-              ) : (
-                <BookOpen size={13} />
-              )}
+              {savedAsNote ? <Check size={13} className="text-success" /> : <BookOpen size={13} />}
               <span>{savedAsNote ? 'Saved!' : 'Note'}</span>
             </button>
           </div>
@@ -382,7 +317,7 @@ export default function OutputPanel(): React.JSX.Element {
 
         {/* Streaming indicator in header */}
         {isStreaming && (
-          <span className="flex items-center gap-1.5 text-[11px] text-accent">
+          <span className="flex items-center gap-1.5 text-[11px] text-[var(--color-accent)]">
             <Copy size={12} className="animate-pulse" />
             Streaming...
           </span>
@@ -393,26 +328,33 @@ export default function OutputPanel(): React.JSX.Element {
       <div ref={contentRef} className="flex-1 overflow-y-auto">
         {/* Empty state */}
         {isEmpty && (
-          <div className="flex h-full flex-col items-center justify-center">
-            <Sparkles size={32} className="text-text-secondary/30 mb-3" />
-            <p className="text-sm text-text-secondary/50">Refined text will appear here</p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="No output yet"
+            description="Paste text and click Refine to see results"
+            className="h-full"
+          />
         )}
 
-        {/* Streaming state — flat render, no collapsing */}
+        {/* Streaming state -- GlassSkeleton shimmer + live content */}
         {isStreaming && (
-          <div className="p-4">
-            {hasOutput && <MarkdownRenderer text={rawText} className="text-sm leading-relaxed" />}
-            <span className="animate-pulse text-accent text-sm">Refining...</span>
+          <div className="px-2">
+            {hasOutput ? (
+              <>
+                <MarkdownRenderer text={rawText} className="text-sm leading-relaxed" />
+                <span className="animate-pulse text-[var(--color-accent)] text-sm">Refining...</span>
+              </>
+            ) : (
+              <GlassSkeleton variant="text" lines={6} />
+            )}
           </div>
         )}
 
-        {/* Complete state — collapsible sections */}
+        {/* Complete state -- collapsible sections */}
         {isComplete && hasOutput && (
-          <div className="p-4">
+          <div className="px-2">
             {hasSections ? (
               sections.map((section, idx) => {
-                // Preamble (no heading) — always visible
                 if (section.level === 0) {
                   return section.content.trim() ? (
                     <MarkdownRenderer key={idx} text={section.content} className="text-sm leading-relaxed" />
@@ -432,7 +374,7 @@ export default function OutputPanel(): React.JSX.Element {
                     <button
                       type="button"
                       onClick={() => toggleSection(idx)}
-                      className={`flex w-full items-center gap-2 rounded-md py-1.5 px-1 -ml-1 text-left transition-colors hover:bg-surface-elevated/50 ${headingClass} text-text-primary`}
+                      className={`flex w-full items-center gap-2 rounded-md py-1.5 px-1 -ml-1 text-left transition-colors hover:bg-white/[0.04] ${headingClass} text-text-primary`}
                     >
                       {isCollapsed ? (
                         <ChevronRight size={14} className="shrink-0 text-text-secondary" />
@@ -457,16 +399,16 @@ export default function OutputPanel(): React.JSX.Element {
 
         {/* Error state */}
         {isError && error && (
-          <div className="p-4">
+          <div className="px-2 pt-2">
             <p className="text-red-400 text-sm">{error}</p>
           </div>
         )}
       </div>
 
       {/* Footer: word/char count */}
-      <div className="text-xs text-text-secondary px-4 py-2 border-t border-border/50">
+      <div className="text-xs text-text-secondary px-1 pt-2 border-t border-white/[0.06]">
         {wordCount} words | {charCount} chars
       </div>
-    </div>
+    </GlassCard>
   )
 }
