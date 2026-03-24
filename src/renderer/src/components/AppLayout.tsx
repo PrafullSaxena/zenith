@@ -1,4 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { pageTransition } from '@renderer/lib/motion'
 import { Sidebar } from './Sidebar'
 
 export function AppLayout(): React.JSX.Element {
@@ -14,11 +16,20 @@ export function AppLayout(): React.JSX.Element {
         {/* Drag region for custom titlebar — transparent, just for dragging */}
         <div className="drag-region h-8 w-full flex-shrink-0" />
 
-        {/* Main content — fills remaining height, route transitions via key */}
+        {/* Main content — fills remaining height, route transitions via AnimatePresence */}
         <main className="min-h-0 flex-1 overflow-y-auto p-4">
-          <div key={location.pathname} className="animate-page-enter h-full">
-            <Outlet />
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={pageTransition}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="h-full"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>
