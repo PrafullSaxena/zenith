@@ -1,10 +1,10 @@
 import { useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Download, Copy, Check, AlertCircle, Loader2 } from 'lucide-react'
+import { Download, Copy, Check, AlertCircle, Table2 } from 'lucide-react'
+import { GlassCard, GlassSkeleton, GlassButton, GlassSurface, EmptyState } from '../../components/ui'
 import CellModal from './CellModal'
 
-// ── Types ────────────────────────────────────────────────────────────
-
+// -- Types
 interface ResultsGridProps {
   rows: Record<string, unknown>[]
   fields: { name: string; dataTypeID: number }[]
@@ -17,8 +17,7 @@ interface ResultsGridProps {
 
 type SortDirection = 'asc' | 'desc' | null
 
-// ── CSV serialization (RFC 4180) ─────────────────────────────────────
-
+// -- CSV serialization (RFC 4180)
 function serializeCsv(
   rows: Record<string, unknown>[],
   fields: { name: string }[]
@@ -43,16 +42,14 @@ function serializeTsv(rows: Record<string, unknown>[], fields: { name: string }[
   return [header, ...dataRows].join('\n')
 }
 
-// ── Context menu ─────────────────────────────────────────────────────
-
+// -- Context menu
 interface ContextMenu {
   x: number
   y: number
   row: Record<string, unknown>
 }
 
-// ── Clipboard fallback for Electron ──────────────────────────────────
-
+// -- Clipboard fallback for Electron
 async function copyToClipboard(text: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text)
@@ -68,8 +65,7 @@ async function copyToClipboard(text: string): Promise<void> {
   }
 }
 
-// ── Cell renderer ────────────────────────────────────────────────────
-
+// -- Cell renderer
 function CellValue({
   value,
   onClick,
@@ -93,7 +89,7 @@ function CellValue({
   if (value === null || value === undefined) {
     return (
       <span
-        className="italic text-text-secondary/50 text-xs cursor-pointer"
+        className="italic text-[var(--text-secondary)]/50 text-xs cursor-pointer"
         onClick={handleClick}
       >
         NULL
@@ -104,7 +100,7 @@ function CellValue({
   if (typeof value === 'boolean') {
     return (
       <span
-        className={`text-xs cursor-pointer font-mono ${value ? 'text-success' : 'text-error'}`}
+        className={`text-xs cursor-pointer font-mono ${value ? 'text-green-400' : 'text-red-400'}`}
         onClick={handleClick}
       >
         {String(value)}
@@ -123,8 +119,8 @@ function CellValue({
     return (
       <span className="relative group inline-block max-w-full">
         <span
-          className={`text-xs cursor-pointer hover:bg-accent/10 rounded px-0.5 truncate inline-block max-w-full ${
-            flashCopy ? 'bg-success/20' : ''
+          className={`text-xs cursor-pointer hover:bg-[var(--color-accent)]/10 rounded px-0.5 truncate inline-block max-w-full ${
+            flashCopy ? 'bg-green-400/20' : ''
           }`}
           onClick={handleClick}
           onDoubleClick={onLongClick}
@@ -134,9 +130,9 @@ function CellValue({
           {displayStr}
         </span>
         {showTooltip && (
-          <div className="absolute z-10 bottom-full left-0 mb-1 max-w-xs bg-background border border-border rounded shadow-lg p-2 text-xs text-text-primary whitespace-pre-wrap break-words pointer-events-none">
+          <div className="absolute z-10 bottom-full left-0 mb-1 max-w-xs bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg shadow-lg p-2 text-xs text-[var(--text-primary)] whitespace-pre-wrap break-words pointer-events-none backdrop-blur-md">
             {tooltipStr}
-            {str.length > 200 && <span className="text-text-secondary">...</span>}
+            {str.length > 200 && <span className="text-[var(--text-secondary)]">...</span>}
           </div>
         )}
       </span>
@@ -147,8 +143,8 @@ function CellValue({
 
   return (
     <span
-      className={`text-xs cursor-pointer hover:bg-accent/10 rounded px-0.5 inline-block max-w-full truncate ${
-        flashCopy ? 'bg-success/20' : ''
+      className={`text-xs cursor-pointer hover:bg-[var(--color-accent)]/10 rounded px-0.5 inline-block max-w-full truncate ${
+        flashCopy ? 'bg-green-400/20' : ''
       } ${isNumber ? 'font-mono' : ''}`}
       onClick={handleClick}
     >
@@ -157,8 +153,7 @@ function CellValue({
   )
 }
 
-// ── Main component ────────────────────────────────────────────────────
-
+// -- Main component
 export default function ResultsGrid({
   rows,
   fields,
@@ -219,7 +214,6 @@ export default function ResultsGrid({
     return [...rows].sort((a, b) => {
       const av = a[sortColumn]
       const bv = b[sortColumn]
-      // NULLs always last
       if (av === null || av === undefined) return 1
       if (bv === null || bv === undefined) return -1
 
@@ -305,7 +299,7 @@ export default function ResultsGrid({
     }
   }, [hasMore, isLoading, onLoadMore])
 
-  // Reset loading guard when rows change (new rows appended)
+  // Reset loading guard when rows change
   useEffect(() => {
     isLoadingMoreRef.current = false
   }, [rows.length])
@@ -360,15 +354,15 @@ export default function ResultsGrid({
     [fields]
   )
 
-  // ── Render states ─────────────────────────────────────────────────
+  // -- Render states
 
   if (error) {
     return (
-      <div className="flex items-start gap-2 p-4 text-error">
+      <div className="flex items-start gap-2 p-4 text-red-400">
         <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
         <div>
           <p className="text-sm font-medium">Query Error</p>
-          <p className="text-xs mt-1 text-error/80">{error}</p>
+          <p className="text-xs mt-1 text-red-400/80">{error}</p>
         </div>
       </div>
     )
@@ -376,61 +370,53 @@ export default function ResultsGrid({
 
   if (isLoading && rows.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32 text-text-secondary">
-        <Loader2 className="w-5 h-5 animate-spin mr-2" />
-        <span className="text-sm">Running query...</span>
+      <div className="p-4">
+        <GlassSkeleton variant="table" />
       </div>
     )
   }
 
   if (rows.length === 0 && !isLoading) {
     return (
-      <div className="flex items-center justify-center h-32 text-text-secondary">
-        <span className="text-sm">No results</span>
+      <div className="flex items-center justify-center h-32">
+        <EmptyState
+          icon={Table2}
+          title="No results"
+          description="Run a query to see results"
+        />
       </div>
     )
   }
 
-  // ── Main render ───────────────────────────────────────────────────
+  // -- Main render
 
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border flex-shrink-0 bg-background">
-        <span className="text-xs text-text-secondary mr-auto">
+      <GlassSurface className="flex items-center gap-2 px-3 py-1.5 rounded-none border-x-0 border-t-0 flex-shrink-0">
+        <span className="text-xs text-[var(--text-secondary)] mr-auto">
           {hasMore
             ? `Showing ${rows.length}+ rows`
             : `Showing ${rows.length} row${rows.length === 1 ? '' : 's'}`}
         </span>
-        <button
+        <GlassButton
+          variant="ghost"
+          size="sm"
           onClick={handleCopyAllTsv}
-          className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded active:scale-95 transition-all ${
-            copiedTsv
-              ? 'text-green-400 animate-flash-green'
-              : 'text-text-secondary hover:text-text-primary hover:bg-surface'
-          }`}
-          title="Copy all rows as TSV"
+          className={copiedTsv ? 'text-green-400' : ''}
         >
           {copiedTsv ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           {copiedTsv ? 'Copied!' : 'Copy TSV'}
-        </button>
-        <button
-          onClick={handleExportCsv}
-          className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface rounded active:scale-95 transition-all"
-          title="Export as CSV"
-        >
+        </GlassButton>
+        <GlassButton variant="ghost" size="sm" onClick={handleExportCsv}>
           <Download className="w-3 h-3" />
           CSV
-        </button>
-        <button
-          onClick={handleExportJson}
-          className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface rounded active:scale-95 transition-all"
-          title="Export as JSON"
-        >
+        </GlassButton>
+        <GlassButton variant="ghost" size="sm" onClick={handleExportJson}>
           <Download className="w-3 h-3" />
           JSON
-        </button>
-      </div>
+        </GlassButton>
+      </GlassSurface>
 
       {/* Table */}
       <div
@@ -443,12 +429,12 @@ export default function ResultsGrid({
           style={{ tableLayout: 'fixed', width: totalWidth }}
         >
           {/* Header */}
-          <thead className="sticky top-0 z-10 bg-background">
+          <thead className="sticky top-0 z-10 bg-white/[0.03]">
             <tr>
               {/* Row number column */}
               <th
                 style={{ width: ROW_NUM_WIDTH, minWidth: ROW_NUM_WIDTH, maxWidth: ROW_NUM_WIDTH }}
-                className="sticky left-0 z-20 border-b border-r border-border px-2 py-1.5 text-left font-medium text-text-secondary bg-background select-none"
+                className="sticky left-0 z-20 border-b border-r border-[var(--glass-border)] px-2 py-1.5 text-left font-medium text-[var(--text-secondary)] bg-white/[0.03] select-none"
               >
                 #
               </th>
@@ -459,22 +445,22 @@ export default function ResultsGrid({
                   <th
                     key={field.name}
                     style={{ width, minWidth: width, maxWidth: width }}
-                    className="relative border-b border-r border-border px-2 py-1.5 text-left font-medium text-text-secondary select-none"
+                    className="relative border-b border-r border-[var(--glass-border)] px-2 py-1.5 text-left font-medium text-[var(--text-secondary)] select-none"
                   >
                     <button
-                      className="flex items-center gap-1 hover:text-text-primary transition-colors truncate max-w-full"
+                      className="flex items-center gap-1 hover:text-[var(--text-primary)] transition-colors truncate max-w-full"
                       onClick={() => handleSortColumn(field.name)}
                     >
                       <span className="truncate">{field.name}</span>
                       {isSorted && (
-                        <span className="text-accent flex-shrink-0">
-                          {sortDirection === 'asc' ? ' ↑' : ' ↓'}
+                        <span className="text-[var(--color-accent)] flex-shrink-0">
+                          {sortDirection === 'asc' ? ' \u2191' : ' \u2193'}
                         </span>
                       )}
                     </button>
                     {/* Resize handle */}
                     <div
-                      className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-accent/50 transition-colors"
+                      className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-[var(--color-accent)]/50 transition-colors"
                       onMouseDown={(e) => handleResizeStart(e, field.name)}
                     />
                   </th>
@@ -489,6 +475,7 @@ export default function ResultsGrid({
           >
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
               const row = sortedRows[virtualRow.index]
+              const isEven = virtualRow.index % 2 === 0
               return (
                 <tr
                   key={virtualRow.index}
@@ -501,7 +488,7 @@ export default function ResultsGrid({
                     height: virtualRow.size + 'px',
                     transform: `translateY(${virtualRow.start}px)`
                   }}
-                  className="hover:bg-surface/50 transition-colors"
+                  className={`hover:bg-white/[0.04] transition-colors ${isEven ? 'bg-white/[0.015]' : ''}`}
                   onContextMenu={(e) => {
                     e.preventDefault()
                     setContextMenu({ x: e.clientX, y: e.clientY, row })
@@ -510,7 +497,7 @@ export default function ResultsGrid({
                   {/* Row number cell */}
                   <td
                     style={{ width: ROW_NUM_WIDTH, minWidth: ROW_NUM_WIDTH, maxWidth: ROW_NUM_WIDTH }}
-                    className="sticky left-0 z-[5] border-b border-r border-border/50 px-2 py-0 h-8 text-right text-text-secondary/50 bg-background font-mono text-[10px]"
+                    className="sticky left-0 z-[5] border-b border-r border-white/[0.04] px-2 py-0 h-8 text-right text-[var(--text-secondary)]/50 bg-white/[0.02] font-mono text-[10px]"
                   >
                     {virtualRow.index + 1}
                   </td>
@@ -522,7 +509,7 @@ export default function ResultsGrid({
                       <td
                         key={field.name}
                         style={{ width, minWidth: width, maxWidth: width }}
-                        className={`border-b border-r border-border/50 px-2 py-0 h-8 overflow-hidden ${
+                        className={`border-b border-r border-white/[0.04] px-2 py-0 h-8 overflow-hidden ${
                           isNumber ? 'text-right' : 'text-left'
                         }`}
                       >
@@ -542,16 +529,15 @@ export default function ResultsGrid({
 
         {/* Load-more spinner at bottom */}
         {isLoading && rows.length > 0 && (
-          <div className="flex items-center justify-center py-3 text-text-secondary">
-            <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
-            <span className="text-xs">Loading more rows...</span>
+          <div className="flex items-center justify-center py-3">
+            <GlassSkeleton variant="text" lines={2} />
           </div>
         )}
 
         {/* End-of-results hint */}
         {!hasMore && rows.length > 0 && (
-          <div className="text-center py-2 text-text-secondary/40 text-xs">
-            — End of results —
+          <div className="text-center py-2 text-[var(--text-secondary)]/40 text-xs">
+            -- End of results --
           </div>
         )}
       </div>
@@ -559,18 +545,18 @@ export default function ResultsGrid({
       {/* Context menu */}
       {contextMenu && (
         <div
-          className="fixed z-50 bg-surface border border-border rounded shadow-lg py-1 min-w-36"
+          className="fixed z-50 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg shadow-lg py-1 min-w-36 backdrop-blur-md"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            className="w-full text-left px-3 py-1.5 text-xs hover:bg-accent/10 text-text-primary transition-colors"
+            className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] text-[var(--text-primary)] transition-colors"
             onClick={() => handleCopyRowJson(contextMenu.row)}
           >
             Copy Row as JSON
           </button>
           <button
-            className="w-full text-left px-3 py-1.5 text-xs hover:bg-accent/10 text-text-primary transition-colors"
+            className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] text-[var(--text-primary)] transition-colors"
             onClick={() => handleCopyRowTsv(contextMenu.row)}
           >
             Copy Row as TSV

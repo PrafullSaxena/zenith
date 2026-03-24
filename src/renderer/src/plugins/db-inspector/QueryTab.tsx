@@ -35,6 +35,7 @@ import {
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { useDbStore, buildCmSchema } from '../../stores/db-store'
 import type { QueryTab as QueryTabType, OutputMessage, InlineResult } from '../../types/database'
+import { GlassCard, GlassSurface, GlassButton } from '../../components/ui'
 import SqlEditor from './SqlEditor'
 import ResultsGrid from './ResultsGrid'
 import SavedQueriesPanel from './SavedQueriesPanel'
@@ -389,44 +390,44 @@ export default function QueryTab({
   return (
     <div ref={containerRef} className="flex h-full flex-col overflow-hidden">
       {/* Toolbar */}
-      <div className="flex shrink-0 items-center gap-1 border-b border-border bg-surface px-2 py-1.5">
+      <GlassSurface className="flex shrink-0 items-center gap-1 rounded-none border-x-0 border-t-0 px-2 py-1.5">
         {/* Run current statement */}
         <Tooltip content="Run statement" shortcut="⌘↵">
-          <button
-            type="button"
+          <GlassButton
+            variant="primary"
+            size="sm"
             onClick={handleRunCurrent}
             disabled={isRunning}
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 disabled:opacity-50 active:scale-95 transition-all"
           >
             <Play size={11} />
             Run
-          </button>
+          </GlassButton>
         </Tooltip>
 
         {/* Run all */}
         <Tooltip content="Run all" shortcut="⌘⇧↵">
-          <button
-            type="button"
+          <GlassButton
+            variant="ghost"
+            size="sm"
             onClick={handleExecuteAll}
             disabled={isRunning}
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-surface-hover disabled:opacity-50 active:scale-95 transition-all"
           >
             <ChevronRight size={11} />
             All
-          </button>
+          </GlassButton>
         </Tooltip>
 
         {/* Cancel (visible only when running) */}
         {isRunning && (
           <Tooltip content="Cancel query">
-            <button
-              type="button"
+            <GlassButton
+              variant="danger"
+              size="sm"
               onClick={handleCancel}
-              className="flex items-center gap-1 rounded px-2 py-1 text-xs text-red-400 hover:bg-red-500/10 active:scale-95 transition-all"
             >
               <Square size={11} />
               Cancel
-            </button>
+            </GlassButton>
           </Tooltip>
         )}
 
@@ -537,14 +538,14 @@ export default function QueryTab({
               autoFocus
               className="h-6 w-28 rounded border border-accent bg-transparent px-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:outline-none"
             />
-            <button
-              type="button"
+            <GlassButton
+              variant="primary"
+              size="sm"
               onClick={handleSaveQuery}
               disabled={!saveQueryName.trim()}
-              className="rounded px-2 py-0.5 text-xs bg-accent/20 text-accent hover:bg-accent/30 disabled:opacity-50 active:scale-95 transition-all"
             >
               Save
-            </button>
+            </GlassButton>
             <button
               type="button"
               onClick={() => { setShowSaveInput(false); setSaveQueryName('') }}
@@ -572,7 +573,7 @@ export default function QueryTab({
           <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
           <span className="max-w-[120px] truncate">{schema ?? 'public'}</span>
         </div>
-      </div>
+      </GlassSurface>
 
       {/* Saved queries panel (collapsible) */}
       {showSavedQueries && _connectionId && (
@@ -617,7 +618,7 @@ export default function QueryTab({
         // ── Split mode: resizable editor top, results bottom ────────
         <PanelGroup orientation="vertical" className="flex-1">
           <Panel defaultSize={showOutput && hasResult ? 60 : 100} minSize={20}>
-            <div className="h-full overflow-hidden">
+            <GlassCard className="h-full overflow-hidden rounded-none border-x-0 border-t-0 p-0">
               <SqlEditor
                 value={tab.sql}
                 onChange={(sql) => updateQueryTabSql(tab.id, sql)}
@@ -629,7 +630,7 @@ export default function QueryTab({
                 onEditorReady={handleEditorReady}
                 variables={tab.variables}
               />
-            </div>
+            </GlassCard>
           </Panel>
           {showOutput && hasResult && (
             <>
