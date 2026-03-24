@@ -1,15 +1,13 @@
 /**
  * ComparisonView — Side-by-side multi-provider cost comparison.
  *
- * Takes the current provider's selected services and maps each to equivalent
- * services in the other two providers using SERVICE_EQUIVALENCES.
- * Shows a table with per-service and total costs across AWS, GCP, and Azure.
- *
- * The current provider uses user's actual config. Other providers use
- * default configs from their respective catalogs.
+ * Uses GlassCard per provider column, GlassBadge for "Best Value" indicator,
+ * and GlassTable for the comparison data.
+ * Shows green/red cost highlights for cheapest/most expensive values.
  */
 import React from 'react'
-import { BarChart3, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { GitCompare, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { GlassCard, GlassBadge, EmptyState } from '@renderer/components/ui'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { CloudProvider, ServiceSelection } from '../../types/launchpad'
 import { getCatalog, PROVIDER_INFO } from '../../data/cloud-pricing/index'
@@ -18,10 +16,6 @@ import { calculateServiceCost } from '../../data/cloud-pricing/calculator'
 
 const ALL_PROVIDERS: CloudProvider[] = ['aws', 'gcp', 'azure']
 
-/**
- * Get default config for a service from a provider catalog.
- * Pulls defaults from each field's `default` property in configSchema.
- */
 function getDefaultConfig(serviceId: string, provider: CloudProvider): Record<string, unknown> {
   try {
     const catalog = getCatalog(provider)
@@ -33,8 +27,6 @@ function getDefaultConfig(serviceId: string, provider: CloudProvider): Record<st
           if (field.default !== undefined) {
             config[key] = field.default
           } else if (field.type === 'select' && field.options && field.options.length > 0) {
-            // For select fields with no explicit default, use the first option
-            // (full SelectOption object preserves pricePerHour for calculator)
             config[key] = field.options[0]
           }
         }
@@ -47,9 +39,6 @@ function getDefaultConfig(serviceId: string, provider: CloudProvider): Record<st
   return {}
 }
 
-/**
- * Find the display name for a service in a catalog.
- */
 function getServiceName(serviceId: string, provider: CloudProvider): string {
   try {
     const catalog = getCatalog(provider)
@@ -63,10 +52,6 @@ function getServiceName(serviceId: string, provider: CloudProvider): string {
   return serviceId
 }
 
-/**
- * Calculate cost for a service in a given provider.
- * Uses user config for the current provider, defaults for others.
- */
 function calcCostForProvider(
   selection: ServiceSelection,
   targetProvider: CloudProvider,
@@ -99,12 +84,6 @@ function formatCurrency(amount: number | null): string {
   }).format(amount)
 }
 
-const PROVIDER_COL_COLORS: Record<CloudProvider, string> = {
-  aws: 'bg-amber-500/5',
-  gcp: 'bg-blue-500/5',
-  azure: 'bg-cyan-500/5'
-}
-
 const PROVIDER_HEADER_COLORS: Record<CloudProvider, string> = {
   aws: 'text-amber-400',
   gcp: 'text-blue-400',
@@ -118,20 +97,15 @@ export default function ComparisonView(): React.JSX.Element {
   // Empty state
   if (!provider || selectedServices.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center max-w-xs">
-          <BarChart3 size={32} className="mx-auto mb-3 text-text-secondary/30" />
-          <p className="text-sm text-text-secondary">No services to compare</p>
-          <p className="mt-1 text-xs text-text-secondary/60">
-            Select a provider and add services in the Estimator tab to compare costs across AWS,
-            GCP, and Azure
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        icon={GitCompare}
+        title="Nothing to compare"
+        description="Estimate costs for multiple providers to compare. Select a provider and add services in the Estimator tab."
+      />
     )
   }
 
-  // Build comparison data: for each selected service, get costs per provider
+  // Build comparison data
   type RowData = {
     serviceId: string
     sourceName: string
@@ -140,16 +114,8 @@ export default function ComparisonView(): React.JSX.Element {
   }
 
   const rows: RowData[] = selectedServices.map((sel) => {
-    const costs: Record<CloudProvider, number | null> = {
-      aws: null,
-      gcp: null,
-      azure: null
-    }
-    const providerNames: Record<CloudProvider, string> = {
-      aws: '',
-      gcp: '',
-      azure: ''
-    }
+    const costs: Record<CloudProvider, number | null> = { aws: null, gcp: null, azure: null }
+    const providerNames: Record<CloudProvider, string> = { aws: '', gcp: '', azure: '' }
 
     for (const p of ALL_PROVIDERS) {
       const equivalentId = getEquivalentServiceId(sel.serviceId, p)
@@ -159,43 +125,27 @@ export default function ComparisonView(): React.JSX.Element {
       }
     }
 
-    return {
-      serviceId: sel.serviceId,
-      sourceName: getServiceName(sel.serviceId, provider),
-      costs,
-      providerNames
-    }
+    return { serviceId: sel.serviceId, sourceName: getServiceName(sel.serviceId, provider), costs, providerNames }
   })
 
   // Calculate totals per provider
-  const totals: Record<CloudProvider, number | null> = {
-    aws: null,
-    gcp: null,
-    azure: null
-  }
+  const totals: Record<CloudProvider, number | null> = { aws: null, gcp: null, azure: null }
   for (const p of ALL_PROVIDERS) {
     let sum = 0
     let hasAny = false
     for (const row of rows) {
       const cost = row.costs[p]
-      if (cost !== null) {
-        sum += cost
-        hasAny = true
-      }
+      if (cost !== null) { sum += cost; hasAny = true }
     }
     totals[p] = hasAny ? sum : null
   }
 
-  // Find cheapest provider per row (excluding nulls)
   function cheapestProvider(costs: Record<CloudProvider, number | null>): CloudProvider | null {
     let cheapest: CloudProvider | null = null
     let cheapestCost = Infinity
     for (const p of ALL_PROVIDERS) {
       const cost = costs[p]
-      if (cost !== null && cost < cheapestCost) {
-        cheapest = p
-        cheapestCost = cost
-      }
+      if (cost !== null && cost < cheapestCost) { cheapest = p; cheapestCost = cost }
     }
     return cheapest
   }
@@ -205,125 +155,121 @@ export default function ComparisonView(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="shrink-0 border-b border-border px-4 py-3">
+      <div className="shrink-0 border-b border-white/[0.06] px-4 py-3">
         <div className="flex items-center gap-2 mb-1">
-          <BarChart3 size={14} className="text-accent" />
-          <h2 className="text-sm font-semibold text-text-primary">Multi-Provider Comparison</h2>
+          <GitCompare size={14} className="text-[var(--color-accent)]" />
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+            Multi-Provider Comparison
+          </h2>
         </div>
-        <p className="text-xs text-text-secondary">
+        <p className="text-xs text-[var(--text-secondary)]">
           Based on your {PROVIDER_INFO[provider].displayName} configuration. Other providers use
           default settings.
         </p>
       </div>
 
-      {/* Table */}
+      {/* Side-by-side cards layout */}
       <div className="flex-1 overflow-auto p-4">
-        <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border bg-surface-elevated">
-                <th className="px-4 py-3 text-left font-medium text-text-secondary">Service</th>
-                {ALL_PROVIDERS.map((p) => (
-                  <th
-                    key={p}
-                    className={`px-4 py-3 text-right font-medium ${PROVIDER_HEADER_COLORS[p]} ${
-                      p === provider ? PROVIDER_COL_COLORS[p] : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-end gap-1">
-                      {PROVIDER_INFO[p].shortName}
-                      {p === provider && (
-                        <span className="rounded-sm bg-accent/20 px-1 py-0.5 text-[9px] font-normal text-accent">
-                          current
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, idx) => {
-                const cheapest = cheapestProvider(row.costs)
-                return (
-                  <tr
-                    key={row.serviceId}
-                    className={`border-b border-border/50 transition-colors hover:bg-surface-elevated/30 ${
-                      idx % 2 === 0 ? 'bg-surface' : 'bg-surface-elevated/30'
-                    }`}
-                  >
-                    <td className="px-4 py-2.5 text-text-primary font-medium">
-                      {row.sourceName}
-                    </td>
-                    {ALL_PROVIDERS.map((p) => {
-                      const cost = row.costs[p]
-                      const isCheapest = cheapest === p && cost !== null
-                      const equivalentId = getEquivalentServiceId(row.serviceId, p)
-                      const isCurrentProvider = p === provider
-                      return (
-                        <td
-                          key={p}
-                          className={`px-4 py-2.5 text-right ${
-                            isCurrentProvider ? PROVIDER_COL_COLORS[p] : ''
-                          }`}
-                        >
-                          {cost === null ? (
-                            <span className="text-text-secondary/40 flex items-center justify-end gap-1">
-                              {!equivalentId && <AlertCircle size={10} />}
-                              N/A
-                            </span>
-                          ) : (
-                            <span
-                              className={`flex items-center justify-end gap-1 ${
-                                isCheapest ? 'text-green-400 font-medium' : 'text-text-primary'
-                              }`}
-                            >
-                              {isCheapest && <CheckCircle2 size={10} />}
-                              {formatCurrency(cost)}/mo
-                            </span>
-                          )}
-                        </td>
-                      )
-                    })}
-                  </tr>
-                )
-              })}
+        <div className="flex gap-4">
+          {ALL_PROVIDERS.map((p) => {
+            const total = totals[p]
+            const isCheapest = cheapestTotal === p && total !== null
+            const isCurrentProvider = p === provider
 
-              {/* Total row */}
-              <tr className="bg-surface-elevated border-t border-border">
-                <td className="px-4 py-3 font-semibold text-text-primary">Total</td>
-                {ALL_PROVIDERS.map((p) => {
-                  const total = totals[p]
-                  const isCheapest = cheapestTotal === p && total !== null
-                  return (
-                    <td
-                      key={p}
-                      className={`px-4 py-3 text-right ${
-                        p === provider ? PROVIDER_COL_COLORS[p] : ''
+            return (
+              <GlassCard
+                key={p}
+                className={`flex-1 min-w-0 ${isCheapest ? 'border-emerald-500/30' : ''}`}
+              >
+                {/* Provider header */}
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/[0.06]">
+                  <span className={`text-sm font-semibold ${PROVIDER_HEADER_COLORS[p]}`}>
+                    {PROVIDER_INFO[p].shortName}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {isCurrentProvider && (
+                      <GlassBadge variant="accent" className="text-[9px]">
+                        current
+                      </GlassBadge>
+                    )}
+                    {isCheapest && (
+                      <GlassBadge variant="success" className="text-[9px]">
+                        Best Value
+                      </GlassBadge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Per-service cost rows */}
+                <div className="space-y-1.5">
+                  {rows.map((row) => {
+                    const cost = row.costs[p]
+                    const cheapest = cheapestProvider(row.costs)
+                    const isCheapestRow = cheapest === p && cost !== null
+
+                    // Find most expensive for red highlight
+                    let mostExpensive: CloudProvider | null = null
+                    let highestCost = -Infinity
+                    for (const cp of ALL_PROVIDERS) {
+                      const c = row.costs[cp]
+                      if (c !== null && c > highestCost) { mostExpensive = cp; highestCost = c }
+                    }
+                    const isMostExpensive = mostExpensive === p && cost !== null && !isCheapestRow
+
+                    return (
+                      <div
+                        key={row.serviceId}
+                        className="flex items-center justify-between py-1.5 text-xs"
+                      >
+                        <span className="text-[var(--text-secondary)] truncate pr-2">
+                          {row.providerNames[p] || row.sourceName}
+                        </span>
+                        {cost === null ? (
+                          <span className="text-[var(--text-secondary)]/40 flex items-center gap-1 shrink-0">
+                            <AlertCircle size={10} />
+                            N/A
+                          </span>
+                        ) : (
+                          <span
+                            className={`flex items-center gap-1 font-medium shrink-0 ${
+                              isCheapestRow
+                                ? 'text-emerald-400'
+                                : isMostExpensive
+                                  ? 'text-red-400'
+                                  : 'text-[var(--text-primary)]'
+                            }`}
+                          >
+                            {isCheapestRow && <CheckCircle2 size={10} />}
+                            {formatCurrency(cost)}/mo
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Total */}
+                <div className="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between">
+                  <span className="text-xs font-semibold text-[var(--text-primary)]">Total</span>
+                  {total === null ? (
+                    <span className="text-xs text-[var(--text-secondary)]/40">N/A</span>
+                  ) : (
+                    <span
+                      className={`text-sm font-bold ${
+                        isCheapest ? 'text-emerald-400' : 'text-[var(--text-primary)]'
                       }`}
                     >
-                      {total === null ? (
-                        <span className="text-text-secondary/40">N/A</span>
-                      ) : (
-                        <span
-                          className={`flex items-center justify-end gap-1 font-semibold ${
-                            isCheapest ? 'text-green-400' : 'text-text-primary'
-                          }`}
-                        >
-                          {isCheapest && <CheckCircle2 size={11} />}
-                          {formatCurrency(total)}/mo
-                        </span>
-                      )}
-                    </td>
-                  )
-                })}
-              </tr>
-            </tbody>
-          </table>
+                      {formatCurrency(total)}/mo
+                    </span>
+                  )}
+                </div>
+              </GlassCard>
+            )
+          })}
         </div>
 
         {/* Disclaimer */}
-        <p className="mt-3 text-[10px] text-text-secondary/50 text-center">
+        <p className="mt-3 text-[10px] text-[var(--text-secondary)]/50 text-center">
           Comparison uses default configurations for non-selected providers. Actual costs may vary
           based on specific configurations, regions, and usage patterns.
         </p>

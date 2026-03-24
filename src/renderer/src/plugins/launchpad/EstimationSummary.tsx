@@ -1,12 +1,20 @@
 /**
  * EstimationSummary — Real-time itemized cost breakdown with monthly/yearly toggle.
  *
- * Reads selected services and provider from the store.
- * Computes costs via calculateTotalCost and displays an itemized breakdown.
+ * Sticky GlassCard sidebar with AnimatedCounter for total cost.
+ * Uses GlassBadge for service type labels and GlassButton for actions.
  * Includes Save Estimation, Export PDF, and Clear All actions.
  */
 import { useState } from 'react'
 import { DollarSign, Download, Trash2, Save } from 'lucide-react'
+import {
+  GlassCard,
+  GlassBadge,
+  GlassButton,
+  GlassInput,
+  EmptyState
+} from '@renderer/components/ui'
+import AnimatedCounter from '@renderer/components/ui/AnimatedCounter'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { getCatalog } from '../../data/cloud-pricing/index'
 import { calculateTotalCost } from '../../data/cloud-pricing/calculator'
@@ -61,21 +69,21 @@ export default function EstimationSummary(): React.JSX.Element {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
         <div className="flex items-center gap-2">
-          <DollarSign size={15} className="text-accent" />
-          <span className="text-sm font-semibold text-text-primary">Cost Estimation</span>
+          <DollarSign size={15} className="text-[var(--color-accent)]" />
+          <span className="text-sm font-semibold text-[var(--text-primary)]">Cost Estimation</span>
         </div>
 
-        {/* Monthly / Yearly toggle */}
-        <div className="flex rounded-md border border-border overflow-hidden text-xs">
+        {/* Monthly / Yearly toggle — glass segmented control */}
+        <div className="flex rounded-xl border border-white/[0.06] overflow-hidden text-xs bg-white/[0.02]">
           <button
             type="button"
             onClick={() => setDisplayMode('monthly')}
             className={`px-2.5 py-1 transition-colors ${
               displayMode === 'monthly'
-                ? 'bg-accent text-white'
-                : 'bg-surface text-text-secondary hover:text-text-primary'
+                ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             Monthly
@@ -85,8 +93,8 @@ export default function EstimationSummary(): React.JSX.Element {
             onClick={() => setDisplayMode('yearly')}
             className={`px-2.5 py-1 transition-colors ${
               displayMode === 'yearly'
-                ? 'bg-accent text-white'
-                : 'bg-surface text-text-secondary hover:text-text-primary'
+                ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             Yearly
@@ -97,15 +105,17 @@ export default function EstimationSummary(): React.JSX.Element {
       {/* Line items */}
       <div className="flex-1 overflow-y-auto">
         {!result || selectedServices.length === 0 ? (
-          <div className="flex items-center justify-center h-32">
-            <p className="text-xs text-text-secondary/60 italic">No services selected</p>
-          </div>
+          <EmptyState
+            icon={DollarSign}
+            title="No services selected"
+            description="Add services from the catalog to see cost estimates"
+            className="py-8"
+          />
         ) : (
           <div className="p-4">
             <div className="flex flex-col gap-1">
               {result.items.map((item) => {
-                const displayValue =
-                  displayMode === 'monthly' ? item.monthly : item.yearly
+                const displayValue = displayMode === 'monthly' ? item.monthly : item.yearly
 
                 // Find config summary for this service
                 const sel = selectedServices.find((s) => s.serviceId === item.serviceId)
@@ -125,19 +135,21 @@ export default function EstimationSummary(): React.JSX.Element {
                 return (
                   <div
                     key={item.serviceId}
-                    className="flex items-start justify-between rounded-md px-2 py-2 hover:bg-surface/60 transition-colors"
+                    className="flex items-start justify-between rounded-md px-2 py-2 hover:bg-white/[0.03] transition-colors"
                   >
                     <div className="flex-1 min-w-0 pr-2">
-                      <p className="text-xs font-medium text-text-primary truncate">
+                      <p className="text-xs font-medium text-[var(--text-primary)] truncate">
                         {item.serviceName}
                       </p>
                       {configSummary && (
-                        <p className="text-xs text-text-secondary/70 truncate mt-0.5">
-                          {configSummary}
-                        </p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          <GlassBadge variant="default" className="text-[10px]">
+                            {configSummary}
+                          </GlassBadge>
+                        </div>
                       )}
                     </div>
-                    <span className="text-xs font-semibold text-text-primary shrink-0">
+                    <span className="text-xs font-semibold text-[var(--text-primary)] shrink-0">
                       {formatCurrency(displayValue)}
                     </span>
                   </div>
@@ -148,17 +160,20 @@ export default function EstimationSummary(): React.JSX.Element {
         )}
       </div>
 
-      {/* Totals */}
-      <div className="border-t border-border px-4 py-3">
+      {/* Totals — sticky GlassCard */}
+      <GlassCard className="sticky bottom-0 rounded-none border-x-0 border-b-0 mx-0">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
+          <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
             Grand Total
           </span>
           <div className="text-right">
-            <p className="text-lg font-bold text-text-primary">
-              {formatCurrency(displayMode === 'monthly' ? totalMonthly : totalYearly)}
+            <p className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-0.5">
+              $
+              <AnimatedCounter
+                value={Math.round(displayMode === 'monthly' ? totalMonthly : totalYearly)}
+              />
             </p>
-            <p className="text-xs text-text-secondary/70">
+            <p className="text-xs text-[var(--text-secondary)]/70">
               per {displayMode === 'monthly' ? 'month' : 'year'}
             </p>
           </div>
@@ -167,22 +182,22 @@ export default function EstimationSummary(): React.JSX.Element {
         {/* Secondary total */}
         {result && (
           <div className="mt-1.5 flex items-center justify-between">
-            <span className="text-xs text-text-secondary/60">
+            <span className="text-xs text-[var(--text-secondary)]/60">
               {displayMode === 'monthly' ? 'Yearly estimate' : 'Monthly estimate'}
             </span>
-            <span className="text-xs text-text-secondary/60">
+            <span className="text-xs text-[var(--text-secondary)]/60">
               {formatCurrency(displayMode === 'monthly' ? totalYearly : totalMonthly)}
             </span>
           </div>
         )}
-      </div>
+      </GlassCard>
 
       {/* Save input (inline) */}
       {showSaveInput && (
-        <div className="border-t border-border px-4 py-3 bg-surface">
-          <p className="text-xs text-text-secondary mb-2">Name this estimation:</p>
+        <div className="border-t border-white/[0.06] px-4 py-3 bg-white/[0.02]">
+          <p className="text-xs text-[var(--text-secondary)] mb-2">Name this estimation:</p>
           <div className="flex gap-2">
-            <input
+            <GlassInput
               type="text"
               value={saveName}
               onChange={(e) => setSaveName(e.target.value)}
@@ -195,51 +210,53 @@ export default function EstimationSummary(): React.JSX.Element {
               }}
               placeholder="e.g. Production Setup"
               autoFocus
-              className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="flex-1"
             />
-            <button
-              type="button"
+            <GlassButton
+              variant="primary"
+              size="sm"
               onClick={() => void handleSave()}
               disabled={isSaving || !saveName.trim()}
-              className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90 disabled:opacity-50"
             >
               {isSaving ? 'Saving...' : 'Save'}
-            </button>
+            </GlassButton>
           </div>
         </div>
       )}
 
       {/* Action buttons */}
-      <div className="border-t border-border px-4 py-3 flex flex-col gap-2">
-        <button
-          type="button"
+      <div className="border-t border-white/[0.06] px-4 py-3 flex flex-col gap-2">
+        <GlassButton
+          variant="primary"
+          size="sm"
           onClick={() => setShowSaveInput((prev) => !prev)}
           disabled={selectedServices.length === 0}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-3 py-2 text-xs font-medium text-white transition hover:opacity-90 disabled:opacity-40"
+          className="w-full"
         >
           <Save size={13} />
           Save Estimation
-        </button>
+        </GlassButton>
 
         <div className="flex gap-2">
-          <button
-            type="button"
+          <GlassButton
+            variant="default"
+            size="sm"
             onClick={() => void handleExport()}
             disabled={isExporting || selectedServices.length === 0 || !provider}
-            className="flex flex-1 items-center justify-center gap-2 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-primary transition hover:border-accent/40 hover:bg-surface/80 disabled:opacity-40"
+            className="flex-1"
           >
             <Download size={13} />
             {isExporting ? 'Exporting...' : 'Export PDF'}
-          </button>
+          </GlassButton>
 
-          <button
-            type="button"
+          <GlassButton
+            variant="danger"
+            size="sm"
             onClick={clearEstimation}
-            className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:border-red-400/40 hover:text-red-400 disabled:opacity-40"
           >
             <Trash2 size={13} />
             Clear
-          </button>
+          </GlassButton>
         </div>
       </div>
     </div>
