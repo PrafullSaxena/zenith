@@ -42,6 +42,7 @@ Progress: [██████████] 3/3 plans
 - Trend: Consistent
 
 *Updated after each plan completion*
+| Phase 03 P02 | 5min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [03-03]: LayoutGroup wraps entire sidebar nav+bottom section so active bar slides across all icon groups
 - [03-03]: ThemeCard is inline sub-component in GeneralSettings since it's settings-specific
 - [03-03]: New themes with empty color values are filtered from display (Phase 5 placeholders hidden)
+- [Phase 03-02]: QuickStat passes numericValue for AnimatedCounter and string value as fallback for non-numeric stats
+- [Phase 03-02]: ActivityFeed stagger uses useRef to only animate on initial mount, preventing re-animation on data updates
+- [Phase 03-02]: StatusBadge deleted entirely since only ActivityFeed imported it — replaced by GlassBadge
 
 ### Pending Todos
 
