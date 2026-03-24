@@ -19,17 +19,17 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 
 ### Components
 
-- [ ] **COMP-01**: GlassCard component with default, interactive, and selected variants
+- [x] **COMP-01**: GlassCard component with default, interactive, and selected variants
 - [x] **COMP-02**: GlassSurface component for headers, toolbars, panel backgrounds
 - [x] **COMP-03**: GlassButton component with default, primary, danger, ghost variants and sm/md/lg sizes
 - [x] **COMP-04**: GlassInput component with focus glow and error state
-- [ ] **COMP-05**: GlassSelect component with glass dropdown and selected accent
-- [ ] **COMP-06**: GlassTab component with sliding underline animation
+- [x] **COMP-05**: GlassSelect component with glass dropdown and selected accent
+- [x] **COMP-06**: GlassTab component with sliding underline animation
 - [x] **COMP-07**: GlassBadge component with success, error, warning, info, accent, neutral variants
 - [ ] **COMP-08**: GlassModal component with backdrop blur and scale entrance/exit
 - [ ] **COMP-09**: GlassToast component with slide entrance, auto-dismiss progress bar, and type variants
-- [ ] **COMP-10**: GlassSkeleton component with shimmer animation and text/card/circle/table variants
-- [ ] **COMP-11**: EmptyState component with floating SVG illustration, parallax mouse effect, and CTA button
+- [x] **COMP-10**: GlassSkeleton component with shimmer animation and text/card/circle/table variants
+- [x] **COMP-11**: EmptyState component with floating SVG illustration, parallax mouse effect, and CTA button
 
 ### Themes
 
@@ -120,17 +120,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOUND-05 | Phase 1 | Complete |
 | FOUND-06 | Phase 1 | Complete |
 | FOUND-07 | Phase 1 | Complete |
-| COMP-01 | Phase 2 | Pending |
+| COMP-01 | Phase 2 | Complete |
 | COMP-02 | Phase 2 | Complete |
 | COMP-03 | Phase 2 | Complete |
 | COMP-04 | Phase 2 | Complete |
-| COMP-05 | Phase 2 | Pending |
-| COMP-06 | Phase 2 | Pending |
+| COMP-05 | Phase 2 | Complete |
+| COMP-06 | Phase 2 | Complete |
 | COMP-07 | Phase 2 | Complete |
 | COMP-08 | Phase 2 | Pending |
 | COMP-09 | Phase 2 | Pending |
-| COMP-10 | Phase 2 | Pending |
-| COMP-11 | Phase 2 | Pending |
+| COMP-10 | Phase 2 | Complete |
+| COMP-11 | Phase 2 | Complete |
 | THEME-01 | Phase 5 | Pending |
 | THEME-02 | Phase 5 | Pending |
 | THEME-03 | Phase 5 | Pending |
