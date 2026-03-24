@@ -4,6 +4,7 @@ import type { DiffFile, DiffChange } from '../../types/bitbucket'
 import type { ReviewComment } from '../../types/review'
 import { SEVERITY_CONFIG, KIND_CONFIG } from '../../types/review'
 import { highlightCode } from '../../lib/highlight'
+import { GlassCard, GlassSurface } from '../../components/ui'
 
 const EXT_TO_LANG: Record<string, string> = {
   ts: 'typescript', tsx: 'typescript', js: 'javascript', jsx: 'javascript',
@@ -65,15 +66,12 @@ export function PRDiffView({
         const isCollapsed = collapsed[filePath] ?? false
 
         return (
-          <div
-            key={filePath}
-            className="overflow-hidden rounded-md border border-border"
-          >
-            {/* File header */}
-            <button
-              type="button"
+          <GlassCard key={filePath} className="overflow-hidden p-0">
+            {/* File header toolbar */}
+            <GlassSurface
+              as="button"
               onClick={() => toggleFile(filePath)}
-              className="flex w-full items-center gap-2 bg-surface px-3 py-2 text-left transition-colors hover:bg-surface-elevated"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-surface-elevated rounded-none border-x-0 border-t-0"
             >
               {isCollapsed ? (
                 <ChevronRight size={14} className="shrink-0 text-text-secondary" />
@@ -89,9 +87,9 @@ export function PRDiffView({
               <span className="shrink-0 text-xs text-diff-del-text">
                 -{file.deletions}
               </span>
-            </button>
+            </GlassSurface>
 
-            {/* File diff content */}
+            {/* File diff content — preserved without modification */}
             {!isCollapsed && (
               <div className="overflow-x-auto">
                 {file.chunks.map((chunk, chunkIdx) => (
@@ -212,7 +210,7 @@ export function PRDiffView({
                 ))}
               </div>
             )}
-          </div>
+          </GlassCard>
         )
       })}
     </div>

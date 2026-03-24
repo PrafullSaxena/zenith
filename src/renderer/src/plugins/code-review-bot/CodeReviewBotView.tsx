@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useReviewStore } from '../../stores/review-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useAgentStore } from '../../stores/agent-store'
@@ -8,7 +9,9 @@ import { PRDiffView } from './PRDiffView'
 import { ReviewPanel } from './ReviewPanel'
 import { ReviewHistory } from './ReviewHistory'
 import { SettingsPanel } from './SettingsPanel'
-import { GitFork, ChevronDown } from 'lucide-react'
+import { GitPullRequest } from 'lucide-react'
+import { PluginHeader, GlassBadge, GlassSurface, GlassSelect, GlassButton } from '../../components/ui'
+import { pageTransition } from '../../lib/motion'
 import type { PullRequest } from '../../types/bitbucket'
 import type { ReviewComment, ReviewHistoryEntry } from '../../types/review'
 import type { RepoEntry } from '../../components/settings/RepoListEditor'
@@ -259,16 +262,16 @@ export default function CodeReviewBotView(): React.JSX.Element {
   // Show a status indicator on the Review tab when a session exists
   const reviewTabLabel = currentSession
     ? currentSession.status === 'streaming'
-      ? 'Review ●'
+      ? 'Review'
       : currentSession.status === 'complete'
         ? `Review (${(currentSession.comments ?? []).length})`
         : 'Review'
     : 'Review'
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'diff', label: 'Diff' },
-    { key: 'review', label: reviewTabLabel },
-    { key: 'history', label: 'History' }
+  const tabs: { id: string; label: string }[] = [
+    { id: 'diff', label: 'Diff' },
+    { id: 'review', label: reviewTabLabel },
+    { id: 'history', label: 'History' }
   ]
 
   const handleRepoSwitch = useCallback(
@@ -280,54 +283,57 @@ export default function CodeReviewBotView(): React.JSX.Element {
     [selectPR]
   )
 
-  return (
-    <div className="stagger-children flex h-full flex-col">
-      {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-text-primary">CodeReviewBot</h1>
+  // Repo selector options for GlassSelect
+  const repoOptions = effectiveRepos.map((repo, i) => ({
+    value: String(i),
+    label: `${repo.workspace} / ${repo.repoSlug}`
+  }))
 
-          {/* Repo toggle — always visible */}
-          {effectiveRepos.length > 0 && (
-            <div className="relative flex items-center">
-              <GitFork size={14} className="absolute left-2.5 text-text-secondary pointer-events-none" />
-              {effectiveRepos.length === 1 ? (
-                <span className="rounded-md border border-border bg-surface-elevated py-1.5 pl-8 pr-3 text-xs text-text-secondary">
-                  {workspace} / {repoSlug}
-                </span>
-              ) : (
-                <div className="relative">
-                  <select
-                    className="appearance-none rounded-md border border-border bg-surface-elevated py-1.5 pl-8 pr-7 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent cursor-pointer hover:border-accent/50"
-                    value={selectedRepoIndex}
-                    onChange={(e) => handleRepoSwitch(Number(e.target.value))}
-                  >
-                    {effectiveRepos.map((repo, i) => (
-                      <option key={`${repo.workspace}/${repo.repoSlug}`} value={i}>
-                        {repo.workspace} / {repo.repoSlug}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" />
-                </div>
-              )}
-            </div>
+  // Connection status badge
+  const connectionBadge = (
+    <SettingsPanel
+      isConnected={isConnected}
+      onConnect={connect}
+      onDisconnect={disconnect}
+      isConnecting={isConnecting}
+      connectionError={connectionError}
+    />
+  )
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* PluginHeader with gradient title and tabs */}
+      <PluginHeader
+        icon={GitPullRequest}
+        title="Code Review"
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={(id) => setActiveTab(id as Tab)}
+        statusIndicator={connectionBadge}
+      />
+
+      {/* Repo selector bar */}
+      {effectiveRepos.length > 0 && (
+        <GlassSurface className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
+          {effectiveRepos.length === 1 ? (
+            <GlassBadge variant="default">
+              {workspace} / {repoSlug}
+            </GlassBadge>
+          ) : (
+            <GlassSelect
+              value={String(selectedRepoIndex)}
+              onChange={(val) => handleRepoSwitch(Number(val))}
+              options={repoOptions}
+              className="w-64"
+            />
           )}
           {effectiveRepos.length === 0 && (
             <span className="text-xs text-text-secondary/60">
               No repos configured
             </span>
           )}
-        </div>
-
-        <SettingsPanel
-          isConnected={isConnected}
-          onConnect={connect}
-          onDisconnect={disconnect}
-          isConnecting={isConnecting}
-          connectionError={connectionError}
-        />
-      </div>
+        </GlassSurface>
+      )}
 
       {/* Main content area */}
       <div className="flex flex-1 overflow-hidden">
@@ -348,54 +354,41 @@ export default function CodeReviewBotView(): React.JSX.Element {
           />
         </div>
 
-        {/* Right panel: tabbed content */}
+        {/* Right panel: tabbed content with page transitions */}
         <div className="flex w-2/3 flex-col overflow-hidden">
-          {/* Tab switcher */}
-          <div className="flex border-b border-border">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
-                  activeTab === tab.key
-                    ? 'border-b-2 border-accent text-accent'
-                    : 'text-text-secondary hover:text-text-primary'
-                }`}
-              >
-                {tab.key === 'review' && currentSession?.status === 'streaming' && (
-                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-accent" />
-                )}
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab content */}
-          <div key={activeTab} className="animate-tab-enter flex-1 overflow-y-auto p-3">
-            {activeTab === 'diff' && (
-              <PRDiffView
-                diffFiles={diffFiles}
-                reviewComments={currentSession?.comments ?? []}
-                onCommentClick={handleCommentClick}
-              />
-            )}
-            {activeTab === 'review' && (
-              <ReviewPanel
-                session={currentSession}
-                onStart={handleStartReview}
-                onCancel={cancelReview}
-                onPostAll={handlePostAll}
-                onNewReview={handleNewReview}
-                onUpdateComment={updateComment}
-                isConnected={isConnected}
-                hasAgent={hasAgent}
-              />
-            )}
-            {activeTab === 'history' && (
-              <ReviewHistory history={history} isLoading={isLoadingHistory} onOpen={handleHistoryOpen} />
-            )}
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              variants={pageTransition}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="flex-1 overflow-y-auto p-3"
+            >
+              {activeTab === 'diff' && (
+                <PRDiffView
+                  diffFiles={diffFiles}
+                  reviewComments={currentSession?.comments ?? []}
+                  onCommentClick={handleCommentClick}
+                />
+              )}
+              {activeTab === 'review' && (
+                <ReviewPanel
+                  session={currentSession}
+                  onStart={handleStartReview}
+                  onCancel={cancelReview}
+                  onPostAll={handlePostAll}
+                  onNewReview={handleNewReview}
+                  onUpdateComment={updateComment}
+                  isConnected={isConnected}
+                  hasAgent={hasAgent}
+                />
+              )}
+              {activeTab === 'history' && (
+                <ReviewHistory history={history} isLoading={isLoadingHistory} onOpen={handleHistoryOpen} />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>

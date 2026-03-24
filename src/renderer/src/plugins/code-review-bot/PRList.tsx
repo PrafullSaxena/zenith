@@ -1,6 +1,9 @@
+import { motion } from 'framer-motion'
 import type { PullRequest } from '../../types/bitbucket'
 import { formatRelativeTime } from '../../components/dashboard/utils'
 import { RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, ExternalLink, Files, GitPullRequest } from 'lucide-react'
+import { GlassCard, GlassBadge, GlassSkeleton, EmptyState } from '../../components/ui'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface PRListProps {
   pullRequests: PullRequest[]
@@ -18,7 +21,7 @@ interface PRListProps {
 
 /**
  * Scrollable list of open pull requests with pagination and refresh.
- * Each PR is rendered as a clickable card showing title, author,
+ * Each PR is rendered as a clickable GlassCard showing title, author,
  * branch flow, and relative timestamp.
  */
 export function PRList({
@@ -53,10 +56,13 @@ export function PRList({
       </div>
 
       {/* PR list */}
-      <div className="flex-1 space-y-1 overflow-y-auto">
+      <div className="flex-1 space-y-1.5 overflow-y-auto">
+        {/* Loading state with skeleton cards */}
         {isLoading && (pullRequests?.length ?? 0) === 0 && (
-          <div className="flex items-center justify-center py-8">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+          <div className="space-y-2">
+            <GlassSkeleton variant="card" />
+            <GlassSkeleton variant="card" />
+            <GlassSkeleton variant="card" />
           </div>
         )}
 
@@ -75,81 +81,85 @@ export function PRList({
           </div>
         )}
 
+        {/* Empty state */}
         {!isLoading && !error && (pullRequests?.length ?? 0) === 0 && (
-          <div className="flex flex-col items-center justify-center py-10">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
-              <GitPullRequest size={20} className="text-accent/30" />
-            </div>
-            <p className="text-sm font-medium text-text-secondary/70">No open pull requests</p>
-            <p className="mt-1 text-[11px] text-text-secondary/60">
-              Pull requests will appear here once detected
-            </p>
-          </div>
+          <EmptyState
+            icon={GitPullRequest}
+            title="No open pull requests"
+            description="Pull requests will appear here once detected"
+          />
         )}
 
-        {(pullRequests ?? []).map((pr) => {
-          const isSelected = pr.id === selectedPrId
-          return (
-            <button
-              key={pr.id}
-              type="button"
-              onClick={() => onSelect(pr)}
-              className={`w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
-                isSelected
-                  ? 'border border-accent/60 bg-surface-elevated'
-                  : 'border border-transparent hover:bg-surface-elevated'
-              }`}
-            >
-              {/* Top row: PR title + link icon (left), file count badge (right) */}
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <p className="min-w-0 truncate font-medium text-text-primary">{pr.title}</p>
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      window.api?.app?.openExternal?.(pr.links.html.href)
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.stopPropagation()
-                        window.api?.app?.openExternal?.(pr.links.html.href)
-                      }
-                    }}
-                    className="shrink-0 text-text-secondary/60 transition-colors hover:text-accent"
-                    title="Open in Bitbucket"
+        {/* PR cards with stagger animation */}
+        {(pullRequests ?? []).length > 0 && (
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="space-y-1.5"
+          >
+            {(pullRequests ?? []).map((pr) => {
+              const isSelected = pr.id === selectedPrId
+              return (
+                <motion.div key={pr.id} variants={staggerItem}>
+                  <GlassCard
+                    variant="interactive"
+                    className={`cursor-pointer ${isSelected ? 'border-l-2 border-l-accent' : ''}`}
+                    onClick={() => onSelect(pr)}
                   >
-                    <ExternalLink size={12} />
-                  </span>
-                </div>
-                {fileCounts && fileCounts[pr.id] != null && (
-                  <span className="flex shrink-0 items-center gap-1 rounded-md bg-surface-elevated px-1.5 py-0.5 text-[11px] text-text-secondary">
-                    <Files size={11} />
-                    {fileCounts[pr.id]}
-                  </span>
-                )}
-              </div>
+                    {/* Top row: PR title + link icon (left), file count badge (right) */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <p className="min-w-0 truncate font-medium text-text-primary">{pr.title}</p>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.api?.app?.openExternal?.(pr.links.html.href)
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.stopPropagation()
+                              window.api?.app?.openExternal?.(pr.links.html.href)
+                            }
+                          }}
+                          className="shrink-0 text-text-secondary/60 transition-colors hover:text-accent"
+                          title="Open in Bitbucket"
+                        >
+                          <ExternalLink size={12} />
+                        </span>
+                      </div>
+                      {fileCounts && fileCounts[pr.id] != null && (
+                        <GlassBadge variant="default">
+                          <Files size={11} className="inline mr-0.5" />
+                          {fileCounts[pr.id]}
+                        </GlassBadge>
+                      )}
+                    </div>
 
-              {/* Author */}
-              <p className="mt-0.5 text-sm text-text-secondary">
-                {pr.author.display_name}
-              </p>
+                    {/* Author */}
+                    <p className="mt-0.5 text-sm text-text-secondary">
+                      {pr.author.display_name}
+                    </p>
 
-              {/* Branch flow and timestamp */}
-              <div className="mt-1 flex items-center justify-between">
-                <span className="truncate text-xs text-text-secondary">
-                  {pr.source.branch.name}
-                  <span className="mx-1 text-text-secondary/60">&rarr;</span>
-                  {pr.destination.branch.name}
-                </span>
-                <span className="shrink-0 text-xs text-text-secondary">
-                  {formatRelativeTime(pr.created_on)}
-                </span>
-              </div>
-            </button>
-          )
-        })}
+                    {/* Branch flow and timestamp */}
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="truncate text-xs text-text-secondary">
+                        {pr.source.branch.name}
+                        <span className="mx-1 text-text-secondary/60">&rarr;</span>
+                        {pr.destination.branch.name}
+                      </span>
+                      <span className="shrink-0 text-xs text-text-secondary">
+                        {formatRelativeTime(pr.created_on)}
+                      </span>
+                    </div>
+                  </GlassCard>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        )}
       </div>
 
       {/* Pagination controls */}
