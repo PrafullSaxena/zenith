@@ -151,7 +151,7 @@ Note: Phase 5 and Phase 6 both depend on Phase 4 and can run in parallel.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Design System Foundation | 0/3 | Complete    | 2026-03-24 |
-| 2. Glass Component Library | 0/3 | Not started | - |
+| 2. Glass Component Library | 1/3 | In Progress|  |
 | 3. Core Pages Migration | 0/3 | Not started | - |
 | 4. Plugin Migration | 0/4 | Not started | - |
 | 5. Theme Collection | 0/3 | Not started | - |
