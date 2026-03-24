@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Every screen in Zenith must feel like the same app — consistent glass styling, shared animation, unified components.
-**Current focus:** Phase 2: Glass Component Library
+**Current focus:** Phase 3: Core Pages Migration
 
 ## Current Position
 
-Phase: 2 of 7 (Glass Component Library)
-Plan: 3 of 5 in current phase (3 complete)
-Status: Executing Phase 2
-Last activity: 2026-03-25 — Completed 02-03 (Overlay Glass Components + Barrel Export)
+Phase: 3 of 7 (Core Pages Migration)
+Plan: 1 of 3 in current phase (1 complete)
+Status: Executing Phase 3
+Last activity: 2026-03-25 — Completed 03-01 (Shared Utilities)
 
-Progress: [██████----] 3/5 plans
+Progress: [███-------] 1/3 plans
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 2.3min
-- Total execution time: 14min
+- Total execution time: 16min
 
 **By Phase:**
 
@@ -33,9 +33,10 @@ Progress: [██████----] 3/5 plans
 | Phase 02 P01 | 2min | 2 tasks | 5 files |
 | Phase 02 P02 | 2min | 2 tasks | 5 files |
 | Phase 02 P03 | 2min | 2 tasks | 4 files |
+| Phase 03 P01 | 2min | 2 tasks | 6 files |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (2min), 01-03 (1min), 02-01 (2min), 02-02 (2min), 02-03 (2min)
+- Last 5 plans: 01-03 (1min), 02-01 (2min), 02-02 (2min), 02-03 (2min), 03-01 (2min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - [02-03]: GlassModal defines animation variants inline (not from motion.ts) to get explicit exit variants with 120ms close timing
 - [02-03]: GlassToast uses AnimatePresence popLayout mode for smooth reordering on dismiss
 - [02-03]: Toast auto-dismiss uses setTimeout with remaining-time tracking rather than requestAnimationFrame
+- [03-01]: AnimatedCounter import path uses @renderer/lib/useReducedMotion directly (not Cortex re-export)
+- [03-01]: GlassTab vertical indicator uses w-0.5 left bar with rounded-r styling
+- [03-01]: Theme metadata uses raw oklch/hex values from CSS rather than computed values
 
 ### Pending Todos
 
@@ -79,5 +83,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 02-03-PLAN.md (Overlay Glass Components + Barrel Export)
+Stopped at: Completed 03-01-PLAN.md (Shared Utilities)
 Resume file: None
