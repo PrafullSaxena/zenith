@@ -379,6 +379,158 @@
   --glass-glow: 0 0 0 2px oklch(62% 0.2 25 / 0.2);
 }
 
+/* ── NEW COLLECTION ──────────────────────────────────────────────── */
+
+/* ── Theme: Midnight Bloom (orchid-magenta on deep violet) ───────── */
+[data-theme="midnight-bloom"] {
+  --color-background: oklch(12% 0.02 300);
+  --color-surface: oklch(16% 0.02 298);
+  --color-surface-elevated: oklch(20% 0.025 296);
+  --color-border: oklch(26% 0.03 295);
+  --color-accent: oklch(68% 0.18 330);
+  --color-accent-glow: oklch(68% 0.18 330 / 0.2);
+  --color-text-primary: oklch(92% 0.01 300);
+  --color-text-secondary: oklch(58% 0.02 300);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.2 25);
+  --color-error-muted: oklch(65% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.15 250);
+  --color-info-muted: oklch(70% 0.15 250 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+  --glass-glow: 0 0 0 2px oklch(68% 0.18 330 / 0.2);
+}
+
+/* ── Theme: Copper Forge (burnished copper on warm charcoal) ─────── */
+[data-theme="copper-forge"] {
+  --color-background: oklch(12% 0.015 55);
+  --color-surface: oklch(16% 0.015 55);
+  --color-surface-elevated: oklch(20% 0.02 55);
+  --color-border: oklch(26% 0.02 55);
+  --color-accent: oklch(70% 0.14 62);
+  --color-accent-glow: oklch(70% 0.14 62 / 0.2);
+  --color-text-primary: oklch(92% 0.005 60);
+  --color-text-secondary: oklch(58% 0.01 55);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.2 25);
+  --color-error-muted: oklch(65% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.15 250);
+  --color-info-muted: oklch(70% 0.15 250 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+  --glass-glow: 0 0 0 2px oklch(70% 0.14 62 / 0.2);
+}
+
+/* ── Theme: Ocean Depth (aquamarine on abyssal navy) ─────────────── */
+[data-theme="ocean-depth"] {
+  --color-background: oklch(11% 0.02 245);
+  --color-surface: oklch(15% 0.02 245);
+  --color-surface-elevated: oklch(19% 0.02 245);
+  --color-border: oklch(25% 0.02 240);
+  --color-accent: oklch(72% 0.12 190);
+  --color-accent-glow: oklch(72% 0.12 190 / 0.2);
+  --color-text-primary: oklch(92% 0.005 220);
+  --color-text-secondary: oklch(58% 0.015 230);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.2 25);
+  --color-error-muted: oklch(65% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.15 250);
+  --color-info-muted: oklch(70% 0.15 250 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+  --glass-glow: 0 0 0 2px oklch(72% 0.12 190 / 0.2);
+}
+
+/* ── Theme: Nebula Dust (stellar pink-coral on deep space purple) ── */
+[data-theme="nebula-dust"] {
+  --color-background: oklch(12% 0.02 295);
+  --color-surface: oklch(16% 0.02 295);
+  --color-surface-elevated: oklch(20% 0.02 295);
+  --color-border: oklch(26% 0.025 290);
+  --color-accent: oklch(70% 0.16 20);
+  --color-accent-glow: oklch(70% 0.16 20 / 0.2);
+  --color-text-primary: oklch(92% 0.005 300);
+  --color-text-secondary: oklch(58% 0.015 295);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.2 25);
+  --color-error-muted: oklch(65% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.15 250);
+  --color-info-muted: oklch(70% 0.15 250 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+  --glass-glow: 0 0 0 2px oklch(70% 0.16 20 / 0.2);
+}
+
+/* ── Theme: Obsidian (pure monochrome editorial) ─────────────────── */
+[data-theme="obsidian"] {
+  --color-background: oklch(10% 0 0);
+  --color-surface: oklch(14% 0 0);
+  --color-surface-elevated: oklch(18% 0 0);
+  --color-border: oklch(24% 0 0);
+  --color-accent: oklch(65% 0 0);
+  --color-accent-glow: oklch(65% 0 0 / 0.2);
+  --color-text-primary: oklch(92% 0 0);
+  --color-text-secondary: oklch(55% 0 0);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.2 25);
+  --color-error-muted: oklch(65% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.15 250);
+  --color-info-muted: oklch(70% 0.15 250 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+  --glass-glow: 0 0 0 2px oklch(65% 0 0 / 0.2);
+}
+
+/* ── Theme: Jade Temple (jade-emerald on dark forest green) ──────── */
+[data-theme="jade-temple"] {
+  --color-background: oklch(12% 0.015 160);
+  --color-surface: oklch(16% 0.015 160);
+  --color-surface-elevated: oklch(20% 0.018 158);
+  --color-border: oklch(26% 0.02 158);
+  --color-accent: oklch(65% 0.10 160);
+  --color-accent-glow: oklch(65% 0.10 160 / 0.2);
+  --color-text-primary: oklch(92% 0.005 160);
+  --color-text-secondary: oklch(58% 0.01 158);
+  --color-success: oklch(72% 0.17 142);
+  --color-success-muted: oklch(72% 0.17 142 / 0.15);
+  --color-error: oklch(65% 0.2 25);
+  --color-error-muted: oklch(65% 0.2 25 / 0.15);
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
+  --color-info: oklch(70% 0.15 250);
+  --color-info-muted: oklch(70% 0.15 250 / 0.15);
+  --color-diff-add: oklch(72% 0.17 142 / 0.12);
+  --color-diff-del: oklch(65% 0.2 25 / 0.12);
+  --color-diff-add-text: oklch(78% 0.15 142);
+  --color-diff-del-text: oklch(75% 0.18 25);
+  --glass-glow: 0 0 0 2px oklch(65% 0.10 160 / 0.2);
+}
+
 /* Force dark mode unconditionally — no class toggling */
 :root {
   color-scheme: dark;
