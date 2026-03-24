@@ -35,9 +35,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: TBD
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01: Glass tokens, fonts, timing/easing tokens (Wave 1)
+- [ ] 01-02: Motion variants module + useReducedMotion relocation (Wave 1)
+- [ ] 01-03: Typography scale @utility classes + build verification (Wave 2)
 
 ### Phase 2: Glass Component Library
 **Goal**: A complete, standalone set of glass UI primitives that any page or plugin can import and render correctly on all themes
