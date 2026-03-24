@@ -3,7 +3,7 @@
  */
 import { Check, X, AlertTriangle, Info } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { GLASS_SURFACE } from '../cortex-theme'
+import { GlassSurface } from '@renderer/components/ui'
 import type { ValidationCorrection } from '../../../types/cortex'
 
 const TYPE_LABELS: Record<ValidationCorrection['type'], { label: string; icon: typeof AlertTriangle; color: string }> = {
@@ -23,7 +23,7 @@ export default function ValidationPanel(): React.JSX.Element | null {
   if (validationResults.length === 0) return null
 
   return (
-    <div className={`${GLASS_SURFACE} border-t border-white/[0.06]`}>
+    <GlassSurface className="border-t border-white/[0.06] rounded-none border-x-0 border-b-0">
       <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
           <h4 className="text-[11px] font-semibold text-text-primary">AI Validation Results</h4>
@@ -100,6 +100,6 @@ export default function ValidationPanel(): React.JSX.Element | null {
           )
         })}
       </div>
-    </div>
+    </GlassSurface>
   )
 }

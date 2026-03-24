@@ -16,7 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { GLASS_SURFACE } from '../cortex-theme'
+import { GlassSurface } from '@renderer/components/ui'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
@@ -56,7 +56,7 @@ export default function InsightsPanel(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Sub-tab bar */}
-      <div className={`${GLASS_SURFACE} flex items-center justify-between px-6 py-2`}>
+      <GlassSurface className="flex items-center justify-between px-6 py-2 rounded-none border-x-0 border-t-0">
         <div className="flex items-center gap-1">
           {INSIGHT_TABS.map((tab) => {
             const Icon = tab.icon
@@ -98,7 +98,7 @@ export default function InsightsPanel(): React.JSX.Element {
             Export
           </button>
         )}
-      </div>
+      </GlassSurface>
 
       {/* Content */}
       <div className="flex-1 overflow-hidden">

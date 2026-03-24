@@ -49,43 +49,6 @@ export function getMethodColor(method: string): MethodColorSet {
   return METHOD_COLORS[method] ?? METHOD_COLORS.ALL
 }
 
-/** Glass card class string — use on any surface card */
-export const GLASS_CARD = 'bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl'
-
-/** Glass surface class string — use on panels, toolbars */
-export const GLASS_SURFACE = 'bg-surface-elevated/50 backdrop-blur-xl border-b border-border/40'
-
-/** Staggered card entrance variants for framer-motion */
-export const cardVariants = {
-  hidden: { opacity: 0, y: 16, scale: 0.96 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      delay: i * 0.08,
-      duration: 0.35,
-      ease: [0.25, 0.46, 0.45, 0.94] as const
-    }
-  })
-}
-
-/** Reduced-motion-aware card variants */
-export function useCardVariants(reducedMotion: boolean): typeof cardVariants {
-  if (reducedMotion) {
-    return {
-      hidden: { opacity: 0, y: 0, scale: 1 },
-      visible: () => ({
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        transition: { duration: 0.15 }
-      })
-    }
-  }
-  return cardVariants
-}
-
 /** Repo type gradient colors for card top borders */
 export const REPO_TYPE_GRADIENTS: Record<string, string> = {
   backend: 'from-blue-500 to-cyan-400',

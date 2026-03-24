@@ -9,7 +9,7 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import FlowDiagram from './FlowDiagram'
 import { buildAPIFlowNodes, buildComponentTreeNodes, buildPipelineNodes } from './flow-utils'
 import ValidationPanel from './ValidationPanel'
-import { GLASS_SURFACE } from '../cortex-theme'
+import { GlassSurface } from '@renderer/components/ui'
 
 type FlowType = 'api' | 'components' | 'pipeline'
 
@@ -157,7 +157,7 @@ export default function FlowsTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Top bar: flow type selector + endpoint filter */}
-      <div className={`flex items-center gap-3 ${GLASS_SURFACE} px-4 py-2`}>
+      <GlassSurface className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
         <FlowTypeSelector
           availableTypes={availableTypes}
           flowType={flowType}
@@ -235,7 +235,7 @@ export default function FlowsTab(): React.JSX.Element {
             />
           </div>
         )}
-      </div>
+      </GlassSurface>
 
       {/* Flow diagram */}
       <div className="flex-1 overflow-hidden">

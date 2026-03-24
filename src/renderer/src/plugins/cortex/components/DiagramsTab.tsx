@@ -19,7 +19,8 @@ import '@xyflow/react/dist/style.css'
 import { motion } from 'framer-motion'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { AnalysisResult, CodeEntity } from '../../../types/cortex'
-import { getKindColor, GLASS_SURFACE } from '../cortex-theme'
+import { getKindColor } from '../cortex-theme'
+import { GlassSurface } from '@renderer/components/ui'
 
 const DIAGRAM_TABS = [
   { id: 'entities', label: 'Entity Graph', icon: Network },
@@ -328,7 +329,7 @@ export default function DiagramsTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className={`flex items-center justify-between px-4 py-2 ${GLASS_SURFACE}`}>
+      <GlassSurface className="flex items-center justify-between px-4 py-2 rounded-none border-x-0 border-t-0">
         <div className="flex items-center gap-1">
           {DIAGRAM_TABS.map((tab) => {
             const Icon = tab.icon
@@ -360,7 +361,7 @@ export default function DiagramsTab(): React.JSX.Element {
         <span className="text-[10px] text-text-secondary">
           {diagramData.nodes.length} nodes / {diagramData.edges.length} edges
         </span>
-      </div>
+      </GlassSurface>
 
       {/* Diagram */}
       <div className="flex-1 overflow-hidden relative">

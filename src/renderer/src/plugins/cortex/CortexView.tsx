@@ -3,8 +3,7 @@
  * Default-exported for React.lazy() in registry.ts.
  *
  * Layout:
- *  - Header: Brain icon + title + active repo badge
- *  - Tab bar: Insights / Code / Ask / Repos
+ *  - PluginHeader: Brain icon + gradient title + tab bar
  *  - Tab content (full remaining height)
  */
 import { useEffect } from 'react'
@@ -15,7 +14,8 @@ import RepoManager from './components/RepoManager'
 import InsightsPanel from './components/InsightsPanel'
 import CodePanel from './components/CodePanel'
 import QAPanel from './components/QAPanel'
-import { GLASS_SURFACE } from './cortex-theme'
+import { PluginHeader, EmptyState } from '@renderer/components/ui'
+import { pageTransition } from '@renderer/lib/motion'
 
 type CortexTab = 'insights' | 'code' | 'qa' | 'repos'
 
@@ -62,61 +62,31 @@ export default function CortexView(): React.JSX.Element {
         }
       })
       .catch(() => {
-        /* cache miss — user will need to re-analyze */
+        /* cache miss -- user will need to re-analyze */
       })
   }, [activeRepo?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-background">
-      {/* Header */}
-      <div className={`${GLASS_SURFACE} flex items-center justify-between px-6 py-3`}>
-        <div className="flex items-center gap-2">
-          <Brain size={18} className="text-accent" />
-          <h1 className="bg-gradient-to-r from-text-primary to-accent bg-clip-text text-lg font-semibold text-transparent">
-            Cortex
-          </h1>
-        </div>
-
-        {activeRepo && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-text-secondary">{activeRepo.name}</span>
-            <span className="flex items-center gap-1.5 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
-              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
-              {activeRepo.branch}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Tab bar */}
-      <div className="flex items-center gap-1 border-b border-border px-6 py-2">
-        {TABS.map((tab) => {
-          const Icon = tab.icon
-          const isActive = activeTab === tab.id
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                isActive ? 'text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="cortex-main-tab"
-                  className="absolute inset-0 rounded-lg bg-accent/12"
-                  transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
-                />
-              )}
-              <span className="relative z-10 flex items-center gap-1.5">
-                <Icon size={14} />
-                {tab.label}
+      {/* PluginHeader with Brain icon, gradient title, and tab bar */}
+      <PluginHeader
+        icon={Brain}
+        title="Cortex"
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={(id) => setActiveTab(id as CortexTab)}
+        statusIndicator={
+          activeRepo ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-text-secondary">{activeRepo.name}</span>
+              <span className="flex items-center gap-1.5 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
+                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+                {activeRepo.branch}
               </span>
-            </button>
-          )
-        })}
-      </div>
+            </div>
+          ) : undefined
+        }
+      />
 
       {/* No-agent banner */}
       {!getCortexAgent() && (
@@ -130,57 +100,45 @@ export default function CortexView(): React.JSX.Element {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+            variants={pageTransition}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="h-full"
           >
             {activeTab === 'repos' && <RepoManager />}
             {activeTab === 'insights' && analysisResult ? (
               <InsightsPanel />
             ) : activeTab === 'insights' && !analysisResult ? (
-              <div className="flex h-full flex-col items-center justify-center gap-2 text-text-secondary">
-                <LayoutDashboard size={32} className="opacity-30" />
-                <p className="text-sm">Analyze a repository to see insights</p>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('repos')}
-                  className="mt-2 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
-                >
-                  Go to Repos
-                </button>
-              </div>
+              <EmptyState
+                icon={LayoutDashboard}
+                title="No insights yet"
+                description="Analyze a repository to see insights"
+                actionLabel="Go to Repos"
+                onAction={() => setActiveTab('repos')}
+              />
             ) : null}
             {activeTab === 'code' && analysisResult ? (
               <CodePanel />
             ) : activeTab === 'code' && !analysisResult ? (
-              <div className="flex h-full flex-col items-center justify-center gap-2 text-text-secondary">
-                <Code2 size={32} className="opacity-30" />
-                <p className="text-sm">Analyze a repository first to browse code</p>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('repos')}
-                  className="mt-2 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
-                >
-                  Go to Repos
-                </button>
-              </div>
+              <EmptyState
+                icon={Code2}
+                title="No code to browse"
+                description="Analyze a repository first to browse code"
+                actionLabel="Go to Repos"
+                onAction={() => setActiveTab('repos')}
+              />
             ) : null}
             {activeTab === 'qa' && analysisResult ? (
               <QAPanel />
             ) : activeTab === 'qa' && !analysisResult ? (
-              <div className="flex h-full flex-col items-center justify-center gap-2 text-text-secondary">
-                <MessageSquare size={32} className="opacity-30" />
-                <p className="text-sm">Analyze a repository first to ask questions</p>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('repos')}
-                  className="mt-2 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
-                >
-                  Go to Repos
-                </button>
-              </div>
+              <EmptyState
+                icon={MessageSquare}
+                title="No codebase loaded"
+                description="Analyze a repository first to ask questions"
+                actionLabel="Go to Repos"
+                onAction={() => setActiveTab('repos')}
+              />
             ) : null}
           </motion.div>
         </AnimatePresence>
