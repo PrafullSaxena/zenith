@@ -1004,6 +1004,11 @@ body {
   100% { background-position: 200% 0; }
 }
 
+@keyframes toast-progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
 @keyframes donut-fill {
   from { stroke-dashoffset: var(--circumference); }
   to { stroke-dashoffset: var(--target-offset); }

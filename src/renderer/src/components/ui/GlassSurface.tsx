@@ -5,7 +5,7 @@ import { cn, GLASS_BASE } from './glass-utils'
 // ---------------------------------------------------------------------------
 
 export interface GlassSurfaceProps {
-  as?: keyof React.JSX.IntrinsicElements
+  as?: 'div' | 'header' | 'footer' | 'nav' | 'section' | 'aside' | 'main'
   children?: React.ReactNode
   className?: string
 }

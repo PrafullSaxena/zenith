@@ -107,14 +107,14 @@ function ToastItem({ toast }: { toast: Toast }) {
         </button>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar — uses CSS animation so animationPlayState works */}
       <div className="absolute bottom-0 left-0 right-0 h-0.5">
-        <motion.div
+        <div
           className={cn('h-full rounded-full', colors.progress)}
-          initial={{ width: '100%' }}
-          animate={{ width: '0%' }}
-          transition={{ duration: toast.duration / 1000, ease: 'linear' }}
-          style={paused ? { animationPlayState: 'paused' } : undefined}
+          style={{
+            animation: `toast-progress ${toast.duration}ms linear forwards`,
+            animationPlayState: paused ? 'paused' : 'running'
+          }}
         />
       </div>
     </motion.div>

@@ -9,7 +9,8 @@ import { cn } from './glass-utils'
 export type GlassButtonVariant = 'default' | 'primary' | 'danger' | 'ghost'
 export type GlassButtonSize = 'sm' | 'md' | 'lg'
 
-export interface GlassButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface GlassButtonProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart'> {
   variant?: GlassButtonVariant
   size?: GlassButtonSize
 }

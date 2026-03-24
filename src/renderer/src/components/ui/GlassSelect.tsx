@@ -143,7 +143,7 @@ export const GlassSelect = forwardRef<HTMLDivElement, GlassSelectProps>(
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: DURATION.fast, ease: EASE.out as unknown as number[] }}
+              transition={{ duration: DURATION.fast, ease: EASE.out as [number, number, number, number] }}
               className="absolute left-0 right-0 mt-1 py-1 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl shadow-xl shadow-black/30 z-50 overflow-hidden"
             >
               {options.map((option, index) => (

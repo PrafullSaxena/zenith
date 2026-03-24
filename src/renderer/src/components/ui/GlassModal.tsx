@@ -23,7 +23,7 @@ const contentVariants = {
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const }
   },
   exit: {
     opacity: 0,
@@ -175,8 +175,8 @@ export function GlassModal({
             onClick={onClose}
           />
 
-          {/* Modal centering wrapper */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Modal centering wrapper — onClick={onClose} so clicks in padding area close */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <motion.div
               ref={modalRef}
               role="dialog"
