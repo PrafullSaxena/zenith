@@ -13,7 +13,7 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 - [x] **FOUND-02**: Shared motion variants module created at lib/motion.ts with stagger, page transition, modal, hover lift, and slide panel variants
 - [x] **FOUND-03**: Plus Jakarta Sans Variable font installed and set as --font-sans
 - [x] **FOUND-04**: Geist Mono font installed and set as --font-mono
-- [ ] **FOUND-05**: Typography scale CSS classes defined (hero, h1, h2, h3, body, small, caption, mono)
+- [x] **FOUND-05**: Typography scale CSS classes defined (hero, h1, h2, h3, body, small, caption, mono)
 - [x] **FOUND-06**: Timing tokens (--duration-instant/fast/normal/slow/slower) and easing tokens (--ease-out/spring/smooth) defined in :root
 - [x] **FOUND-07**: Two-tier blur strategy implemented (translucent-only for nested surfaces, blur for top-level glass)
 
@@ -117,7 +117,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOUND-02 | Phase 1 | Complete |
 | FOUND-03 | Phase 1 | Complete |
 | FOUND-04 | Phase 1 | Complete |
-| FOUND-05 | Phase 1 | Pending |
+| FOUND-05 | Phase 1 | Complete |
 | FOUND-06 | Phase 1 | Complete |
 | FOUND-07 | Phase 1 | Complete |
 | COMP-01 | Phase 2 | Pending |
