@@ -49,12 +49,12 @@ Plans:
   3. GlassModal opens with backdrop blur and scale animation, and closes cleanly without ghost elements
   4. GlassSkeleton shimmer animation plays in card, text, circle, and table variants
   5. EmptyState shows floating illustration with parallax mouse tracking and a CTA button
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01: Glass utilities + simple components (GlassBadge, GlassButton, GlassInput, GlassSurface) (Wave 1)
+- [ ] 02-02: Compound components (GlassCard, GlassSelect, GlassTab, GlassSkeleton, EmptyState) (Wave 2)
+- [ ] 02-03: Overlay components (GlassModal, GlassToast) + toast store + barrel index.ts (Wave 3)
 
 ### Phase 3: Core Pages Migration
 **Goal**: The app shell and all 4 core pages use glass components, delivering a consistent look before any plugin is touched
