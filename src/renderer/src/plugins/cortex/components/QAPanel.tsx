@@ -10,7 +10,7 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { useAgentStore } from '../../../stores/agent-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { QAMessage, RepoType } from '../../../types/cortex'
-import { GLASS_CARD, GLASS_SURFACE } from '../cortex-theme'
+import { GlassCard, GlassSurface, GlassChat, type GlassChatMessage } from '@renderer/components/ui'
 
 // ── Suggested questions by repo type ────────────────────────────────
 
@@ -275,7 +275,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className={`${GLASS_SURFACE} flex items-center justify-between px-4 py-2`}>
+      <GlassSurface className="flex items-center justify-between px-4 py-2 rounded-none border-x-0 border-t-0">
         <div className="flex items-center gap-2">
           <Search size={14} className="text-accent" />
           <span className="text-xs font-medium text-text-primary">Codebase Q&A</span>
@@ -295,7 +295,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             <Trash2 size={13} />
           </button>
         )}
-      </div>
+      </GlassSurface>
 
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
@@ -313,15 +313,14 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             )}
             <div className="flex flex-col gap-2">
               {suggestedQuestions.map((q) => (
-                <button
+                <GlassCard
                   key={q}
-                  type="button"
-                  onClick={() => handleSend(q)}
-                  disabled={isQAStreaming || !hasAgent}
-                  className={`${GLASS_CARD} px-4 py-2.5 text-xs text-text-secondary hover:bg-white/[0.06] hover:text-text-primary transition-all text-left disabled:opacity-40`}
+                  variant="interactive"
+                  className="px-4 py-2.5 text-xs text-text-secondary hover:bg-white/[0.06] hover:text-text-primary transition-all text-left disabled:opacity-40 cursor-pointer"
+                  onClick={() => { if (!isQAStreaming && hasAgent) handleSend(q) }}
                 >
                   {q}
-                </button>
+                </GlassCard>
               ))}
             </div>
           </div>
@@ -335,49 +334,47 @@ Answer questions accurately. Reference specific files, functions, and line numbe
               transition={{ duration: 0.2 }}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div
-                className={`max-w-[85%] ${
-                  msg.role === 'user'
-                    ? 'bg-accent/[0.08] border border-accent/[0.15] rounded-2xl px-4 py-3 border-l-[3px] border-l-accent/40'
-                    : `${GLASS_CARD} px-4 py-3`
-                }`}
-              >
-                {msg.role === 'user' ? (
+              {msg.role === 'user' ? (
+                <div className="max-w-[85%] bg-accent/[0.08] border border-accent/[0.15] rounded-2xl px-4 py-3 border-l-[3px] border-l-accent/40">
                   <p className="text-sm">{msg.content}</p>
-                ) : msg.content ? (
-                  <div>
-                    <MarkdownRenderer text={msg.content} className="text-sm" />
-                    {/* Source citations */}
-                    {msg.sources.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {msg.sources.map((src, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => handleSourceClick(src.path, src.line)}
-                            title={`Open ${src.path}:${src.line}`}
-                            className="flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 text-[10px] text-accent/80 hover:bg-white/[0.08] hover:text-accent transition-all hover:-translate-y-0.5"
-                          >
-                            <FileCode size={10} />
-                            <span>{src.path}:{src.line}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* Typing indicator */
-                  <div className="flex items-center gap-1.5 px-2 py-2">
-                    {[0, 1, 2].map((i) => (
-                      <div
-                        key={i}
-                        className="h-1.5 w-1.5 rounded-full bg-accent/60"
-                        style={{ animation: `typing-dot 1.2s infinite ${i * 0.2}s` }}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <GlassCard className="max-w-[85%] px-4 py-3">
+                  {msg.content ? (
+                    <div>
+                      <MarkdownRenderer text={msg.content} className="text-sm" />
+                      {/* Source citations */}
+                      {msg.sources.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {msg.sources.map((src, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => handleSourceClick(src.path, src.line)}
+                              title={`Open ${src.path}:${src.line}`}
+                              className="flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 text-[10px] text-accent/80 hover:bg-white/[0.08] hover:text-accent transition-all hover:-translate-y-0.5"
+                            >
+                              <FileCode size={10} />
+                              <span>{src.path}:{src.line}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Typing indicator */
+                    <div className="flex items-center gap-1.5 px-2 py-2">
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className="h-1.5 w-1.5 rounded-full bg-accent/60"
+                          style={{ animation: `typing-dot 1.2s infinite ${i * 0.2}s` }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </GlassCard>
+              )}
             </motion.div>
           ))
         )}
@@ -385,7 +382,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
       </div>
 
       {/* Input area */}
-      <div className={`${GLASS_SURFACE} p-3`}>
+      <GlassSurface className="p-3 rounded-none border-x-0 border-b-0">
         <div className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/[0.08] px-3 py-2 focus-within:border-accent/30">
           <Search size={14} className="shrink-0 text-text-secondary/50" />
           <input
@@ -411,7 +408,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             )}
           </button>
         </div>
-      </div>
+      </GlassSurface>
     </div>
   )
 }

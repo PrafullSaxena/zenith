@@ -9,8 +9,9 @@ import { useCortexStore } from '../../../stores/cortex-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import AnimatedCounter from './AnimatedCounter'
 import TestCoverageCard from './TestCoverageCard'
-import { usePrefersReducedMotion } from './useReducedMotion'
-import { GLASS_CARD, getKindColor, useCardVariants as useSharedCardVariants } from '../cortex-theme'
+import { getKindColor } from '../cortex-theme'
+import { GlassCard } from '@renderer/components/ui'
+import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import DonutChart from './DonutChart'
 
 const SOURCE_LANGUAGES = new Set([
@@ -38,8 +39,6 @@ const LANGUAGE_COLORS: Record<string, string> = {
 }
 
 export default function OverviewTab(): React.JSX.Element {
-  const reducedMotion = usePrefersReducedMotion()
-  const variants = useSharedCardVariants(reducedMotion)
   const analysisResult = useCortexStore((s) => s.analysisResult)
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
   const enrichEntities = useCortexStore((s) => s.enrichEntities)
@@ -154,18 +153,15 @@ export default function OverviewTab(): React.JSX.Element {
         )}
       </div>
       {/* Stats cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {statCards.map((card, i) => {
+      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {statCards.map((card) => {
           const Icon = card.icon
           return (
             <motion.div
               key={card.label}
-              custom={i}
-              initial="hidden"
-              animate="visible"
-              variants={variants}
-              className={`${GLASS_CARD} relative overflow-hidden p-4`}
+              variants={staggerItem}
             >
+            <GlassCard className="relative overflow-hidden p-4">
               <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: `linear-gradient(90deg, ${card.accentFrom}, ${card.accentTo})` }} />
               <div className="flex items-center gap-2">
                 <Icon size={14} className={card.color} />
@@ -176,18 +172,18 @@ export default function OverviewTab(): React.JSX.Element {
               <p className="mt-2 text-2xl font-bold text-text-primary">
                 <AnimatedCounter value={card.value} />
               </p>
+            </GlassCard>
             </motion.div>
           )
         })}
-      </div>
+      </motion.div>
 
       {/* Language breakdown */}
       {stats.languages.length > 0 && (
         <motion.div
-          custom={statCards.length}
-          initial="hidden"
-          animate="visible"
-          variants={variants}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
           className="mt-6"
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">Language Breakdown</h3>
@@ -278,34 +274,32 @@ export default function OverviewTab(): React.JSX.Element {
 
       {/* Documentation section */}
       <motion.div
-        custom={statCards.length + 1}
-        initial="hidden"
-        animate="visible"
-        variants={variants}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.05 }}
         className="mt-6"
       >
         <h3 className="mb-3 text-xs font-semibold text-text-primary">Documentation</h3>
         {documentation ? (
-          <div className={`${GLASS_CARD} p-4`}>
+          <GlassCard className="p-4">
             <MarkdownRenderer text={documentation} />
-          </div>
+          </GlassCard>
         ) : (
-          <div className={`${GLASS_CARD} flex flex-col items-center gap-2 p-8 text-center`}>
+          <GlassCard className="flex flex-col items-center gap-2 p-8 text-center">
             <FileText size={24} className="text-text-secondary opacity-30" />
             <p className="text-xs text-text-secondary">
               Documentation will be generated during analysis with an AI agent configured
             </p>
-          </div>
+          </GlassCard>
         )}
       </motion.div>
 
       {/* Repository Markdown Files */}
       {analysisResult.markdownFiles && analysisResult.markdownFiles.length > 0 && (
         <motion.div
-          custom={statCards.length + 2}
-          initial="hidden"
-          animate="visible"
-          variants={variants}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
           className="mt-6"
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">
@@ -316,9 +310,8 @@ export default function OverviewTab(): React.JSX.Element {
             {analysisResult.markdownFiles.map((file) => {
               const isExpanded = expandedMdFile === file.path
               return (
-                <div
+                <GlassCard
                   key={file.path}
-                  className={`${GLASS_CARD}`}
                 >
                   <button
                     type="button"
@@ -335,7 +328,7 @@ export default function OverviewTab(): React.JSX.Element {
                       <MarkdownRenderer text={file.content} />
                     </div>
                   )}
-                </div>
+                </GlassCard>
               )
             })}
           </div>
@@ -345,10 +338,9 @@ export default function OverviewTab(): React.JSX.Element {
       {/* Entity breakdown */}
       {stats.entityCount.length > 0 && (
         <motion.div
-          custom={statCards.length + 2}
-          initial="hidden"
-          animate="visible"
-          variants={variants}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
           className="mt-6"
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">Entity Breakdown</h3>
@@ -380,10 +372,9 @@ export default function OverviewTab(): React.JSX.Element {
       {/* Test coverage card */}
       {analysisResult?.testStats && (
         <motion.div
-          custom={statCards.length + 3}
-          initial="hidden"
-          animate="visible"
-          variants={variants}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.15 }}
           className="mt-6"
         >
           <h3 className="mb-3 text-xs font-semibold text-text-primary">Test Coverage</h3>

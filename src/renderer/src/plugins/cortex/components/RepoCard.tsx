@@ -1,7 +1,6 @@
 /**
  * RepoCard -- Individual repository card with status indicator and actions.
  */
-import { motion } from 'framer-motion'
 import { useState } from 'react'
 import {
   FolderGit2,
@@ -17,7 +16,8 @@ import {
 import type { Repository } from '../../../types/cortex'
 import { useCortexStore } from '../../../stores/cortex-store'
 import AnalysisProgress from './AnalysisProgress'
-import { GLASS_CARD, REPO_TYPE_GRADIENTS } from '../cortex-theme'
+import { REPO_TYPE_GRADIENTS } from '../cortex-theme'
+import { GlassCard } from '@renderer/components/ui'
 
 interface Props {
   repo: Repository
@@ -28,12 +28,12 @@ interface Props {
   onRemove: () => void
 }
 
-const STATUS_STYLES: Record<Repository['status'], string> = {
-  idle: `${GLASS_CARD}`,
-  cloning: `${GLASS_CARD} !border-blue-500/30`,
-  analyzing: `${GLASS_CARD} !border-warning/30`,
-  ready: `${GLASS_CARD} !border-success/30`,
-  error: `${GLASS_CARD} !border-error/30`
+const STATUS_BORDER: Record<Repository['status'], string> = {
+  idle: '',
+  cloning: '!border-blue-500/30',
+  analyzing: '!border-warning/30',
+  ready: '!border-success/30',
+  error: '!border-error/30'
 }
 
 const REPO_TYPE_COLORS: Record<string, string> = {
@@ -74,13 +74,10 @@ export default function RepoCard({
   const [isFetching, setIsFetching] = useState(false)
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.2)' }}
-      transition={{ delay: index * 0.08, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+    <GlassCard
+      variant="interactive"
       onClick={onSelect}
-      className={`relative cursor-pointer overflow-hidden p-4 transition-colors ${STATUS_STYLES[repo.status]} ${
+      className={`relative cursor-pointer overflow-hidden p-4 transition-colors ${STATUS_BORDER[repo.status]} ${
         isActive ? 'ring-1 ring-accent/40' : ''
       }`}
     >
@@ -217,6 +214,6 @@ export default function RepoCard({
           </button>
         </div>
       )}
-    </motion.div>
+    </GlassCard>
   )
 }

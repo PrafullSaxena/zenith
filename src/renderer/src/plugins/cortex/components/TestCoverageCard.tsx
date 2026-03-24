@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { ChevronDown, ChevronUp, TestTube } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { TestStats } from '../../../types/cortex'
-import { GLASS_CARD } from '../cortex-theme'
+import { GlassCard } from '@renderer/components/ui'
 
 interface TestCoverageCardProps {
   stats: TestStats
@@ -41,7 +41,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
   const visibleUncovered = filesUncovered.slice(0, 10)
 
   return (
-    <div className={`${GLASS_CARD} p-4`}>
+    <GlassCard className="p-4">
       {/* Header */}
       <div className="mb-4 flex items-center gap-2">
         <TestTube size={14} className="text-text-secondary" />
@@ -158,6 +158,6 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
           )}
         </div>
       )}
-    </div>
+    </GlassCard>
   )
 }

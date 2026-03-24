@@ -8,7 +8,8 @@ import ForceGraph2D, { type ForceGraphMethods } from 'react-force-graph-2d'
 import { Search, X, Share2, ZoomIn, ZoomOut, Maximize2, Box, Grid3X3 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { CodeEntity, CallEdge } from '../../../types/cortex'
-import { getKindColor, GLASS_CARD, GLASS_SURFACE } from '../cortex-theme'
+import { getKindColor } from '../cortex-theme'
+import { GlassCard, GlassSurface } from '@renderer/components/ui'
 
 // ── Lazy-load 3D graph ──────────────────────────────────────────────────
 
@@ -436,7 +437,7 @@ export default function MindGraphTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Glass toolbar */}
-      <div className={`${GLASS_SURFACE} flex items-center gap-3 px-4 py-2`}>
+      <GlassSurface className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
         {/* Search with glass styling */}
         <div className="relative max-w-xs flex-1">
           <Search
@@ -557,7 +558,7 @@ export default function MindGraphTab(): React.JSX.Element {
         <span className="text-[10px] text-text-secondary">
           {graphData.nodes.length} nodes / {graphData.links.length} edges
         </span>
-      </div>
+      </GlassSurface>
 
       {/* Graph canvas */}
       <div ref={containerRef} className="relative flex-1 overflow-hidden bg-background" style={{ overscrollBehavior: 'none', touchAction: 'none' }}>
@@ -588,7 +589,7 @@ export default function MindGraphTab(): React.JSX.Element {
         )}
 
         {/* Glass legend overlay */}
-        <div className={`absolute bottom-3 left-3 flex flex-wrap gap-2 ${GLASS_CARD} px-3 py-2`}>
+        <GlassCard className="absolute bottom-3 left-3 flex flex-wrap gap-2 px-3 py-2">
           {kindsInGraph.map((kind) => {
             const colors = getKindColor(kind)
             return (
@@ -601,11 +602,11 @@ export default function MindGraphTab(): React.JSX.Element {
               </span>
             )
           })}
-        </div>
+        </GlassCard>
 
         {/* Glass hovered tooltip (2D mode only) */}
         {!use3D && hoveredNode && (
-          <div className={`absolute right-3 top-3 max-w-xs ${GLASS_CARD} px-3 py-2 shadow-lg`}>
+          <GlassCard className="absolute right-3 top-3 max-w-xs px-3 py-2 shadow-lg">
             <div className="flex items-center gap-2">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-full"
@@ -621,7 +622,7 @@ export default function MindGraphTab(): React.JSX.Element {
               <p className="mt-1 text-[10px] text-text-secondary/80">{hoveredNode.summary}</p>
             )}
             <p className="mt-1 text-[9px] text-accent">Click to open in code viewer</p>
-          </div>
+          </GlassCard>
         )}
       </div>
     </div>

@@ -9,19 +9,10 @@ import { Plus, FolderGit2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import RepoCard from './RepoCard'
 import AddRepoDialog from './AddRepoDialog'
-import { cardVariants, useCardVariants } from '../cortex-theme'
-import { usePrefersReducedMotion } from './useReducedMotion'
-
-// Stagger container — fades in as a group so individual cards still handle per-card delay
-const containerVariants = {
-  hidden: cardVariants.hidden,
-  visible: { opacity: 1, y: 0, scale: 1, transition: { staggerChildren: 0.06 } }
-}
+import { staggerContainer } from '@renderer/lib/motion'
 
 export default function RepoManager(): React.JSX.Element {
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const reducedMotion = usePrefersReducedMotion()
-  const variants = useCardVariants(reducedMotion)
   const repos = useCortexStore((s) => s.repos)
   const activeRepoId = useCortexStore((s) => s.activeRepoId)
   const setActiveRepo = useCortexStore((s) => s.setActiveRepo)
@@ -106,7 +97,7 @@ export default function RepoManager(): React.JSX.Element {
       {/* Repo grid or empty state */}
       {repos.length > 0 ? (
         <motion.div
-          variants={reducedMotion ? variants : containerVariants}
+          variants={staggerContainer}
           initial="hidden"
           animate="visible"
           className="grid grid-cols-1 gap-4 px-6 pb-6 sm:grid-cols-2 xl:grid-cols-3"
