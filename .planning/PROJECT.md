@@ -1,66 +1,92 @@
-# Project: Zenith
+# Zenith UI Revamp — "Obsidian Glass"
 
-## What It Is
+## What This Is
 
-Desktop GUI toolkit that consolidates daily developer workflows into a single Electron application. Personal tool — audience of one.
+A full UI overhaul of the Zenith desktop developer toolkit. Replaces the current inconsistent styling (glass in Cortex, flat everywhere else) with a unified "Obsidian Glass" design system — frosted glass components, shared motion/animation primitives, 6 new dark themes, 3D visualizations, and micro-interactions across all 6 plugins and 4 core pages (~81 components total).
 
 ## Core Value
 
-**CodeReviewBot must work flawlessly** — automated PR code review that connects to Bitbucket, fetches diffs, and posts inline AI-generated review comments.
+**Every screen in Zenith must feel like the same app.** Consistent glass styling, shared animation system, and unified component library so switching between plugins feels seamless, not jarring.
 
-## Tech Stack
+## Requirements
 
-| Layer | Choice | Notes |
-|-------|--------|-------|
-| Framework | Electron 39 + React 19 | Changed from Tauri to Electron |
-| Build | electron-vite 5.0 | Replaces electron-webpack/forge |
-| Styling | Tailwind v4 CSS-first | @theme blocks, no tailwind.config.js |
-| Components | shadcn/ui + Radix UI | Copy-paste component model |
-| State | Zustand | Global state management |
-| Async Data | TanStack Query | Server state + caching |
-| Animation | Framer Motion | Route transitions, micro-animations |
-| Icons | lucide-react | Consistent icon set |
-| Storage | electron-store v10 | ESM-only, requires type=module |
-| Credentials | safeStorage | keytar is deprecated |
-| Window State | electron-win-state | electron-window-state is broken |
-| Testing | Vitest + Testing Library + Playwright | Unit + integration + E2E |
+### Validated
 
-## V1 Plugins (Compiled-In)
+<!-- Existing capabilities that must be preserved -->
 
-1. **CodeReviewBot** — Automated Bitbucket PR code review with AI-generated inline comments
-2. **DbInspector** — Database inspection and query tooling
-3. **AstroPatch** — Automated patch generation with Jira integration
-4. **PromptBuilder** — Prompt construction and management tool
+- ✓ 12 dark themes with OKLch CSS variables — existing
+- ✓ Framer-motion animations in Cortex (card entrance, counters, reduced motion support) — existing
+- ✓ 3D MindGraph in Cortex via react-three-fiber — existing
+- ✓ Glass morphism in Cortex (GLASS_CARD, GLASS_SURFACE) — existing
+- ✓ 6 plugins functional: Cortex, CodeReviewBot, DbInspector, Launchpad, Nebula, TextCraft — existing
+- ✓ 4 core pages: Dashboard, Activity Log, About, Settings — existing
+- ✓ Sidebar with drag-reorder and icon navigation — existing
+- ✓ Real-time theme switching via data-theme attribute — existing
 
-## Architecture
+### Active
 
-- **Plugin System:** Compiled-in (not dynamic loading). Single `PluginDefinition[]` array drives sidebar, router, and settings.
-- **Navigation:** Narrow sidebar (~56px) with icon rail. Plugins top, settings bottom.
-- **Security:** nodeIntegration=false, contextIsolation=true, sandbox=true — MANDATORY, never override. window.api is the ONLY contextBridge export.
-- **Theme:** Dark-only with neon cyan accents. oklch() color tokens via @theme blocks. No light mode.
-- **Multi-AI Agent System:** Supports Claude, Gemini, Codex, Opencode, Ollama, Cursor-agent. Per-plugin default agent assignment.
-- **IPC Pattern:** Typed contextBridge channels (settings, credentials, app namespaces). No generic invoke passthrough.
+<!-- Current scope — building toward these -->
 
-## Key Decisions
+- [ ] Shared glass component library (GlassCard, GlassButton, GlassInput, GlassSelect, GlassTab, GlassBadge, GlassModal, GlassToast, GlassSkeleton)
+- [ ] Shared motion variants module (stagger, page transition, modal, hover lift, slide panel)
+- [ ] Font upgrade: Inter → Plus Jakarta Sans, JetBrains Mono → Geist Mono
+- [ ] Typography scale with CSS classes
+- [ ] 6 new dark themes: Midnight Bloom, Copper Forge, Ocean Depth, Nebula Dust, Obsidian, Jade Temple
+- [ ] Visual theme selector grid in Settings (Classic vs New Collection sections)
+- [ ] Skeleton loader system replacing bare spinners
+- [ ] EmptyState component with floating illustration + parallax
+- [ ] Migrate all 6 plugins to glass components
+- [ ] Migrate all 4 core pages to glass components
+- [ ] Sidebar micro-interactions (hover glow, active bar slide, tooltip animation)
+- [ ] Tab bars use GlassTab with sliding underline across all plugins
+- [ ] Button press feedback (scale 0.97) and icon morph (Copy → Check)
+- [ ] 3D Dashboard Activity Mesh (hero widget on Mission Control)
+- [ ] 3D Nebula Knowledge Graph (upgrade from 2D)
+- [ ] 3D Launchpad Cost Treemap
+- [ ] 3D DbInspector Schema Orb
+- [ ] Error boundaries + 2D fallback for all 3D components
+- [ ] Scroll progress bars and scroll shadows on long lists
+- [ ] Cross-theme visual QA (all 18 themes correct)
 
-| Decision | Context | Date |
-|----------|---------|------|
-| Electron + React (not Tauri) | User changed from initial Tauri choice | 2026-03-06 |
-| Compiled-in plugins | Not dynamic loading — simpler, type-safe | 2026-03-06 |
-| Dark-only theme | No light mode toggle | 2026-03-06 |
-| Neon cyan accents | oklch(72% 0.15 195) accent color | 2026-03-06 |
-| safeStorage over keytar | keytar deprecated, safeStorage is built-in | 2026-03-06 |
-| electron-win-state over electron-window-state | electron-window-state is broken | 2026-03-06 |
-| electron-store v10 ESM | Requires type=module in package.json | 2026-03-06 |
-| Tailwind v4 CSS-first | @theme blocks, no config file | 2026-03-06 |
-| CodeReviewBot as core priority | Highest ROI plugin, validates AI patterns | 2026-03-06 |
-| Multi-agent support | 6 providers + custom, per-plugin defaults | 2026-03-06 |
-| Sidebar narrow icons ~56px | Plugins top, settings/gear bottom | 2026-03-06 |
-| Settings: left sidebar + content | Auto-save on change, inline validation | 2026-03-06 |
+### Out of Scope
+
+- Light mode / light themes — dark-only by design
+- Command palette (Cmd+K) — separate effort
+- New plugin functionality — UI-only changes, no feature additions
+- Mobile/responsive layouts — desktop Electron app only
+- Accessibility audit beyond existing reduced-motion support
+- Replacing Tailwind CSS or switching to a UI library like shadcn
+
+## Context
+
+- Zenith is an Electron 39 + React 19 desktop app built with electron-vite
+- Styling: Tailwind v4 (CSS-first, @theme blocks) + hand-crafted components
+- State: Zustand stores per plugin
+- 3D: three.js + @react-three/fiber + @react-three/drei + d3-force-3d already in deps
+- Animation: framer-motion already in deps, used inconsistently (only Cortex)
+- Fonts: Inter Variable + JetBrains Mono (woff2 in assets/fonts/)
+- Themes: 12 dark themes via CSS custom properties on `[data-theme]`
+- No new npm packages required — all deps already present
+- Only new assets: 4 font woff2 files (Plus Jakarta Sans, Geist Mono)
 
 ## Constraints
 
-- Personal tool (audience of one)
-- macOS primary target
-- No telemetry, no analytics
-- All secrets in main process via safeStorage (never exposed to renderer)
+- **Dark-only**: All themes must remain dark. No light mode.
+- **No new deps**: Build entirely on existing three.js, framer-motion, Tailwind stack.
+- **Performance**: 3D components must cap nodes (50 dashboard, 200 graph, 20 treemap, 30 schema), lazy-load, respect `usePrefersReducedMotion`.
+- **Glass intensity**: Medium glass — visible frosted effect matching current Cortex cards (bg-white/[0.03], backdrop-blur-xl).
+- **Backwards compat**: Existing 12 themes must not break. New glass components must render correctly across all 18 themes.
+
+## Key Decisions
+
+| Decision | Rationale | Outcome |
+|----------|-----------|---------|
+| Plus Jakarta Sans + Geist Mono fonts | Distinctive character without sacrificing readability; pairs well | — Pending |
+| Medium glass intensity | Balanced — visible depth without overwhelming content | — Pending |
+| All plugins migrated together (not phased) | User wants consistency across app, not partial rollout | — Pending |
+| Dashboard Activity Mesh is highest-priority 3D | First thing users see, highest visual impact | — Pending |
+| Dark-only themes | Simplifies implementation, matches developer tool aesthetic | — Pending |
+| No new npm dependencies | Reduces bundle size risk, everything needed already exists | — Pending |
+
+---
+*Last updated: 2026-03-24 after initialization*
