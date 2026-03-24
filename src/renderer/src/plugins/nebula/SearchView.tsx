@@ -10,17 +10,23 @@
  *
  * AI Q&A follows the same streaming pattern as summarization:
  * startAnalysis + session-scoped IPC listeners.
+ *
+ * Migrated to Obsidian Glass design system with GlassInput, GlassCard,
+ * GlassBadge, GlassSkeleton, EmptyState, and stagger animations.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Search, MessageCircleQuestion, FileText, Loader2, X, ChevronDown } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
+import { GlassCard, GlassInput, GlassBadge, GlassSkeleton, EmptyState, GlassButton } from '../../components/ui'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 import MarkdownRenderer from '../../components/MarkdownRenderer'
 
-// ── HTML sanitizer for FTS5 highlights ──────────────────────────────
+// -- HTML sanitizer for FTS5 highlights ------------------------------------
 
 /**
- * Sanitize FTS5 highlight output — only allow <mark> and </mark> tags.
+ * Sanitize FTS5 highlight output -- only allow <mark> and </mark> tags.
  * Escapes all other HTML to prevent XSS from user-generated content.
  */
 function sanitizeHighlight(html: string): string {
@@ -40,7 +46,7 @@ function sanitizeHighlight(html: string): string {
     .replace(/\x00MARK_CLOSE\x00/g, '</mark>')
 }
 
-// ── Relative time helper ────────────────────────────────────────────
+// -- Relative time helper --------------------------------------------------
 
 function relativeTime(isoDate: string): string {
   const now = Date.now()
@@ -57,7 +63,7 @@ function relativeTime(isoDate: string): string {
   return 'just now'
 }
 
-// ── SearchView component ────────────────────────────────────────────
+// -- SearchView component --------------------------------------------------
 
 export default function SearchView(): React.JSX.Element {
   const searchQuery = useNebulaStore((s) => s.searchQuery)
@@ -131,7 +137,7 @@ export default function SearchView(): React.JSX.Element {
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
-      {/* ── Top section: Full-text search ─────────────────────────── */}
+      {/* -- Top section: Full-text search -------------------------------- */}
       <div className={`flex flex-col ${searchCollapsed ? '' : 'min-h-0 flex-1'}`}>
         <button
           type="button"
@@ -141,9 +147,7 @@ export default function SearchView(): React.JSX.Element {
           <Search size={15} className="text-accent" />
           <h3 className="text-sm font-medium text-text-primary">Search notes</h3>
           {searchResults.length > 0 && searchQuery.trim() && (
-            <span className="rounded-md bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
-              {searchResults.length}
-            </span>
+            <GlassBadge variant="accent">{searchResults.length}</GlassBadge>
           )}
           <ChevronDown
             size={14}
@@ -153,93 +157,98 @@ export default function SearchView(): React.JSX.Element {
 
         {!searchCollapsed && (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="mb-3">
-              <div className="relative">
-                <Search
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
-                />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  placeholder="Search notes..."
-                  className="w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 pl-9 text-sm text-text-primary placeholder:text-text-secondary/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition"
-                />
-                {isSearching && (
-                  <Loader2
-                    size={14}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-accent"
-                  />
-                )}
-              </div>
+            <div className="relative mb-3">
+              <Search
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none"
+              />
+              <GlassInput
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search notes..."
+                className="w-full pl-9"
+              />
             </div>
 
             {/* Search results */}
-            <div className="flex-1 space-y-2 overflow-y-auto">
-              {searchQuery.trim() && searchResults.length === 0 && !isSearching ? (
-                <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/[0.06]">
-                    <Search size={20} className="text-text-secondary/60" />
-                  </div>
-                  <p className="text-sm font-medium">No results found</p>
-                  <p className="mt-1 text-xs text-text-secondary/60">Try a different keyword or phrase</p>
+            <div className="flex-1 overflow-y-auto">
+              {isSearching ? (
+                <div className="space-y-2">
+                  <GlassSkeleton variant="card" />
+                  <GlassSkeleton variant="card" />
+                  <GlassSkeleton variant="card" />
                 </div>
+              ) : searchQuery.trim() && searchResults.length === 0 ? (
+                <EmptyState
+                  icon={Search}
+                  title="No results found"
+                  description="Try a different search term"
+                  className="py-12"
+                />
               ) : !searchQuery.trim() ? (
-                <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/[0.06]">
-                    <FileText size={20} className="text-text-secondary/60" />
-                  </div>
-                  <p className="text-sm font-medium">Search your notes</p>
-                  <p className="mt-1 text-xs text-text-secondary/60">Find notes by keyword or phrase</p>
-                </div>
+                <EmptyState
+                  icon={FileText}
+                  title="Search your notes"
+                  description="Find notes by keyword or phrase"
+                  className="py-12"
+                />
               ) : (
-                searchResults.map((result) => (
-                  <button
-                    key={result.id}
-                    type="button"
-                    onClick={() => handleResultClick(result.id)}
-                    className="hover-lift w-full cursor-pointer rounded-xl border border-border/50 bg-surface-elevated p-4 text-left transition-all hover:bg-accent/5 hover:border-accent/20"
-                  >
-                    {/* Title with highlight */}
-                    <h4 className="text-sm font-medium text-text-primary">
-                      {result.titleHighlight ? (
-                        <span
-                          dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.titleHighlight) }}
-                          className="[&>mark]:rounded [&>mark]:bg-accent/25 [&>mark]:px-0.5 [&>mark]:text-accent"
-                        />
-                      ) : (
-                        result.title
-                      )}
-                    </h4>
+                <motion.div
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-2"
+                >
+                  {searchResults.map((result) => (
+                    <motion.div key={result.id} variants={staggerItem}>
+                      <GlassCard
+                        variant="interactive"
+                        className="cursor-pointer p-4"
+                        onClick={() => handleResultClick(result.id)}
+                      >
+                        {/* Title with highlight */}
+                        <h4 className="text-sm font-medium text-text-primary">
+                          {result.titleHighlight ? (
+                            <span
+                              dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.titleHighlight) }}
+                              className="[&>mark]:rounded [&>mark]:bg-accent/25 [&>mark]:px-0.5 [&>mark]:text-accent"
+                            />
+                          ) : (
+                            result.title
+                          )}
+                        </h4>
 
-                    {/* Summary with highlight */}
-                    {(result.summaryHighlight || result.summary) && (
-                      <div className="mt-1 line-clamp-2 text-xs text-text-secondary">
-                        {result.summaryHighlight ? (
-                          <span
-                            dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.summaryHighlight) }}
-                            className="[&>mark]:rounded [&>mark]:bg-accent/25 [&>mark]:px-0.5 [&>mark]:text-accent"
-                          />
-                        ) : (
-                          result.summary
+                        {/* Summary with highlight */}
+                        {(result.summaryHighlight || result.summary) && (
+                          <div className="mt-1 line-clamp-2 text-xs text-text-secondary">
+                            {result.summaryHighlight ? (
+                              <span
+                                dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.summaryHighlight) }}
+                                className="[&>mark]:rounded [&>mark]:bg-accent/25 [&>mark]:px-0.5 [&>mark]:text-accent"
+                              />
+                            ) : (
+                              result.summary
+                            )}
+                          </div>
                         )}
-                      </div>
-                    )}
 
-                    {/* Timestamp */}
-                    <p className="mt-1.5 text-[10px] text-text-secondary/60">
-                      {relativeTime(result.updatedAt)}
-                    </p>
-                  </button>
-                ))
+                        {/* Timestamp + relevance badge */}
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <span className="text-[10px] text-text-secondary/60">
+                            {relativeTime(result.updatedAt)}
+                          </span>
+                        </div>
+                      </GlassCard>
+                    </motion.div>
+                  ))}
+                </motion.div>
               )}
             </div>
           </div>
         )}
       </div>
 
-      {/* ── Bottom section: AI Q&A ────────────────────────────────── */}
+      {/* -- Bottom section: AI Q&A --------------------------------------- */}
       <div className={`flex flex-col ${qaCollapsed ? '' : 'min-h-0 flex-1'}`}>
         <button
           type="button"
@@ -261,39 +270,37 @@ export default function SearchView(): React.JSX.Element {
           <div className="flex min-h-0 flex-1 flex-col">
             {/* Question input */}
             <div className="mb-3 flex gap-2">
-              <input
-                type="text"
+              <GlassInput
                 value={questionText}
                 onChange={(e) => setQuestionText(e.target.value)}
                 onKeyDown={handleQuestionKeyDown}
                 placeholder="Ask a question about your notes..."
                 disabled={isStreaming}
-                className="flex-1 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1"
               />
               {isStreaming ? (
-                <button
-                  type="button"
+                <GlassButton
+                  variant="ghost"
                   onClick={cancelQa}
-                  className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 transition-all hover:bg-red-500/20 hover:border-red-500/50"
+                  className="border border-red-500/30 text-red-400 hover:bg-red-500/20"
                 >
                   <X size={13} />
                   Cancel
-                </button>
+                </GlassButton>
               ) : (
-                <button
-                  type="button"
+                <GlassButton
+                  variant="primary"
                   onClick={handleAskQuestion}
                   disabled={!questionText.trim()}
-                  className="flex items-center gap-1.5 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-accent/15"
                 >
                   <MessageCircleQuestion size={13} />
                   Ask
-                </button>
+                </GlassButton>
               )}
             </div>
 
             {/* Response area */}
-            <div className="flex-1 overflow-y-auto rounded-xl border border-border/50 bg-surface-elevated/30 p-4">
+            <GlassCard className="flex-1 overflow-y-auto p-4">
               {isStreaming && !qaAnswer ? (
                 <div className="flex items-center gap-2 py-2 text-text-secondary">
                   <Loader2 size={14} className="animate-spin text-accent" />
@@ -310,17 +317,14 @@ export default function SearchView(): React.JSX.Element {
                   <MarkdownRenderer text={qaAnswer} className="text-sm" />
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-text-secondary">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/[0.06]">
-                    <MessageCircleQuestion size={20} className="text-text-secondary/60" />
-                  </div>
-                  <p className="text-sm font-medium">Ask your notes anything</p>
-                  <p className="mt-1 text-center text-xs text-text-secondary/60">
-                    AI will search your knowledge base and provide an answer
-                  </p>
-                </div>
+                <EmptyState
+                  icon={MessageCircleQuestion}
+                  title="Ask your notes anything"
+                  description="AI will search your knowledge base and provide an answer"
+                  className="py-8"
+                />
               )}
-            </div>
+            </GlassCard>
           </div>
         )}
       </div>

@@ -4,6 +4,8 @@
  * Appears at mouse coordinates with viewport edge detection.
  * Three items: Pin/Unpin, Duplicate, Delete.
  * Closes on outside click or Escape key.
+ *
+ * Migrated to Obsidian Glass design system with glass backdrop styling.
  */
 
 import { useEffect, useRef } from 'react'
@@ -74,12 +76,12 @@ export default function NoteContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[160px] rounded-lg border border-border bg-surface-elevated shadow-xl py-1"
+      className="fixed z-50 min-w-[160px] rounded-xl bg-surface-elevated/80 backdrop-blur-xl border border-white/[0.08] shadow-lg py-1"
       style={{ left: x, top: y }}
     >
       <button
         type="button"
-        className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-text-primary hover:bg-surface-hover cursor-pointer rounded"
+        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-text-primary cursor-pointer"
         onClick={() => {
           onPin()
           onClose()
@@ -90,7 +92,7 @@ export default function NoteContextMenu({
       </button>
       <button
         type="button"
-        className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-text-primary hover:bg-surface-hover cursor-pointer rounded"
+        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-text-primary cursor-pointer"
         onClick={() => {
           onDuplicate()
           onClose()
@@ -99,10 +101,10 @@ export default function NoteContextMenu({
         <Copy size={14} className="text-text-secondary" />
         Duplicate
       </button>
-      <div className="my-1 border-t border-border" />
+      <div className="my-1 border-t border-white/[0.06]" />
       <button
         type="button"
-        className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-red-400 hover:bg-surface-hover cursor-pointer rounded"
+        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-red-400 cursor-pointer"
         onClick={() => {
           onDelete()
           onClose()

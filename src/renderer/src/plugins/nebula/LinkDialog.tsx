@@ -6,11 +6,15 @@
  *  - Positioned near cursor with viewport edge detection
  *  - Closes on Escape key or click outside
  *  - Pre-fills URL when editing an existing link
+ *
+ * Migrated to Obsidian Glass design system with GlassInput, GlassButton,
+ * and GlassSurface styling.
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
 import { Link, X } from 'lucide-react'
+import { GlassInput, GlassButton } from '../../components/ui'
 
 interface LinkDialogProps {
   editor: Editor
@@ -106,7 +110,7 @@ export default function LinkDialog({
   return (
     <div
       ref={dialogRef}
-      className="fixed z-50 w-72 rounded-lg border border-border bg-surface-elevated p-3 shadow-xl"
+      className="fixed z-50 w-72 rounded-xl bg-surface-elevated/80 backdrop-blur-xl border border-white/[0.08] p-3 shadow-xl"
       style={{
         left: Math.max(8, adjustedX),
         top: Math.max(8, adjustedY)
@@ -118,39 +122,39 @@ export default function LinkDialog({
         <button
           type="button"
           onClick={onClose}
-          className="ml-auto text-text-secondary hover:text-text-primary"
+          className="ml-auto text-text-secondary hover:text-text-primary transition-colors"
         >
           <X size={12} />
         </button>
       </div>
 
-      <input
+      <GlassInput
         ref={inputRef}
-        type="text"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="https://example.com"
-        className="mb-2 w-full rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs text-text-primary outline-none placeholder:text-text-secondary/40 focus:border-accent"
+        className="mb-2 w-full"
       />
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <GlassButton
+          variant="primary"
+          size="sm"
           onClick={handleApply}
           disabled={!url.trim()}
-          className="rounded-md bg-accent px-3 py-1 text-xs font-medium text-background transition-colors hover:bg-accent/80 disabled:opacity-40"
         >
           Apply
-        </button>
+        </GlassButton>
         {hasExistingLink && (
-          <button
-            type="button"
+          <GlassButton
+            variant="ghost"
+            size="sm"
             onClick={handleRemove}
-            className="rounded-md px-3 py-1 text-xs text-red-400 transition-colors hover:bg-red-400/10"
+            className="text-red-400 hover:bg-red-400/10"
           >
             Remove
-          </button>
+          </GlassButton>
         )}
       </div>
     </div>

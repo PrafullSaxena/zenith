@@ -7,6 +7,8 @@
  *  - Framer-motion AnimatePresence for smooth enter/exit transitions
  *  - Clickable toasts navigate to the associated note
  *  - Auto-dismiss handled by the store's addToast setTimeout
+ *
+ * Migrated to Obsidian Glass design system with glass backdrop styling.
  */
 
 import { motion, AnimatePresence } from 'framer-motion'
@@ -27,7 +29,7 @@ export default function ToastContainer(): React.JSX.Element {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="rounded-lg border border-border bg-surface-elevated px-4 py-3 shadow-xl cursor-pointer text-sm text-text-primary max-w-xs"
+            className="rounded-xl bg-surface-elevated/80 backdrop-blur-xl border border-white/[0.08] px-4 py-3 shadow-lg cursor-pointer text-sm text-text-primary max-w-xs"
             onClick={() => {
               if (toast.noteId) {
                 selectNote(toast.noteId)

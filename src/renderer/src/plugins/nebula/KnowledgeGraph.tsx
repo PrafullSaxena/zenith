@@ -13,6 +13,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import { RefreshCw, Share2 } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
+import { GlassSurface, GlassButton, EmptyState } from '../../components/ui'
 import type { GraphNode } from '../../types/nebula'
 
 // ── Color tokens (oklch dark-only, matching app theme) ───────────────
@@ -138,9 +139,9 @@ export default function KnowledgeGraph(): React.JSX.Element {
   // Empty state
   if (nodeCount === 0) {
     return (
-      <div className="flex h-full flex-col">
+      <GlassSurface className="flex h-full flex-col rounded-none border-x-0 border-t-0 p-0">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
           <div className="flex items-center gap-2">
             <Share2 size={15} className="text-accent" />
             <h2 className="text-sm font-semibold text-text-primary">Knowledge Graph</h2>
@@ -148,34 +149,22 @@ export default function KnowledgeGraph(): React.JSX.Element {
         </div>
 
         {/* Empty state */}
-        <div className="flex flex-1 items-center justify-center text-text-secondary">
-          <div className="text-center">
-            <Share2 size={40} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm font-medium">No notes yet</p>
-            <p className="mt-1 text-xs text-text-secondary/70">
-              Create notes in the Notes tab to see them visualized here.
-            </p>
-            <p className="mt-1 text-xs text-text-secondary/70">
-              AI will extract topics and reveal connections between your ideas.
-            </p>
-            <button
-              type="button"
-              onClick={() => loadGraphData()}
-              className="mt-3 flex items-center gap-1.5 rounded bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25 mx-auto"
-            >
-              <RefreshCw size={12} />
-              Reload graph
-            </button>
-          </div>
-        </div>
-      </div>
+        <EmptyState
+          icon={Share2}
+          title="No notes yet"
+          description="Create notes in the Notes tab to see them visualized here. AI will extract topics and reveal connections between your ideas."
+          actionLabel="Reload graph"
+          onAction={() => loadGraphData()}
+          className="flex-1"
+        />
+      </GlassSurface>
     )
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <GlassSurface className="flex h-full flex-col rounded-none border-x-0 border-t-0 p-0">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
         <div className="flex items-center gap-2">
           <Share2 size={15} className="text-accent" />
           <h2 className="text-sm font-semibold text-text-primary">Knowledge Graph</h2>
@@ -184,15 +173,16 @@ export default function KnowledgeGraph(): React.JSX.Element {
             {linkCount === 1 ? 'connection' : 'connections'}
           </span>
         </div>
-        <button
-          type="button"
+        <GlassButton
+          variant="ghost"
+          size="sm"
           onClick={() => loadGraphData()}
-          className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
           title="Refresh graph data"
+          className="gap-1.5"
         >
           <RefreshCw size={12} />
           Refresh
-        </button>
+        </GlassButton>
       </div>
 
       {/* Graph container */}
@@ -219,6 +209,6 @@ export default function KnowledgeGraph(): React.JSX.Element {
           d3VelocityDecay={0.3}
         />
       </div>
-    </div>
+    </GlassSurface>
   )
 }
