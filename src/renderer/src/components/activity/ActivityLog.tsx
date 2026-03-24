@@ -1,9 +1,25 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { Activity } from 'lucide-react'
 import { useActivityStore } from '../../stores/activity-store'
 import { ActivityFeed } from '../dashboard/ActivityFeed'
 import { PLUGINS } from '../../plugins/registry'
+import { GlassSurface, GlassSelect, GlassButton, EmptyState } from '../ui'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 import type { ActivityStatus } from '../../types/activity'
+
+/** Map plugin list to GlassSelect options format */
+const PLUGIN_OPTIONS = [
+  { value: 'all', label: 'All Plugins' },
+  ...PLUGINS.map((p) => ({ value: p.id, label: p.name }))
+]
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'success', label: 'Success' },
+  { value: 'failure', label: 'Failure' },
+  { value: 'pending', label: 'Pending' }
+]
 
 /**
  * Dedicated activity log view with plugin and status filters.
@@ -17,7 +33,12 @@ export default function ActivityLog(): React.JSX.Element {
   const clearEntries = useActivityStore((s) => s.clearEntries)
 
   const [pluginFilter, setPluginFilter] = useState<string>('all')
-  const [statusFilter, setStatusFilter] = useState<ActivityStatus | 'all'>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  // Track initial mount for stagger animation
+  const isMounted = useRef(false)
+  const shouldAnimate = !isMounted.current
+  if (!isMounted.current) isMounted.current = true
 
   useEffect(() => {
     loadEntries()
@@ -32,66 +53,65 @@ export default function ActivityLog(): React.JSX.Element {
   }, [entries, pluginFilter, statusFilter])
 
   return (
-    <div className="stagger-children space-y-4">
+    <motion.div
+      variants={staggerContainer}
+      initial={shouldAnimate ? 'hidden' : false}
+      animate="visible"
+      className="space-y-4"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div variants={staggerItem} className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-lg font-semibold text-text-primary">Activity Log</h1>
           <span className="rounded-full bg-surface-elevated px-2.5 py-0.5 text-xs font-medium text-text-secondary">
             {filteredEntries.length}
           </span>
         </div>
-        <button
+        <GlassButton
+          variant="ghost"
+          size="sm"
           onClick={() => clearEntries()}
-          className="text-xs text-text-secondary hover:text-red-400 transition"
         >
           Clear All
-        </button>
-      </div>
+        </GlassButton>
+      </motion.div>
 
       {/* Filter bar */}
-      <div className="flex items-center gap-3">
-        <select
-          value={pluginFilter}
-          onChange={(e) => setPluginFilter(e.target.value)}
-          className="rounded-lg border border-border/50 bg-surface-elevated px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
-        >
-          <option value="all">All Plugins</option>
-          {PLUGINS.map((plugin) => (
-            <option key={plugin.id} value={plugin.id}>
-              {plugin.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as ActivityStatus | 'all')}
-          className="rounded-lg border border-border/50 bg-surface-elevated px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
-        >
-          <option value="all">All Statuses</option>
-          <option value="success">Success</option>
-          <option value="failure">Failure</option>
-          <option value="pending">Pending</option>
-        </select>
-      </div>
+      <motion.div variants={staggerItem}>
+        <GlassSurface className="flex items-center gap-3">
+          <GlassSelect
+            options={PLUGIN_OPTIONS}
+            value={pluginFilter}
+            onChange={setPluginFilter}
+            placeholder="All Plugins"
+            className="w-48"
+          />
+          <GlassSelect
+            options={STATUS_OPTIONS}
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(val as ActivityStatus | 'all')}
+            placeholder="All Statuses"
+            className="w-40"
+          />
+        </GlassSurface>
+      </motion.div>
 
       {/* Activity list */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
-        </div>
-      ) : filteredEntries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
-            <Activity size={20} className="text-accent/30" />
+      <motion.div variants={staggerItem}>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
           </div>
-          <p className="text-sm font-medium text-text-secondary/70">No activity entries match your filters</p>
-          <p className="mt-1 text-[11px] text-text-secondary/60">Try adjusting the plugin or status filter</p>
-        </div>
-      ) : (
-        <ActivityFeed entries={filteredEntries} />
-      )}
-    </div>
+        ) : filteredEntries.length === 0 ? (
+          <EmptyState
+            icon={Activity}
+            title="No activities found"
+            description="Try adjusting your filters to see more results"
+          />
+        ) : (
+          <ActivityFeed entries={filteredEntries} />
+        )}
+      </motion.div>
+    </motion.div>
   )
 }
