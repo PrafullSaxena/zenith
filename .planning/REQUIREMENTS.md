@@ -48,7 +48,7 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 
 - [x] **CORE-01**: Mission Control Dashboard migrated — GlassCards for stats, staggered entrance, AnimatedCounter reuse
 - [ ] **CORE-02**: Activity Log migrated — GlassCard entries, GlassSurface toolbar, GlassBadge status
-- [ ] **CORE-03**: About View migrated — GlassCards for capabilities, stagger entrance, glass timeline
+- [x] **CORE-03**: About View migrated — GlassCards for capabilities, stagger entrance, glass timeline
 - [x] **CORE-04**: Settings migrated — GlassTab sidebar, theme grid selector, GlassCard sections
 - [x] **CORE-05**: Sidebar upgraded — hover scale + glow ring, active bar slide animation, tooltip delay + fade
 
@@ -143,7 +143,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | THEME-10 | Phase 5 | Pending |
 | CORE-01 | Phase 3 | Complete |
 | CORE-02 | Phase 3 | Pending |
-| CORE-03 | Phase 3 | Pending |
+| CORE-03 | Phase 3 | Complete |
 | CORE-04 | Phase 3 | Complete |
 | CORE-05 | Phase 3 | Complete |
 | PLUG-01 | Phase 4 | Pending |

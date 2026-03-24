@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 3 of 7 (Core Pages Migration)
-Plan: 1 of 3 in current phase (1 complete)
-Status: Executing Phase 3
-Last activity: 2026-03-25 — Completed 03-01 (Shared Utilities)
+Plan: 3 of 3 in current phase (3 complete)
+Status: Phase 3 Complete
+Last activity: 2026-03-25 — Completed 03-03 (Sidebar, About & Settings Migration)
 
-Progress: [███-------] 1/3 plans
+Progress: [██████████] 3/3 plans
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 9
 - Average duration: 2.3min
-- Total execution time: 16min
+- Total execution time: 21min
 
 **By Phase:**
 
@@ -34,9 +34,11 @@ Progress: [███-------] 1/3 plans
 | Phase 02 P02 | 2min | 2 tasks | 5 files |
 | Phase 02 P03 | 2min | 2 tasks | 4 files |
 | Phase 03 P01 | 2min | 2 tasks | 6 files |
+| Phase 03 P02 | 2min | 2 tasks | 2 files |
+| Phase 03 P03 | 3min | 2 tasks | 4 files |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (1min), 02-01 (2min), 02-02 (2min), 02-03 (2min), 03-01 (2min)
+- Last 5 plans: 02-02 (2min), 02-03 (2min), 03-01 (2min), 03-02 (2min), 03-03 (3min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -71,6 +73,10 @@ Recent decisions affecting current work:
 - [03-01]: AnimatedCounter import path uses @renderer/lib/useReducedMotion directly (not Cortex re-export)
 - [03-01]: GlassTab vertical indicator uses w-0.5 left bar with rounded-r styling
 - [03-01]: Theme metadata uses raw oklch/hex values from CSS rather than computed values
+- [03-03]: Sidebar uses layoutId='sidebarActiveBar' (not 'activeTab') to avoid conflict with GlassTab's layoutId
+- [03-03]: LayoutGroup wraps entire sidebar nav+bottom section so active bar slides across all icon groups
+- [03-03]: ThemeCard is inline sub-component in GeneralSettings since it's settings-specific
+- [03-03]: New themes with empty color values are filtered from display (Phase 5 placeholders hidden)
 
 ### Pending Todos
 
@@ -83,5 +89,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 03-01-PLAN.md (Shared Utilities)
+Stopped at: Completed 03-03-PLAN.md (Sidebar, About & Settings Migration)
 Resume file: None
