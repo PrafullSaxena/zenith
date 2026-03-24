@@ -6,7 +6,7 @@ import { cn } from './glass-utils'
 
 export type GlassBadgeVariant = 'success' | 'error' | 'warning' | 'info' | 'accent' | 'neutral'
 
-export interface GlassBadgeProps {
+export interface GlassBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: GlassBadgeVariant
   children: React.ReactNode
   className?: string
@@ -31,9 +31,9 @@ const BASE_CLASSES = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-x
 // Component
 // ---------------------------------------------------------------------------
 
-export function GlassBadge({ variant = 'neutral', children, className }: GlassBadgeProps) {
+export function GlassBadge({ variant = 'neutral', children, className, ...props }: GlassBadgeProps) {
   return (
-    <span className={cn(BASE_CLASSES, VARIANT_CLASSES[variant], className)}>
+    <span className={cn(BASE_CLASSES, VARIANT_CLASSES[variant], className)} {...props}>
       {children}
     </span>
   )
