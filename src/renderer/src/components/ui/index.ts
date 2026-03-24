@@ -24,6 +24,7 @@ export { GlassToast } from './GlassToast'
 
 // Utilities
 export { cn, GLASS_BASE } from './glass-utils'
+export { default as AnimatedCounter } from './AnimatedCounter'
 
 // Types
 export type { GlassModalProps } from './GlassModal'

@@ -16,6 +16,7 @@ export interface GlassTabProps {
   tabs: GlassTabItem[]
   activeTab: string
   onTabChange: (id: string) => void
+  orientation?: 'horizontal' | 'vertical'
   className?: string
 }
 
@@ -23,12 +24,15 @@ export interface GlassTabProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function GlassTab({ tabs, activeTab, onTabChange, className }: GlassTabProps): React.JSX.Element {
+export function GlassTab({ tabs, activeTab, onTabChange, orientation = 'horizontal', className }: GlassTabProps): React.JSX.Element {
+  const isVertical = orientation === 'vertical'
+
   return (
     <div
       role="tablist"
       className={cn(
-        'flex gap-1 p-1 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)]',
+        'p-1 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)]',
+        isVertical ? 'flex flex-col gap-1' : 'flex gap-1',
         className
       )}
     >
@@ -45,6 +49,7 @@ export function GlassTab({ tabs, activeTab, onTabChange, className }: GlassTabPr
             onClick={() => onTabChange(tab.id)}
             className={cn(
               'relative flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-[var(--duration-fast)]',
+              isVertical && 'w-full text-left',
               isActive
                 ? 'text-[var(--color-accent)]'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/[0.04]'
@@ -56,7 +61,12 @@ export function GlassTab({ tabs, activeTab, onTabChange, className }: GlassTabPr
             {isActive && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--color-accent)] rounded-full"
+                className={cn(
+                  'absolute bg-[var(--color-accent)]',
+                  isVertical
+                    ? 'left-0 top-0 bottom-0 w-0.5 rounded-r'
+                    : 'bottom-0 left-0 right-0 h-0.5 rounded-full'
+                )}
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               />
             )}
