@@ -142,7 +142,7 @@ const appTheme = EditorView.theme({
     fontSize: '13px'
   },
   '.cm-scroller': {
-    fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+    fontFamily: "'Geist Mono', 'Fira Code', 'Cascadia Code', monospace",
     overflow: 'auto'
   },
   '.cm-gutters': {
