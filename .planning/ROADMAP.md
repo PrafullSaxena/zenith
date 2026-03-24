@@ -1,190 +1,159 @@
-# Project Roadmap
+# Roadmap: Zenith UI Revamp — "Obsidian Glass"
 
 ## Overview
 
-| Phase | Name | Plans | Status | Progress |
-|-------|------|-------|--------|----------|
-| 1 | Foundation | 5 | In Progress | 2/5 |
-| 2 | Mission Control & Activity Log | 3 | Planned | 0/3 |
-| 3 | CodeReviewBot Plugin | 4 | 4/4 | Complete   | 2026-03-13 | 4 | DbInspector Plugin | 4 | Planned | 0/4 |
-| 5 | AstroPatch Plugin | 7 | 4/4 | Complete   | 2026-03-09 | 6 | Polish & Production | 3 | Planned | 0/3 |
-| 7 | Launchpad Plugin | 4 | Complete | 4/4 |
-| 8 | Nebula Plugin | 6 | Complete | 6/6 |
-| 9 | Nebula UX Polish | 4 | Complete | 4/4 |
-| 10 | Settings UX Fix | 3 | Complete | 3/3 |
-| 11 | 3/3 | Complete    | 2026-03-10 | 0/3 |
-| 12 | TextCraft Plugin | 2 | Complete | 2/2 |
-| 13 | 6/6 | Complete   | 2026-03-14 | 1/6 |
-| 14 | 4/4 | Complete   | 2026-03-14 | 0/4 |
+Transform Zenith from an inconsistent mix of flat and glass styling into a unified "Obsidian Glass" experience. The build order is strictly bottom-up: CSS tokens and motion primitives first, then the shared component library, then migrate core pages and plugins to consume it, then add new themes tuned against stable glass components, then build 3D visualizations on the proven foundation, and finally polish micro-interactions across the complete app. Every phase delivers a coherent, verifiable capability.
 
-## Phase 1: Foundation
+## Phases
 
-**Goal:** Runnable Electron app with secure architecture, sidebar navigation, plugin registration, settings persistence, and AI agent configuration.
+**Phase Numbering:**
+- Integer phases (1, 2, 3): Planned milestone work
+- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-**Plans:** 5 plans
+Decimal phases appear between their surrounding integers in numeric order.
 
-Plans:
-- [x] 01-01-PLAN.md -- Scaffold electron-vite project with secure BrowserWindow and typed contextBridge
-- [ ] 01-02-PLAN.md -- App shell layout with sidebar navigation, React Router, window state persistence
-- [x] 01-03-PLAN.md -- PluginDefinition type system and compiled-in plugin registry with stub views
-- [ ] 01-04-PLAN.md -- Settings persistence via electron-store, IPC handlers, settings UI with auto-save
-- [ ] 01-05-PLAN.md -- AI agent configuration table, test connection, per-plugin agent dropdown
+- [ ] **Phase 1: Design System Foundation** - Glass tokens, motion system, fonts, and typography scale
+- [ ] **Phase 2: Glass Component Library** - All 11 shared glass primitives built and theme-validated
+- [ ] **Phase 3: Core Pages Migration** - Dashboard, Activity Log, About, Settings, and Sidebar migrated to glass components
+- [ ] **Phase 4: Plugin Migration** - All 6 plugins migrated to shared glass components
+- [ ] **Phase 5: Theme Collection** - 6 new dark themes, OKLch conversion, and visual theme selector
+- [ ] **Phase 6: 3D Visualizations** - Four new 3D scenes with error boundaries and 2D fallbacks
+- [ ] **Phase 7: Micro-Interactions and Polish** - Button feedback, icon morphs, scroll indicators, sidebar animations, and cross-theme QA
 
-## Phase 2: Mission Control & Activity Log
+## Phase Details
 
-**Goal:** Mission Control dashboard as default landing view with responsive plugin summary cards, quick-action navigation, live activity feed, and a dedicated activity log with filtering.
-
-**Requirements:** [DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, ACTV-01, ACTV-02, ACTV-03]
-
-**Plans:** 3 plans
+### Phase 1: Design System Foundation
+**Goal**: Every token, animation variant, and font needed by downstream components exists and works across all themes
+**Depends on**: Nothing (first phase)
+**Requirements**: FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-05, FOUND-06, FOUND-07
+**Success Criteria** (what must be TRUE):
+  1. Glass CSS tokens (--glass-bg, --glass-border, --glass-blur, --glass-glow) resolve correctly on all 12 existing themes
+  2. Importing any motion variant from lib/motion.ts works (stagger, page transition, modal, hover lift, slide panel) and respects reduced-motion preference
+  3. App renders body text in Plus Jakarta Sans and code blocks in Geist Mono
+  4. Typography scale classes (hero through caption) produce visually distinct, consistent sizing
+  5. Two-tier blur strategy is enforced: top-level glass surfaces use backdrop-blur, nested surfaces use translucent-only fills
+**Plans**: TBD
 
 Plans:
-- [ ] 02-01-PLAN.md -- Activity types and Zustand store with IPC persistence (data layer)
-- [ ] 02-02-PLAN.md -- Dashboard UI components: MissionControl, PluginCard, ActivityFeed, StatusBadge
-- [ ] 02-03-PLAN.md -- Routing wiring, sidebar icons, dedicated ActivityLog view, default view update
+- [ ] 01-01: TBD
+- [ ] 01-02: TBD
+- [ ] 01-03: TBD
 
-## Phase 3: CodeReviewBot Plugin
-
-**Goal:** Working CodeReviewBot plugin: connect to Bitbucket via OAuth, browse PRs, view diffs, stream AI code review, post inline comments back to Bitbucket, and persist review history.
-
-**Requirements:** [CRVW-01, CRVW-02, CRVW-03, CRVW-04, CRVW-05, CRVW-06, CRVW-07, CRVW-08]
-
-**Plans:** 4 plans
-
-Plans:
-- [ ] 03-01-PLAN.md -- Install deps, Bitbucket OAuth flow, API client, token manager (main process)
-- [ ] 03-02-PLAN.md -- AI streaming infrastructure with Vercel AI SDK and provider factory (main process)
-- [ ] 03-03-PLAN.md -- IPC handlers, preload bridge, renderer types, review Zustand store
-- [ ] 03-04-PLAN.md -- CodeReviewBot UI: PR list, diff viewer, review panel, history, registry swap
-
-## Phase 4: DbInspector Plugin
-
-**Goal:** Full SQL query console for the DbInspector plugin — CodeMirror 6 editor with schema-aware autocomplete, multi-tab management, query execution with results grid, MySQL support, saved queries, CSV/JSON export, and session persistence.
-
-**Requirements:** [DBIS-01, DBIS-02, DBIS-03, DBIS-04, DBIS-05, DBIS-06, DBIS-07, DBIS-08, DBIS-09]
-
-**Plans:** 4/4 plans complete
+### Phase 2: Glass Component Library
+**Goal**: A complete, standalone set of glass UI primitives that any page or plugin can import and render correctly on all themes
+**Depends on**: Phase 1
+**Requirements**: COMP-01, COMP-02, COMP-03, COMP-04, COMP-05, COMP-06, COMP-07, COMP-08, COMP-09, COMP-10, COMP-11
+**Success Criteria** (what must be TRUE):
+  1. All 11 glass components (GlassCard, GlassSurface, GlassButton, GlassInput, GlassSelect, GlassTab, GlassBadge, GlassModal, GlassToast, GlassSkeleton, EmptyState) are importable from ui/index.ts
+  2. GlassCard renders with visible frosted glass effect on all 12 existing themes without visual breakage
+  3. GlassModal opens with backdrop blur and scale animation, and closes cleanly without ghost elements
+  4. GlassSkeleton shimmer animation plays in card, text, circle, and table variants
+  5. EmptyState shows floating illustration with parallax mouse tracking and a CTA button
+**Plans**: TBD
 
 Plans:
-- [ ] 04-01-PLAN.md -- MySQL driver, unified DB manager, query console types, new IPC handlers
-- [ ] 04-02-PLAN.md -- CodeMirror 6 SQL editor, query tab management, execution store actions
-- [ ] 04-03-PLAN.md -- Results grid with virtual scroll, export, saved queries panel
-- [ ] 04-04-PLAN.md -- Wire query console into DbInspectorView, schema browser enhancements, visual verification
+- [ ] 02-01: TBD
+- [ ] 02-02: TBD
+- [ ] 02-03: TBD
 
-## Phase 5: AstroPatch Plugin
-
-**Goal:** Automated patch generation and Jira integration.
-
-## Phase 7: Launchpad Plugin
-
-**Goal:** Cloud cost estimation plugin: select AWS/GCP/Azure, configure services and resources, calculate monthly/yearly costs, chat with AI for recommendations, and export estimation reports.
-
-**Requirements:** [LNCH-01, LNCH-02, LNCH-03, LNCH-04, LNCH-05, LNCH-06, LNCH-07, LNCH-08, LNCH-09, LNCH-10]
-
-**Plans:** 4/4 plans complete
-
-Plans:
-- [x] 07-01-PLAN.md -- Types, pricing catalogs (AWS/GCP/Azure), cost calculator, service equivalence map
-- [x] 07-02-PLAN.md -- Zustand store, plugin registration, PDF generator + IPC handler + preload bridge
-- [x] 07-03-PLAN.md -- Core estimator UI: LaunchpadView, ProviderSelector, ServiceCatalog, ResourceConfigurator, EstimationSummary
-- [x] 07-04-PLAN.md -- AI Advisor, Estimation History, Comparison View, and visual verification
-
-## Phase 8: Nebula Plugin
-
-**Goal:** Notes & knowledge management plugin: minimal rich-text editor with tldraw drawings, local disk storage, AI-powered summarization, knowledge graph with note connections, natural-language search/Q&A over notes, voice recording with speaker-diarized transcription, and transcription-to-knowledge pipeline.
-
-**Requirements:** [NEBL-01, NEBL-02, NEBL-03, NEBL-04, NEBL-05, NEBL-06, NEBL-07, NEBL-08, NEBL-09, NEBL-10, NEBL-11, NEBL-12]
-
-**Plans:** 6/6 plans complete
+### Phase 3: Core Pages Migration
+**Goal**: The app shell and all 4 core pages use glass components, delivering a consistent look before any plugin is touched
+**Depends on**: Phase 2
+**Requirements**: CORE-01, CORE-02, CORE-03, CORE-04, CORE-05
+**Success Criteria** (what must be TRUE):
+  1. Mission Control Dashboard shows stat cards as GlassCards with staggered entrance animation
+  2. Activity Log displays entries in GlassCards with status badges and a GlassSurface toolbar
+  3. Settings page uses GlassTab sidebar navigation and the theme grid selector area is ready for Phase 5 content
+  4. Sidebar icons show hover glow and the active indicator bar slides between items on navigation
+  5. Navigating between core pages plays a page transition animation (crossfade or slide)
+**Plans**: TBD
 
 Plans:
-- [x] 08-01-PLAN.md -- Install deps, Nebula types, SQLite database manager with FTS5, note file storage
-- [x] 08-02-PLAN.md -- Plugin registration, Zustand store, NebulaView 3-tab layout shell
-- [x] 08-03-PLAN.md -- IPC handlers, preload bridge, Tiptap note editor, tldraw drawing canvas, note list CRUD
-- [x] 08-04-PLAN.md -- AI summarization pipeline, knowledge graph edge inference, force-directed graph visualization
-- [x] 08-05-PLAN.md -- Voice recording (MediaRecorder), OpenAI transcription with diarization, transcription-to-knowledge pipeline
-- [x] 08-06-PLAN.md -- FTS5 search with highlights, AI Q&A over notes, visual verification checkpoint
+- [ ] 03-01: TBD
+- [ ] 03-02: TBD
+- [ ] 03-03: TBD
 
-## Phase 9: Nebula UX Polish
-
-**Goal:** Improve the UX of the Nebula Notes section — enhance text notes editor, drawing canvas, and voice notes experience with better interactions, visual feedback, and usability refinements.
-
-**Requirements:** [NEBL-01, NEBL-02, NEBL-03, NEBL-06, NEBL-07, NEBL-08]
-
-**Plans:** 4/4 plans complete
-
-Plans:
-- [x] 09-01-PLAN.md -- Install deps, extend types/schema/IPC for pinning, content preview, and audio storage
-- [x] 09-02-PLAN.md -- Rewrite NoteEditor with floating toolbar, inline title, tables, images, metadata, tags
-- [x] 09-03-PLAN.md -- Split-view layout (flexbox), rewrite NoteList with pinning and context menus
-- [x] 09-04-PLAN.md -- Voice FAB, transcription block with speaker labels, toast notifications, bug fixes
-
-## Phase 10: Settings UX Fix
-
-**Goal:** Unify the Settings UI with consistent design tokens — standardize all button radii, toggle switches, input focus styles, form containers, empty states, hover patterns, badges, and table rows across SettingsLayout, GeneralSettings, AIAgentsSettings, AgentRow, MCPSettings, AddCustomAgentForm, ConnectionListEditor, RepoListEditor, and PluginSettings. Visual-only — no logic changes.
-
-**Plans:** 3/3 plans complete
+### Phase 4: Plugin Migration
+**Goal**: Every plugin screen feels identical in quality and styling to the core pages — switching between plugins is seamless
+**Depends on**: Phase 3
+**Requirements**: PLUG-01, PLUG-02, PLUG-03, PLUG-04, PLUG-05, PLUG-06
+**Success Criteria** (what must be TRUE):
+  1. Cortex uses shared GlassCard and GlassTab from ui/ — all inline GLASS_CARD and GLASS_SURFACE constants are deleted
+  2. All 6 plugins use GlassTab bars with the sliding underline animation for tab navigation
+  3. All plugins show GlassSkeleton loaders during loading states instead of bare spinners
+  4. Zero-data views in all plugins show EmptyState components with CTAs
+  5. Switching between any two plugins produces no jarring visual style difference
+**Plans**: TBD
 
 Plans:
-- [x] 10-01-PLAN.md -- Unify SettingsField.tsx design tokens (inputs, selects, toggle, buttons, password icon)
-- [x] 10-02-PLAN.md -- Unify MCPSettings, AgentRow, AIAgentsSettings, AddCustomAgentForm styles
-- [x] 10-03-PLAN.md -- Unify ConnectionListEditor, RepoListEditor, SettingsLayout, GeneralSettings, PluginSettings styles
+- [ ] 04-01: TBD
+- [ ] 04-02: TBD
+- [ ] 04-03: TBD
+- [ ] 04-04: TBD
 
-## Phase 11: Full UI/UX Revamp
-
-**Goal:** Comprehensive UI/UX overhaul across every screen — fix low text-to-background contrast, add purpose-driven color semantics (green/red for code diffs, status indicators, severity colors), introduce micro-interactions and entrance animations, and ensure every screen visually communicates its purpose. Covers Dashboard, CodeReviewBot, DbInspector, Launchpad, Nebula, Settings, Activity Log, About, sidebar, and stub plugins. Visual/animation only — no logic changes.
-
-**Requirements:** [SHELL-07]
-
-**Plans:** 3/3 plans complete
-
-Plans:
-- [ ] 11-01-PLAN.md -- Add semantic color tokens to CSS theme and fix broken Launchpad token references
-- [ ] 11-02-PLAN.md -- Fix WCAG AA contrast violations and migrate to semantic colors across all views
-- [ ] 11-03-PLAN.md -- Add entrance animations, stagger effects, and hover micro-interactions
-
-## Phase 12: TextCraft Plugin
-
-**Goal:** AI-powered text refinement plugin: three-panel layout with input editor, tone/style controls, and AI-rewritten output. Supports email, one-pager, and technical writing use cases with grammar correction, tone adjustment, and format transformation via configured AI agents.
-
-**Requirements:** [TXCR-01, TXCR-02, TXCR-03, TXCR-04, TXCR-05, TXCR-06, TXCR-07, TXCR-08, TXCR-09, TXCR-10]
-
-**Plans:** 2/2 plans complete
+### Phase 5: Theme Collection
+**Goal**: Users can choose from 18 curated dark themes via a visual selector, and all themes render glass components correctly
+**Depends on**: Phase 4
+**Requirements**: THEME-01, THEME-02, THEME-03, THEME-04, THEME-05, THEME-06, THEME-07, THEME-08, THEME-09, THEME-10
+**Success Criteria** (what must be TRUE):
+  1. All 6 new themes (Midnight Bloom, Copper Forge, Ocean Depth, Nebula Dust, Obsidian, Jade Temple) are selectable and render the app correctly
+  2. Settings shows a visual theme selector grid with Classic (12 legacy) and New Collection (6) sections
+  3. Each theme card displays the theme name, 4 representative color dots, and a mini preview strip; the active theme has an accent border glow
+  4. All 12 legacy themes use OKLch color values (no remaining hex-only definitions)
+  5. Glass components render without visual breakage across all 18 themes (cross-theme QA pass)
+**Plans**: TBD
 
 Plans:
-- [x] 12-01-PLAN.md -- TextCraft types, Zustand store with AI streaming, plugin registration, sidebar icon
-- [x] 12-02-PLAN.md -- Three-panel UI: InputPanel, ControlsPanel, OutputPanel with streaming and copy-to-clipboard
+- [ ] 05-01: TBD
+- [ ] 05-02: TBD
+- [ ] 05-03: TBD
 
-## Phase 13: CodebaseAnalyzer Plugin
-
-**Goal:** Codebase analysis and documentation plugin — add repos with branch selection, auto-detect repo type (BE/FE/DE), generate cached documentation, visualize code flows interactively, browse code files, query codebase in plain English, export docs (MD/PDF/TXT), and extract HLD with Mermaid diagrams. BE repos get controller/API flow mapping, DE repos get trigger script mapping, FE repos get component tree visualization.
-
-**Requirements:** [CBAN-01, CBAN-02, CBAN-03, CBAN-04, CBAN-05, CBAN-06, CBAN-07, CBAN-08, CBAN-09, CBAN-10, CBAN-11, CBAN-12, CBAN-13, CBAN-14]
-
-**Plans:** 6/6 plans complete
-
-Plans:
-- [x] 13-01-PLAN.md -- Foundation: types, SQLite cache DB, git service, repo detector, plugin registration, IPC bridge, Zustand store
-- [ ] 13-02-PLAN.md -- Analysis engine: TS/Java/Python parsers, FE component tree, DE pipeline detection, call graph builder
-- [x] 13-03-PLAN.md -- Core UI: CodebaseAnalyzerView shell, repo management, insights layout with Overview + API list tabs
-- [ ] 13-04-PLAN.md -- Flow visualization: React Flow interactive diagrams with custom nodes/edges, dagre auto-layout, entrance animations
-- [ ] 13-05-PLAN.md -- Code section: file tree browser, CodeMirror code viewer with tabs, AI-powered natural language Q&A
-- [ ] 13-06-PLAN.md -- Export and polish: HLD generation with Mermaid diagrams, MD/PDF/TXT export, animations, skeleton loaders, error handling
-
-## Phase 14: Cortex Bug Fixes
-
-**Goal:** Fix 4 critical Cortex plugin bugs: empty API endpoints for BE repos, empty Flow diagrams, non-functional Architecture Dashboard without AI, and Ask section agent resolution failures.
-
-**Requirements:** [CBAN-04, CBAN-05, CBAN-07, CBAN-09]
-
-**Plans:** 4/4 plans complete
+### Phase 6: 3D Visualizations
+**Goal**: Four new 3D data visualizations enhance key plugin views, with graceful fallbacks when 3D is unavailable
+**Depends on**: Phase 4
+**Requirements**: 3D-01, 3D-02, 3D-03, 3D-04, 3D-05, 3D-06
+**Success Criteria** (what must be TRUE):
+  1. Mission Control Dashboard shows a 3D Activity Mesh wireframe sphere with activity nodes (max 50), auto-rotate, and hover tooltips
+  2. Nebula plugin offers a 2D/3D toggle for its Knowledge Graph, with the 3D view showing notes as nodes and tag-based edges
+  3. All 4 new 3D components are wrapped in ErrorBoundary + Suspense and fall back to a 2D alternative on WebGL failure
+  4. Enabling reduced-motion preference disables auto-rotate and reduces particle effects in all 3D scenes
+  5. No WebGL context leaks: navigating away from a 3D view disposes its Canvas and context cleanly
+**Plans**: TBD
 
 Plans:
-- [ ] 14-01-PLAN.md -- Fix Java/Python parser route detection and CallEdge type mismatch + wire callEdges in parser index
-- [ ] 14-02-PLAN.md -- Fix Flow diagram to work with corrected call edges and add fallback entity-based flows
-- [ ] 14-03-PLAN.md -- Architecture Dashboard: show static diagrams from analysis data without requiring AI insights
-- [ ] 14-04-PLAN.md -- Fix Ask section agent resolution and add graceful error handling for missing agents
+- [ ] 06-01: TBD
+- [ ] 06-02: TBD
+- [ ] 06-03: TBD
 
-## Phase 6: Polish & Production
+### Phase 7: Micro-Interactions and Polish
+**Goal**: Every interactive element in the app has tactile feedback, and the entire UI passes cross-theme visual QA
+**Depends on**: Phase 5, Phase 6
+**Requirements**: MICRO-01, MICRO-02, MICRO-03, MICRO-04, MICRO-05, MICRO-06, MICRO-07, MICRO-08, MICRO-09, MICRO-10
+**Success Criteria** (what must be TRUE):
+  1. Pressing any GlassButton produces a visible scale-down effect (0.97) and copy buttons animate to a check icon for 2 seconds
+  2. All card grids throughout the app use staggered entrance animations
+  3. Scrollable containers show a thin accent progress bar at top and fade shadows at overflow edges
+  4. Tab bars across the entire app animate the active underline sliding to the selected tab
+  5. All micro-interactions respect reduced-motion preference (disabled or simplified when active)
+**Plans**: TBD
 
-**Goal:** Production build, auto-updates, distribution.
+Plans:
+- [ ] 07-01: TBD
+- [ ] 07-02: TBD
+- [ ] 07-03: TBD
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 1 > 2 > 3 > 4 > 5 > 6 > 7
+Note: Phase 5 and Phase 6 both depend on Phase 4 and can run in parallel.
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Design System Foundation | 0/3 | Not started | - |
+| 2. Glass Component Library | 0/3 | Not started | - |
+| 3. Core Pages Migration | 0/3 | Not started | - |
+| 4. Plugin Migration | 0/4 | Not started | - |
+| 5. Theme Collection | 0/3 | Not started | - |
+| 6. 3D Visualizations | 0/3 | Not started | - |
+| 7. Micro-Interactions and Polish | 0/3 | Not started | - |
