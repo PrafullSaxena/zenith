@@ -257,7 +257,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
 
   // ── Data state ──
   return (
-    <div className="flex h-full flex-col rounded-xl border border-border/60 bg-surface-elevated/70 p-5">
+    <GlassCard className="flex h-full flex-col p-5">
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <div>
