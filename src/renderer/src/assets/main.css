@@ -86,8 +86,8 @@
      Blur tier (backdrop-blur with --glass-blur): GlassCard, GlassModal, GlassToast
      Translucent tier (--glass-bg only, no blur): GlassSurface, GlassInput, GlassSelect, GlassButton, GlassBadge, GlassTab
      Nested surfaces always use translucent tier regardless of parent. */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: oklch(100% 0 0 / 0.03);
+  --glass-border: oklch(100% 0 0 / 0.08);
   --glass-blur: 24px;
   --glass-glow: 0 0 0 2px oklch(72% 0.15 195 / 0.2);
 
@@ -106,27 +106,27 @@
 
 /* ── Theme: Portfolio (amber accent on slate-navy) ─────────────── */
 [data-theme="portfolio"] {
-  --color-background: #0f172a;
-  --color-surface: #1e293b;
-  --color-surface-elevated: #334155;
-  --color-border: #475569;
-  --color-accent: #f59e0b;
-  --color-accent-glow: rgba(245, 158, 11, 0.2);
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-success: #22c55e;
-  --color-success-muted: rgba(34, 197, 94, 0.15);
-  --color-error: #ef4444;
-  --color-error-muted: rgba(239, 68, 68, 0.15);
-  --color-warning: #f59e0b;
-  --color-warning-muted: rgba(245, 158, 11, 0.15);
-  --color-info: #3b82f6;
-  --color-info-muted: rgba(59, 130, 246, 0.15);
-  --color-diff-add: rgba(34, 197, 94, 0.12);
-  --color-diff-del: rgba(239, 68, 68, 0.12);
-  --color-diff-add-text: #4ade80;
-  --color-diff-del-text: #f87171;
-  --glass-glow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+  --color-background: oklch(15% 0.03 260);
+  --color-surface: oklch(20% 0.03 255);
+  --color-surface-elevated: oklch(28% 0.03 255);
+  --color-border: oklch(38% 0.02 250);
+  --color-accent: oklch(77% 0.17 75);
+  --color-accent-glow: oklch(77% 0.17 75 / 0.2);
+  --color-text-primary: oklch(96% 0.005 240);
+  --color-text-secondary: oklch(70% 0.02 245);
+  --color-success: oklch(72% 0.18 145);
+  --color-success-muted: oklch(72% 0.18 145 / 0.15);
+  --color-error: oklch(63% 0.24 25);
+  --color-error-muted: oklch(63% 0.24 25 / 0.15);
+  --color-warning: oklch(77% 0.17 75);
+  --color-warning-muted: oklch(77% 0.17 75 / 0.15);
+  --color-info: oklch(60% 0.19 260);
+  --color-info-muted: oklch(60% 0.19 260 / 0.15);
+  --color-diff-add: oklch(72% 0.18 145 / 0.12);
+  --color-diff-del: oklch(63% 0.24 25 / 0.12);
+  --color-diff-add-text: oklch(80% 0.18 150);
+  --color-diff-del-text: oklch(68% 0.19 20);
+  --glass-glow: 0 0 0 2px oklch(77% 0.17 75 / 0.2);
 }
 
 /* ── Theme: Nord Aurora (frost blue on polar night) ────────────── */
