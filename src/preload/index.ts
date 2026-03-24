@@ -230,8 +230,8 @@ const api = {
       ipcRenderer.invoke('cortex:saveInsights', repoUrl, branch, commitSha, agentId, toonData),
     getInsights: (repoUrl: string, branch: string, commitSha: string): Promise<string | null> =>
       ipcRenderer.invoke('cortex:getInsights', repoUrl, branch, commitSha),
-    reanalyze: (repoId: string): Promise<{ changed: boolean; result?: unknown }> =>
-      ipcRenderer.invoke('cortex:reanalyze', repoId),
+    reanalyze: (repoId: string, force?: boolean): Promise<{ changed: boolean; result?: unknown }> =>
+      ipcRenderer.invoke('cortex:reanalyze', repoId, force),
     probeRtk: (): Promise<boolean> =>
       ipcRenderer.invoke('cortex:probeRtk'),
     // AI Enrichment

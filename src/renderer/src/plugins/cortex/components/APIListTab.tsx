@@ -19,13 +19,16 @@ export default function APIListTab(): React.JSX.Element {
   const navigateToFile = useCortexStore((s) => s.navigateToFile)
   const validateAnalysis = useCortexStore((s) => s.validateAnalysis)
   const validationResults = useCortexStore((s) => s.validationResults)
+  const isValidating = useCortexStore((s) => s.isValidating)
+  const setIsValidating = useCortexStore((s) => s.setIsValidating)
+  const validationDone = useCortexStore((s) => s.validationDone)
+  const setValidationDone = useCortexStore((s) => s.setValidationDone)
+  const validationError = useCortexStore((s) => s.validationError)
+  const setValidationError = useCortexStore((s) => s.setValidationError)
 
   const [filter, setFilter] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('path')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
-  const [isValidating, setIsValidating] = useState(false)
-  const [validationDone, setValidationDone] = useState(false)
-  const [validationError, setValidationError] = useState<string | null>(null)
 
   const handleSort = useCallback(
     (key: SortKey) => {
@@ -58,8 +61,8 @@ export default function APIListTab(): React.JSX.Element {
       )
     }
     return [...result].sort((a, b) => {
-      const aVal = a[sortKey]
-      const bVal = b[sortKey]
+      const aVal = sortKey === 'path' ? a.fullPath : a[sortKey]
+      const bVal = sortKey === 'path' ? b.fullPath : b[sortKey]
       const cmp = aVal.localeCompare(bVal)
       return sortDir === 'asc' ? cmp : -cmp
     })
@@ -99,7 +102,7 @@ export default function APIListTab(): React.JSX.Element {
   )
 
   return (
-    <div className="flex h-full flex-col p-6">
+    <div className="flex h-full flex-col overflow-hidden p-6">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -187,8 +190,18 @@ export default function APIListTab(): React.JSX.Element {
         </div>
       </div>
 
+      {/* Hint when few routes detected */}
+      {routes.length > 0 && routes.length <= 15 && !validationDone && !isValidating && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] text-amber-400">
+          <ShieldCheck size={14} className="flex-shrink-0" />
+          <span>
+            Static analysis found {routes.length} endpoints. Click <strong>Validate</strong> to use AI to discover additional routes the parser may have missed.
+          </span>
+        </div>
+      )}
+
       {/* Table */}
-      <div className={`flex-1 overflow-auto ${GLASS_CARD} overflow-hidden`}>
+      <div className={`flex-1 min-h-0 overflow-auto ${GLASS_CARD}`}>
         <table className="w-full text-xs">
           <thead className="sticky top-0 bg-white/[0.03] text-[10px] uppercase tracking-wider text-text-secondary">
             <tr>
@@ -252,7 +265,9 @@ export default function APIListTab(): React.JSX.Element {
       </div>
 
       {/* Validation results */}
-      <ValidationPanel />
+      <div className="flex-shrink-0 max-h-[40%] overflow-auto">
+        <ValidationPanel />
+      </div>
     </div>
   )
 }

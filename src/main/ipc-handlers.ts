@@ -933,14 +933,15 @@ export function registerIpcHandlers(): void {
   )
 
   // Re-analyze: fetch latest from remote, reset, and re-run analysis
-  ipcMain.handle('cortex:reanalyze', async (event, repoId: string) => {
+  // force=true skips the SHA check so users can force a re-parse
+  ipcMain.handle('cortex:reanalyze', async (event, repoId: string, force?: boolean) => {
     const { git, analyzer } = getCortexInstances()
     const repo = analyzer.cache.getRepoById(repoId)
     if (!repo) throw new Error('Repo not found')
 
     // Fetch and reset to latest
     const newSha = await git.fetchAndReset(repo.repoPath, repo.branch)
-    if (newSha === repo.commitSha) return { changed: false }
+    if (!force && newSha === repo.commitSha) return { changed: false }
 
     // Clear old cache
     analyzer.cache.deleteAnalysis(repo.url, repo.branch)

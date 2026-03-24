@@ -57,9 +57,9 @@ function buildSimData(entities: CodeEntity[], calls: CallEdge[]): { nodes: SimNo
     id: e.id,
     name: e.name,
     kind: e.kind,
-    x: (Math.random() - 0.5) * 100,
-    y: (Math.random() - 0.5) * 100,
-    z: (Math.random() - 0.5) * 100,
+    x: (Math.random() - 0.5) * 50,
+    y: (Math.random() - 0.5) * 50,
+    z: (Math.random() - 0.5) * 50,
     vx: 0,
     vy: 0,
     vz: 0,
@@ -105,11 +105,11 @@ function ForceGraph3DScene({ entities, calls, onNodeClick }: Props): React.JSX.E
   // Initialize simulation
   useEffect(() => {
     const sim = forceSimulation(initNodes)
-      .force('charge', forceManyBody().strength(-30))
-      .force('link', forceLink(initLinks).id((d: SimNode) => d.id).distance(40))
+      .force('charge', forceManyBody().strength(-60))
+      .force('link', forceLink(initLinks).id((d: SimNode) => d.id).distance(25))
       .force('center', forceCenter())
       .alpha(1)
-      .alphaDecay(0.02)
+      .alphaDecay(0.015)
 
     simRef.current = sim
     nodesRef.current = initNodes
@@ -187,7 +187,7 @@ function ForceGraph3DScene({ entities, calls, onNodeClick }: Props): React.JSX.E
       {nodesRef.current.map((node, i) => {
         const colors = getKindColor(node.kind)
         const isHovered = hoveredId === node.id
-        const radius = Math.max(0.8 + node.connections * 0.15, 1)
+        const radius = Math.max(1.2 + node.connections * 0.2, 1.5)
 
         return (
           <mesh
@@ -222,7 +222,10 @@ function ForceGraph3DScene({ entities, calls, onNodeClick }: Props): React.JSX.E
         enableZoom
         enableRotate
         autoRotate
-        autoRotateSpeed={0.5}
+        autoRotateSpeed={0.3}
+        zoomSpeed={1.2}
+        minDistance={10}
+        maxDistance={300}
         makeDefault
       />
     </>
@@ -233,10 +236,11 @@ function ForceGraph3DScene({ entities, calls, onNodeClick }: Props): React.JSX.E
 
 export default function MindGraph3D({ entities, calls, onNodeClick }: Props): React.JSX.Element {
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full" style={{ touchAction: 'none' }}>
       <Canvas
-        camera={{ position: [120, 80, 120], fov: 50 }}
-        style={{ background: 'transparent' }}
+        camera={{ position: [60, 40, 60], fov: 55 }}
+        style={{ background: 'transparent', touchAction: 'none' }}
+        gl={{ antialias: true }}
       >
         <ForceGraph3DScene entities={entities} calls={calls} onNodeClick={onNodeClick} />
       </Canvas>

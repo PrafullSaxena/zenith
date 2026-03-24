@@ -67,10 +67,11 @@ export default function RepoCard({
   const progress = useCortexStore((s) => s.progress)
   const isAnalyzing = useCortexStore((s) => s.isAnalyzing)
   const reanalyze = useCortexStore((s) => s.reanalyze)
-  const enrichEntities = useCortexStore((s) => s.enrichEntities)
+  const runFullAIAnalysis = useCortexStore((s) => s.runFullAIAnalysis)
+  const isRunningFullAI = useCortexStore((s) => s.isRunningFullAI)
+  const fullAIAnalysisPhase = useCortexStore((s) => s.fullAIAnalysisPhase)
   const isThisAnalyzing = isAnalyzing && isActive && repo.status === 'analyzing'
   const [isFetching, setIsFetching] = useState(false)
-  const [isRunningFullAI, setIsRunningFullAI] = useState(false)
 
   return (
     <motion.div
@@ -122,10 +123,18 @@ export default function RepoCard({
         </div>
       )}
 
-      {repo.status === 'ready' && (
+      {repo.status === 'ready' && !isRunningFullAI && (
         <div className="mt-3 flex items-center gap-1.5 text-[10px] text-success">
           <CheckCircle size={12} />
           <span>Analysis ready</span>
+        </div>
+      )}
+
+      {/* Full AI Analysis progress indicator — persists across tab switches */}
+      {isRunningFullAI && isActive && (
+        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-purple-400">
+          <Loader2 size={12} className="animate-spin" />
+          <span>{fullAIAnalysisPhase ?? 'Running AI analysis...'}</span>
         </div>
       )}
 
@@ -183,21 +192,9 @@ export default function RepoCard({
               <button
                 type="button"
                 disabled={isRunningFullAI}
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.stopPropagation()
-                  setIsRunningFullAI(true)
-                  try {
-                    // Re-analyze first (fetches latest + clears cache + re-runs static analysis)
-                    await reanalyze(repo.id)
-                    // Then run AI enrichment (entity summaries, digest, etc.)
-                    try {
-                      await enrichEntities()
-                    } catch {
-                      // AI enrichment may fail if no agent configured — that's ok
-                    }
-                  } finally {
-                    setIsRunningFullAI(false)
-                  }
+                  runFullAIAnalysis(repo.id)
                 }}
                 title="Invalidate all cache, re-run static + AI analysis"
                 className="flex items-center gap-1 rounded-lg bg-purple-500/15 px-2.5 py-1.5 text-xs font-medium text-purple-400 transition-colors hover:bg-purple-500/25 disabled:opacity-50"

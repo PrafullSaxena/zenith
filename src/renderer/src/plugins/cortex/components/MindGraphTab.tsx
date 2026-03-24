@@ -560,7 +560,7 @@ export default function MindGraphTab(): React.JSX.Element {
       </div>
 
       {/* Graph canvas */}
-      <div ref={containerRef} className="relative flex-1 overflow-hidden bg-background">
+      <div ref={containerRef} className="relative flex-1 overflow-hidden bg-background" style={{ overscrollBehavior: 'none', touchAction: 'none' }}>
         {/* Ambient radial glow */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(var(--accent-rgb),0.03),transparent_70%)]" />
 

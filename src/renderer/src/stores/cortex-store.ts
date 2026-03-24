@@ -6,7 +6,10 @@ import type {
   FileContent,
   QAMessage,
   DigestResult,
-  ValidationCorrection
+  ValidationCorrection,
+  RouteInfo,
+  CallEdge,
+  CodeEntity
 } from '../types/cortex'
 import { useAgentStore } from './agent-store'
 import { useSettingsStore } from './settings-store'
@@ -279,10 +282,17 @@ interface CortexState {
   isDigestBuilding: boolean
   entityEnrichmentProgress: { done: number; total: number } | null
   validationResults: ValidationCorrection[]
+  isValidating: boolean
+  validationDone: boolean
+  validationError: string | null
   suppressedRoutes: Set<number>
   hldContent: string
   hldSections: { index: number; content: string; isGenerating: boolean }[]
   isHLDGenerating: boolean
+
+  // Full AI Analysis pipeline
+  isRunningFullAI: boolean
+  fullAIAnalysisPhase: string | null
 
   // Actions
   loadRepos: () => Promise<void>
@@ -310,13 +320,16 @@ interface CortexState {
   updateLastQAMessage: (content: string) => void
   clearQA: () => void
   setIsQAStreaming: (v: boolean) => void
-  reanalyze: (repoId: string) => Promise<void>
+  reanalyze: (repoId: string, force?: boolean) => Promise<void>
 
   // AI Enrichment actions
   setDigest: (digest: DigestResult | null) => void
   setIsDigestBuilding: (v: boolean) => void
   setEntityEnrichmentProgress: (p: { done: number; total: number } | null) => void
   setValidationResults: (results: ValidationCorrection[]) => void
+  setIsValidating: (v: boolean) => void
+  setValidationDone: (v: boolean) => void
+  setValidationError: (error: string | null) => void
   updateValidationStatus: (id: string, status: ValidationCorrection['status']) => void
   setSuppressedRoutes: (routes: Set<number>) => void
   setHLDContent: (content: string) => void
@@ -327,6 +340,7 @@ interface CortexState {
   validateAnalysis: () => Promise<void>
   generateHLD: () => Promise<void>
   restoreEnrichments: () => Promise<void>
+  runFullAIAnalysis: (repoId: string) => Promise<void>
 }
 
 /**
@@ -372,10 +386,15 @@ export const useCortexStore = create<CortexState>((set, get) => ({
   isDigestBuilding: false,
   entityEnrichmentProgress: null,
   validationResults: [],
+  isValidating: false,
+  validationDone: false,
+  validationError: null,
   suppressedRoutes: new Set(),
   hldContent: '',
   hldSections: [],
   isHLDGenerating: false,
+  isRunningFullAI: false,
+  fullAIAnalysisPhase: null,
 
   loadRepos: async () => {
     const repos = await window.api.cortex.listRepos()
@@ -480,19 +499,21 @@ export const useCortexStore = create<CortexState>((set, get) => ({
     const agent = getCortexAgent()
     if (!agent) return
 
-    set({ isGeneratingInsights: true })
+    set({ isGeneratingInsights: true, aiInsights: null })
     const sessionId = crypto.randomUUID()
     let accumulated = ''
 
-    // Check cache first
-    try {
-      const cached = await window.api.cortex.getInsights(repo.url, repo.branch, repo.commitSha)
-      if (cached) {
-        set({ aiInsights: parseToonResponseRenderer(cached), isGeneratingInsights: false })
-        return
+    // Check cache first (only if we have a commitSha to match against)
+    if (repo.commitSha) {
+      try {
+        const cached = await window.api.cortex.getInsights(repo.url, repo.branch, repo.commitSha)
+        if (cached) {
+          set({ aiInsights: parseToonResponseRenderer(cached), isGeneratingInsights: false })
+          return
+        }
+      } catch {
+        /* no cached data */
       }
-    } catch {
-      /* no cached data */
     }
 
     // Get prompts from main process
@@ -555,12 +576,109 @@ export const useCortexStore = create<CortexState>((set, get) => ({
   setIsDigestBuilding: (v) => set({ isDigestBuilding: v }),
   setEntityEnrichmentProgress: (p) => set({ entityEnrichmentProgress: p }),
   setValidationResults: (results) => set({ validationResults: results }),
-  updateValidationStatus: (id, status) =>
+  setIsValidating: (v) => set({ isValidating: v }),
+  setValidationDone: (v) => set({ validationDone: v }),
+  setValidationError: (error) => set({ validationError: error }),
+  updateValidationStatus: (id, status) => {
+    const correction = get().validationResults.find((v) => v.id === id)
     set((s) => ({
       validationResults: s.validationResults.map((v) =>
         v.id === id ? { ...v, status } : v
       )
-    })),
+    }))
+
+    // When accepting, apply the correction to analysisResult
+    if (status === 'accepted' && correction) {
+      const result = get().analysisResult
+      if (!result) return
+
+      switch (correction.type) {
+        case 'missing_route': {
+          const d = correction.data as Record<string, string>
+          const method = (d.method ?? 'GET').toUpperCase() as RouteInfo['method']
+          const routePath = d.path ?? d.fullPath ?? ''
+          const newRoute: RouteInfo = {
+            method,
+            path: routePath,
+            fullPath: routePath,
+            handlerName: d.handler ?? d.handlerName ?? 'unknown',
+            controllerName: d.controller ?? d.controllerName ?? '',
+            filePath: d.file ?? d.filePath ?? '',
+            line: parseInt(d.line ?? '0', 10)
+          }
+          // Don't add duplicates
+          const exists = result.routes.some(
+            (r) => r.method === newRoute.method && r.fullPath === newRoute.fullPath
+          )
+          if (!exists) {
+            set({
+              analysisResult: {
+                ...result,
+                routes: [...result.routes, newRoute],
+                stats: { ...result.stats, routeCount: result.stats.routeCount + 1 }
+              }
+            })
+          }
+          break
+        }
+        case 'missing_edge': {
+          const d = correction.data as Record<string, string>
+          const newEdge: CallEdge = {
+            id: `ai-${crypto.randomUUID().slice(0, 8)}`,
+            callerId: d.from ?? d.fromEntity ?? '',
+            calleeId: d.to ?? d.toEntity ?? '',
+            filePath: d.file ?? '',
+            line: parseInt(d.line ?? '0', 10),
+            type: 'inferred'
+          }
+          if (newEdge.callerId && newEdge.calleeId) {
+            set({
+              analysisResult: {
+                ...result,
+                calls: [...result.calls, newEdge]
+              }
+            })
+          }
+          break
+        }
+        case 'kind_correction': {
+          const d = correction.data as Record<string, string>
+          const entityId = d.entityId ?? d.entity ?? ''
+          const newKind = d.newKind ?? d.kind ?? ''
+          if (entityId && newKind) {
+            set({
+              analysisResult: {
+                ...result,
+                entities: result.entities.map((e) =>
+                  e.id === entityId ? { ...e, kind: newKind as CodeEntity['kind'] } : e
+                )
+              }
+            })
+          }
+          break
+        }
+        case 'dead_route': {
+          const d = correction.data as Record<string, string>
+          const method = (d.method ?? '').toUpperCase()
+          const routePath = d.path ?? d.fullPath ?? ''
+          if (method && routePath) {
+            set({
+              analysisResult: {
+                ...result,
+                routes: result.routes.filter(
+                  (r) => !(r.method === method && r.fullPath === routePath)
+                ),
+                stats: { ...result.stats, routeCount: Math.max(0, result.stats.routeCount - 1) }
+              }
+            })
+          }
+          break
+        }
+        default:
+          break
+      }
+    }
+  },
   setSuppressedRoutes: (routes) => set({ suppressedRoutes: routes }),
   setHLDContent: (content) => set({ hldContent: content }),
   setHLDSections: (sections) => set({ hldSections: sections }),
@@ -792,7 +910,7 @@ export const useCortexStore = create<CortexState>((set, get) => ({
     const sessionId = crypto.randomUUID()
     let accumulated = ''
 
-    await new Promise<void>((resolve) => {
+    await new Promise<void>((resolve, reject) => {
       window.api.ai.onStreamChunk(({ sessionId: sid, chunk }) => {
         if (sid !== sessionId) return
         accumulated += chunk
@@ -852,10 +970,10 @@ export const useCortexStore = create<CortexState>((set, get) => ({
         resolve()
       })
 
-      window.api.ai.onStreamError(({ sessionId: sid }) => {
+      window.api.ai.onStreamError(({ sessionId: sid, error }) => {
         if (sid !== sessionId) return
         window.api.ai.removeStreamListeners()
-        resolve()
+        reject(new Error(error ?? 'AI validation stream failed'))
       })
 
       window.api.ai.startAnalysis(
@@ -1072,7 +1190,7 @@ Files: ${state.analysisResult.testStats.testFiles}, Cases: ${state.analysisResul
     }
   },
 
-  reanalyze: async (repoId: string) => {
+  reanalyze: async (repoId: string, force?: boolean) => {
     const state = get()
     const repo = state.repos.find((r) => r.id === repoId)
     if (!repo) return
@@ -1084,7 +1202,7 @@ Files: ${state.analysisResult.testStats.testFiles}, Cases: ${state.analysisResul
     }))
 
     try {
-      const response = await window.api.cortex.reanalyze(repoId)
+      const response = await window.api.cortex.reanalyze(repoId, force)
       if (response.changed && response.result) {
         const result = response.result as AnalysisResult
         set((s) => ({
@@ -1109,13 +1227,28 @@ Files: ${state.analysisResult.testStats.testFiles}, Cases: ${state.analysisResul
           get().restoreEnrichments()
         }
       } else {
-        // Already up to date
+        // Already up to date — still restore analysis result from cache if missing
         set((s) => ({
           repos: s.repos.map((r) =>
             r.id === repoId ? { ...r, status: 'ready' as const } : r
           ),
           isAnalyzing: false
         }))
+        // Ensure analysisResult is loaded (may be null if user just opened app)
+        if (!get().analysisResult && repo.commitSha) {
+          try {
+            const cached = await window.api.cortex.getCachedAnalysis(
+              repo.url, repo.branch, repo.commitSha
+            )
+            if (cached) {
+              set({ analysisResult: cached as AnalysisResult })
+            }
+          } catch { /* cache miss */ }
+        }
+        // Restore enrichments
+        if (get().activeRepoId === repoId) {
+          get().restoreEnrichments()
+        }
       }
     } catch (err) {
       set((s) => ({
@@ -1126,6 +1259,43 @@ Files: ${state.analysisResult.testStats.testFiles}, Cases: ${state.analysisResul
         ),
         isAnalyzing: false
       }))
+    }
+  },
+
+  runFullAIAnalysis: async (repoId: string) => {
+    if (get().isRunningFullAI) return // prevent double-run
+    set({ isRunningFullAI: true, fullAIAnalysisPhase: 'Fetching & analyzing...' })
+    try {
+      // Step 1: Force re-analyze (fetches latest + always re-runs static analysis)
+      await get().reanalyze(repoId, true)
+      set({ fullAIAnalysisPhase: 'Building codebase digest...' })
+
+      // Step 2: Build codebase digest (shared dependency for all AI steps)
+      await get().buildDigest().catch(() => {})
+      set({ fullAIAnalysisPhase: 'Generating AI insights...' })
+
+      // Step 3: Generate AI insights (architecture, patterns, security)
+      await get().generateInsights().catch(() => {})
+      set({ fullAIAnalysisPhase: 'Enriching entities...' })
+
+      // Step 4: Enrich entities with AI summaries
+      await get().enrichEntities().catch(() => {})
+      set({ fullAIAnalysisPhase: 'Validating analysis...' })
+
+      // Step 5: AI validation — find missing routes, edges, kind corrections
+      await get().validateAnalysis().catch(() => {})
+
+      // Step 6: Auto-apply all validation corrections
+      const pending = get().validationResults.filter((v) => v.status === 'pending')
+      for (const correction of pending) {
+        get().updateValidationStatus(correction.id, 'accepted')
+      }
+      set({ fullAIAnalysisPhase: 'Generating high-level design...' })
+
+      // Step 7: Generate HLD (uses enriched data + applied corrections)
+      await get().generateHLD().catch(() => {})
+    } finally {
+      set({ isRunningFullAI: false, fullAIAnalysisPhase: null })
     }
   }
 }))
