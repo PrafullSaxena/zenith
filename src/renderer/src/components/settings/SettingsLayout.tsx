@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PLUGINS } from '../../plugins/registry'
+import { GlassTab } from '@renderer/components/ui'
+import type { GlassTabItem } from '@renderer/components/ui/GlassTab'
 import { GeneralSettings } from './GeneralSettings'
 import { PluginSettings } from './PluginSettings'
 import { AIAgentsSettings } from './AIAgentsSettings'
@@ -9,13 +11,8 @@ import type { PluginId } from '../../types/plugin'
 
 type SettingsCategory = 'general' | 'ai-agents' | 'mcp-servers' | PluginId
 
-interface CategoryItem {
-  id: SettingsCategory
-  label: string
-}
-
 /**
- * Settings view with left sidebar listing categories and right content panel.
+ * Settings view with GlassTab vertical sidebar listing categories and right content panel.
  * Categories: General, AI Agents, MCP Servers, then one per plugin.
  * Supports ?tab=<pluginId> URL parameter to open a specific settings section.
  */
@@ -24,16 +21,15 @@ export function SettingsLayout(): React.JSX.Element {
   const initialTab = searchParams.get('tab') as SettingsCategory | null
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>(initialTab ?? 'general')
 
-  const categories: CategoryItem[] = [
+  const settingsTabs: GlassTabItem[] = [
     { id: 'general', label: 'General' },
     { id: 'ai-agents', label: 'AI Agents' },
-    { id: 'mcp-servers', label: 'MCP Servers' }
+    { id: 'mcp-servers', label: 'MCP Servers' },
+    ...PLUGINS.map((p) => ({
+      id: p.id as string,
+      label: p.name
+    }))
   ]
-
-  const pluginCategories: CategoryItem[] = PLUGINS.map((p) => ({
-    id: p.id as SettingsCategory,
-    label: p.name
-  }))
 
   const renderContent = (): React.JSX.Element => {
     switch (activeCategory) {
@@ -50,52 +46,19 @@ export function SettingsLayout(): React.JSX.Element {
 
   return (
     <div className="flex h-full -m-4">
-      {/* Left sidebar */}
-      <div className="w-48 flex-shrink-0 border-r border-border bg-surface overflow-y-auto py-4">
-        <div className="px-3 mb-1">
+      {/* Left sidebar — GlassTab vertical */}
+      <div className="w-48 flex-shrink-0 overflow-y-auto py-4 px-2">
+        <div className="px-1 mb-2">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
             Settings
           </span>
         </div>
-
-        {/* General + AI Agents + MCP */}
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-              activeCategory === cat.id
-                ? 'border-l-2 border-accent bg-surface-elevated text-text-primary font-medium'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/50'
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
-
-        {/* Divider */}
-        <div className="mx-3 my-2 border-t border-border/30" />
-
-        <div className="px-3 mb-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
-            Plugins
-          </span>
-        </div>
-
-        {/* Plugin categories */}
-        {pluginCategories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-              activeCategory === cat.id
-                ? 'border-l-2 border-accent bg-surface-elevated text-text-primary font-medium'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/50'
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
+        <GlassTab
+          orientation="vertical"
+          tabs={settingsTabs}
+          activeTab={activeCategory}
+          onTabChange={(id) => setActiveCategory(id as SettingsCategory)}
+        />
       </div>
 
       {/* Right content panel — animate on category switch */}

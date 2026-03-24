@@ -1,8 +1,52 @@
 import { useEffect } from 'react'
+import { Check } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { PLUGINS } from '../../plugins/registry'
+import { GlassCard } from '@renderer/components/ui'
+import { getClassicThemes, getNewThemes } from '@renderer/lib/theme-metadata'
+import type { ThemeMeta } from '@renderer/lib/theme-metadata'
 import { SettingsField } from './SettingsField'
 import type { SettingsField as SettingsFieldDef } from '../../types/plugin'
+
+// ---------------------------------------------------------------------------
+// ThemeCard — inline sub-component for the visual theme selector grid
+// ---------------------------------------------------------------------------
+
+function ThemeCard({
+  theme,
+  isActive,
+  onSelect
+}: {
+  theme: ThemeMeta
+  isActive: boolean
+  onSelect: () => void
+}): React.JSX.Element {
+  return (
+    <GlassCard
+      variant={isActive ? 'selected' : 'interactive'}
+      onClick={onSelect}
+      className={`relative cursor-pointer ${isActive ? 'border-accent shadow-[0_0_8px_var(--color-accent-glow)]' : ''}`}
+    >
+      <span className="text-sm font-medium text-text-primary">{theme.label}</span>
+      <div className="mt-2 flex gap-1.5">
+        {Object.values(theme.colors).map((color, i) => (
+          <span
+            key={i}
+            className="h-3 w-3 rounded-full border border-border/20"
+            style={{ backgroundColor: color || 'var(--surface-elevated)' }}
+          />
+        ))}
+      </div>
+      {isActive && (
+        <Check size={14} className="absolute top-2 right-2 text-accent" />
+      )}
+    </GlassCard>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// GeneralSettings
+// ---------------------------------------------------------------------------
 
 /**
  * General application settings form.
@@ -23,7 +67,11 @@ export function GeneralSettings(): React.JSX.Element {
     )
   }
 
-  // Define general settings fields
+  const currentTheme = (getSetting('general.theme') as string) ?? 'default'
+  const classicThemes = getClassicThemes()
+  const newThemes = getNewThemes().filter((t) => t.colors.bg !== '')
+
+  // Define general settings fields (non-theme)
   const defaultViewField: SettingsFieldDef = {
     key: 'defaultView',
     label: 'Default View',
@@ -33,28 +81,6 @@ export function GeneralSettings(): React.JSX.Element {
     options: [
       { label: 'Zenith', value: 'dashboard' },
       ...PLUGINS.map((p) => ({ label: p.name, value: p.id }))
-    ]
-  }
-
-  const themeField: SettingsFieldDef = {
-    key: 'theme',
-    label: 'Theme',
-    type: 'select',
-    description: 'Color theme for the application',
-    defaultValue: 'zenith',
-    options: [
-      { label: 'Zenith (Cyan)', value: 'zenith' },
-      { label: 'Portfolio (Amber)', value: 'portfolio' },
-      { label: 'Nord Aurora (Blue)', value: 'nord' },
-      { label: 'Rosé Pine (Rose)', value: 'rose-pine' },
-      { label: 'Dracula (Purple)', value: 'dracula' },
-      { label: 'Gruvbox (Orange)', value: 'gruvbox' },
-      { label: 'Tokyo Night (Indigo)', value: 'tokyo-night' },
-      { label: 'Synthwave \'84 (Pink)', value: 'synthwave' },
-      { label: 'Catppuccin (Lavender)', value: 'catppuccin' },
-      { label: 'Emerald Matrix (Green)', value: 'emerald' },
-      { label: 'Solarized Dark (Teal)', value: 'solarized' },
-      { label: 'Crimson Night (Red)', value: 'crimson' }
     ]
   }
 
@@ -119,45 +145,79 @@ export function GeneralSettings(): React.JSX.Element {
   }
 
   return (
-    <div className="stagger-children">
+    <div>
       <h2 className="mb-1 text-lg font-semibold text-text-primary">General</h2>
       <p className="mb-6 text-xs text-text-secondary">Application-wide preferences and defaults.</p>
 
-      <SettingsField
-        field={themeField}
-        value={getSetting('general.theme')}
-        onChange={(value) => setSetting('general.theme', value)}
-      />
+      {/* ── Theme Selector Grid ── */}
+      <GlassCard className="mb-6">
+        <h3 className="mb-1 text-sm font-medium text-text-primary">Theme</h3>
+        <p className="mb-4 text-xs text-text-secondary">Color theme for the application</p>
 
-      <SettingsField
-        field={hljsThemeField}
-        value={getSetting('general.hljsTheme')}
-        onChange={(value) => setSetting('general.hljsTheme', value)}
-      />
+        <div className="space-y-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">Classic Themes</p>
+            <div className="grid grid-cols-3 gap-3">
+              {classicThemes.map((theme) => (
+                <ThemeCard
+                  key={theme.value}
+                  theme={theme}
+                  isActive={currentTheme === theme.value}
+                  onSelect={() => setSetting('general.theme', theme.value)}
+                />
+              ))}
+            </div>
+          </div>
+          {newThemes.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">New Collection</p>
+              <div className="grid grid-cols-3 gap-3">
+                {newThemes.map((theme) => (
+                  <ThemeCard
+                    key={theme.value}
+                    theme={theme}
+                    isActive={currentTheme === theme.value}
+                    onSelect={() => setSetting('general.theme', theme.value)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </GlassCard>
 
-      <SettingsField
-        field={defaultViewField}
-        value={getSetting('general.defaultView')}
-        onChange={(value) => setSetting('general.defaultView', value)}
-      />
+      {/* ── Other Settings ── */}
+      <GlassCard className="mb-5">
+        <SettingsField
+          field={hljsThemeField}
+          value={getSetting('general.hljsTheme')}
+          onChange={(value) => setSetting('general.hljsTheme', value)}
+        />
 
-      <SettingsField
-        field={showWelcomeField}
-        value={getSetting('general.showWelcomeOnStart')}
-        onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
-      />
+        <SettingsField
+          field={defaultViewField}
+          value={getSetting('general.defaultView')}
+          onChange={(value) => setSetting('general.defaultView', value)}
+        />
 
-      <SettingsField
-        field={pdfStyleField}
-        value={getSetting('general.pdfStyle')}
-        onChange={(value) => setSetting('general.pdfStyle', value)}
-      />
+        <SettingsField
+          field={showWelcomeField}
+          value={getSetting('general.showWelcomeOnStart')}
+          onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
+        />
 
-      <SettingsField
-        field={workingDirectoryField}
-        value={getSetting('general.workingDirectory')}
-        onChange={(value) => setSetting('general.workingDirectory', value)}
-      />
+        <SettingsField
+          field={pdfStyleField}
+          value={getSetting('general.pdfStyle')}
+          onChange={(value) => setSetting('general.pdfStyle', value)}
+        />
+
+        <SettingsField
+          field={workingDirectoryField}
+          value={getSetting('general.workingDirectory')}
+          onChange={(value) => setSetting('general.workingDirectory', value)}
+        />
+      </GlassCard>
     </div>
   )
 }

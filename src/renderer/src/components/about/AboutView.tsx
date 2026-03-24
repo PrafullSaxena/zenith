@@ -3,6 +3,7 @@
  * Default-exported for React.lazy() compatibility in App.tsx.
  */
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import {
   User,
   Github,
@@ -20,6 +21,8 @@ import {
   CheckCircle,
   Loader2
 } from 'lucide-react'
+import { GlassCard, GlassSurface, GlassButton } from '@renderer/components/ui'
+import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import zenithLogo from '../../assets/zenith-logo.png'
 
 const APP_VERSION = '1.0.0'
@@ -131,9 +134,9 @@ export default function AboutView(): React.JSX.Element {
   }
 
   return (
-    <div className="stagger-children mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-3xl space-y-8">
       {/* ── App Header ── */}
-      <div className="text-center">
+      <GlassSurface className="text-center">
         <img
           src={zenithLogo}
           alt="Zenith"
@@ -146,35 +149,39 @@ export default function AboutView(): React.JSX.Element {
         <span className="mt-2 inline-block rounded-full bg-surface-elevated px-3 py-0.5 text-[11px] font-medium text-text-secondary">
           v{APP_VERSION}
         </span>
-      </div>
+      </GlassSurface>
 
-      {/* ── About Application ── */}
+      {/* ── Capabilities ── */}
       <section>
         <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-text-secondary">
           <Zap size={14} className="text-accent" />
           Capabilities
         </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+        >
           {CAPABILITIES.map((cap) => {
             const Icon = cap.icon
             return (
-              <div
-                key={cap.title}
-                className="hover-lift rounded-xl border border-border/50 bg-surface-elevated/50 p-4 transition-colors hover:border-accent/30"
-              >
-                <div className="mb-2 flex items-center gap-2">
-                  <Icon size={16} className="shrink-0 text-accent" />
-                  <h3 className="text-sm font-semibold text-text-primary">
-                    {cap.title}
-                  </h3>
-                </div>
-                <p className="text-xs leading-relaxed text-text-secondary">
-                  {cap.desc}
-                </p>
-              </div>
+              <motion.div key={cap.title} variants={staggerItem}>
+                <GlassCard variant="interactive" className="h-full">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Icon size={16} className="shrink-0 text-accent" />
+                    <h3 className="text-sm font-semibold text-text-primary">
+                      {cap.title}
+                    </h3>
+                  </div>
+                  <p className="text-xs leading-relaxed text-text-secondary">
+                    {cap.desc}
+                  </p>
+                </GlassCard>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </section>
 
       {/* ── About Author ── */}
@@ -183,7 +190,7 @@ export default function AboutView(): React.JSX.Element {
           <User size={14} className="text-accent" />
           About the Author
         </h2>
-        <div className="rounded-xl border border-border bg-gradient-to-br from-surface-elevated to-surface p-5">
+        <GlassCard>
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-lg font-bold text-accent">
               PS
@@ -206,46 +213,46 @@ export default function AboutView(): React.JSX.Element {
             {SOCIAL_LINKS.map((link) => {
               const Icon = link.icon
               return (
-                <button
+                <GlassButton
                   key={link.label}
-                  type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleOpenExternal(link.url)}
-                  className="hover-lift flex items-center gap-1.5 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-xs text-text-secondary transition-colors hover:border-accent/30 hover:text-accent"
                 >
                   <Icon size={13} />
                   {link.label}
                   <ExternalLink size={9} className="opacity-40" />
-                </button>
+                </GlassButton>
               )
             })}
           </div>
-        </div>
+        </GlassCard>
       </section>
 
-      {/* ── Getting Started ── */}
+      {/* ── Getting Started — Glass Timeline ── */}
       <section>
         <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-text-secondary">
           <BookOpen size={14} className="text-accent" />
           Getting Started
         </h2>
         <div className="space-y-3">
-          {GETTING_STARTED.map((item) => (
-            <div
-              key={item.step}
-              className="flex gap-4 rounded-xl border border-border/50 bg-surface-elevated/30 p-4 transition-colors hover:border-accent/20"
-            >
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-bold text-accent">
+          {GETTING_STARTED.map((item, index) => (
+            <GlassCard key={item.step} className="relative pl-10">
+              {/* Numbered step indicator */}
+              <div className="absolute left-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
                 {item.step}
               </div>
-              <div>
-                <h4 className="text-sm font-semibold text-text-primary">
-                  {item.title}
-                </h4>
-                <p className="mt-0.5 text-xs leading-relaxed text-text-secondary">
-                  {item.desc}
-                </p>
-              </div>
-            </div>
+              {/* Vertical connecting line between steps */}
+              {index < GETTING_STARTED.length - 1 && (
+                <div className="absolute left-[21px] top-9 bottom-0 w-px bg-border/40" />
+              )}
+              <h4 className="text-sm font-semibold text-text-primary">
+                {item.title}
+              </h4>
+              <p className="mt-0.5 text-xs leading-relaxed text-text-secondary">
+                {item.desc}
+              </p>
+            </GlassCard>
           ))}
         </div>
       </section>
@@ -256,7 +263,7 @@ export default function AboutView(): React.JSX.Element {
           <Wrench size={14} className="text-accent" />
           Diagnostics
         </h2>
-        <div className="rounded-xl border border-border/50 bg-surface-elevated/30 p-4 transition-colors hover:border-accent/20">
+        <GlassCard>
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-sm font-semibold text-text-primary">
@@ -266,11 +273,10 @@ export default function AboutView(): React.JSX.Element {
                 Download a ZIP with app logs, system info, and settings (credentials redacted) for troubleshooting.
               </p>
             </div>
-            <button
-              type="button"
+            <GlassButton
               onClick={handleExportLogs}
               disabled={exportState !== 'idle'}
-              className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-accent/40 hover:text-accent disabled:opacity-50"
+              size="sm"
             >
               {exportState === 'exporting' && (
                 <>
@@ -290,9 +296,9 @@ export default function AboutView(): React.JSX.Element {
                   Download Logs
                 </>
               )}
-            </button>
+            </GlassButton>
           </div>
-        </div>
+        </GlassCard>
       </section>
 
       {/* Footer */}
