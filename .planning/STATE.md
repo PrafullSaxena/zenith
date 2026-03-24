@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Every screen in Zenith must feel like the same app — consistent glass styling, shared animation, unified components.
-**Current focus:** Phase 4: Plugin Migration
+**Current focus:** Phase 5: Theme Collection
 
 ## Current Position
 
-Phase: 4 of 7 (Plugin Migration)
-Plan: 7 of 7 in current phase (7 complete)
-Status: Complete
-Last activity: 2026-03-25 — Completed 04-02 (Cortex Plugin Migration)
+Phase: 5 of 7 (Theme Collection)
+Plan: 1 of 3 in current phase (1 complete)
+Status: In Progress
+Last activity: 2026-03-25 — Completed 05-01 (Theme CSS Definitions)
 
-Progress: [██████████] 7/7 plans
+Progress: [███-------] 1/3 plans
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [██████████] 7/7 plans
 | Phase 04 P05 | 3min | 2 tasks | 8 files |
 | Phase 04 P04 | 8min | 2 tasks | 8 files |
 | Phase 04 P06 | 5min | 2 tasks | 8 files |
+| Phase 05 P01 | 2min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,7 @@ Recent decisions affecting current work:
 - [Phase 04-02]: RepoCard uses GlassCard variant=interactive instead of custom motion.div whileHover
 - [Phase 04-02]: QAPanel keeps custom chat UI with GlassCard message bubbles rather than full GlassChat swap
 - [Phase 04-02]: CortexView empty states use shared EmptyState component with actionLabel/onAction props
+- [Phase 05-01]: Status colors reuse shared values across all 6 new themes -- no palette conflicts
 
 ### Pending Todos
 

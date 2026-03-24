@@ -33,15 +33,15 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 
 ### Themes
 
-- [ ] **THEME-01**: Midnight Bloom theme defined (magenta-orchid accent on violet-black)
-- [ ] **THEME-02**: Copper Forge theme defined (burnished copper accent on warm charcoal)
-- [ ] **THEME-03**: Ocean Depth theme defined (aquamarine accent on abyssal blue)
-- [ ] **THEME-04**: Nebula Dust theme defined (stellar pink-coral accent on deep space purple)
-- [ ] **THEME-05**: Obsidian theme defined (pure monochrome, zero saturation, silver on near-black)
-- [ ] **THEME-06**: Jade Temple theme defined (jade green accent on dark forest green)
+- [x] **THEME-01**: Midnight Bloom theme defined (magenta-orchid accent on violet-black)
+- [x] **THEME-02**: Copper Forge theme defined (burnished copper accent on warm charcoal)
+- [x] **THEME-03**: Ocean Depth theme defined (aquamarine accent on abyssal blue)
+- [x] **THEME-04**: Nebula Dust theme defined (stellar pink-coral accent on deep space purple)
+- [x] **THEME-05**: Obsidian theme defined (pure monochrome, zero saturation, silver on near-black)
+- [x] **THEME-06**: Jade Temple theme defined (jade green accent on dark forest green)
 - [ ] **THEME-07**: Visual theme selector grid in Settings with Classic (12) and New Collection (6) sections
 - [ ] **THEME-08**: Each theme card shows name, 4 color dots, mini preview strip; active theme has accent border glow
-- [ ] **THEME-09**: All 12 legacy themes converted from hex to OKLch color space
+- [x] **THEME-09**: All 12 legacy themes converted from hex to OKLch color space
 - [ ] **THEME-10**: Glass components validated across all 18 themes (visual QA)
 
 ### Core Pages Migration
@@ -131,15 +131,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COMP-09 | Phase 2 | Complete |
 | COMP-10 | Phase 2 | Complete |
 | COMP-11 | Phase 2 | Complete |
-| THEME-01 | Phase 5 | Pending |
-| THEME-02 | Phase 5 | Pending |
-| THEME-03 | Phase 5 | Pending |
-| THEME-04 | Phase 5 | Pending |
-| THEME-05 | Phase 5 | Pending |
-| THEME-06 | Phase 5 | Pending |
+| THEME-01 | Phase 5 | Complete |
+| THEME-02 | Phase 5 | Complete |
+| THEME-03 | Phase 5 | Complete |
+| THEME-04 | Phase 5 | Complete |
+| THEME-05 | Phase 5 | Complete |
+| THEME-06 | Phase 5 | Complete |
 | THEME-07 | Phase 5 | Pending |
 | THEME-08 | Phase 5 | Pending |
-| THEME-09 | Phase 5 | Pending |
+| THEME-09 | Phase 5 | Complete |
 | THEME-10 | Phase 5 | Pending |
 | CORE-01 | Phase 3 | Complete |
 | CORE-02 | Phase 3 | Complete |
