@@ -47,6 +47,7 @@ Progress: [████████░░] 6/7 plans
 | Phase 04 P01 | 3min | 2 tasks | 5 files |
 | Phase 04 P03 | 3min | 2 tasks | 6 files |
 | Phase 04 P05 | 3min | 2 tasks | 8 files |
+| Phase 04 P04 | 8min | 2 tasks | 8 files |
 | Phase 04 P06 | 5min | 2 tasks | 8 files |
 
 ## Accumulated Context
@@ -100,6 +101,9 @@ Recent decisions affecting current work:
 - [04-05]: ComparisonView uses emerald-400/red-400 for cheapest/most-expensive cost highlighting with CheckCircle2 icon
 - [04-06]: KnowledgeGraph only wrapped in GlassSurface with GlassButton toolbar -- internals unchanged for Phase 6 upgrade
 - [04-06]: DeleteConfirmDialog replaced custom modal overlay with GlassModal component
+- [04-04]: ResultsGrid retains custom virtualized table instead of GlassTable -- GlassTable lacks virtualization, column resizing, copy, context menus
+- [04-04]: AskAI uses GlassCard+GlassSurface inline pattern rather than GlassChat -- complex follow-up conversation state incompatible with GlassChat
+- [04-04]: CellModal uses GlassModal with focus trap and portal rendering replacing custom overlay
 - [04-06]: NoteContextMenu uses glass backdrop pattern instead of GlassSurface to preserve fixed positioning
 
 ### Pending Todos
@@ -113,5 +117,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 04-06-PLAN.md (Nebula Plugin Migration)
+Stopped at: Completed 04-04-PLAN.md (DbInspector Plugin Migration)
 Resume file: None
