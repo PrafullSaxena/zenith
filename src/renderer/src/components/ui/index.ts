@@ -22,6 +22,12 @@ export { EmptyState } from './EmptyState'
 export { GlassModal } from './GlassModal'
 export { GlassToast } from './GlassToast'
 
+// Plugin utility components (Plan 04-00)
+export { GlassChat } from './GlassChat'
+export { GlassTable } from './GlassTable'
+export { PluginHeader } from './PluginHeader'
+export { GlassResizeHandle } from './GlassResizeHandle'
+
 // Utilities
 export { cn, GLASS_BASE } from './glass-utils'
 export { default as AnimatedCounter } from './AnimatedCounter'
@@ -32,3 +38,7 @@ export type { GlassBadgeProps } from './GlassBadge'
 export type { GlassButtonProps } from './GlassButton'
 export type { GlassInputProps } from './GlassInput'
 export type { GlassCardProps } from './GlassCard'
+export type { GlassChatMessage, GlassChatProps } from './GlassChat'
+export type { GlassTableColumn, GlassTableProps } from './GlassTable'
+export type { PluginHeaderProps, PluginHeaderTab } from './PluginHeader'
+export type { GlassResizeHandleProps } from './GlassResizeHandle'
