@@ -4,10 +4,12 @@
  * Renders services grouped by category with collapsible sections.
  * Each service has a toggle checkbox to add/remove it from the estimation.
  * Selected services are highlighted with an accent border.
- * Includes a fuzzy search input that filters services by name or description.
+ * Uses GlassCard for category containers, GlassBadge for selected count,
+ * GlassSkeleton for loading, and GlassInput for search.
  */
 import { useState, useMemo } from 'react'
 import { ChevronDown, ChevronRight, Search, X } from 'lucide-react'
+import { GlassCard, GlassBadge, GlassSkeleton, GlassInput } from '@renderer/components/ui'
 import type { CloudProvider } from '../../types/launchpad'
 import type { ServiceDefinition } from '../../data/cloud-pricing/types'
 import { getCatalog } from '../../data/cloud-pricing/index'
@@ -25,10 +27,8 @@ function fuzzyMatch(query: string, target: string): boolean {
   const q = query.toLowerCase()
   const t = target.toLowerCase()
 
-  // Fast path: substring match
   if (t.includes(q)) return true
 
-  // Fuzzy: all chars of query appear in order
   let qi = 0
   for (let ti = 0; ti < t.length && qi < q.length; ti++) {
     if (t[ti] === q[qi]) qi++
@@ -44,6 +44,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
   const removeService = useLaunchpadStore((s) => s.removeService)
 
   const [searchQuery, setSearchQuery] = useState('')
+  const [isLoading] = useState(false)
 
   // Track which categories are expanded; default all open
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
@@ -71,7 +72,6 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
       .filter((category) => category.services.length > 0)
   }, [catalog.categories, searchQuery])
 
-  // Total service count for display
   const totalServices = catalog.categories.reduce((sum, cat) => sum + cat.services.length, 0)
 
   const toggleCategory = (categoryId: string) => {
@@ -89,30 +89,43 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="p-3 space-y-3">
+        <GlassSkeleton variant="card" />
+        <GlassSkeleton variant="card" />
+        <GlassSkeleton variant="card" />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Header with search */}
-      <div className="sticky top-0 z-10 bg-surface p-3 border-b border-border">
-        <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-text-secondary/60">
+      <div className="sticky top-0 z-10 bg-[var(--glass-bg)] p-3 border-b border-white/[0.06]">
+        <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--text-secondary)]/60">
           Service Catalog
-          <span className="ml-1 text-text-secondary/40">({totalServices})</span>
+          <span className="ml-1 text-[var(--text-secondary)]/40">({totalServices})</span>
         </p>
 
         {/* Search input */}
         <div className="relative">
-          <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-text-secondary/40" />
-          <input
+          <Search
+            size={12}
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]/40 z-10 pointer-events-none"
+          />
+          <GlassInput
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search services..."
-            className="w-full rounded-md border border-border bg-background pl-7 pr-7 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/40 transition focus:outline-none focus:ring-1 focus:ring-accent focus:border-transparent"
+            className="pl-7 pr-7 py-1.5 text-xs"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary/40 hover:text-text-primary transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]/40 hover:text-[var(--text-primary)] transition-colors z-10"
             >
               <X size={12} />
             </button>
@@ -124,43 +137,53 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
       <div className="flex-1 overflow-y-auto p-2">
         {filteredCategories.length === 0 ? (
           <div className="flex items-center justify-center py-8">
-            <p className="text-xs text-text-secondary/50 italic">No services match &ldquo;{searchQuery}&rdquo;</p>
+            <p className="text-xs text-[var(--text-secondary)]/50 italic">
+              No services match &ldquo;{searchQuery}&rdquo;
+            </p>
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">
             {filteredCategories.map((category) => {
               const isOpen = expanded[category.id] ?? true
-              const selectedCount = category.services.filter((s: ServiceDefinition) => isSelected(s.id)).length
+              const selectedCount = category.services.filter((s: ServiceDefinition) =>
+                isSelected(s.id)
+              ).length
 
               return (
-                <div key={category.id} className="rounded-lg border border-border/50 overflow-hidden">
+                <GlassCard key={category.id} className="p-0 overflow-hidden rounded-lg">
                   {/* Category header */}
                   <button
                     type="button"
                     onClick={() => toggleCategory(category.id)}
-                    className="flex w-full items-center justify-between bg-surface/50 px-2.5 py-1.5 text-left transition-colors hover:bg-surface/80"
+                    className="flex w-full items-center justify-between px-2.5 py-1.5 text-left transition-colors hover:bg-white/[0.04]"
                   >
                     <div className="flex items-center gap-1.5">
                       {isOpen ? (
-                        <ChevronDown size={12} className="text-text-secondary shrink-0" />
+                        <ChevronDown
+                          size={12}
+                          className="text-[var(--text-secondary)] shrink-0"
+                        />
                       ) : (
-                        <ChevronRight size={12} className="text-text-secondary shrink-0" />
+                        <ChevronRight
+                          size={12}
+                          className="text-[var(--text-secondary)] shrink-0"
+                        />
                       )}
-                      <span className="text-xs font-medium text-text-primary">{category.name}</span>
+                      <span className="text-xs font-medium text-[var(--text-primary)]">
+                        {category.name}
+                      </span>
                       {selectedCount > 0 && (
-                        <span className="rounded-full bg-accent/20 px-1.5 py-0 text-[10px] font-medium text-accent">
-                          {selectedCount}
-                        </span>
+                        <GlassBadge variant="accent">{selectedCount}</GlassBadge>
                       )}
                     </div>
-                    <span className="text-[10px] text-text-secondary/40">
+                    <span className="text-[10px] text-[var(--text-secondary)]/40">
                       {category.services.length}
                     </span>
                   </button>
 
                   {/* Service rows */}
                   {isOpen && (
-                    <div className="divide-y divide-border/30">
+                    <div className="divide-y divide-white/[0.04]">
                       {category.services.map((service: ServiceDefinition) => {
                         const selected = isSelected(service.id)
 
@@ -171,16 +194,16 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                             onClick={() => handleToggle(category.id, service.id)}
                             className={`flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors ${
                               selected
-                                ? 'border-l-2 border-l-accent bg-accent/5 hover:bg-accent/10'
-                                : 'hover:bg-surface/40'
+                                ? 'border-l-2 border-l-[var(--color-accent)] bg-[var(--color-accent)]/5 hover:bg-[var(--color-accent)]/10'
+                                : 'hover:bg-white/[0.03]'
                             }`}
                           >
                             {/* Checkbox visual */}
                             <div
                               className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors ${
                                 selected
-                                  ? 'border-accent bg-accent text-white'
-                                  : 'border-border bg-background'
+                                  ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
+                                  : 'border-white/[0.12] bg-white/[0.04]'
                               }`}
                             >
                               {selected && (
@@ -200,12 +223,14 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                             <div className="flex-1 min-w-0">
                               <p
                                 className={`text-xs font-medium leading-tight ${
-                                  selected ? 'text-accent' : 'text-text-primary'
+                                  selected
+                                    ? 'text-[var(--color-accent)]'
+                                    : 'text-[var(--text-primary)]'
                                 }`}
                               >
                                 {service.name}
                               </p>
-                              <p className="text-[10px] text-text-secondary/60 leading-snug mt-0.5 line-clamp-2">
+                              <p className="text-[10px] text-[var(--text-secondary)]/60 leading-snug mt-0.5 line-clamp-2">
                                 {service.description}
                               </p>
                             </div>
@@ -214,7 +239,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                       })}
                     </div>
                   )}
-                </div>
+                </GlassCard>
               )
             })}
           </div>

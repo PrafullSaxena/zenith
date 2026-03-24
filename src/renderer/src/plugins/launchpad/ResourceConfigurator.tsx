@@ -1,21 +1,23 @@
 /**
  * ResourceConfigurator — Per-service dynamic configuration forms.
  *
- * Renders a configuration card for each selected service.
+ * Renders a configuration card for each selected service using GlassCard sections.
  * Form fields are driven by the service's configSchema:
- *  - 'select': dropdown with options (instance types, regions, etc.)
- *  - 'number': number input with min/max bounds
+ *  - 'select': GlassSelect dropdown with options (instance types, regions, etc.)
+ *  - 'number': GlassInput number field with min/max bounds
  *
  * Reads selected services from the store; writes config changes back via updateServiceConfig.
  */
 import { useState, useCallback, useEffect } from 'react'
 import { Settings2 } from 'lucide-react'
+import { GlassCard, GlassInput, GlassSelect, EmptyState } from '@renderer/components/ui'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { getCatalog } from '../../data/cloud-pricing/index'
 import type { ResourceConfig, ConfigField, SelectOption } from '../../types/launchpad'
 
 /**
  * NumberInput — controlled number field with local string state.
+ * Uses GlassInput for glass styling.
  * Allows natural typing (clearing, decimal entry) while syncing
  * the parsed numeric value to the store on change.
  */
@@ -23,11 +25,13 @@ function NumberInput({
   value,
   min,
   max,
+  label,
   onChange
 }: {
   value: number
   min?: number
   max?: number
+  label?: string
   onChange: (n: number) => void
 }): React.JSX.Element {
   const [localValue, setLocalValue] = useState<string>(String(value))
@@ -44,7 +48,6 @@ function NumberInput({
 
       const parsed = parseFloat(raw)
       if (!isNaN(parsed) && isFinite(parsed)) {
-        // Clamp to bounds if provided
         let clamped = parsed
         if (min !== undefined && clamped < min) clamped = min
         if (max !== undefined && clamped > max) clamped = max
@@ -55,7 +58,6 @@ function NumberInput({
   )
 
   const handleBlur = useCallback(() => {
-    // On blur, normalize the display value
     const parsed = parseFloat(localValue)
     if (isNaN(parsed) || !isFinite(parsed)) {
       const fallback = min ?? 0
@@ -71,14 +73,14 @@ function NumberInput({
   }, [localValue, min, max, onChange])
 
   return (
-    <input
+    <GlassInput
       type="number"
       value={localValue}
       min={min}
       max={max}
+      label={label}
       onChange={handleChange}
       onBlur={handleBlur}
-      className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
     />
   )
 }
@@ -90,15 +92,11 @@ export default function ResourceConfigurator(): React.JSX.Element {
 
   if (selectedServices.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center max-w-xs">
-          <Settings2 size={28} className="mx-auto mb-3 text-text-secondary/20" />
-          <p className="text-sm text-text-secondary/60">No services selected</p>
-          <p className="mt-1 text-xs text-text-secondary/40">
-            Select services from the catalog on the left to configure their resources
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        icon={Settings2}
+        title="No services selected"
+        description="Select services from the catalog on the left to configure their resources"
+      />
     )
   }
 
@@ -106,7 +104,6 @@ export default function ResourceConfigurator(): React.JSX.Element {
 
   const catalog = getCatalog(provider)
 
-  // Find a service definition in catalog by id
   const findService = (serviceId: string) => {
     for (const category of catalog.categories) {
       const service = category.services.find((s) => s.id === serviceId)
@@ -126,9 +123,9 @@ export default function ResourceConfigurator(): React.JSX.Element {
 
   return (
     <div className="p-4">
-      <p className="mb-3 text-xs font-medium uppercase tracking-wider text-text-secondary/60">
+      <div className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider pb-3">
         Resource Configuration
-      </p>
+      </div>
 
       <div className="flex flex-col gap-4">
         {selectedServices.map((sel) => {
@@ -136,25 +133,21 @@ export default function ResourceConfigurator(): React.JSX.Element {
           if (!service) return null
 
           return (
-            <div
-              key={sel.serviceId}
-              className="rounded-lg border border-border bg-surface p-4"
-            >
+            <GlassCard key={sel.serviceId}>
               {/* Card header */}
-              <p className="mb-3 text-sm font-semibold text-text-primary border-b border-border pb-2">
+              <p className="mb-3 text-sm font-semibold text-[var(--text-primary)] border-b border-white/[0.06] pb-2">
                 {service.name}
-                <span className="ml-2 text-xs font-normal text-text-secondary/50">
+                <span className="ml-2 text-xs font-normal text-[var(--text-secondary)]/50">
                   {service.description}
                 </span>
               </p>
 
-              {/* Config fields — grid layout for better space usage */}
+              {/* Config fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {Object.entries(service.configSchema).map(([key, field]: [string, ConfigField]) => {
                   const currentValue = sel.config[key]
 
                   if (field.type === 'select' && field.options) {
-                    // Find selected option — currentValue may be a SelectOption or a string value
                     const currentOptionValue =
                       typeof currentValue === 'object' && currentValue !== null
                         ? (currentValue as SelectOption).value
@@ -165,31 +158,29 @@ export default function ResourceConfigurator(): React.JSX.Element {
                     return (
                       <div key={key} className="flex flex-col gap-1">
                         {field.label && (
-                          <label className="text-xs font-medium text-text-secondary">
+                          <label className="text-xs font-medium text-[var(--text-secondary)]">
                             {field.label}
                           </label>
                         )}
-                        <select
+                        <GlassSelect
+                          options={field.options.map((opt: SelectOption) => ({
+                            value: opt.value,
+                            label: opt.label
+                          }))}
                           value={currentOptionValue}
-                          onChange={(e) => {
+                          onChange={(newValue) => {
                             const selectedOption = field.options!.find(
-                              (o) => o.value === e.target.value
+                              (o) => o.value === newValue
                             )
                             handleFieldChange(
                               sel.serviceId,
                               sel.config,
                               key,
-                              selectedOption ?? ({ value: e.target.value, label: e.target.value } as SelectOption)
+                              selectedOption ??
+                                ({ value: newValue, label: newValue } as SelectOption)
                             )
                           }}
-                          className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-text-primary transition focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                        >
-                          {field.options.map((opt: SelectOption) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </div>
                     )
                   }
@@ -203,28 +194,23 @@ export default function ResourceConfigurator(): React.JSX.Element {
                           : 0
 
                     return (
-                      <div key={key} className="flex flex-col gap-1">
-                        {field.label && (
-                          <label className="text-xs font-medium text-text-secondary">
-                            {field.label}
-                          </label>
-                        )}
-                        <NumberInput
-                          value={numValue}
-                          min={field.min}
-                          max={field.max}
-                          onChange={(n) =>
-                            handleFieldChange(sel.serviceId, sel.config, key, n)
-                          }
-                        />
-                      </div>
+                      <NumberInput
+                        key={key}
+                        value={numValue}
+                        min={field.min}
+                        max={field.max}
+                        label={field.label}
+                        onChange={(n) =>
+                          handleFieldChange(sel.serviceId, sel.config, key, n)
+                        }
+                      />
                     )
                   }
 
                   return null
                 })}
               </div>
-            </div>
+            </GlassCard>
           )
         })}
       </div>
