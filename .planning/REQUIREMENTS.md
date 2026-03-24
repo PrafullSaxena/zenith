@@ -42,7 +42,7 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 - [x] **THEME-07**: Visual theme selector grid in Settings with Classic (12) and New Collection (6) sections
 - [x] **THEME-08**: Each theme card shows name, 4 color dots, mini preview strip; active theme has accent border glow
 - [x] **THEME-09**: All 12 legacy themes converted from hex to OKLch color space
-- [ ] **THEME-10**: Glass components validated across all 18 themes (visual QA)
+- [x] **THEME-10**: Glass components validated across all 18 themes (visual QA)
 
 ### Core Pages Migration
 
@@ -140,7 +140,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | THEME-07 | Phase 5 | Complete |
 | THEME-08 | Phase 5 | Complete |
 | THEME-09 | Phase 5 | Complete |
-| THEME-10 | Phase 5 | Pending |
+| THEME-10 | Phase 5 | Complete |
 | CORE-01 | Phase 3 | Complete |
 | CORE-02 | Phase 3 | Complete |
 | CORE-03 | Phase 3 | Complete |
