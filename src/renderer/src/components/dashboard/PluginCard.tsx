@@ -14,6 +14,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { PluginDefinition } from '../../types/plugin'
 import { useActivityStore } from '../../stores/activity-store'
+import { GlassCard } from '../ui'
 
 /**
  * Static map of icon name strings to lucide-react components.
@@ -42,9 +43,6 @@ const PLUGIN_ACCENTS: Record<string, string> = {
 
 export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.Element {
   const navigate = useNavigate()
-  // Select the stable entries array — NOT getEntriesByPlugin which returns a
-  // new array via .filter() on every call, causing Zustand's Object.is check
-  // to always see a "changed" value → infinite re-render loop.
   const allEntries = useActivityStore((s) => s.entries)
   const recentCount = useMemo(() => {
     const now = Date.now()
@@ -56,40 +54,39 @@ export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.
   const accentClasses = PLUGIN_ACCENTS[plugin.id] ?? 'from-accent/20 to-accent/10 text-accent'
 
   return (
-    <button
-      type="button"
+    <GlassCard
+      variant="interactive"
+      className="flex h-full flex-col p-0 text-left"
       onClick={() => navigate(plugin.route)}
-      className="hover-lift group relative flex flex-col rounded-xl border border-border/60 bg-surface-elevated/70 p-4 text-left transition-all duration-200 hover:border-accent/30 hover:bg-surface-elevated hover:shadow-lg hover:shadow-accent/[0.03]"
     >
-      {/* Subtle gradient overlay on hover */}
-      <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-br from-accent/[0.02] to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            {/* Icon with per-plugin accent */}
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${accentClasses}`}>
+              {Icon && <Icon size={18} />}
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-text-primary">{plugin.name}</h3>
+              {recentCount > 0 && (
+                <span className="text-[10px] font-medium text-accent/70">
+                  {recentCount} {recentCount === 1 ? 'op' : 'ops'} today
+                </span>
+              )}
+            </div>
+          </div>
 
-      <div className="relative flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          {/* Icon with per-plugin accent */}
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${accentClasses}`}>
-            {Icon && <Icon size={18} />}
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-text-primary">{plugin.name}</h3>
-            {recentCount > 0 && (
-              <span className="text-[10px] font-medium text-accent/70">
-                {recentCount} {recentCount === 1 ? 'op' : 'ops'} today
-              </span>
-            )}
-          </div>
+          {/* Arrow indicator */}
+          <ArrowRight
+            size={14}
+            className="mt-1 shrink-0 text-text-secondary/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-accent"
+          />
         </div>
 
-        {/* Arrow indicator */}
-        <ArrowRight
-          size={14}
-          className="mt-1 shrink-0 text-text-secondary/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-accent"
-        />
+        <p className="mt-3 text-xs leading-relaxed text-text-secondary">
+          {plugin.description}
+        </p>
       </div>
-
-      <p className="relative mt-3 text-xs leading-relaxed text-text-secondary">
-        {plugin.description}
-      </p>
-    </button>
+    </GlassCard>
   )
 }

@@ -5,6 +5,7 @@
  */
 import { RefreshCw, ShieldCheck } from 'lucide-react'
 import type { ResourceHealth, ResourceCategory, HealthStatus } from '../../types/health'
+import { GlassCard } from '../ui'
 
 interface HealthPanelProps {
   resources: ResourceHealth[]
@@ -57,7 +58,7 @@ export function HealthPanel({
   })).filter((g) => g.items.length > 0)
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-border/60 bg-surface-elevated/70 p-5">
+    <GlassCard className="flex h-full flex-col p-5">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div>
@@ -119,6 +120,6 @@ export function HealthPanel({
           ))}
         </div>
       )}
-    </div>
+    </GlassCard>
   )
 }

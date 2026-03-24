@@ -5,11 +5,11 @@
  *   [Hero Header — greeting, date, quick stats]
  *   [TokenChart (lg:col-span-2) | HealthPanel (lg:col-span-1)]
  *   [Plugin Cards — responsive grid]
- *   [Recent Activity Feed with "View All"]
  *
  * Default-exported for React.lazy() compatibility in App.tsx.
  */
 import { useEffect, useCallback, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import {
   Zap,
   Database,
@@ -22,6 +22,8 @@ import { useActivityStore } from '../../stores/activity-store'
 import { useTokenStore } from '../../stores/token-store'
 import { useHealthStore } from '../../stores/health-store'
 import { useDbStore } from '../../stores/db-store'
+import { GlassCard, GlassSurface, AnimatedCounter } from '../ui'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 import { TokenChart } from './TokenChart'
 import { HealthPanel } from './HealthPanel'
 import { PluginCard } from './PluginCard'
@@ -50,23 +52,29 @@ function QuickStat({
   icon: Icon,
   label,
   value,
+  numericValue,
   accent
 }: {
   icon: React.ComponentType<{ size?: number; className?: string }>
   label: string
-  value: string | number
+  value: string
+  numericValue?: number
   accent: string
 }): React.JSX.Element {
   return (
-    <div className="hover-lift group relative flex items-center gap-3 rounded-xl border border-border/60 bg-surface-elevated/60 px-4 py-3 backdrop-blur-sm transition-all duration-200 hover:border-border hover:bg-surface-elevated">
+    <GlassCard className="flex items-center gap-3 px-4 py-3">
       <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${accent}`}>
         <Icon size={16} />
       </div>
       <div className="min-w-0">
         <p className="text-[11px] font-medium uppercase tracking-wider text-text-secondary/70">{label}</p>
-        <p className="text-lg font-semibold leading-tight text-text-primary">{value}</p>
+        {numericValue != null ? (
+          <AnimatedCounter value={numericValue} className="text-lg font-semibold leading-tight text-text-primary" />
+        ) : (
+          <p className="text-lg font-semibold leading-tight text-text-primary">{value}</p>
+        )}
       </div>
-    </div>
+    </GlassCard>
   )
 }
 
@@ -136,65 +144,74 @@ export default function MissionControl(): React.JSX.Element {
   }
 
   return (
-    <div className="stagger-children space-y-6 pb-4">
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6 pb-4"
+    >
       {/* ── Hero Header ─────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-surface-elevated via-surface to-surface-elevated/80 p-6">
-        {/* Subtle glow effect */}
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/[0.04] blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-accent/[0.03] blur-2xl" />
+      <motion.div variants={staggerItem}>
+        <GlassSurface className="relative overflow-hidden p-6">
+          {/* Subtle glow effect */}
+          <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/[0.04] blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-accent/[0.03] blur-2xl" />
 
-        <div className="relative flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <img
-              src={zenithLogo}
-              alt="Zenith"
-              className="h-12 w-12 drop-shadow-lg"
-            />
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-                {getGreeting()}
-              </h1>
-              <p className="mt-0.5 text-sm text-text-secondary">
-                {getFormattedDate()}
-              </p>
+          <div className="relative flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <img
+                src={zenithLogo}
+                alt="Zenith"
+                className="h-12 w-12 drop-shadow-lg"
+              />
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+                  {getGreeting()}
+                </h1>
+                <p className="mt-0.5 text-sm text-text-secondary">
+                  {getFormattedDate()}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Quick Stats Row */}
-        <div className="relative mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <QuickStat
-            icon={Zap}
-            label="Token Usage"
-            value={formatTokens(totalTokens)}
-            accent="bg-blue-500/15 text-blue-400"
-          />
-          <QuickStat
-            icon={Database}
-            label="Connections"
-            value={`${activeConnections}/${connections.length}`}
-            accent="bg-emerald-500/15 text-emerald-400"
-          />
-          <QuickStat
-            icon={Activity}
-            label="Today's Ops"
-            value={todayOps}
-            accent="bg-amber-500/15 text-amber-400"
-          />
-          <QuickStat
-            icon={Shield}
-            label="Health"
-            value={healthResources.length > 0
-              ? `${healthyCount}/${healthResources.length}`
-              : '—'
-            }
-            accent="bg-purple-500/15 text-purple-400"
-          />
-        </div>
-      </div>
+          {/* Quick Stats Row */}
+          <div className="relative mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <QuickStat
+              icon={Zap}
+              label="Token Usage"
+              value={formatTokens(totalTokens)}
+              numericValue={totalTokens}
+              accent="bg-blue-500/15 text-blue-400"
+            />
+            <QuickStat
+              icon={Database}
+              label="Connections"
+              value={`${activeConnections}/${connections.length}`}
+              accent="bg-emerald-500/15 text-emerald-400"
+            />
+            <QuickStat
+              icon={Activity}
+              label="Today's Ops"
+              value={String(todayOps)}
+              numericValue={todayOps}
+              accent="bg-amber-500/15 text-amber-400"
+            />
+            <QuickStat
+              icon={Shield}
+              label="Health"
+              value={healthResources.length > 0
+                ? `${healthyCount}/${healthResources.length}`
+                : '—'
+              }
+              accent="bg-purple-500/15 text-purple-400"
+            />
+          </div>
+        </GlassSurface>
+      </motion.div>
 
       {/* ── Token Chart + Health Panel — responsive 2:1 layout ───── */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <motion.div variants={staggerItem} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <TokenChart entries={tokenEntries} />
         </div>
@@ -206,23 +223,29 @@ export default function MissionControl(): React.JSX.Element {
             onRefresh={handleRefreshHealth}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* ── Plugin Cards ─────────────────────────────────────────── */}
-      <div>
+      <motion.div variants={staggerItem}>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">
             Plugins
           </h2>
           <span className="text-[11px] text-text-secondary/70">{PLUGINS.length} available</span>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        >
           {PLUGINS.map((plugin) => (
-            <PluginCard key={plugin.id} plugin={plugin} />
+            <motion.div key={plugin.id} variants={staggerItem}>
+              <PluginCard plugin={plugin} />
+            </motion.div>
           ))}
-        </div>
-      </div>
-
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   )
 }

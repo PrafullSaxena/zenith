@@ -11,6 +11,7 @@
 import { useMemo } from 'react'
 import { BarChart3 } from 'lucide-react'
 import type { TokenUsageEntry } from '../../stores/token-store'
+import { GlassCard } from '../ui'
 
 interface TokenChartProps {
   entries: TokenUsageEntry[]
@@ -234,7 +235,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
   // ── Empty state ──
   if (entries.length === 0) {
     return (
-      <div className="flex h-full flex-col rounded-xl border border-border/60 bg-surface-elevated/70 p-5">
+      <GlassCard className="flex h-full flex-col p-5">
         <div className="mb-3">
           <h3 className="text-sm font-semibold text-text-primary">Token Usage</h3>
           <p className="text-[11px] text-text-secondary/60">7-day consumption by AI agent</p>
@@ -250,7 +251,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
             </p>
           </div>
         </div>
-      </div>
+      </GlassCard>
     )
   }
 
@@ -419,6 +420,6 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
           })}
         </div>
       </div>
-    </div>
+    </GlassCard>
   )
 }

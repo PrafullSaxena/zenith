@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+import { motion } from 'framer-motion'
 import {
   GitPullRequest,
   Database,
@@ -8,9 +10,11 @@ import {
   Inbox
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { ActivityEntry } from '../../types/activity'
+import type { ActivityEntry, ActivityStatus } from '../../types/activity'
 import { getPluginById } from '../../plugins/registry'
-import { StatusBadge } from './StatusBadge'
+import { GlassCard, GlassBadge } from '../ui'
+import type { GlassBadgeVariant } from '../ui/GlassBadge'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 import { formatRelativeTime } from './utils'
 
 /**
@@ -25,6 +29,23 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Rocket
 }
 
+/** Map activity status to GlassBadge variant */
+const STATUS_TO_BADGE: Record<ActivityStatus, GlassBadgeVariant> = {
+  success: 'success',
+  failure: 'error',
+  pending: 'warning'
+}
+
+/** Per-plugin accent colors for the left bar */
+const PLUGIN_ACCENT_COLORS: Record<string, string> = {
+  'code-review-bot': '#3b82f6',
+  'db-inspector': '#10b981',
+  'launchpad': '#f43f5e',
+  'nebula': '#06b6d4',
+  'textcraft': '#a855f7',
+  'cortex': '#f59e0b'
+}
+
 interface ActivityFeedProps {
   entries: ActivityEntry[]
   showViewAll?: boolean
@@ -36,6 +57,8 @@ export function ActivityFeed({
   showViewAll,
   onViewAll
 }: ActivityFeedProps): React.JSX.Element {
+  const isMounted = useRef(false)
+
   if (entries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-border/40 bg-surface-elevated/40 py-10">
@@ -50,55 +73,72 @@ export function ActivityFeed({
     )
   }
 
+  // Only animate on first render, not on data changes
+  const shouldAnimate = !isMounted.current
+  if (!isMounted.current) isMounted.current = true
+
   return (
-    <div className="overflow-hidden rounded-xl border border-border/40 bg-surface-elevated/40">
+    <div className="overflow-hidden rounded-xl">
       <div className="max-h-[340px] overflow-y-auto">
-        <div className="divide-y divide-border/30">
+        <motion.div
+          variants={staggerContainer}
+          initial={shouldAnimate ? 'hidden' : false}
+          animate="visible"
+          className="space-y-2"
+        >
           {entries.map((entry) => {
             const plugin = getPluginById(entry.pluginId)
             const Icon = plugin ? ICON_MAP[plugin.icon] : undefined
+            const pluginColor = PLUGIN_ACCENT_COLORS[entry.pluginId] ?? 'var(--color-accent)'
 
             return (
-              <div
-                key={entry.id}
-                className="flex items-center gap-3 px-4 py-2.5 transition-all duration-150 hover:bg-surface/30"
-              >
-                {/* Plugin icon */}
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface text-text-secondary/70">
-                  {Icon ? <Icon size={14} /> : <span className="text-[10px]">?</span>}
-                </div>
+              <motion.div key={entry.id} variants={staggerItem}>
+                <GlassCard className="flex items-center gap-3 px-4 py-2.5">
+                  {/* Left accent bar */}
+                  <div
+                    className="h-8 w-[3px] shrink-0 rounded-full"
+                    style={{ backgroundColor: pluginColor }}
+                  />
 
-                {/* Operation name + detail */}
-                <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-text-primary">
-                    {entry.operation}
-                  </span>
-                  {entry.detail && (
-                    <span className="block truncate text-[11px] text-text-secondary/60">
-                      {entry.detail}
+                  {/* Plugin icon */}
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface text-text-secondary/70">
+                    {Icon ? <Icon size={14} /> : <span className="text-[10px]">?</span>}
+                  </div>
+
+                  {/* Operation name + detail */}
+                  <div className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-text-primary">
+                      {entry.operation}
+                    </span>
+                    {entry.detail && (
+                      <span className="block truncate text-[11px] text-text-secondary/60">
+                        {entry.detail}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Status badge */}
+                  <GlassBadge variant={STATUS_TO_BADGE[entry.status]}>
+                    {entry.status}
+                  </GlassBadge>
+
+                  {/* Duration */}
+                  {entry.durationMs != null && (
+                    <span className="flex shrink-0 items-center gap-1 text-[11px] text-text-secondary/60">
+                      <Clock size={11} />
+                      {(entry.durationMs / 1000).toFixed(1)}s
                     </span>
                   )}
-                </div>
 
-                {/* Status badge */}
-                <StatusBadge status={entry.status} />
-
-                {/* Duration */}
-                {entry.durationMs != null && (
-                  <span className="flex shrink-0 items-center gap-1 text-[11px] text-text-secondary/60">
-                    <Clock size={11} />
-                    {(entry.durationMs / 1000).toFixed(1)}s
+                  {/* Relative timestamp */}
+                  <span className="shrink-0 text-[11px] text-text-secondary/60">
+                    {formatRelativeTime(entry.timestamp)}
                   </span>
-                )}
-
-                {/* Relative timestamp */}
-                <span className="shrink-0 text-[11px] text-text-secondary/60">
-                  {formatRelativeTime(entry.timestamp)}
-                </span>
-              </div>
+                </GlassCard>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </div>
 
       {showViewAll && entries.length > 0 && (
