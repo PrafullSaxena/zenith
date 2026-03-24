@@ -39,8 +39,8 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 - [x] **THEME-04**: Nebula Dust theme defined (stellar pink-coral accent on deep space purple)
 - [x] **THEME-05**: Obsidian theme defined (pure monochrome, zero saturation, silver on near-black)
 - [x] **THEME-06**: Jade Temple theme defined (jade green accent on dark forest green)
-- [ ] **THEME-07**: Visual theme selector grid in Settings with Classic (12) and New Collection (6) sections
-- [ ] **THEME-08**: Each theme card shows name, 4 color dots, mini preview strip; active theme has accent border glow
+- [x] **THEME-07**: Visual theme selector grid in Settings with Classic (12) and New Collection (6) sections
+- [x] **THEME-08**: Each theme card shows name, 4 color dots, mini preview strip; active theme has accent border glow
 - [x] **THEME-09**: All 12 legacy themes converted from hex to OKLch color space
 - [ ] **THEME-10**: Glass components validated across all 18 themes (visual QA)
 
@@ -137,8 +137,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | THEME-04 | Phase 5 | Complete |
 | THEME-05 | Phase 5 | Complete |
 | THEME-06 | Phase 5 | Complete |
-| THEME-07 | Phase 5 | Pending |
-| THEME-08 | Phase 5 | Pending |
+| THEME-07 | Phase 5 | Complete |
+| THEME-08 | Phase 5 | Complete |
 | THEME-09 | Phase 5 | Complete |
 | THEME-10 | Phase 5 | Pending |
 | CORE-01 | Phase 3 | Complete |

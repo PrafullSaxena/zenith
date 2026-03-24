@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 5 of 7 (Theme Collection)
-Plan: 1 of 3 in current phase (1 complete)
+Plan: 2 of 3 in current phase (2 complete)
 Status: In Progress
-Last activity: 2026-03-25 — Completed 05-01 (Theme CSS Definitions)
+Last activity: 2026-03-25 — Completed 05-02 (Theme Metadata and Selector UI)
 
-Progress: [███-------] 1/3 plans
+Progress: [██████----] 2/3 plans
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Progress: [███-------] 1/3 plans
 | Phase 04 P04 | 8min | 2 tasks | 8 files |
 | Phase 04 P06 | 5min | 2 tasks | 8 files |
 | Phase 05 P01 | 2min | 2 tasks | 1 files |
+| Phase 05 P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,9 @@ Recent decisions affecting current work:
 - [Phase 04-02]: QAPanel keeps custom chat UI with GlassCard message bubbles rather than full GlassChat swap
 - [Phase 04-02]: CortexView empty states use shared EmptyState component with actionLabel/onAction props
 - [Phase 05-01]: Status colors reuse shared values across all 6 new themes -- no palette conflicts
+- [Phase 05-02]: Theme crossfade uses transient .theme-transitioning class on html toggled via JS setTimeout(350ms) to avoid transitions on initial load
+- [Phase 05-02]: Mini glass preview is CSS-only: outer div with theme bg, inner div with rgba glass surface, bottom accent line
+- [Phase 05-02]: NEW badge uses GlassBadge variant=accent; shown only when theme is not active (active shows check icon)
 
 ### Pending Todos
 
@@ -122,5 +126,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 04-02-PLAN.md (Cortex Plugin Migration)
+Stopped at: Completed 05-02-PLAN.md (Theme Metadata and Selector UI)
 Resume file: None
