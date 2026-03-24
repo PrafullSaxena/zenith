@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Design System Foundation** - Glass tokens, motion system, fonts, and typography scale (completed 2026-03-24)
 - [x] **Phase 2: Glass Component Library** - All 11 shared glass primitives built and theme-validated (completed 2026-03-24)
-- [ ] **Phase 3: Core Pages Migration** - Dashboard, Activity Log, About, Settings, and Sidebar migrated to glass components
+- [x] **Phase 3: Core Pages Migration** - Dashboard, Activity Log, About, Settings, and Sidebar migrated to glass components (completed 2026-03-24)
 - [ ] **Phase 4: Plugin Migration** - All 6 plugins migrated to shared glass components
 - [ ] **Phase 5: Theme Collection** - 6 new dark themes, OKLch conversion, and visual theme selector
 - [ ] **Phase 6: 3D Visualizations** - Four new 3D scenes with error boundaries and 2D fallbacks
@@ -152,7 +152,7 @@ Note: Phase 5 and Phase 6 both depend on Phase 4 and can run in parallel.
 |-------|----------------|--------|-----------|
 | 1. Design System Foundation | 0/3 | Complete    | 2026-03-24 |
 | 2. Glass Component Library | 3/3 | Complete    | 2026-03-24 |
-| 3. Core Pages Migration | 0/3 | Not started | - |
+| 3. Core Pages Migration | 0/3 | Complete    | 2026-03-24 |
 | 4. Plugin Migration | 0/4 | Not started | - |
 | 5. Theme Collection | 0/3 | Not started | - |
 | 6. 3D Visualizations | 0/3 | Not started | - |
