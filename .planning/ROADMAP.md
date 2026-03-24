@@ -86,10 +86,13 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
-- [ ] 04-03: TBD
-- [ ] 04-04: TBD
+- [ ] 04-00: Shared utilities — GlassChat, GlassTable, PluginHeader, GlassResizeHandle components (Wave 1)
+- [ ] 04-01: TextCraft migration — GlassCard panels, GlassSelect controls, GlassTab bar, resizable layout (Wave 2)
+- [ ] 04-02: Cortex migration — delete inline GLASS_CARD/GLASS_SURFACE, PluginHeader, GlassChat QA, GlassModal export (Wave 3)
+- [ ] 04-03: CodeReviewBot migration — PR list GlassCards, review GlassBadge severity, GlassTab bar (Wave 3)
+- [ ] 04-04: DbInspector migration — GlassTable results, GlassChat Ask AI, GlassSelect connection manager (Wave 3)
+- [ ] 04-05: Launchpad migration — brand-colored provider cards, AnimatedCounter costs, GlassChat advisor (Wave 3)
+- [ ] 04-06: Nebula migration — GlassCard note list, GlassSurface editor wrapper, GlassResizeHandle drawing panel (Wave 3)
 
 ### Phase 5: Theme Collection
 **Goal**: Users can choose from 18 curated dark themes via a visual selector, and all themes render glass components correctly

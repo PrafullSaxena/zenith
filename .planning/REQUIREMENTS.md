@@ -54,12 +54,12 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 
 ### Plugin Migration
 
-- [ ] **PLUG-01**: Cortex migrated — shared GlassCard/GlassTab replacing inline glass classes, shared motion variants
-- [ ] **PLUG-02**: CodeReviewBot migrated — PR list GlassCards, review comments GlassCards, GlassTab bar, skeleton loaders
-- [ ] **PLUG-03**: DbInspector migrated — GlassSelect connection manager, glass tree explorer, glass-wrapped console, GlassTab bar
-- [ ] **PLUG-04**: Launchpad migrated — GlassCard provider selector, GlassInput/GlassSelect forms, GlassTab bar, AnimatedCounter
-- [ ] **PLUG-05**: Nebula migrated — GlassCard note list, GlassSurface editor wrapper, GlassBadge tags, GlassTab bar
-- [ ] **PLUG-06**: TextCraft migrated — GlassCard panels, GlassSelect controls, GlassTab bar, GlassButton actions
+- [x] **PLUG-01**: Cortex migrated — shared GlassCard/GlassTab replacing inline glass classes, shared motion variants
+- [x] **PLUG-02**: CodeReviewBot migrated — PR list GlassCards, review comments GlassCards, GlassTab bar, skeleton loaders
+- [x] **PLUG-03**: DbInspector migrated — GlassSelect connection manager, glass tree explorer, glass-wrapped console, GlassTab bar
+- [x] **PLUG-04**: Launchpad migrated — GlassCard provider selector, GlassInput/GlassSelect forms, GlassTab bar, AnimatedCounter
+- [x] **PLUG-05**: Nebula migrated — GlassCard note list, GlassSurface editor wrapper, GlassBadge tags, GlassTab bar
+- [x] **PLUG-06**: TextCraft migrated — GlassCard panels, GlassSelect controls, GlassTab bar, GlassButton actions
 
 ### 3D Visualizations
 
@@ -146,12 +146,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CORE-03 | Phase 3 | Complete |
 | CORE-04 | Phase 3 | Complete |
 | CORE-05 | Phase 3 | Complete |
-| PLUG-01 | Phase 4 | Pending |
-| PLUG-02 | Phase 4 | Pending |
-| PLUG-03 | Phase 4 | Pending |
-| PLUG-04 | Phase 4 | Pending |
-| PLUG-05 | Phase 4 | Pending |
-| PLUG-06 | Phase 4 | Pending |
+| PLUG-01 | Phase 4 | Complete |
+| PLUG-02 | Phase 4 | Complete |
+| PLUG-03 | Phase 4 | Complete |
+| PLUG-04 | Phase 4 | Complete |
+| PLUG-05 | Phase 4 | Complete |
+| PLUG-06 | Phase 4 | Complete |
 | 3D-01 | Phase 6 | Pending |
 | 3D-02 | Phase 6 | Pending |
 | 3D-03 | Phase 6 | Pending |

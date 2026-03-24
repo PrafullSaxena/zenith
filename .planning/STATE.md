@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Every screen in Zenith must feel like the same app — consistent glass styling, shared animation, unified components.
-**Current focus:** Phase 3: Core Pages Migration
+**Current focus:** Phase 4: Plugin Migration
 
 ## Current Position
 
-Phase: 3 of 7 (Core Pages Migration)
-Plan: 3 of 3 in current phase (3 complete)
-Status: Phase 3 Complete
-Last activity: 2026-03-25 — Completed 03-03 (Sidebar, About & Settings Migration)
+Phase: 4 of 7 (Plugin Migration)
+Plan: 1 of 7 in current phase (1 complete)
+Status: In Progress
+Last activity: 2026-03-25 — Completed 04-00 (Shared Plugin Utilities)
 
-Progress: [██████████] 3/3 plans
+Progress: [█░░░░░░░░░] 1/7 plans
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 10
 - Average duration: 2.3min
-- Total execution time: 21min
+- Total execution time: 23min
 
 **By Phase:**
 
@@ -38,11 +38,12 @@ Progress: [██████████] 3/3 plans
 | Phase 03 P03 | 3min | 2 tasks | 4 files |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (2min), 02-03 (2min), 03-01 (2min), 03-02 (2min), 03-03 (3min)
+- Last 5 plans: 02-03 (2min), 03-01 (2min), 03-02 (2min), 03-03 (3min), 04-00 (2min)
 - Trend: Consistent
 
 *Updated after each plan completion*
 | Phase 03 P02 | 5min | 2 tasks | 8 files |
+| Phase 04 P00 | 2min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - [Phase 03-02]: QuickStat passes numericValue for AnimatedCounter and string value as fallback for non-numeric stats
 - [Phase 03-02]: ActivityFeed stagger uses useRef to only animate on initial mount, preventing re-animation on data updates
 - [Phase 03-02]: StatusBadge deleted entirely since only ActivityFeed imported it — replaced by GlassBadge
+- [04-00]: GlassBadge extended with HTMLSpanElement props to support onClick for citation interactivity
+- [04-00]: GlassChat uses CSS custom properties for theme-aware styling throughout
+- [04-00]: GlassResizeHandle uses window-level mousemove/mouseup for reliable drag tracking
 
 ### Pending Todos
 
@@ -93,5 +97,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 03-03-PLAN.md (Sidebar, About & Settings Migration)
+Stopped at: Completed 04-00-PLAN.md (Shared Plugin Utilities)
 Resume file: None
