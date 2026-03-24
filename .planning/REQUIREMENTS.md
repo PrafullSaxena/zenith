@@ -9,13 +9,13 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 
 ### Foundation
 
-- [ ] **FOUND-01**: Glass design tokens added to CSS @theme block (--glass-bg, --glass-border, --glass-blur, --glass-glow) that adapt per theme
+- [x] **FOUND-01**: Glass design tokens added to CSS @theme block (--glass-bg, --glass-border, --glass-blur, --glass-glow) that adapt per theme
 - [x] **FOUND-02**: Shared motion variants module created at lib/motion.ts with stagger, page transition, modal, hover lift, and slide panel variants
-- [ ] **FOUND-03**: Plus Jakarta Sans Variable font installed and set as --font-sans
-- [ ] **FOUND-04**: Geist Mono font installed and set as --font-mono
+- [x] **FOUND-03**: Plus Jakarta Sans Variable font installed and set as --font-sans
+- [x] **FOUND-04**: Geist Mono font installed and set as --font-mono
 - [ ] **FOUND-05**: Typography scale CSS classes defined (hero, h1, h2, h3, body, small, caption, mono)
-- [ ] **FOUND-06**: Timing tokens (--duration-instant/fast/normal/slow/slower) and easing tokens (--ease-out/spring/smooth) defined in :root
-- [ ] **FOUND-07**: Two-tier blur strategy implemented (translucent-only for nested surfaces, blur for top-level glass)
+- [x] **FOUND-06**: Timing tokens (--duration-instant/fast/normal/slow/slower) and easing tokens (--ease-out/spring/smooth) defined in :root
+- [x] **FOUND-07**: Two-tier blur strategy implemented (translucent-only for nested surfaces, blur for top-level glass)
 
 ### Components
 
@@ -113,13 +113,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1 | Pending |
+| FOUND-01 | Phase 1 | Complete |
 | FOUND-02 | Phase 1 | Complete |
-| FOUND-03 | Phase 1 | Pending |
-| FOUND-04 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Complete |
+| FOUND-04 | Phase 1 | Complete |
 | FOUND-05 | Phase 1 | Pending |
-| FOUND-06 | Phase 1 | Pending |
-| FOUND-07 | Phase 1 | Pending |
+| FOUND-06 | Phase 1 | Complete |
+| FOUND-07 | Phase 1 | Complete |
 | COMP-01 | Phase 2 | Pending |
 | COMP-02 | Phase 2 | Pending |
 | COMP-03 | Phase 2 | Pending |
