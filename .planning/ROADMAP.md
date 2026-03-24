@@ -66,12 +66,12 @@ Plans:
   3. Settings page uses GlassTab sidebar navigation and the theme grid selector area is ready for Phase 5 content
   4. Sidebar icons show hover glow and the active indicator bar slides between items on navigation
   5. Navigating between core pages plays a page transition animation (crossfade or slide)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01: Shared utilities — AnimatedCounter relocation, GlassTab vertical orientation, theme metadata, page transitions (Wave 1)
+- [ ] 03-02: Dashboard + Activity Log migration — GlassCards, AnimatedCounter, stagger animations, GlassBadge status (Wave 2)
+- [ ] 03-03: Sidebar + About View + Settings migration — hover glow, active bar slide, glass timeline, theme selector grid (Wave 2)
 
 ### Phase 4: Plugin Migration
 **Goal**: Every plugin screen feels identical in quality and styling to the core pages — switching between plugins is seamless
