@@ -4,6 +4,7 @@
  * EXPLAIN, Insights, Query Flow (Mermaid), Tradeoffs, Suggestions, Optimized Query.
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap,
   Square,
@@ -32,6 +33,8 @@ import type {
   OptimizerTile
 } from '../../types/database'
 import { useDbStore } from '../../stores/db-store'
+import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, GlassSurface, EmptyState } from '../../components/ui'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 import MermaidRenderer from './MermaidRenderer'
 import { highlightCode } from '../../lib/highlight'
 import { renderInline } from '../../components/MarkdownRenderer'
@@ -220,99 +223,99 @@ export default function QueryOptimizer({
   return (
     <div className="flex h-full flex-col">
       {/* SQL input */}
-      <div className="shrink-0 border-b border-border p-4">
+      <GlassSurface className="shrink-0 rounded-none border-x-0 border-t-0 p-4">
         <textarea
           value={sql}
           onChange={(e) => setSql(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={
             !hasConnection
-              ? 'Connect to a database first…'
+              ? 'Connect to a database first...'
               : !hasAgent
-                ? 'Configure an AI agent in Settings…'
-                : 'Paste your SQL query here… (⌘+Enter to analyze)'
+                ? 'Configure an AI agent in Settings...'
+                : 'Paste your SQL query here... (Cmd+Enter to analyze)'
           }
           disabled={!canAnalyze}
           rows={4}
-          className="w-full resize-none rounded-lg border border-border/50 bg-surface px-3 py-2 font-mono text-sm text-text-primary placeholder:text-text-secondary/60 focus:border-accent focus:outline-none disabled:opacity-50"
+          className="w-full resize-none rounded-lg border border-[var(--glass-border)] bg-white/[0.03] px-3 py-2 font-mono text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/60 focus:border-[var(--color-accent)] focus:outline-none disabled:opacity-50"
         />
         <div className="mt-2 flex items-center gap-2">
           {isActive ? (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex items-center gap-1 rounded-lg bg-red-500/20 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/30"
-            >
+            <GlassButton variant="danger" size="sm" onClick={onCancel}>
               <Square size={12} />
               Cancel
-            </button>
+            </GlassButton>
           ) : (
-            <button
-              type="button"
+            <GlassButton
+              variant="primary"
+              size="sm"
               onClick={handleAnalyze}
               disabled={!canAnalyze || !sql.trim()}
-              className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent/90 disabled:opacity-50"
             >
               <Zap size={12} />
               Analyze Query
-            </button>
+            </GlassButton>
           )}
           {session?.status === 'analyzing' && (
-            <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-              <Loader2 size={12} className="animate-spin text-accent" />
-              Running EXPLAIN ANALYZE…
+            <span className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+              <Loader2 size={12} className="animate-spin text-[var(--color-accent)]" />
+              Running EXPLAIN ANALYZE...
             </span>
           )}
           {session?.status === 'streaming' && (
-            <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-              <Loader2 size={12} className="animate-spin text-accent" />
-              AI analyzing…
+            <span className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+              <Loader2 size={12} className="animate-spin text-[var(--color-accent)]" />
+              AI analyzing...
             </span>
           )}
         </div>
-      </div>
+      </GlassSurface>
 
       {/* Results area */}
       <div ref={streamRef} className="flex-1 overflow-auto p-4">
         {!session && tiles.length === 0 && (
-          <div className="flex h-full items-center justify-center text-text-secondary/70">
-            <div className="text-center">
-              <Zap size={32} className="mx-auto mb-2 opacity-30" />
-              <p className="text-sm">Paste a SQL query to analyze</p>
-              <p className="mt-1 text-xs">
-                AI will run EXPLAIN ANALYZE, inspect indexes and statistics, then
-                suggest optimizations
-              </p>
-            </div>
+          <div className="flex h-full items-center justify-center">
+            <EmptyState
+              icon={Zap}
+              title="No query to optimize"
+              description="Paste a SQL query and click Analyze. AI will run EXPLAIN ANALYZE, inspect indexes and statistics, then suggest optimizations."
+            />
           </div>
         )}
 
         {/* Active streaming session */}
         {session && session.status === 'streaming' && (
-          <div className="mb-4 overflow-hidden rounded-lg border border-accent/30 bg-gradient-to-b from-accent/5 to-transparent">
-            <div className="flex items-center gap-2 border-b border-accent/20 bg-accent/5 px-4 py-2">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-              <p className="text-xs font-medium text-accent">AI Analysis in progress</p>
+          <GlassCard className="mb-4 overflow-hidden border-[var(--color-accent)]/30 bg-gradient-to-b from-[var(--color-accent)]/5 to-transparent p-0">
+            <div className="flex items-center gap-2 border-b border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 px-4 py-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-[var(--color-accent)]" />
+              <p className="text-xs font-medium text-[var(--color-accent)]">AI Analysis in progress</p>
             </div>
-            <pre className="max-h-64 overflow-auto px-4 py-3 font-mono text-[11px] leading-relaxed text-text-primary">
-              {session.rawText || 'Analyzing…'}
+            <pre className="max-h-64 overflow-auto px-4 py-3 font-mono text-[11px] leading-relaxed text-[var(--text-primary)]">
+              {session.rawText || 'Analyzing...'}
             </pre>
-          </div>
+          </GlassCard>
         )}
 
         {/* Error state */}
         {session?.status === 'error' && session.error && (
-          <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs text-red-400">
+          <GlassCard className="mb-4 border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">
             {session.error}
-          </div>
+          </GlassCard>
         )}
 
-        {/* Completed tiles */}
-        <div className="space-y-4">
+        {/* Completed tiles with stagger animation */}
+        <motion.div
+          className="space-y-4"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           {tiles.map((tile) => (
-            <TileCard key={tile.id} tile={tile} />
+            <motion.div key={tile.id} variants={staggerItem}>
+              <TileCard tile={tile} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </div>
   )
@@ -386,9 +389,9 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
   ).length
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/50 bg-surface shadow-sm">
+    <GlassCard className="overflow-hidden p-0">
       {/* Tile header */}
-      <div className="flex w-full items-center gap-3 bg-gradient-to-r from-surface-elevated to-surface px-4 py-3">
+      <div className="flex w-full items-center gap-3 bg-white/[0.02] px-4 py-3">
         {/* Clickable left region: expand/collapse */}
         <button
           type="button"
@@ -410,14 +413,14 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
         {/* Right region: badges + export actions */}
         <div className="flex shrink-0 items-center gap-2">
           {highCount > 0 && (
-            <span className="rounded-full bg-red-500/20 px-1.5 py-0.5 text-[9px] font-bold text-red-400">
+            <GlassBadge variant="error">
               {highCount} critical
-            </span>
+            </GlassBadge>
           )}
           {sugCount > 0 && (
-            <span className="rounded-full bg-surface px-1.5 py-0.5 text-[9px] font-medium text-text-secondary">
+            <GlassBadge variant="info">
               {sugCount} suggestion{sugCount !== 1 ? 's' : ''}
-            </span>
+            </GlassBadge>
           )}
           <span className="flex items-center gap-1 text-[10px] text-text-secondary/70">
             <Clock size={9} />
@@ -599,7 +602,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
           </div>
         </div>
       )}
-    </div>
+    </GlassCard>
   )
 }
 
@@ -661,23 +664,23 @@ function SuggestionCard({
     }
   }, [suggestion.suggestedSQL])
 
+  const badgeVariant = suggestion.severity === 'high' ? 'error' as const : suggestion.severity === 'medium' ? 'warning' as const : 'info' as const
+
   return (
-    <div
-      className={`overflow-hidden rounded-lg border border-border bg-surface-elevated border-l-2 ${config.border}`}
+    <GlassCard
+      className={`overflow-hidden p-0 border-l-2 ${config.border}`}
     >
       <div className="px-3 py-2.5">
         {/* Header row */}
         <div className="flex items-center gap-2">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface text-[10px] font-bold text-text-secondary">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/[0.04] text-[10px] font-bold text-[var(--text-secondary)]">
             {index}
           </span>
-          <span
-            className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${config.badge}`}
-          >
+          <GlassBadge variant={badgeVariant}>
             <Icon size={9} />
             {config.label}
-          </span>
-          <span className="rounded bg-surface px-1.5 py-0.5 text-[10px] text-text-secondary">
+          </GlassBadge>
+          <span className="rounded bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-[var(--text-secondary)]">
             {TYPE_LABELS[suggestion.type] ?? suggestion.type}
           </span>
         </div>
@@ -719,7 +722,7 @@ function SuggestionCard({
           </pre>
         </div>
       )}
-    </div>
+    </GlassCard>
   )
 }
 
@@ -739,19 +742,19 @@ function OptimizedQueryBlock({
   }, [query])
 
   return (
-    <div className="overflow-hidden rounded-lg border border-accent/25 bg-gradient-to-b from-accent/5 to-transparent">
-      <div className="flex items-center justify-between border-b border-accent/15 px-3 py-2">
+    <GlassCard className="overflow-hidden border-[var(--color-accent)]/25 bg-gradient-to-b from-[var(--color-accent)]/5 to-transparent p-0">
+      <div className="flex items-center justify-between border-b border-[var(--color-accent)]/15 px-3 py-2">
         <div className="flex items-center gap-2">
-          <Zap size={11} className="text-accent" />
-          <p className="text-xs font-semibold text-accent">Optimized Query</p>
+          <Zap size={11} className="text-[var(--color-accent)]" />
+          <p className="text-xs font-semibold text-[var(--color-accent)]">Optimized Query</p>
         </div>
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-text-secondary transition-colors hover:bg-accent/10 hover:text-text-primary"
+          className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--color-accent)]/10 hover:text-[var(--text-primary)]"
         >
           {copied ? (
-            <Check size={10} className="text-success" />
+            <Check size={10} className="text-green-400" />
           ) : (
             <Copy size={10} />
           )}
@@ -764,6 +767,6 @@ function OptimizedQueryBlock({
           dangerouslySetInnerHTML={{ __html: highlightCode(query, 'sql') }}
         />
       </pre>
-    </div>
+    </GlassCard>
   )
 }

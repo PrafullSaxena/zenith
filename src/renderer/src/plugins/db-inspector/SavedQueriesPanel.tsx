@@ -1,16 +1,21 @@
+/**
+ * SavedQueriesPanel — List of saved queries with load/delete actions.
+ *
+ * Migrated to Obsidian Glass design system with GlassSurface, GlassCard,
+ * GlassButton, and EmptyState shared components.
+ */
 import { useState, useEffect } from 'react'
-import { Trash2, Play, BookMarked } from 'lucide-react'
+import { Trash2, Play, BookMarked, Save } from 'lucide-react'
 import { useDbStore } from '../../stores/db-store'
+import { GlassSurface, GlassCard, GlassButton, EmptyState } from '../../components/ui'
 
-// ── Types ────────────────────────────────────────────────────────────
-
+// -- Types
 interface SavedQueriesPanelProps {
   onLoadQuery: (sql: string) => void
   connectionId: string
 }
 
-// ── Relative time helper ─────────────────────────────────────────────
-
+// -- Relative time helper
 function relativeTime(isoStr: string): string {
   const diff = Date.now() - new Date(isoStr).getTime()
   const mins = Math.floor(diff / 60000)
@@ -24,8 +29,7 @@ function relativeTime(isoStr: string): string {
   return `${months}mo ago`
 }
 
-// ── Component ────────────────────────────────────────────────────────
-
+// -- Component
 export default function SavedQueriesPanel({ onLoadQuery, connectionId }: SavedQueriesPanelProps) {
   const { savedQueries, loadSavedQueries, deleteSavedQuery } = useDbStore()
 
@@ -56,117 +60,118 @@ export default function SavedQueriesPanel({ onLoadQuery, connectionId }: SavedQu
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <GlassSurface className="flex flex-col h-full min-h-0 rounded-none border-x-0 border-t-0">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-border flex-shrink-0">
-        <BookMarked className="w-3.5 h-3.5 text-text-secondary" />
-        <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--glass-border)] flex-shrink-0">
+        <BookMarked className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+        <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
           Saved Queries
         </span>
-        <span className="ml-auto text-xs text-text-secondary/60">{filtered.length}</span>
+        <span className="ml-auto text-xs text-[var(--text-secondary)]/60">{filtered.length}</span>
       </div>
 
       {/* List */}
       <div className="flex-1 overflow-y-auto min-h-0">
         {filtered.length === 0 && otherQueries.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-24 text-text-secondary/60 px-4 text-center">
-            <p className="text-xs">No saved queries yet</p>
-            <p className="text-xs mt-1 text-text-secondary/40">
-              Use the &quot;Save Query&quot; button to save frequently used queries
-            </p>
+          <div className="flex items-center justify-center h-24 px-4">
+            <EmptyState
+              icon={Save}
+              title="No saved queries"
+              description="Save a query to access it later"
+            />
           </div>
         ) : (
           <>
             {/* Current connection queries */}
             {filtered.map((q) => (
-              <div
+              <GlassCard
                 key={q.id}
-                className="group flex flex-col px-3 py-2 border-b border-border/50 hover:bg-surface/50 transition-colors"
+                variant="interactive"
+                className="mx-2 my-1.5 flex flex-col px-3 py-2"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-medium text-text-primary truncate max-w-[120px]" title={q.name}>
+                  <span className="text-xs font-medium text-[var(--text-primary)] truncate max-w-[120px]" title={q.name}>
                     {q.name.slice(0, 30)}{q.name.length > 30 ? '...' : ''}
                   </span>
-                  <span className="text-xs text-text-secondary/50 flex-shrink-0">
+                  <span className="text-xs text-[var(--text-secondary)]/50 flex-shrink-0">
                     {relativeTime(q.createdAt)}
                   </span>
                 </div>
-                <p className="text-xs text-text-secondary/60 truncate mt-0.5" title={q.sql}>
+                <p className="text-xs text-[var(--text-secondary)]/60 truncate mt-0.5" title={q.sql}>
                   {q.sql.split('\n')[0].slice(0, 60)}
                   {q.sql.length > 60 ? '...' : ''}
                 </p>
                 <div className="flex items-center gap-1.5 mt-1.5">
-                  <button
-                    onClick={() => handleLoad(q.sql)}
-                    className="flex items-center gap-1 px-2 py-0.5 text-xs bg-accent/10 text-accent rounded hover:bg-accent/20 transition-colors"
+                  <GlassButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); handleLoad(q.sql) }}
                   >
                     <Play className="w-3 h-3" />
                     Load
-                  </button>
-                  <button
-                    onClick={() => handleDelete(q.id)}
-                    className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded transition-colors ml-auto ${
-                      confirmDeleteId === q.id
-                        ? 'bg-error/20 text-error'
-                        : 'text-text-secondary/40 hover:text-error hover:bg-error/10'
-                    }`}
+                  </GlassButton>
+                  <GlassButton
+                    variant={confirmDeleteId === q.id ? 'danger' : 'ghost'}
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); handleDelete(q.id) }}
+                    className="ml-auto"
                   >
                     <Trash2 className="w-3 h-3" />
                     {confirmDeleteId === q.id ? 'Confirm?' : ''}
-                  </button>
+                  </GlassButton>
                 </div>
-              </div>
+              </GlassCard>
             ))}
 
             {/* Other connections' queries (dimmed, with connection label) */}
             {otherQueries.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-xs text-text-secondary/40 uppercase tracking-wide border-b border-border/30">
+                <div className="px-3 py-1.5 text-xs text-[var(--text-secondary)]/40 uppercase tracking-wide border-b border-[var(--glass-border)]/30">
                   Other connections
                 </div>
                 {otherQueries.map((q) => (
-                  <div
+                  <GlassCard
                     key={q.id}
-                    className="group flex flex-col px-3 py-2 border-b border-border/50 hover:bg-surface/50 transition-colors opacity-60"
+                    variant="interactive"
+                    className="mx-2 my-1.5 flex flex-col px-3 py-2 opacity-60"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-medium text-text-primary truncate max-w-[100px]" title={q.name}>
+                      <span className="text-xs font-medium text-[var(--text-primary)] truncate max-w-[100px]" title={q.name}>
                         {q.name.slice(0, 25)}{q.name.length > 25 ? '...' : ''}
                       </span>
-                      <span className="text-xs text-text-secondary/50 flex-shrink-0">
+                      <span className="text-xs text-[var(--text-secondary)]/50 flex-shrink-0">
                         {relativeTime(q.createdAt)}
                       </span>
                     </div>
-                    <p className="text-xs text-text-secondary/60 truncate mt-0.5 italic" title={q.sql}>
+                    <p className="text-xs text-[var(--text-secondary)]/60 truncate mt-0.5 italic" title={q.sql}>
                       conn: {q.connectionId.slice(-8)}
                     </p>
                     <div className="flex items-center gap-1.5 mt-1.5">
-                      <button
-                        onClick={() => handleLoad(q.sql)}
-                        className="flex items-center gap-1 px-2 py-0.5 text-xs bg-accent/10 text-accent rounded hover:bg-accent/20 transition-colors"
+                      <GlassButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleLoad(q.sql) }}
                       >
                         <Play className="w-3 h-3" />
                         Load
-                      </button>
-                      <button
-                        onClick={() => handleDelete(q.id)}
-                        className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded transition-colors ml-auto ${
-                          confirmDeleteId === q.id
-                            ? 'bg-error/20 text-error'
-                            : 'text-text-secondary/40 hover:text-error hover:bg-error/10'
-                        }`}
+                      </GlassButton>
+                      <GlassButton
+                        variant={confirmDeleteId === q.id ? 'danger' : 'ghost'}
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleDelete(q.id) }}
+                        className="ml-auto"
                       >
                         <Trash2 className="w-3 h-3" />
                         {confirmDeleteId === q.id ? 'Confirm?' : ''}
-                      </button>
+                      </GlassButton>
                     </div>
-                  </div>
+                  </GlassCard>
                 ))}
               </>
             )}
           </>
         )}
       </div>
-    </div>
+    </GlassSurface>
   )
 }

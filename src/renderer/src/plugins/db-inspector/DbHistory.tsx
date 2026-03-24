@@ -1,10 +1,16 @@
 /**
  * DbHistory — Unified history for all DbInspector features.
  * Shows last 10 results (Q&A, Optimizer, ER Diagram) with "Open" to restore.
+ *
+ * Migrated to Obsidian Glass design system with GlassCard, GlassBadge,
+ * GlassSkeleton, EmptyState, and stagger entrance animation.
  */
 import React from 'react'
-import { Eye, MessageSquare, Zap, GitFork, Loader2 } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Eye, MessageSquare, Zap, GitFork, Clock } from 'lucide-react'
 import type { DbHistoryEntry } from '../../types/database'
+import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, EmptyState } from '../../components/ui'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface DbHistoryProps {
   history: DbHistoryEntry[]
@@ -14,11 +20,11 @@ interface DbHistoryProps {
 
 const TYPE_CONFIG: Record<
   string,
-  { label: string; icon: typeof MessageSquare; badge: string }
+  { label: string; icon: typeof MessageSquare; variant: 'info' | 'warning' | 'success' }
 > = {
-  qa: { label: 'Q&A', icon: MessageSquare, badge: 'bg-blue-500/20 text-blue-400' },
-  optimize: { label: 'Optimizer', icon: Zap, badge: 'bg-orange-500/20 text-orange-400' },
-  'er-diagram': { label: 'ER Diagram', icon: GitFork, badge: 'bg-green-500/20 text-green-400' }
+  qa: { label: 'Q&A', icon: MessageSquare, variant: 'info' },
+  optimize: { label: 'Optimizer', icon: Zap, variant: 'warning' },
+  'er-diagram': { label: 'ER Diagram', icon: GitFork, variant: 'success' }
 }
 
 export default function DbHistory({
@@ -28,77 +34,82 @@ export default function DbHistory({
 }: DbHistoryProps): React.JSX.Element {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8 text-text-secondary">
-        <Loader2 size={16} className="animate-spin" />
-        <span className="ml-2 text-sm">Loading history…</span>
+      <div className="p-4 space-y-3">
+        <GlassSkeleton variant="card" />
+        <GlassSkeleton variant="card" />
+        <GlassSkeleton variant="card" />
+        <GlassSkeleton variant="card" />
       </div>
     )
   }
 
   if (history.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-text-secondary/70">
-        <div className="text-center">
-          <Eye size={32} className="mx-auto mb-2 opacity-30" />
-          <p className="text-sm">No history yet</p>
-          <p className="mt-1 text-xs">Results from Q&A, Query Optimizer, and ER Diagrams will appear here</p>
-        </div>
+      <div className="flex h-full items-center justify-center">
+        <EmptyState
+          icon={Clock}
+          title="No query history"
+          description="Executed queries will appear here"
+        />
       </div>
     )
   }
 
   return (
-    <div className="space-y-2 p-4">
-      <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+    <div className="p-4">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
         Recent Results ({history.length})
       </p>
-      {history.map((entry) => {
-        const config = TYPE_CONFIG[entry.type] ?? TYPE_CONFIG.qa
-        const Icon = config.icon
+      <motion.div
+        className="space-y-2"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
+        {history.map((entry) => {
+          const config = TYPE_CONFIG[entry.type] ?? TYPE_CONFIG.qa
+          const Icon = config.icon
 
-        return (
-          <div
-            key={entry.id}
-            className="hover-lift flex items-start gap-3 rounded-lg border border-border/50 bg-surface p-3"
-          >
-            {/* Type badge */}
-            <span
-              className={`flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${config.badge}`}
-            >
-              <Icon size={10} />
-              {config.label}
-            </span>
+          return (
+            <motion.div key={entry.id} variants={staggerItem}>
+              <GlassCard variant="interactive" className="flex items-start gap-3 p-3">
+                {/* Type badge */}
+                <GlassBadge variant={config.variant}>
+                  <Icon size={10} />
+                  {config.label}
+                </GlassBadge>
 
-            {/* Content */}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm text-text-primary">
-                {entry.type === 'qa' && entry.question}
-                {entry.type === 'optimize' &&
-                  (entry.originalQuery
-                    ? entry.originalQuery.substring(0, 80) +
-                      (entry.originalQuery.length > 80 ? '…' : '')
-                    : 'SQL query')}
-                {entry.type === 'er-diagram' &&
-                  (entry.selectedTables?.join(', ') ?? 'Tables')}
-              </p>
-              <p className="mt-0.5 text-[10px] text-text-secondary">
-                {entry.connectionName} / {entry.schema} · {formatRelativeTime(entry.timestamp)}
-              </p>
-            </div>
+                {/* Content */}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm text-[var(--text-primary)]">
+                    {entry.type === 'qa' && entry.question}
+                    {entry.type === 'optimize' &&
+                      (entry.originalQuery
+                        ? entry.originalQuery.substring(0, 80) +
+                          (entry.originalQuery.length > 80 ? '...' : '')
+                        : 'SQL query')}
+                    {entry.type === 'er-diagram' &&
+                      (entry.selectedTables?.join(', ') ?? 'Tables')}
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-[var(--text-secondary)]">
+                    {entry.connectionName} / {entry.schema} · {formatRelativeTime(entry.timestamp)}
+                  </p>
+                </div>
 
-            {/* Open button */}
-            <button
-              type="button"
-              onClick={() => onOpen(entry)}
-              className="shrink-0 rounded px-2 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10"
-              title="Restore result"
-            >
-              <Eye size={13} className="mr-1 inline" />
-              Open
-            </button>
-          </div>
-        )
-      })}
+                {/* Open button */}
+                <GlassButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); onOpen(entry) }}
+                >
+                  <Eye size={13} />
+                  Open
+                </GlassButton>
+              </GlassCard>
+            </motion.div>
+          )
+        })}
+      </motion.div>
     </div>
   )
 }

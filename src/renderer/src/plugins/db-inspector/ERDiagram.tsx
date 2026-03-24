@@ -18,7 +18,8 @@ import {
   RefreshCw,
   Sparkles,
   Link2,
-  FileDown
+  FileDown,
+  Network
 } from 'lucide-react'
 import type {
   TableInfo,
@@ -26,6 +27,7 @@ import type {
   RelationshipMode,
   ERInferenceStatus
 } from '../../types/database'
+import { GlassCard, GlassSurface, GlassButton, GlassSelect, EmptyState } from '../../components/ui'
 import MermaidRenderer from './MermaidRenderer'
 
 interface ERDiagramProps {
@@ -177,7 +179,7 @@ export default function ERDiagram({
   return (
     <div className="flex h-full flex-col">
       {/* Table selector */}
-      <div className="border-b border-border p-4">
+      <GlassSurface className="rounded-none border-x-0 border-t-0 p-4">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
             Select Tables ({selectedTables.length}/{tables.length})
@@ -273,11 +275,11 @@ export default function ERDiagram({
         )}
 
         <div className="mt-3 flex items-center gap-2">
-          <button
-            type="button"
+          <GlassButton
+            variant="primary"
+            size="sm"
             onClick={handleGenerate}
             disabled={noneSelected || isGenerating || !hasConnection}
-            className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90 disabled:opacity-50"
           >
             {isGenerating ? (
               <Loader2 size={12} className="animate-spin" />
@@ -285,26 +287,22 @@ export default function ERDiagram({
               <GitFork size={12} />
             )}
             Generate ER Diagram
-          </button>
+          </GlassButton>
           {(session || editedSyntax) && (
             <>
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="flex items-center gap-1 rounded-lg bg-surface-elevated px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary"
-              >
+              <GlassButton variant="ghost" size="sm" onClick={handleCopy}>
                 {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
                 {copied ? 'Copied!' : 'Copy Mermaid'}
-              </button>
-              <button
-                type="button"
+              </GlassButton>
+              <GlassButton
+                variant="ghost"
+                size="sm"
                 onClick={handleExportPdf}
                 disabled={isExporting}
-                className="flex items-center gap-1 rounded-lg bg-surface-elevated px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary disabled:opacity-50"
               >
                 {isExporting ? <Loader2 size={12} className="animate-spin" /> : <FileDown size={12} />}
                 Export PDF
-              </button>
+              </GlassButton>
 
               {/* View mode toggle */}
               <div className="ml-auto flex rounded-lg border border-border overflow-hidden">
@@ -362,31 +360,25 @@ export default function ERDiagram({
             AI inference failed. Convention-based results still shown.
           </p>
         )}
-      </div>
+      </GlassSurface>
 
       {/* Diagram render area */}
       <div className="flex-1 overflow-auto p-4">
         {!session && !editedSyntax && (
-          <div className="flex h-full items-center justify-center text-text-secondary/50">
-            <div className="text-center">
-              <GitFork size={32} className="mx-auto mb-2 opacity-30" />
-              <p className="text-sm">Select tables and generate an ER diagram</p>
-              <p className="mt-1 text-xs">
-                Columns, primary keys, foreign keys, and relationships will be visualized
-              </p>
-              <p className="mt-2 text-[11px] text-text-secondary/40">
-                All three modes (FK Only, Convention, AI Inferred) are generated at once.
-                Switch modes instantly after generating.
-              </p>
-            </div>
+          <div className="flex h-full items-center justify-center">
+            <EmptyState
+              icon={Network}
+              title="No ER diagram"
+              description="Select tables and generate an ER diagram. Columns, primary keys, foreign keys, and relationships will be visualized. All three modes are generated at once."
+            />
           </div>
         )}
 
         {(session || editedSyntax) && viewMode === 'visual' && (
-          <div ref={diagramRef}>
+          <GlassCard className="p-3" ref={diagramRef}>
             {/* Legend when inferred relationships are present */}
             {inferredCount > 0 && (
-              <div className="mb-3 flex items-center gap-4 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-[10px] text-text-secondary">
+              <div className="mb-3 flex items-center gap-4 rounded-lg border border-[var(--glass-border)] bg-white/[0.02] px-3 py-1.5 text-[10px] text-[var(--text-secondary)]">
                 <span className="font-medium uppercase tracking-wider">Legend:</span>
                 <span>
                   <span className="font-semibold text-text-primary">fk_name</span> = FK constraint
@@ -409,31 +401,27 @@ export default function ERDiagram({
               className="h-full"
               interactive
             />
-          </div>
+          </GlassCard>
         )}
 
         {(session || editedSyntax) && viewMode === 'code' && (
-          <div className="flex h-full flex-col gap-2">
+          <GlassSurface className="flex h-full flex-col gap-2 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-text-secondary">
+              <p className="text-xs font-medium text-[var(--text-secondary)]">
                 Mermaid Syntax (editable)
               </p>
-              <button
-                type="button"
-                onClick={handleReRender}
-                className="flex items-center gap-1 rounded-lg bg-accent px-2.5 py-1 text-[11px] font-medium text-white hover:bg-accent/90"
-              >
+              <GlassButton variant="primary" size="sm" onClick={handleReRender}>
                 <RefreshCw size={11} />
                 Re-render
-              </button>
+              </GlassButton>
             </div>
             <textarea
               value={editableCode}
               onChange={(e) => setEditableCode(e.target.value)}
-              className="flex-1 resize-none rounded-lg border border-border bg-surface px-3 py-2 font-mono text-[12px] leading-relaxed text-text-primary focus:border-accent focus:outline-none"
+              className="flex-1 resize-none rounded-lg border border-[var(--glass-border)] bg-white/[0.03] px-3 py-2 font-mono text-[12px] leading-relaxed text-[var(--text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
               spellCheck={false}
             />
-          </div>
+          </GlassSurface>
         )}
       </div>
     </div>
