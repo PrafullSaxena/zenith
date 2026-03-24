@@ -11,11 +11,17 @@
  *  - Cmd+N keyboard shortcut to create new note
  *  - Pen icon indicator for notes with drawings
  *  - New Note button at top of list
+ *
+ * Migrated to Obsidian Glass design system with GlassCard, GlassBadge,
+ * GlassSkeleton, EmptyState, and stagger animations.
  */
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Pin, Trash2, Pencil, Sparkles } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Plus, Pin, Trash2, Pencil, Sparkles, FileText } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
+import { GlassCard, GlassBadge, GlassButton, EmptyState } from '../../components/ui'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 import NoteContextMenu from './NoteContextMenu'
 import DeleteConfirmDialog from './DeleteConfirmDialog'
 
@@ -187,35 +193,40 @@ export default function NoteList(): React.JSX.Element {
         <span className="text-xs font-semibold tracking-wide text-text-secondary uppercase">
           Notes
         </span>
-        <button
-          type="button"
+        <GlassButton
+          variant="ghost"
+          size="sm"
           onClick={() => {
             createNote().then(() => {
               window.dispatchEvent(new CustomEvent('nebula:focus-title'))
             })
           }}
-          className="flex items-center gap-1 rounded px-1.5 py-1 text-xs text-text-secondary transition-colors hover:bg-accent/15 hover:text-accent"
           title="New Note (Cmd+N)"
+          className="gap-1 px-1.5 py-1 text-xs"
         >
           <Plus size={14} />
           <span className="text-[11px]">New Note</span>
-        </button>
+        </GlassButton>
       </div>
 
       {/* Notes list */}
       <div className="flex-1 overflow-y-auto">
         {notes.length === 0 ? (
-          <div className="px-4 py-10 text-center">
-            <div className="mx-auto mb-2 h-8 w-8 rounded-lg bg-surface-elevated flex items-center justify-center">
-              <Plus size={16} className="text-text-secondary/50" />
-            </div>
-            <p className="text-xs text-text-secondary">No notes yet</p>
-            <p className="mt-0.5 text-[10px] text-text-secondary/50">
-              Press Cmd+N to create one
-            </p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="No notes yet"
+            description="Create your first note"
+            actionLabel="New Note"
+            onAction={() => createNote()}
+            className="py-10"
+          />
         ) : (
-          <>
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="space-y-0"
+          >
             {/* Pinned section */}
             {hasPinnedNotes && (
               <>
@@ -225,15 +236,16 @@ export default function NoteList(): React.JSX.Element {
                   </span>
                 </div>
                 {pinnedNotes.map((note) => (
-                  <NoteItem
-                    key={note.id}
-                    note={note}
-                    isActive={activeNoteId === note.id}
-                    onSelect={selectNote}
-                    onContextMenu={handleContextMenu}
-                    onTogglePin={togglePin}
-                    onDeleteRequest={handleDeleteRequest}
-                  />
+                  <motion.div key={note.id} variants={staggerItem}>
+                    <NoteItem
+                      note={note}
+                      isActive={activeNoteId === note.id}
+                      onSelect={selectNote}
+                      onContextMenu={handleContextMenu}
+                      onTogglePin={togglePin}
+                      onDeleteRequest={handleDeleteRequest}
+                    />
+                  </motion.div>
                 ))}
               </>
             )}
@@ -247,17 +259,18 @@ export default function NoteList(): React.JSX.Element {
               </div>
             )}
             {unpinnedNotes.map((note) => (
-              <NoteItem
-                key={note.id}
-                note={note}
-                isActive={activeNoteId === note.id}
-                onSelect={selectNote}
-                onContextMenu={handleContextMenu}
-                onTogglePin={togglePin}
-                onDeleteRequest={handleDeleteRequest}
-              />
+              <motion.div key={note.id} variants={staggerItem}>
+                <NoteItem
+                  note={note}
+                  isActive={activeNoteId === note.id}
+                  onSelect={selectNote}
+                  onContextMenu={handleContextMenu}
+                  onTogglePin={togglePin}
+                  onDeleteRequest={handleDeleteRequest}
+                />
+              </motion.div>
             ))}
-          </>
+          </motion.div>
         )}
       </div>
 
@@ -289,7 +302,7 @@ export default function NoteList(): React.JSX.Element {
   )
 }
 
-// ── Note item component ────────────────────────────────────────────────
+// -- Note item component ----------------------------------------------------
 
 interface NoteItemProps {
   note: {
@@ -300,6 +313,7 @@ interface NoteItemProps {
     hasDrawing: boolean
     contentPreview: string | null
     updatedAt: string
+    tags?: { id: string; label: string; color: string }[]
   }
   isActive: boolean
   onSelect: (id: string) => void
@@ -320,19 +334,13 @@ function NoteItem({
   const previewText = note.contentPreview || note.summary || ''
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => onSelect(note.id)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onSelect(note.id)
-      }}
-      onContextMenu={(e) => onContextMenu(e, note.id, note.pinned)}
-      className={`group relative flex w-full cursor-pointer items-start px-3 py-2.5 text-left transition-all ${
-        isActive
-          ? 'border-l-2 border-accent bg-accent/10'
-          : 'border-l-2 border-transparent hover:bg-surface-elevated/50'
+    <GlassCard
+      variant="interactive"
+      className={`relative mx-2 mb-1 cursor-pointer p-3 ${
+        isActive ? 'border-l-2 border-accent' : ''
       }`}
+      onClick={() => onSelect(note.id)}
+      onContextMenu={(e: React.MouseEvent) => onContextMenu(e, note.id, note.pinned)}
     >
       <div className="min-w-0 flex-1">
         {/* Title line */}
@@ -354,6 +362,17 @@ function NoteItem({
           <p className="mt-0.5 line-clamp-2 text-xs text-text-secondary/60 leading-relaxed">
             {previewText}
           </p>
+        )}
+
+        {/* Tags */}
+        {note.tags && note.tags.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {note.tags.map((tag) => (
+              <GlassBadge key={tag.id} variant="accent" className="text-[9px] px-1.5 py-0.5">
+                {tag.label}
+              </GlassBadge>
+            ))}
+          </div>
         )}
 
         {/* Timestamp + drawing indicator */}
@@ -396,6 +415,6 @@ function NoteItem({
       >
         <Trash2 size={12} />
       </button>
-    </div>
+    </GlassCard>
   )
 }

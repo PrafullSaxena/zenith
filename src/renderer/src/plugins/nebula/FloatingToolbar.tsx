@@ -23,6 +23,7 @@ import {
   Quote,
   Link
 } from 'lucide-react'
+import { GlassSurface } from '../../components/ui'
 
 interface FloatingToolbarProps {
   editor: Editor
@@ -38,7 +39,7 @@ export default function FloatingToolbar({
       editor={editor}
       shouldShow={({ state }) => !state.selection.empty && !editor.isActive('image')}
     >
-      <div className="flex items-center gap-0.5 rounded-lg border border-border bg-surface-elevated px-1.5 py-1 shadow-lg">
+      <GlassSurface className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 shadow-lg">
         <ToolbarBtn
           icon={<Bold size={14} />}
           isActive={editor.isActive('bold')}
@@ -114,7 +115,7 @@ export default function FloatingToolbar({
           onClick={onLinkClick}
           title="Link (Cmd+K)"
         />
-      </div>
+      </GlassSurface>
     </BubbleMenu>
   )
 }
