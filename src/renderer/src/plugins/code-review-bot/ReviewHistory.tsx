@@ -1,6 +1,9 @@
-import { ExternalLink, Eye, Clock } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ExternalLink, Eye, Clock, History } from 'lucide-react'
 import type { ReviewHistoryEntry } from '../../types/review'
 import { formatRelativeTime } from '../../components/dashboard/utils'
+import { GlassCard, GlassBadge, GlassSkeleton, EmptyState } from '../../components/ui'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface ReviewHistoryProps {
   history: ReviewHistoryEntry[]
@@ -8,16 +11,9 @@ interface ReviewHistoryProps {
   onOpen?: (entry: ReviewHistoryEntry) => void
 }
 
-/** Map history status to badge styling. */
-const STATUS_STYLES: Record<ReviewHistoryEntry['status'], string> = {
-  success: 'bg-success-muted text-success',
-  partial: 'bg-warning-muted text-warning',
-  error: 'bg-error-muted text-error'
-}
-
 /**
- * Past reviews table showing PR links, timestamps, comment counts,
- * and status badges. Sorted newest first.
+ * Past reviews displayed as staggered GlassCards showing PR links,
+ * timestamps, comment counts, and status badges. Sorted newest first.
  */
 export function ReviewHistory({
   history,
@@ -26,84 +22,95 @@ export function ReviewHistory({
 }: ReviewHistoryProps): React.JSX.Element {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+      <div className="space-y-2 p-2">
+        <GlassSkeleton variant="card" />
+        <GlassSkeleton variant="card" />
+        <GlassSkeleton variant="card" />
       </div>
     )
   }
 
   if (!history || history.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-10">
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
-          <Clock size={20} className="text-accent/30" />
-        </div>
-        <p className="text-sm font-medium text-text-secondary/70">No review history yet</p>
-        <p className="mt-1 text-[11px] text-text-secondary/60">
-          Completed reviews will appear here
-        </p>
-      </div>
+      <EmptyState
+        icon={History}
+        title="No review history"
+        description="Reviews will appear here after completion"
+      />
     )
   }
 
   return (
-    <div className="space-y-1 overflow-y-auto">
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      className="space-y-1.5 overflow-y-auto"
+    >
       {history.map((entry) => (
-        <div
-          key={entry.id}
-          className="flex items-center gap-3 rounded-lg border border-border/50 px-3 py-2.5 transition-colors hover:bg-surface-elevated"
-        >
-          {/* PR title with external link */}
-          <div className="min-w-0 flex-1">
-            <button
-              type="button"
-              onClick={() => window.api?.app?.openExternal?.(entry.prUrl)}
-              className="group flex items-center gap-1 text-left"
+        <motion.div key={entry.id} variants={staggerItem}>
+          <GlassCard variant="interactive" className="flex items-center gap-3">
+            {/* PR title with external link */}
+            <div className="min-w-0 flex-1">
+              <button
+                type="button"
+                onClick={() => window.api?.app?.openExternal?.(entry.prUrl)}
+                className="group flex items-center gap-1 text-left"
+              >
+                <span className="truncate text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
+                  {entry.prTitle}
+                </span>
+                <ExternalLink
+                  size={12}
+                  className="shrink-0 text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity"
+                />
+              </button>
+              <p className="mt-0.5 text-xs text-text-secondary">
+                {entry.workspace}/{entry.repoSlug}
+              </p>
+            </div>
+
+            {/* Comment counts */}
+            <span className="shrink-0 text-xs text-text-secondary">
+              {entry.commentCount} comments, {entry.postedCount} posted
+            </span>
+
+            {/* Status badge */}
+            <GlassBadge
+              variant={
+                entry.status === 'success'
+                  ? 'success'
+                  : entry.status === 'partial'
+                    ? 'warning'
+                    : 'error'
+              }
             >
-              <span className="truncate text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
-                {entry.prTitle}
-              </span>
-              <ExternalLink
-                size={12}
-                className="shrink-0 text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity"
-              />
-            </button>
-            <p className="mt-0.5 text-xs text-text-secondary">
-              {entry.workspace}/{entry.repoSlug}
-            </p>
-          </div>
+              {entry.status}
+            </GlassBadge>
 
-          {/* Comment counts */}
-          <span className="shrink-0 text-xs text-text-secondary">
-            {entry.commentCount} comments, {entry.postedCount} posted
-          </span>
+            {/* Relative timestamp */}
+            <span className="shrink-0 text-xs text-text-secondary">
+              {formatRelativeTime(entry.timestamp)}
+            </span>
 
-          {/* Status badge */}
-          <span
-            className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_STYLES[entry.status]}`}
-          >
-            {entry.status}
-          </span>
-
-          {/* Relative timestamp */}
-          <span className="shrink-0 text-xs text-text-secondary">
-            {formatRelativeTime(entry.timestamp)}
-          </span>
-
-          {/* Open review button */}
-          {onOpen && entry.commentCount > 0 && (
-            <button
-              type="button"
-              onClick={() => onOpen(entry)}
-              className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10"
-              title="Open review comments"
-            >
-              <Eye size={13} className="inline mr-1" />
-              Open
-            </button>
-          )}
-        </div>
+            {/* Open review button */}
+            {onOpen && entry.commentCount > 0 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onOpen(entry)
+                }}
+                className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10"
+                title="Open review comments"
+              >
+                <Eye size={13} className="inline mr-1" />
+                Open
+              </button>
+            )}
+          </GlassCard>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }

@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { Pencil, Check, X, ChevronDown, ChevronRight } from 'lucide-react'
 import type { ReviewSession, ReviewComment } from '../../types/review'
 import { SEVERITY_CONFIG, CONFIDENCE_CONFIG, KIND_CONFIG } from '../../types/review'
+import { GlassCard, GlassBadge, GlassSkeleton, GlassButton } from '../../components/ui'
+import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface ReviewPanelProps {
   session: ReviewSession | null
@@ -101,18 +104,13 @@ export function ReviewPanel({
     const canStart = isConnected && hasAgent
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <button
-          type="button"
+        <GlassButton
+          variant={canStart ? 'primary' : 'ghost'}
           disabled={!canStart}
           onClick={onStart}
-          className={`rounded-lg px-6 py-2.5 text-sm font-medium transition-colors ${
-            canStart
-              ? 'bg-accent text-background hover:bg-accent/90'
-              : 'cursor-not-allowed bg-surface-elevated text-text-secondary'
-          }`}
         >
           Start Review
-        </button>
+        </GlassButton>
         {!isConnected && (
           <p className="mt-3 text-xs text-text-secondary">
             Connect to Bitbucket first
@@ -138,21 +136,21 @@ export function ReviewPanel({
           </span>
         </div>
 
-        <div
-          ref={scrollRef}
-          className="mx-3 mb-3 flex-1 overflow-y-auto rounded-md bg-surface p-3 font-mono text-sm text-text-primary"
-        >
-          <pre className="whitespace-pre-wrap">{session.rawText || 'Waiting for response...'}</pre>
+        <GlassCard className="mx-3 mb-3 flex-1 overflow-y-auto">
+          <div ref={scrollRef} className="font-mono text-sm text-text-primary">
+            <pre className="whitespace-pre-wrap">{session.rawText || 'Waiting for response...'}</pre>
+          </div>
+        </GlassCard>
+
+        {/* Streaming placeholder skeleton */}
+        <div className="mx-3 mb-3">
+          <GlassSkeleton variant="text" lines={3} />
         </div>
 
         <div className="px-3 pb-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-md bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20"
-          >
+          <GlassButton variant="danger" onClick={onCancel}>
             Cancel Review
-          </button>
+          </GlassButton>
         </div>
       </div>
     )
@@ -179,22 +177,18 @@ export function ReviewPanel({
     if (safeComments.length === 0 && session.rawText.trim().length > 0) {
       return (
         <div className="flex h-full flex-col overflow-y-auto p-3">
-          <div className="mb-3 rounded-md bg-yellow-500/10 px-3 py-2">
+          <GlassCard className="mb-3 bg-yellow-500/10">
             <p className="text-sm font-medium text-yellow-400">
               AI review completed but no comments were parsed
             </p>
             <p className="mt-1 text-xs text-text-secondary">
               The AI output did not match the expected format. Raw output is shown below.
             </p>
-          </div>
-          <div className="flex gap-2 mb-3">
-            <button
-              type="button"
-              onClick={onNewReview}
-              className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent/90"
-            >
+          </GlassCard>
+          <div className="mb-3 flex gap-2">
+            <GlassButton variant="primary" onClick={onNewReview}>
               Retry Review
-            </button>
+            </GlassButton>
           </div>
           <pre className="flex-1 overflow-auto rounded-md bg-surface p-3 text-xs text-text-secondary font-mono whitespace-pre-wrap">
             {session.rawText}
@@ -213,19 +207,19 @@ export function ReviewPanel({
                 {safeComments.length} findings
               </p>
               {blockingCount > 0 && (
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${SEVERITY_CONFIG.blocking.badge}`}>
+                <GlassBadge variant="error">
                   {SEVERITY_CONFIG.blocking.emoji} {blockingCount} Blocking
-                </span>
+                </GlassBadge>
               )}
               {importantCount > 0 && (
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${SEVERITY_CONFIG.important.badge}`}>
+                <GlassBadge variant="warning">
                   {SEVERITY_CONFIG.important.emoji} {importantCount} Important
-                </span>
+                </GlassBadge>
               )}
               {suggestionCount > 0 && (
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${SEVERITY_CONFIG.suggestion.badge}`}>
+                <GlassBadge variant="info">
                   {SEVERITY_CONFIG.suggestion.emoji} {suggestionCount} Suggestion
-                </span>
+                </GlassBadge>
               )}
             </div>
             <span className="text-xs text-text-secondary">Reviewed {reviewAgeLabel}</span>
@@ -240,51 +234,49 @@ export function ReviewPanel({
 
           <div className="mt-2 flex items-center gap-2">
             {!allPosted && (
-              <button
-                type="button"
-                onClick={onPostAll}
-                className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-accent/90"
-              >
+              <GlassButton variant="primary" onClick={onPostAll}>
                 {postedCount > 0
                   ? `Post Remaining (${safeComments.filter((c) => c.shouldPost && !c.posted).length})`
                   : 'Post All Inline Comments'}
-              </button>
+              </GlassButton>
             )}
             {allPosted && (
-              <span className="inline-flex items-center gap-1 rounded-md bg-green-500/10 px-3 py-2 text-sm font-medium text-green-400">
+              <GlassBadge variant="success">
                 All comments posted
-              </span>
+              </GlassBadge>
             )}
-            <button
-              type="button"
-              onClick={onNewReview}
-              className="rounded-md border border-border px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
-            >
+            <GlassButton variant="ghost" onClick={onNewReview}>
               New Review
-            </button>
+            </GlassButton>
           </div>
         </div>
 
-        {/* Finding cards — rich format with collapsible details */}
-        <div className="animate-fade-in-up flex-1 space-y-2 p-3">
+        {/* Finding cards — staggered GlassCard entries */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="flex-1 space-y-2 p-3"
+        >
           {safeComments.map((comment, idx) => (
-            <FindingCard
-              key={idx}
-              comment={comment}
-              index={idx}
-              isSelected={selectedComments.has(idx)}
-              isExpanded={expandedCards.has(idx)}
-              isEditing={editingIndex === idx}
-              editText={editText}
-              onToggleSelect={() => toggleComment(idx)}
-              onToggleExpand={() => toggleCard(idx)}
-              onStartEdit={() => startEditing(idx, comment.body)}
-              onSaveEdit={saveEdit}
-              onCancelEdit={cancelEdit}
-              onEditTextChange={setEditText}
-            />
+            <motion.div key={idx} variants={staggerItem}>
+              <FindingCard
+                comment={comment}
+                index={idx}
+                isSelected={selectedComments.has(idx)}
+                isExpanded={expandedCards.has(idx)}
+                isEditing={editingIndex === idx}
+                editText={editText}
+                onToggleSelect={() => toggleComment(idx)}
+                onToggleExpand={() => toggleCard(idx)}
+                onStartEdit={() => startEditing(idx, comment.body)}
+                onSaveEdit={saveEdit}
+                onCancelEdit={cancelEdit}
+                onEditTextChange={setEditText}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     )
   }
@@ -293,24 +285,16 @@ export function ReviewPanel({
   if (session.status === 'error') {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <div className="rounded-md bg-red-500/10 px-4 py-3 text-center">
+        <GlassCard className="bg-red-500/10 text-center">
           <p className="text-sm text-red-400">{session.error || 'An error occurred during the review.'}</p>
-        </div>
+        </GlassCard>
         <div className="mt-4 flex gap-2">
-          <button
-            type="button"
-            onClick={() => { onNewReview(); onStart() }}
-            className="rounded-md bg-accent px-6 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent/90"
-          >
+          <GlassButton variant="primary" onClick={() => { onNewReview(); onStart() }}>
             Retry Review
-          </button>
-          <button
-            type="button"
-            onClick={onNewReview}
-            className="rounded-md border border-border px-6 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
-          >
+          </GlassButton>
+          <GlassButton variant="ghost" onClick={onNewReview}>
             Dismiss
-          </button>
+          </GlassButton>
         </div>
       </div>
     )
@@ -326,20 +310,12 @@ export function ReviewPanel({
         </p>
       )}
       <div className="mt-4 flex gap-2">
-        <button
-          type="button"
-          onClick={() => { onNewReview(); onStart() }}
-          className="rounded-md bg-accent px-6 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent/90"
-        >
+        <GlassButton variant="primary" onClick={() => { onNewReview(); onStart() }}>
           Start New Review
-        </button>
-        <button
-          type="button"
-          onClick={onNewReview}
-          className="rounded-md border border-border px-6 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
-        >
+        </GlassButton>
+        <GlassButton variant="ghost" onClick={onNewReview}>
           Dismiss
-        </button>
+        </GlassButton>
       </div>
     </div>
   )
@@ -382,12 +358,12 @@ function FindingCard({
   const kindConfig = KIND_CONFIG[comment.kind]
 
   return (
-    <div
-      className={`overflow-hidden rounded-lg border-l-4 bg-surface transition-colors ${sevConfig.border} ${
+    <GlassCard
+      className={`overflow-hidden border-l-4 p-0 ${sevConfig.border} ${
         !comment.shouldPost ? 'opacity-50' : ''
       }`}
     >
-      {/* Card header — always visible */}
+      {/* Card header -- always visible */}
       <div
         className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-elevated/50 transition-colors"
         onClick={onToggleExpand}
@@ -404,11 +380,9 @@ function FindingCard({
         />
 
         {/* Severity badge */}
-        <span
-          className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${sevConfig.badge}`}
-        >
+        <GlassBadge variant={comment.severity === 'blocking' ? 'error' : comment.severity === 'important' ? 'warning' : 'info'}>
           {sevConfig.emoji} {sevConfig.label}
-        </span>
+        </GlassBadge>
 
         {/* Kind tag */}
         <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-surface-elevated text-text-secondary">
@@ -421,17 +395,13 @@ function FindingCard({
         </span>
 
         {/* Confidence badge */}
-        <span
-          className={`inline-flex shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ${confConfig.badge}`}
-        >
+        <GlassBadge variant={comment.confidence === 'high' ? 'success' : comment.confidence === 'medium' ? 'warning' : 'default'}>
           {confConfig.label}
-        </span>
+        </GlassBadge>
 
         {/* Posted indicator */}
         {comment.posted && (
-          <span className="shrink-0 text-[10px] font-medium text-green-400">
-            Posted
-          </span>
+          <GlassBadge variant="success">Posted</GlassBadge>
         )}
 
         {/* Expand/collapse chevron */}
@@ -510,11 +480,11 @@ function FindingCard({
           {/* Medium confidence warning */}
           {comment.confidence === 'medium' && (
             <p className="mt-2 text-[11px] text-yellow-400 italic">
-              ⚠ Medium confidence — please verify this finding
+              Medium confidence -- please verify this finding
             </p>
           )}
         </div>
       )}
-    </div>
+    </GlassCard>
   )
 }

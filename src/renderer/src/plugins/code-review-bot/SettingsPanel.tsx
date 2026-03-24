@@ -1,3 +1,5 @@
+import { GlassBadge, GlassButton } from '../../components/ui'
+
 interface SettingsPanelProps {
   isConnected: boolean
   onConnect: () => void
@@ -8,7 +10,8 @@ interface SettingsPanelProps {
 
 /**
  * Inline settings panel for quick Bitbucket connection management.
- * Shows connection status, connect/disconnect controls, and error messages.
+ * Shows connection status via GlassBadge, connect/disconnect GlassButtons,
+ * and error messages.
  */
 export function SettingsPanel({
   isConnected,
@@ -20,9 +23,9 @@ export function SettingsPanel({
   return (
     <div className="flex items-center gap-3">
       {/* Connection status indicator */}
-      <div className="flex items-center gap-1.5">
+      <GlassBadge variant={isConnected ? 'success' : connectionError ? 'error' : 'default'}>
         <span
-          className={`inline-block h-2 w-2 rounded-full ${
+          className={`inline-block h-2 w-2 rounded-full mr-1.5 ${
             isConnected
               ? 'bg-green-400'
               : connectionError
@@ -30,30 +33,20 @@ export function SettingsPanel({
                 : 'bg-text-secondary'
           }`}
         />
-        <span className="text-xs text-text-secondary">
-          {isConnected ? 'Connected' : 'Not connected'}
-        </span>
-      </div>
+        {isConnected ? 'Connected' : 'Not connected'}
+      </GlassBadge>
 
       {/* Connect / Disconnect button */}
       {isConnecting ? (
         <span className="text-xs text-text-secondary">Connecting...</span>
       ) : isConnected ? (
-        <button
-          type="button"
-          onClick={onDisconnect}
-          className="rounded px-2 py-1 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
-        >
+        <GlassButton variant="ghost" size="sm" onClick={onDisconnect}>
           Disconnect
-        </button>
+        </GlassButton>
       ) : (
-        <button
-          type="button"
-          onClick={onConnect}
-          className="rounded bg-accent/10 px-2 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
-        >
+        <GlassButton variant="primary" size="sm" onClick={onConnect}>
           Connect to Bitbucket
-        </button>
+        </GlassButton>
       )}
 
       {/* Error message */}
@@ -63,7 +56,7 @@ export function SettingsPanel({
         </span>
       )}
 
-      {/* Hint text — only show when no error */}
+      {/* Hint text -- only show when no error */}
       {!connectionError && !isConnected && (
         <span className="hidden text-[11px] text-text-secondary lg:inline">
           Configure OAuth credentials in Settings &gt; CodeReviewBot
