@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Trash2, Server, ChevronDown, ChevronRight } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
+import { GlassSkeleton } from '../ui'
 import type { MCPServerConfig, MCPTransport } from '../../types/mcp'
 
 const MCP_STORAGE_KEY = 'mcp.servers'
@@ -79,8 +80,9 @@ export function MCPSettings(): React.JSX.Element {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+      <div className="p-4 space-y-3">
+        <GlassSkeleton variant="card" />
+        <GlassSkeleton variant="card" />
       </div>
     )
   }

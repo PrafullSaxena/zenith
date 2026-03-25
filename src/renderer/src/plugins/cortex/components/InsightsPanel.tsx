@@ -12,11 +12,10 @@ import {
   Network,
   BarChart3,
   Share2,
-  Download,
-  Loader2
+  Download
 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { GlassSurface } from '@renderer/components/ui'
+import { GlassSurface, GlassSkeleton } from '@renderer/components/ui'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
@@ -37,8 +36,8 @@ const INSIGHT_TABS = [
 
 function TabFallback(): React.JSX.Element {
   return (
-    <div className="flex h-full items-center justify-center">
-      <Loader2 size={20} className="animate-spin text-accent" />
+    <div className="p-4 space-y-3">
+      <GlassSkeleton variant="text" lines={4} />
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { PLUGINS } from '../../plugins/registry'
-import { GlassCard, GlassBadge } from '@renderer/components/ui'
+import { GlassCard, GlassBadge, GlassSkeleton } from '@renderer/components/ui'
 import { getClassicThemes, getNewThemes } from '@renderer/lib/theme-metadata'
 import type { ThemeMeta } from '@renderer/lib/theme-metadata'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
@@ -98,8 +98,9 @@ export function GeneralSettings(): React.JSX.Element {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+      <div className="p-4 space-y-3">
+        <GlassSkeleton variant="card" />
+        <GlassSkeleton variant="text" lines={3} />
       </div>
     )
   }

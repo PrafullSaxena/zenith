@@ -43,7 +43,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { getKindColor, getMethodColor } from '../cortex-theme'
-import { GlassCard } from '@renderer/components/ui'
+import { GlassCard, GlassSkeleton } from '@renderer/components/ui'
 import { useAgentStore } from '../../../stores/agent-store'
 import InsightCard from './InsightCard'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
@@ -668,10 +668,10 @@ export default function ArchitectureDashboard(): React.JSX.Element {
             <MarkdownRenderer text={displayContent} />
           </GlassCard>
         ) : isHLDGenerating ? (
-          <GlassCard className="flex flex-col items-center gap-3 py-8">
-            <Loader2 size={24} className="animate-spin text-accent" />
+          <div className="p-4 space-y-3">
             <p className="text-xs text-text-secondary">Generating design document...</p>
-          </GlassCard>
+            <GlassSkeleton variant="text" lines={4} />
+          </div>
         ) : (
           <GlassCard className="p-5 text-center">
             <BookOpen size={28} className="mx-auto mb-2 text-text-secondary/30" />
