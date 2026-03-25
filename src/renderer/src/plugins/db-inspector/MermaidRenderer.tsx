@@ -8,6 +8,7 @@
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { ZoomIn, ZoomOut, Maximize2, Code2, Check } from 'lucide-react'
+import { AnimatedIcon } from '@renderer/components/ui'
 
 interface MermaidRendererProps {
   syntax: string
@@ -219,11 +220,8 @@ export default function MermaidRenderer({
         opacity-0 group-hover:opacity-100 transition-opacity"
       title="Copy mermaid code"
     >
-      {codeCopied ? (
-        <><Check size={11} className="text-green-400" /> Copied</>
-      ) : (
-        <><Code2 size={11} /> Code</>
-      )}
+      <AnimatedIcon icon={codeCopied ? Check : Code2} iconKey={codeCopied ? 'check' : 'code'} size={11} className={codeCopied ? 'text-emerald-400' : undefined} />
+      {codeCopied ? ' Copied' : ' Code'}
     </button>
   ) : null
 
@@ -262,11 +260,8 @@ export default function MermaidRenderer({
             opacity-0 group-hover:opacity-100 transition-opacity"
           title="Copy mermaid code"
         >
-          {codeCopied ? (
-            <><Check size={11} className="text-green-400" /> Copied</>
-          ) : (
-            <><Code2 size={11} /> Code</>
-          )}
+          <AnimatedIcon icon={codeCopied ? Check : Code2} iconKey={codeCopied ? 'check' : 'code'} size={11} className={codeCopied ? 'text-emerald-400' : undefined} />
+          {codeCopied ? ' Copied' : ' Code'}
         </button>
       )}
 

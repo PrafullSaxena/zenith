@@ -33,7 +33,7 @@ import type {
   OptimizerTile
 } from '../../types/database'
 import { useDbStore } from '../../stores/db-store'
-import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, GlassSurface, EmptyState } from '../../components/ui'
+import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, GlassSurface, EmptyState, AnimatedIcon } from '../../components/ui'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import MermaidRenderer from './MermaidRenderer'
 import { highlightCode } from '../../lib/highlight'
@@ -447,11 +447,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
             className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
             title="Copy plain text (no formatting)"
           >
-            {copiedMode === 'raw' ? (
-              <Check size={11} className="text-success" />
-            ) : (
-              <AlignLeft size={11} />
-            )}
+            <AnimatedIcon icon={copiedMode === 'raw' ? Check : AlignLeft} iconKey={copiedMode === 'raw' ? 'check' : 'alignleft'} size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} />
             {copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}
           </button>
           <button
@@ -460,11 +456,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
             className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
             title="Copy formatted markdown"
           >
-            {copiedMode === 'formatted' ? (
-              <Check size={11} className="text-success" />
-            ) : (
-              <FileText size={11} />
-            )}
+            <AnimatedIcon icon={copiedMode === 'formatted' ? Check : FileText} iconKey={copiedMode === 'formatted' ? 'check' : 'filetext'} size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} />
             {copiedMode === 'formatted' ? 'Copied!' : 'Formatted'}
           </button>
         </div>
@@ -706,11 +698,7 @@ function SuggestionCard({
               onClick={handleCopySql}
               className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-text-secondary transition-colors hover:text-text-primary"
             >
-              {sqlCopied ? (
-                <Check size={9} className="text-success" />
-              ) : (
-                <Copy size={9} />
-              )}
+              <AnimatedIcon icon={sqlCopied ? Check : Copy} iconKey={sqlCopied ? 'check' : 'copy'} size={9} className={sqlCopied ? 'text-success' : undefined} />
               {sqlCopied ? 'Copied!' : 'Copy'}
             </button>
           </div>
@@ -753,11 +741,7 @@ function OptimizedQueryBlock({
           onClick={handleCopy}
           className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--color-accent)]/10 hover:text-[var(--text-primary)]"
         >
-          {copied ? (
-            <Check size={10} className="text-green-400" />
-          ) : (
-            <Copy size={10} />
-          )}
+          <AnimatedIcon icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={10} className={copied ? 'text-emerald-400' : undefined} />
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>

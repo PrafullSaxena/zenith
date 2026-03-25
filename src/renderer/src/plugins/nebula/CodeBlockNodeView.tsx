@@ -13,6 +13,7 @@ import { useCallback, useMemo, useState, lazy, Suspense } from 'react'
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/react'
 import { ChevronDown, Wand2, FileCode2, Copy, Check, Loader2 } from 'lucide-react'
+import { AnimatedIcon } from '@renderer/components/ui'
 import { LANGUAGES } from '../../lib/lowlight-setup'
 import { useSettingsStore } from '../../stores/settings-store'
 
@@ -241,7 +242,7 @@ export default function CodeBlockNodeView({
             className="code-block-action-btn code-block-hover-action"
             title="Copy code"
           >
-            {copied ? <Check size={11} className="text-green-400" /> : <Copy size={11} />}
+            <AnimatedIcon icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={11} className={copied ? 'text-emerald-400' : undefined} />
           </button>
         </div>
       </div>

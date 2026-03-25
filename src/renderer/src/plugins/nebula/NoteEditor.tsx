@@ -34,6 +34,7 @@ import { useNebulaStore } from '../../stores/nebula-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { tiptapToMarkdown, tiptapToPlainText } from './tiptap-to-markdown'
 import { renderAllMermaidBlocks } from '../../lib/mermaid-to-png'
+import { GlassSurface, AnimatedIcon } from '../../components/ui'
 import FloatingToolbar from './FloatingToolbar'
 import LinkDialog from './LinkDialog'
 import TableControls from './TableControls'
@@ -493,7 +494,7 @@ export default function NoteEditor({
   })()
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <GlassSurface className="flex flex-1 flex-col overflow-hidden rounded-none border-x-0 border-t-0 p-0">
       {/* Title area with auto-save dot */}
       <div className="px-4 pt-4 pb-0">
         <div className="flex items-center gap-2">
@@ -513,7 +514,7 @@ export default function NoteEditor({
               className={`p-1 rounded transition-colors ${copiedMode === 'raw' ? 'text-green-400' : 'text-text-secondary/40 hover:text-text-secondary'}`}
               title="Copy as plain text"
             >
-              {copiedMode === 'raw' ? <Check size={13} /> : <ClipboardCopy size={13} />}
+              <AnimatedIcon icon={copiedMode === 'raw' ? Check : ClipboardCopy} iconKey={copiedMode === 'raw' ? 'check' : 'clipboard'} size={13} className={copiedMode === 'raw' ? 'text-green-400' : undefined} />
             </button>
             {/* Copy Markdown */}
             <button
@@ -522,7 +523,7 @@ export default function NoteEditor({
               className={`p-1 rounded transition-colors ${copiedMode === 'markdown' ? 'text-green-400' : 'text-text-secondary/40 hover:text-text-secondary'}`}
               title="Copy as markdown"
             >
-              {copiedMode === 'markdown' ? <Check size={13} /> : <FileText size={13} />}
+              <AnimatedIcon icon={copiedMode === 'markdown' ? Check : FileText} iconKey={copiedMode === 'markdown' ? 'check' : 'filetext'} size={13} className={copiedMode === 'markdown' ? 'text-green-400' : undefined} />
             </button>
             {/* Export PDF */}
             <button
@@ -543,7 +544,7 @@ export default function NoteEditor({
               className={`p-1 rounded transition-colors ${mermaidPreviewEnabled ? 'text-accent bg-accent/10' : 'text-text-secondary/40 hover:text-text-secondary'}`}
               title={mermaidPreviewEnabled ? 'Show mermaid code' : 'Show mermaid diagrams'}
             >
-              {mermaidPreviewEnabled ? <Eye size={13} /> : <EyeOff size={13} />}
+              <AnimatedIcon icon={mermaidPreviewEnabled ? Eye : EyeOff} iconKey={mermaidPreviewEnabled ? 'eye' : 'eyeoff'} size={13} />
             </button>
             {/* Line numbers toggle */}
             <button
@@ -677,7 +678,7 @@ export default function NoteEditor({
           position={linkPosition}
         />
       )}
-    </div>
+    </GlassSurface>
   )
 }
 

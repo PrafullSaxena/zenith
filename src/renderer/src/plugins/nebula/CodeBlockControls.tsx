@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import { ChevronDown, Wand2, FileCode2, Copy, Check } from 'lucide-react'
+import { AnimatedIcon } from '@renderer/components/ui'
 import { LANGUAGES } from '../../lib/lowlight-setup'
 
 // ── File extension map ──────────────────────────────────────────────
@@ -247,7 +248,7 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
         className="flex h-5 w-5 items-center justify-center rounded text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent"
         title="Copy code"
       >
-        {copied ? <Check size={11} className="text-green-400" /> : <Copy size={11} />}
+        <AnimatedIcon icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={11} className={copied ? 'text-emerald-400' : undefined} />
       </button>
     </div>
   )

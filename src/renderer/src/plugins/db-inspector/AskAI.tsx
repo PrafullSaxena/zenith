@@ -19,7 +19,7 @@ import {
   Clock
 } from 'lucide-react'
 import type { DbQASession } from '../../types/database'
-import { GlassCard, GlassButton, GlassSurface, EmptyState } from '../../components/ui'
+import { GlassCard, GlassButton, GlassSurface, EmptyState, AnimatedIcon } from '../../components/ui'
 import MarkdownRenderer from '../../components/MarkdownRenderer'
 import type { QueryExecState } from '../../components/MarkdownRenderer'
 
@@ -344,11 +344,7 @@ export default function AskAI({
                       onClick={handleCopy}
                       className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-[var(--text-secondary)] transition-colors hover:bg-white/[0.04] hover:text-[var(--text-primary)]"
                     >
-                      {copied ? (
-                        <Check size={10} className="text-green-400" />
-                      ) : (
-                        <Copy size={10} />
-                      )}
+                      <AnimatedIcon icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={10} className={copied ? 'text-emerald-400' : undefined} />
                       {copied ? 'Copied!' : 'Copy'}
                     </button>
                   </div>

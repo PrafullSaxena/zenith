@@ -1,7 +1,7 @@
 import { useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Download, Copy, Check, AlertCircle, Table2 } from 'lucide-react'
-import { GlassCard, GlassSkeleton, GlassButton, GlassSurface, EmptyState } from '../../components/ui'
+import { GlassCard, GlassSkeleton, GlassButton, GlassSurface, EmptyState, AnimatedIcon } from '../../components/ui'
 import CellModal from './CellModal'
 
 // -- Types
@@ -405,7 +405,7 @@ export default function ResultsGrid({
           onClick={handleCopyAllTsv}
           className={copiedTsv ? 'text-green-400' : ''}
         >
-          {copiedTsv ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          <AnimatedIcon icon={copiedTsv ? Check : Copy} iconKey={copiedTsv ? 'check' : 'copy'} size={12} className={copiedTsv ? 'text-emerald-400' : undefined} />
           {copiedTsv ? 'Copied!' : 'Copy TSV'}
         </GlassButton>
         <GlassButton variant="ghost" size="sm" onClick={handleExportCsv}>

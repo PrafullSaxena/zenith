@@ -11,7 +11,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Check, FileText, AlignLeft, Copy, FileDown, ChevronDown, ChevronRight, ChevronsUpDown, Loader2, BookOpen } from 'lucide-react'
-import { GlassCard, GlassSkeleton, EmptyState } from '@renderer/components/ui'
+import { GlassCard, GlassSkeleton, EmptyState, AnimatedIcon } from '@renderer/components/ui'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import { renderAllMermaidBlocks } from '../../lib/mermaid-to-png'
 import { markdownToTiptapJson } from '../../lib/markdown-to-tiptap'
@@ -274,7 +274,7 @@ export default function OutputPanel(): React.JSX.Element {
               className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
               title="Copy plain text"
             >
-              {copiedMode === 'raw' ? <Check size={13} className="text-success" /> : <AlignLeft size={13} />}
+              <AnimatedIcon icon={copiedMode === 'raw' ? Check : AlignLeft} iconKey={copiedMode === 'raw' ? 'check' : 'alignleft'} size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} />
               <span>{copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}</span>
             </button>
 
@@ -284,7 +284,7 @@ export default function OutputPanel(): React.JSX.Element {
               className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
               title="Copy markdown source"
             >
-              {copiedMode === 'formatted' ? <Check size={13} className="text-success" /> : <FileText size={13} />}
+              <AnimatedIcon icon={copiedMode === 'formatted' ? Check : FileText} iconKey={copiedMode === 'formatted' ? 'check' : 'filetext'} size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} />
               <span>{copiedMode === 'formatted' ? 'Copied!' : 'Markdown'}</span>
             </button>
 
@@ -309,7 +309,7 @@ export default function OutputPanel(): React.JSX.Element {
               className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
               title="Save as Nebula note"
             >
-              {savedAsNote ? <Check size={13} className="text-success" /> : <BookOpen size={13} />}
+              <AnimatedIcon icon={savedAsNote ? Check : BookOpen} iconKey={savedAsNote ? 'check' : 'bookopen'} size={13} className={savedAsNote ? 'text-success' : undefined} />
               <span>{savedAsNote ? 'Saved!' : 'Note'}</span>
             </button>
           </div>

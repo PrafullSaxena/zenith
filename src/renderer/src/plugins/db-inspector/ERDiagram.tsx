@@ -29,7 +29,7 @@ import type {
   RelationshipMode,
   ERInferenceStatus
 } from '../../types/database'
-import { GlassCard, GlassSurface, GlassButton, GlassSelect, EmptyState, Scene3DWrapper } from '../../components/ui'
+import { GlassCard, GlassSurface, GlassButton, GlassSelect, EmptyState, Scene3DWrapper, AnimatedIcon } from '../../components/ui'
 import MermaidRenderer from './MermaidRenderer'
 
 // ── Lazy-load 3D schema orb ─────────────────────────────────────────────
@@ -297,7 +297,7 @@ export default function ERDiagram({
           {(session || editedSyntax) && (
             <>
               <GlassButton variant="ghost" size="sm" onClick={handleCopy}>
-                {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+                <AnimatedIcon icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={12} className={copied ? 'text-emerald-400' : undefined} />
                 {copied ? 'Copied!' : 'Copy Mermaid'}
               </GlassButton>
               <GlassButton
