@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 7 of 7 (Micro Interactions and Polish)
-Plan: 2 of 4 in current phase (2 complete)
+Plan: 3 of 4 in current phase (3 complete)
 Status: In Progress
-Last activity: 2026-03-25 — Completed 07-02 (Stagger Animations + GlassSkeleton Loaders)
+Last activity: 2026-03-25 — Completed 07-01 (AnimatedIcon + ScrollContainer)
 
-Progress: [█████-----] 2/4 plans
+Progress: [███████---] 3/4 plans
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [█████-----] 2/4 plans
 | Phase 06 P01 | 2min | 2 tasks | 4 files |
 | Phase 06 P02 | 3min | 2 tasks | 4 files |
 | Phase 06 P03 | 3min | 2 tasks | 2 files |
+| Phase 07 P01 | 4min | 2 tasks | 12 files |
 | Phase 07 P02 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
@@ -130,6 +131,9 @@ Recent decisions affecting current work:
 - [06-02]: CostTreemap3D hover-lift uses useFrame lerp for smooth animation without state re-renders
 - [06-02]: Nebula 3D nodes colored by cycling 8-color palette -- no tag data on GraphNode type
 - [Phase 06-03]: FK edges parsed from mermaid syntax + inferredRelationships, avoiding extra API calls
+- [07-01]: AnimatedIcon uses AnimatePresence mode=wait with spring stiffness 500/damping 30 for snappy but soft icon morphs
+- [07-01]: ScrollContainer uses refs (not state) for scroll position to avoid 60fps re-renders
+- [07-01]: CellModal and SqlEditor skipped -- no copied state toggle pattern to animate
 - [Phase 07]: [07-02]: Standalone loading = GlassSkeleton; inline button loading = Loader2 animate-spin
 
 ### Pending Todos
@@ -143,5 +147,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 07-02-PLAN.md (Stagger Animations + GlassSkeleton Loaders)
+Stopped at: Completed 07-01-PLAN.md (AnimatedIcon + ScrollContainer)
 Resume file: None
