@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Every screen in Zenith must feel like the same app — consistent glass styling, shared animation, unified components.
-**Current focus:** Phase 5: Theme Collection
+**Current focus:** Phase 6: 3D Visualizations
 
 ## Current Position
 
-Phase: 5 of 7 (Theme Collection)
-Plan: 3 of 3 in current phase (3 complete)
-Status: Phase Complete
-Last activity: 2026-03-25 — Completed 05-03 (Cross-Theme QA Validation)
+Phase: 6 of 7 (3D Visualizations)
+Plan: 1 of 3 in current phase (1 complete)
+Status: In Progress
+Last activity: 2026-03-25 — Completed 06-01 (Scene3DWrapper + Dashboard Activity Mesh)
 
-Progress: [██████████] 3/3 plans
+Progress: [███-------] 1/3 plans
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 17
 - Average duration: 2.6min
-- Total execution time: 42min
+- Total execution time: 44min
 
 **By Phase:**
 
@@ -52,6 +52,7 @@ Progress: [██████████] 3/3 plans
 | Phase 05 P01 | 2min | 2 tasks | 1 files |
 | Phase 05 P02 | 2min | 2 tasks | 3 files |
 | Phase 05 P03 | 2min | 2 tasks | 0 files |
+| Phase 06 P01 | 2min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -116,6 +117,10 @@ Recent decisions affecting current work:
 - [Phase 05-02]: Mini glass preview is CSS-only: outer div with theme bg, inner div with rgba glass surface, bottom accent line
 - [Phase 05-02]: NEW badge uses GlassBadge variant=accent; shown only when theme is not active (active shows check icon)
 - [Phase 05-03]: No CSS fixes needed -- all 18 themes passed all 5 automated QA checks without modification
+- [06-01]: Scene3DWrapper uses class-based ErrorBoundary (getDerivedStateFromError) for WebGL crash catching
+- [06-01]: ActivityMesh3D uses mesh refs (not state) for per-frame d3-force position updates to avoid 60fps re-renders
+- [06-01]: Activity mesh hidden on smaller screens (lg:block) to avoid cramped hero layout
+- [06-01]: Node radius scales by recency (0.8-2.0) using 24-hour age normalization
 
 ### Pending Todos
 
@@ -128,5 +133,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 05-03-PLAN.md (Cross-Theme QA Validation) — Phase 05 complete
+Stopped at: Completed 06-01-PLAN.md (Scene3DWrapper + Dashboard Activity Mesh)
 Resume file: None
