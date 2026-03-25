@@ -138,12 +138,13 @@ Plans:
   3. Scrollable containers show a thin accent progress bar at top and fade shadows at overflow edges
   4. Tab bars across the entire app animate the active underline sliding to the selected tab
   5. All micro-interactions respect reduced-motion preference (disabled or simplified when active)
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
 - [ ] 07-01: AnimatedIcon + ScrollContainer shared components, icon morph application (Wave 1)
 - [ ] 07-02: Stagger animation gaps + skeleton loader audit-fix (Wave 1)
 - [ ] 07-03: ScrollContainer application + verify already-done micro-interactions (Wave 2)
+- [ ] 07-04: Settings extra polish + cross-theme visual QA across all 18 themes (Wave 3)
 
 ## Progress
 
