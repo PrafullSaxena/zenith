@@ -20,7 +20,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Pin, Trash2, Pencil, Sparkles, FileText } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { GlassCard, GlassBadge, GlassButton, EmptyState } from '../../components/ui'
+import { GlassCard, GlassBadge, GlassButton, EmptyState, ScrollContainer } from '../../components/ui'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import NoteContextMenu from './NoteContextMenu'
 import DeleteConfirmDialog from './DeleteConfirmDialog'
@@ -210,7 +210,7 @@ export default function NoteList(): React.JSX.Element {
       </div>
 
       {/* Notes list */}
-      <div className="flex-1 overflow-y-auto">
+      <ScrollContainer className="flex-1">
         {notes.length === 0 ? (
           <EmptyState
             icon={FileText}
@@ -272,7 +272,7 @@ export default function NoteList(): React.JSX.Element {
             ))}
           </motion.div>
         )}
-      </div>
+      </ScrollContainer>
 
       {/* Context menu */}
       <NoteContextMenu

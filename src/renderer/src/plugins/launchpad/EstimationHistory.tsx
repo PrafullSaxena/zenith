@@ -8,7 +8,7 @@
 import React from 'react'
 import { Clock, Trash2, RotateCcw } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { GlassCard, GlassBadge, GlassButton, EmptyState } from '@renderer/components/ui'
+import { GlassCard, GlassBadge, GlassButton, EmptyState, ScrollContainer } from '@renderer/components/ui'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { EstimationEntry } from '../../types/launchpad'
@@ -153,7 +153,7 @@ export default function EstimationHistory(): React.JSX.Element {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <ScrollContainer className="flex-1 p-4">
         {history.length === 0 ? (
           <EmptyState
             icon={Clock}
@@ -177,7 +177,7 @@ export default function EstimationHistory(): React.JSX.Element {
             ))}
           </motion.div>
         )}
-      </div>
+      </ScrollContainer>
     </div>
   )
 }

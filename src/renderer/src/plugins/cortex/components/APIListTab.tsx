@@ -9,7 +9,7 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import type { RouteInfo } from '../../../types/cortex'
 import ValidationPanel from './ValidationPanel'
 import { getMethodColor } from '../cortex-theme'
-import { GlassCard } from '@renderer/components/ui'
+import { GlassCard, ScrollContainer } from '@renderer/components/ui'
 
 type SortKey = 'path' | 'method' | 'handlerName' | 'controllerName'
 type SortDir = 'asc' | 'desc'
@@ -202,7 +202,8 @@ export default function APIListTab(): React.JSX.Element {
       )}
 
       {/* Table */}
-      <GlassCard className="flex-1 min-h-0 overflow-auto">
+      <GlassCard className="flex-1 min-h-0">
+        <ScrollContainer className="h-full">
         <table className="w-full text-xs">
           <thead className="sticky top-0 bg-white/[0.03] text-[10px] uppercase tracking-wider text-text-secondary">
             <tr>
@@ -263,6 +264,7 @@ export default function APIListTab(): React.JSX.Element {
             )}
           </tbody>
         </table>
+        </ScrollContainer>
       </GlassCard>
 
       {/* Validation results */}

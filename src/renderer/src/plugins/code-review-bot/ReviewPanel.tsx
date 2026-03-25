@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Pencil, Check, X, ChevronDown, ChevronRight } from 'lucide-react'
 import type { ReviewSession, ReviewComment } from '../../types/review'
 import { SEVERITY_CONFIG, CONFIDENCE_CONFIG, KIND_CONFIG } from '../../types/review'
-import { GlassCard, GlassBadge, GlassSkeleton, GlassButton } from '../../components/ui'
+import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, ScrollContainer } from '../../components/ui'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface ReviewPanelProps {
@@ -198,7 +198,7 @@ export function ReviewPanel({
     }
 
     return (
-      <div className="flex h-full flex-col overflow-y-auto">
+      <ScrollContainer className="flex h-full flex-col">
         {/* Summary header */}
         <div className="border-b border-border px-3 py-3">
           <div className="flex items-center justify-between">
@@ -277,7 +277,7 @@ export function ReviewPanel({
             </motion.div>
           ))}
         </motion.div>
-      </div>
+      </ScrollContainer>
     )
   }
 

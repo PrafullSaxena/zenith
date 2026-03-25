@@ -9,7 +9,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { Eye, MessageSquare, Zap, GitFork, Clock } from 'lucide-react'
 import type { DbHistoryEntry } from '../../types/database'
-import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, EmptyState } from '../../components/ui'
+import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, EmptyState, ScrollContainer } from '../../components/ui'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface DbHistoryProps {
@@ -56,7 +56,7 @@ export default function DbHistory({
   }
 
   return (
-    <div className="p-4">
+    <ScrollContainer className="h-full p-4">
       <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
         Recent Results ({history.length})
       </p>
@@ -110,7 +110,7 @@ export default function DbHistory({
           )
         })}
       </motion.div>
-    </div>
+    </ScrollContainer>
   )
 }
 

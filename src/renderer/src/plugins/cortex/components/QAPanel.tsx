@@ -10,7 +10,7 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { useAgentStore } from '../../../stores/agent-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { QAMessage, RepoType } from '../../../types/cortex'
-import { GlassCard, GlassSurface } from '@renderer/components/ui'
+import { GlassCard, GlassSurface, ScrollContainer } from '@renderer/components/ui'
 
 // ── Suggested questions by repo type ────────────────────────────────
 
@@ -298,7 +298,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
       </GlassSurface>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <ScrollContainer className="flex-1 px-4 py-3 space-y-3" showProgress={false}>
         {qaMessages.length === 0 ? (
           /* Empty state with suggested questions */
           <div className="flex h-full flex-col items-center justify-center gap-4">
@@ -379,7 +379,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
           ))
         )}
         <div ref={messagesEndRef} />
-      </div>
+      </ScrollContainer>
 
       {/* Input area */}
       <GlassSurface className="p-3 rounded-none border-x-0 border-b-0">

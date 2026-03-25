@@ -10,6 +10,7 @@ import { useCortexStore } from '../../../stores/cortex-store'
 import RepoCard from './RepoCard'
 import AddRepoDialog from './AddRepoDialog'
 import { staggerContainer } from '@renderer/lib/motion'
+import { ScrollContainer } from '@renderer/components/ui'
 
 export default function RepoManager(): React.JSX.Element {
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -79,7 +80,7 @@ export default function RepoManager(): React.JSX.Element {
   )
 
   return (
-    <div className="h-full overflow-y-auto">
+    <ScrollContainer className="h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4">
         <h2 className="text-sm font-semibold text-text-primary">Repositories</h2>
@@ -137,6 +138,6 @@ export default function RepoManager(): React.JSX.Element {
 
       {/* Add repo dialog */}
       <AddRepoDialog open={showAddDialog} onClose={() => setShowAddDialog(false)} />
-    </div>
+    </ScrollContainer>
   )
 }

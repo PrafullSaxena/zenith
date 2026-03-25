@@ -9,7 +9,7 @@
 import { Eye, Clock, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
-import { GlassCard, GlassBadge, EmptyState } from '@renderer/components/ui'
+import { GlassCard, GlassBadge, EmptyState, ScrollContainer } from '@renderer/components/ui'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import type { FormatOption } from '../../types/textcraft'
 
@@ -37,7 +37,7 @@ export default function HistoryPanel(): React.JSX.Element {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-4 w-full">
+    <ScrollContainer className="h-full p-4 w-full">
       <motion.div
         variants={staggerContainer}
         initial="hidden"
@@ -112,6 +112,6 @@ export default function HistoryPanel(): React.JSX.Element {
           </motion.div>
         ))}
       </motion.div>
-    </div>
+    </ScrollContainer>
   )
 }
