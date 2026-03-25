@@ -14,19 +14,23 @@ import { useNavigate } from 'react-router-dom'
 import {
   MessageSquare,
   Zap,
-  GitFork,
-  History,
+  Network,
+  Clock,
   Terminal,
   AlertTriangle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Database
 } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { EditorView } from '@codemirror/view'
 import { useDbStore } from '../../stores/db-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useActivityStore } from '../../stores/activity-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import type { DbInspectorTab, DbHistoryEntry } from '../../types/database'
+import { PluginHeader, GlassSurface, GlassBadge } from '../../components/ui'
+import { pageTransition } from '../../lib/motion'
 import ConnectionManager from './ConnectionManager'
 import SchemaExplorer from './SchemaExplorer'
 import AskAI from './AskAI'
@@ -35,22 +39,21 @@ import ERDiagram from './ERDiagram'
 import DbHistory from './DbHistory'
 import QueryConsole from './QueryConsole'
 
-const TABS: { id: DbInspectorTab; label: string; icon: typeof MessageSquare }[] = [
+const TABS: { id: string; label: string; icon: typeof MessageSquare }[] = [
   { id: 'query-console', label: 'Console', icon: Terminal },
   { id: 'ask-ai', label: 'Ask AI', icon: MessageSquare },
   { id: 'query-optimizer', label: 'Optimizer', icon: Zap },
-  { id: 'er-diagram', label: 'ER Diagram', icon: GitFork },
-  { id: 'history', label: 'History', icon: History }
+  { id: 'er-diagram', label: 'ER Diagram', icon: Network },
+  { id: 'history', label: 'History', icon: Clock }
 ]
 
 export default function DbInspectorView(): React.JSX.Element {
   const navigate = useNavigate()
 
-  // ── Left panel collapse state ────────────────────────────────────
+  // -- Left panel collapse state
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false)
 
-  // ── Editor view ref for schema double-click insert ───────────────
-  // The active QueryTab's SqlEditor provides its EditorView via onEditorReady.
+  // -- Editor view ref for schema double-click insert
   const activeEditorViewRef = useRef<EditorView | null>(null)
 
   const handleEditorReady = useCallback((view: EditorView) => {
@@ -68,8 +71,7 @@ export default function DbInspectorView(): React.JSX.Element {
     view.focus()
   }, [])
 
-  // ── Stores ──────────────────────────────────────────────────────
-
+  // -- Stores
   const {
     connections,
     activeConnectionId,
@@ -125,29 +127,20 @@ export default function DbInspectorView(): React.JSX.Element {
 
   const { providers, loadProviders } = useAgentStore()
   const { addEntry: addActivity } = useActivityStore()
-  const _settingsObj = useSettingsStore((s) => s.settings) // trigger re-render on settings change
+  const _settingsObj = useSettingsStore((s) => s.settings)
   const getSetting = useSettingsStore((s) => s.getSetting)
 
-  // ── Agent selection ─────────────────────────────────────────────
-
+  // -- Agent selection
   const defaultAgentId = getSetting('plugins.db-inspector.defaultAgent') as string | undefined
   const agent = defaultAgentId
     ? providers.find((p) => p.id === defaultAgentId)
     : providers.find((p) => p.status === 'connected' || p.hasApiKey)
   const hasAgent = !!agent
 
-  // ── Activity dedup ──────────────────────────────────────────────
-
+  // -- Activity dedup
   const loggedSessionIds = useRef<Set<string>>(new Set())
 
-  // ── Mount effects ───────────────────────────────────────────────
-  //
-  // Only load initial data on mount. All cascading loads (schemas → tables)
-  // are handled internally by the store actions:
-  //   connectToDb → loadDatabases + loadSchemas (auto-selects schema → loadTables)
-  //   setActiveDatabase → switchDatabase + loadSchemas (auto-selects schema → loadTables)
-  //   setActiveSchema → loadTables
-
+  // -- Mount effects
   useEffect(() => {
     loadConnections()
     loadHistory()
@@ -155,8 +148,7 @@ export default function DbInspectorView(): React.JSX.Element {
     loadProviders()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Q&A completion → history + activity ─────────────────────────
-
+  // -- Q&A completion -> history + activity
   useEffect(() => {
     if (!qaSession || qaSession.status !== 'complete') return
     if (loggedSessionIds.current.has(qaSession.sessionId)) return
@@ -181,8 +173,7 @@ export default function DbInspectorView(): React.JSX.Element {
     })
   }, [qaSession?.status]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Optimizer completion → history + activity ───────────────────
-
+  // -- Optimizer completion -> history + activity
   useEffect(() => {
     if (!optimizerSession || optimizerSession.status !== 'complete') return
     if (loggedSessionIds.current.has(optimizerSession.sessionId)) return
@@ -213,8 +204,7 @@ export default function DbInspectorView(): React.JSX.Element {
     })
   }, [optimizerSession?.status]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Handlers ────────────────────────────────────────────────────
-
+  // -- Handlers
   const handleStartQA = useCallback(
     (question: string) => {
       if (!agent) return
@@ -232,14 +222,12 @@ export default function DbInspectorView(): React.JSX.Element {
   )
 
   const handleGenerateER = useCallback(async () => {
-    // Generate all 3 modes at once; pass agent info for AI inference
     if (agent) {
       await generateAllERModes(agent.id, agent.model ?? agent.id, agent.command)
     } else {
       await generateAllERModes()
     }
 
-    // Log to history + activity
     const sess = useDbStore.getState().erSession
     if (sess) {
       const conn = connections.find((c) => c.id === sess.connectionId)
@@ -284,63 +272,48 @@ export default function DbInspectorView(): React.JSX.Element {
     navigate('/settings?tab=db-inspector')
   }, [navigate])
 
-  // ── Active connection status ────────────────────────────────────
-
+  // -- Active connection status
   const activeConnection = connections.find((c) => c.id === activeConnectionId)
   const isConnected = activeConnectionId
     ? connectionStatuses[activeConnectionId]?.connected ?? false
     : false
 
-  // ── Tab label with streaming indicator ──────────────────────────
-
-  const getTabLabel = (tab: DbInspectorTab): string => {
-    switch (tab) {
-      case 'ask-ai':
-        return qaSession?.status === 'streaming' ? 'Ask AI ●' : 'Ask AI'
-      case 'query-optimizer':
-        return optimizerSession?.status === 'streaming' || optimizerSession?.status === 'analyzing'
-          ? 'Optimizer ●'
-          : 'Optimizer'
-      case 'history':
-        return history.length > 0 ? `History (${history.length})` : 'History'
-      case 'query-console': {
-        // Show running indicator if any query tab is currently running
-        const { queryTabs } = useDbStore.getState()
-        const hasRunning = queryTabs.some((t) => t.lastResult?.status === 'running')
-        return hasRunning ? 'Console ●' : 'Console'
-      }
-      default:
-        return TABS.find((t) => t.id === tab)?.label ?? tab
-    }
-  }
+  // -- Connection status badge for PluginHeader
+  const connectionBadge = activeConnection ? (
+    <GlassBadge variant={isConnected ? 'success' : 'error'} className={
+      connectionStatuses[activeConnectionId ?? ''] !== undefined &&
+      !connectionStatuses[activeConnectionId ?? '']?.connected &&
+      !connectionStatuses[activeConnectionId ?? '']?.error
+        ? 'animate-pulse'
+        : ''
+    }>
+      {activeConnection.name}
+      {activeDatabase ? ` / ${activeDatabase}` : ''}
+      {activeSchema ? ` / ${activeSchema}` : ''}
+    </GlassBadge>
+  ) : undefined
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-        <h1 className="text-lg font-semibold text-text-primary">DbInspector</h1>
-        {activeConnection && (
-          <div className="flex items-center gap-2">
-            <span
-              className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-text-secondary/30'}`}
-            />
-            <span className="text-xs text-text-secondary">
-              {activeConnection.name}
-              {activeDatabase ? ` / ${activeDatabase}` : ''}
-              {activeSchema ? ` / ${activeSchema}` : ''}
-            </span>
-          </div>
-        )}
-      </div>
+      {/* Header with PluginHeader */}
+      <PluginHeader
+        icon={Database}
+        title="DB Inspector"
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={(id) => setActiveTab(id as DbInspectorTab)}
+        statusIndicator={connectionBadge}
+      />
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left panel — Connections (sticky) + Schema Explorer (scrollable) + collapse toggle */}
-        <div className="relative flex shrink-0 flex-col border-r border-border transition-all duration-200"
+        {/* Left panel -- Connections (sticky) + Schema Explorer (scrollable) + collapse toggle */}
+        <div
+          className="relative flex shrink-0 flex-col border-r border-[var(--glass-border)] transition-all duration-200"
           style={{ width: isLeftPanelCollapsed ? 0 : 256, overflow: isLeftPanelCollapsed ? 'hidden' : 'visible' }}
         >
-          <div className="stagger-children flex h-full flex-col" style={{ width: 256 }}>
-            <div className="shrink-0 border-b border-border p-3">
+          <GlassSurface className="flex h-full flex-col rounded-none border-0" style={{ width: 256 }}>
+            <div className="shrink-0 border-b border-[var(--glass-border)] p-3">
               <ConnectionManager
                 connections={connections}
                 connectionStatuses={connectionStatuses}
@@ -375,7 +348,7 @@ export default function DbInspectorView(): React.JSX.Element {
                 />
               </div>
             )}
-          </div>
+          </GlassSurface>
         </div>
 
         {/* Collapse/expand toggle button */}
@@ -383,12 +356,12 @@ export default function DbInspectorView(): React.JSX.Element {
           type="button"
           onClick={() => setIsLeftPanelCollapsed((v) => !v)}
           title={isLeftPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
-          className="relative z-10 flex h-10 w-4 shrink-0 items-center justify-center self-start mt-2 rounded-r border border-l-0 border-border bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
+          className="relative z-10 flex h-10 w-4 shrink-0 items-center justify-center self-start mt-2 rounded-r border border-l-0 border-[var(--glass-border)] bg-white/[0.03] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/[0.06] transition-colors"
         >
           {isLeftPanelCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>
 
-        {/* Right panel — Tabbed content */}
+        {/* Right panel -- Tabbed content */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Agent status warning */}
           {isConnected && !hasAgent && (
@@ -407,88 +380,74 @@ export default function DbInspectorView(): React.JSX.Element {
             </div>
           )}
 
-          {/* Tab bar */}
-          <div className="flex border-b border-border">
-            {TABS.map((tab) => {
-              const Icon = tab.icon
-              const isActive = activeTab === tab.id
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
-                    isActive
-                      ? 'border-b-2 border-accent text-accent'
-                      : 'text-text-secondary hover:text-text-primary'
-                  }`}
-                >
-                  <Icon size={13} />
-                  {getTabLabel(tab.id)}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Tab content */}
-          <div key={activeTab} className="animate-tab-enter flex-1 overflow-hidden">
-            {activeTab === 'ask-ai' && (
-              <AskAI
-                session={qaSession}
-                hasConnection={isConnected}
-                hasAgent={hasAgent}
-                activeConnectionId={isConnected ? activeConnectionId : null}
-                questionHistory={qaQuestionHistory}
-                onStart={handleStartQA}
-                onCancel={cancelQA}
-              />
-            )}
-            {activeTab === 'query-optimizer' && (
-              <QueryOptimizer
-                session={optimizerSession}
-                tiles={optimizerTiles}
-                hasConnection={isConnected}
-                hasAgent={hasAgent}
-                onStart={handleStartOptimization}
-                onCancel={cancelOptimization}
-              />
-            )}
-            {activeTab === 'er-diagram' && (
-              <ERDiagram
-                tables={tables}
-                selectedTables={selectedTablesForER}
-                onToggleTable={toggleTableForER}
-                onSetTables={setSelectedTablesForER}
-                onGenerate={handleGenerateER}
-                session={erSession}
-                hasConnection={isConnected}
-                hasAgent={hasAgent}
-                inferenceStatus={erInferenceStatus}
-                relationshipMode={erRelationshipMode}
-                onModeChange={switchERMode}
-                inferredCount={erInferredRelationships.length}
-                connectionName={activeConnection?.name}
-                schema={activeSchema ?? ''}
-              />
-            )}
-            {activeTab === 'query-console' && (
-              <QueryConsole
-                connectionId={activeConnectionId}
-                isConnected={isConnected}
-                schema={activeSchema}
-                tables={tables}
-                engine={activeConnection?.engine ?? 'postgresql'}
-                onEditorReady={handleEditorReady}
-              />
-            )}
-            {activeTab === 'history' && (
-              <DbHistory
-                history={history}
-                isLoading={isLoadingHistory}
-                onOpen={handleHistoryOpen}
-              />
-            )}
-          </div>
+          {/* Tab content with AnimatePresence */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              variants={pageTransition}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="flex-1 overflow-hidden"
+            >
+              {activeTab === 'ask-ai' && (
+                <AskAI
+                  session={qaSession}
+                  hasConnection={isConnected}
+                  hasAgent={hasAgent}
+                  activeConnectionId={isConnected ? activeConnectionId : null}
+                  questionHistory={qaQuestionHistory}
+                  onStart={handleStartQA}
+                  onCancel={cancelQA}
+                />
+              )}
+              {activeTab === 'query-optimizer' && (
+                <QueryOptimizer
+                  session={optimizerSession}
+                  tiles={optimizerTiles}
+                  hasConnection={isConnected}
+                  hasAgent={hasAgent}
+                  onStart={handleStartOptimization}
+                  onCancel={cancelOptimization}
+                />
+              )}
+              {activeTab === 'er-diagram' && (
+                <ERDiagram
+                  tables={tables}
+                  selectedTables={selectedTablesForER}
+                  onToggleTable={toggleTableForER}
+                  onSetTables={setSelectedTablesForER}
+                  onGenerate={handleGenerateER}
+                  session={erSession}
+                  hasConnection={isConnected}
+                  hasAgent={hasAgent}
+                  inferenceStatus={erInferenceStatus}
+                  relationshipMode={erRelationshipMode}
+                  onModeChange={switchERMode}
+                  inferredCount={erInferredRelationships.length}
+                  connectionName={activeConnection?.name}
+                  schema={activeSchema ?? ''}
+                />
+              )}
+              {activeTab === 'query-console' && (
+                <QueryConsole
+                  connectionId={activeConnectionId}
+                  isConnected={isConnected}
+                  schema={activeSchema}
+                  tables={tables}
+                  engine={activeConnection?.engine ?? 'postgresql'}
+                  onEditorReady={handleEditorReady}
+                />
+              )}
+              {activeTab === 'history' && (
+                <DbHistory
+                  history={history}
+                  isLoading={isLoadingHistory}
+                  onOpen={handleHistoryOpen}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
  * NebulaView -- Main view for the Nebula notes & knowledge management plugin.
  *
  * Layout:
- *  - Header: plugin icon + title + subtitle
+ *  - Header: PluginHeader with BookOpen icon, gradient title, GlassTab bar
  *  - Tab bar: Notes / Search / Knowledge
  *  - Notes tab: sidebar (NoteList) | content area (NoteEditor + DrawingCanvas)
  *  - Search tab: SearchView with FTS5 search + AI Q&A
@@ -11,11 +11,11 @@
  * Drawing panel is collapsed by default, expandable via side rail "Draw" tab.
  * Sidebar width is fixed for now (resizable panels to be added later).
  *
- * Follows the same tab pattern as LaunchpadView.tsx.
  * Default-exported for React.lazy() compatibility in the plugin registry.
  */
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen,
   FileText,
@@ -29,6 +29,8 @@ import {
   Minimize2
 } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
+import { PluginHeader, GlassButton, EmptyState } from '../../components/ui'
+import { pageTransition } from '../../lib/motion'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
 import DrawingCanvas from './DrawingCanvas'
@@ -38,7 +40,7 @@ import VoiceRecorder from './VoiceRecorder'
 import ToastContainer from './ToastContainer'
 import type { NebulaTab, NoteTag } from '../../types/nebula'
 
-const TABS: { id: NebulaTab; label: string; icon: typeof FileText }[] = [
+const TABS = [
   { id: 'notes', label: 'Notes', icon: FileText },
   { id: 'search', label: 'Search', icon: Search },
   { id: 'knowledge', label: 'Knowledge', icon: Share2 }
@@ -236,192 +238,177 @@ export default function NebulaView(): React.JSX.Element {
       {/* Toast notifications -- visible across all tabs */}
       <ToastContainer />
 
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b border-border/50 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <BookOpen size={18} className="text-accent" />
-          <h1 className="text-lg font-semibold text-text-primary">Nebula</h1>
-          <span className="text-xs text-text-secondary">Notes &amp; Knowledge</span>
-        </div>
-      </div>
+      {/* Header with PluginHeader */}
+      <PluginHeader
+        icon={BookOpen}
+        title="Nebula"
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={(id) => setActiveTab(id as NebulaTab)}
+      />
 
-      {/* Tab bar */}
-      <div className="flex border-b border-border/50">
-        {TABS.map((tab) => {
-          const Icon = tab.icon
-          const isActive = activeTab === tab.id
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
-                isActive
-                  ? 'border-b-2 border-accent text-accent'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              <Icon size={13} />
-              {tab.label}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Tab content */}
-      <div key={activeTab} className="flex-1 overflow-hidden animate-tab-enter">
-        {/* Notes tab */}
-        {activeTab === 'notes' && (
-          <div className="flex h-full">
-            {/* Sidebar */}
-            {sidebarCollapsed ? (
-              <div className="flex w-10 shrink-0 flex-col items-center border-r border-border/50 bg-surface/50 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setSidebarCollapsed(false)}
-                  className="flex h-7 w-7 items-center justify-center rounded text-text-secondary transition-colors hover:bg-accent/15 hover:text-accent"
-                  title="Expand sidebar"
-                >
-                  <PanelLeft size={16} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex w-64 shrink-0 flex-col border-r border-border/50 bg-surface/30">
-                {/* Collapse button */}
-                <div className="flex justify-end px-1 pt-1">
+      {/* Tab content with AnimatePresence page transitions */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          variants={pageTransition}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="flex-1 overflow-hidden"
+        >
+          {/* Notes tab */}
+          {activeTab === 'notes' && (
+            <div className="flex h-full">
+              {/* Sidebar */}
+              {sidebarCollapsed ? (
+                <div className="flex w-10 shrink-0 flex-col items-center border-r border-border/50 bg-surface/50 pt-3">
                   <button
                     type="button"
-                    onClick={() => setSidebarCollapsed(true)}
-                    className="flex h-6 w-6 items-center justify-center rounded text-text-secondary/40 transition-colors hover:bg-accent/10 hover:text-text-secondary"
-                    title="Collapse sidebar"
+                    onClick={() => setSidebarCollapsed(false)}
+                    className="flex h-7 w-7 items-center justify-center rounded text-text-secondary transition-colors hover:bg-accent/15 hover:text-accent"
+                    title="Expand sidebar"
                   >
-                    <PanelLeftClose size={14} />
+                    <PanelLeft size={16} />
                   </button>
                 </div>
-                <NoteList />
-              </div>
-            )}
-
-            {/* Content area */}
-            <div ref={contentAreaRef} className="relative flex flex-1 overflow-hidden">
-              {activeNote ? (
-                <div className="flex h-full w-full">
-                  {/* Editor -- hidden when drawing is fullscreen */}
-                  {!drawingFullscreen && (
-                    <div
-                      className="flex flex-col overflow-hidden"
-                      style={drawingOpen ? { width: `${100 - drawingWidthPct}%` } : { flex: 1 }}
+              ) : (
+                <div className="flex w-64 shrink-0 flex-col border-r border-border/50 bg-surface/30">
+                  {/* Collapse button */}
+                  <div className="flex justify-end px-1 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setSidebarCollapsed(true)}
+                      className="flex h-6 w-6 items-center justify-center rounded text-text-secondary/40 transition-colors hover:bg-accent/10 hover:text-text-secondary"
+                      title="Collapse sidebar"
                     >
-                      <NoteEditor
-                        key={activeNote.id}
-                        noteId={activeNote.id}
-                        content={activeNote.content}
-                        title={activeNote.title}
-                        tags={activeNote.tags ?? []}
-                        onTagsChange={handleTagsChange}
-                        updatedAt={activeNote.updatedAt}
-                        onUpdate={handleContentUpdate}
-                        onBlur={handleEditorBlur}
-                        onTitleChange={handleTitleChange}
-                        isSummarizing={isSummarizing}
-                        isSaving={isSaving}
-                        showSaved={showSaved}
-                      />
-                    </div>
-                  )}
+                      <PanelLeftClose size={14} />
+                    </button>
+                  </div>
+                  <NoteList />
+                </div>
+              )}
 
-                  {/* Resize handle between editor and drawing */}
-                  {drawingOpen && !drawingFullscreen && (
-                    <div
-                      onMouseDown={handleResizeStart}
-                      className="group flex w-1.5 shrink-0 cursor-col-resize items-center justify-center hover:bg-accent/20 transition-colors"
-                      title="Drag to resize"
-                    >
-                      <div className="h-8 w-0.5 rounded-full bg-border group-hover:bg-accent transition-colors" />
-                    </div>
-                  )}
-
-                  {/* Drawing panel */}
-                  {drawingOpen && (
-                    <div
-                      className="flex flex-col border-l border-border/50"
-                      style={drawingFullscreen ? { width: '100%' } : { width: `${drawingWidthPct}%` }}
-                    >
-                      {/* Drawing panel header */}
-                      <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-3 py-1.5">
-                        <span className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
-                          <Pencil size={12} />
-                          Drawing
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={handleToggleFullscreen}
-                            className="flex h-6 w-6 items-center justify-center rounded text-text-secondary/60 transition-colors hover:bg-accent/10 hover:text-text-primary"
-                            title={drawingFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-                          >
-                            {drawingFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleCloseDrawing}
-                            className="flex h-6 w-6 items-center justify-center rounded text-text-secondary/60 transition-colors hover:bg-accent/10 hover:text-text-primary"
-                            title="Close drawing panel"
-                          >
-                            <X size={13} />
-                          </button>
-                        </div>
-                      </div>
-                      {/* Canvas */}
-                      <div className="flex-1">
-                        <DrawingCanvas
+              {/* Content area */}
+              <div ref={contentAreaRef} className="relative flex flex-1 overflow-hidden">
+                {activeNote ? (
+                  <div className="flex h-full w-full">
+                    {/* Editor -- hidden when drawing is fullscreen */}
+                    {!drawingFullscreen && (
+                      <div
+                        className="flex flex-col overflow-hidden"
+                        style={drawingOpen ? { width: `${100 - drawingWidthPct}%` } : { flex: 1 }}
+                      >
+                        <NoteEditor
                           key={activeNote.id}
-                          snapshot={activeNote.drawing}
-                          onSave={handleDrawingSave}
+                          noteId={activeNote.id}
+                          content={activeNote.content}
+                          title={activeNote.title}
+                          tags={activeNote.tags ?? []}
+                          onTagsChange={handleTagsChange}
+                          updatedAt={activeNote.updatedAt}
+                          onUpdate={handleContentUpdate}
+                          onBlur={handleEditorBlur}
+                          onTitleChange={handleTitleChange}
+                          isSummarizing={isSummarizing}
+                          isSaving={isSaving}
+                          showSaved={showSaved}
                         />
                       </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex flex-1 items-center justify-center text-text-secondary">
-                  <div className="text-center">
-                    <FileText size={36} className="mx-auto mb-3 opacity-30" />
-                    <p className="text-sm font-medium">No note selected</p>
-                    <p className="mt-1 text-xs text-text-secondary/60">
-                      Select a note from the sidebar or create a new one
-                    </p>
+                    )}
+
+                    {/* Resize handle between editor and drawing */}
+                    {drawingOpen && !drawingFullscreen && (
+                      <div
+                        onMouseDown={handleResizeStart}
+                        className="group flex w-1.5 shrink-0 cursor-col-resize items-center justify-center hover:bg-accent/20 transition-colors"
+                        title="Drag to resize"
+                      >
+                        <div className="h-8 w-0.5 rounded-full bg-border group-hover:bg-accent transition-colors" />
+                      </div>
+                    )}
+
+                    {/* Drawing panel */}
+                    {drawingOpen && (
+                      <div
+                        className="flex flex-col border-l border-border/50"
+                        style={drawingFullscreen ? { width: '100%' } : { width: `${drawingWidthPct}%` }}
+                      >
+                        {/* Drawing panel header */}
+                        <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-3 py-1.5">
+                          <span className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
+                            <Pencil size={12} />
+                            Drawing
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <GlassButton
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleToggleFullscreen}
+                              title={drawingFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                              className="h-6 w-6 p-0"
+                            >
+                              {drawingFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                            </GlassButton>
+                            <GlassButton
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleCloseDrawing}
+                              title="Close drawing panel"
+                              className="h-6 w-6 p-0"
+                            >
+                              <X size={13} />
+                            </GlassButton>
+                          </div>
+                        </div>
+                        {/* Canvas */}
+                        <div className="flex-1">
+                          <DrawingCanvas
+                            key={activeNote.id}
+                            snapshot={activeNote.drawing}
+                            onSave={handleDrawingSave}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <EmptyState
+                    icon={FileText}
+                    title="No note selected"
+                    description="Select a note from the sidebar or create a new one"
+                    className="flex-1"
+                  />
+                )}
 
-              {/* Side rail "Draw" tab -- visible when drawing panel is closed */}
-              {activeNote && !drawingOpen && (
-                <button
-                  type="button"
-                  onClick={handleToggleDrawing}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 rounded-l-lg border border-r-0 border-border/50 bg-surface-elevated/80 px-1.5 py-3 text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent shadow-sm backdrop-blur-sm"
-                  title="Open drawing panel"
-                >
-                  <Pencil size={14} />
-                  <span className="text-[9px] font-medium [writing-mode:vertical-lr]">
-                    Draw
-                  </span>
-                </button>
-              )}
+                {/* Side rail "Draw" tab -- visible when drawing panel is closed */}
+                {activeNote && !drawingOpen && (
+                  <button
+                    type="button"
+                    onClick={handleToggleDrawing}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 rounded-l-lg border border-r-0 border-border/50 bg-surface-elevated/80 px-1.5 py-3 text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent shadow-sm backdrop-blur-sm"
+                    title="Open drawing panel"
+                  >
+                    <Pencil size={14} />
+                    <span className="text-[9px] font-medium [writing-mode:vertical-lr]">
+                      Draw
+                    </span>
+                  </button>
+                )}
 
-              {/* Voice Recorder FAB -- hidden when drawing is fullscreen */}
-              {!drawingFullscreen && <VoiceRecorder noteId={activeNote?.id ?? null} />}
+                {/* Voice Recorder FAB -- hidden when drawing is fullscreen */}
+                {!drawingFullscreen && <VoiceRecorder noteId={activeNote?.id ?? null} />}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Search tab */}
-        {activeTab === 'search' && <SearchView />}
+          {/* Search tab */}
+          {activeTab === 'search' && <SearchView />}
 
-        {/* Knowledge tab */}
-        {activeTab === 'knowledge' && <KnowledgeGraph />}
-      </div>
+          {/* Knowledge tab */}
+          {activeTab === 'knowledge' && <KnowledgeGraph />}
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }

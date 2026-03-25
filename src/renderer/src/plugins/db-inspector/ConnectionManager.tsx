@@ -13,6 +13,7 @@ import {
   Settings
 } from 'lucide-react'
 import type { DbConnection, ConnectionStatus } from '../../types/database'
+import { GlassSelect, GlassBadge, GlassButton } from '../../components/ui'
 
 interface ConnectionManagerProps {
   connections: DbConnection[]
@@ -42,17 +43,27 @@ export default function ConnectionManager({
       !connectionStatuses[activeConnectionId]?.error
     : false
 
+  // Build options for GlassSelect
+  const connectionOptions = connections.map((conn) => {
+    const status = connectionStatuses[conn.id]
+    const connected = status?.connected ?? false
+    return {
+      value: conn.id,
+      label: `${conn.name} (${conn.host}:${conn.port})${connected ? ' [connected]' : ''}`
+    }
+  })
+
   return (
     <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
           Connection
         </h3>
         <button
           type="button"
           onClick={onOpenSettings}
-          className="rounded p-1 text-text-secondary hover:bg-surface-elevated hover:text-accent"
+          className="rounded p-1 text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--color-accent)]"
           title="Manage connections in Settings"
         >
           <Settings size={14} />
@@ -62,13 +73,13 @@ export default function ConnectionManager({
       {/* Connection selector */}
       {connections.length === 0 ? (
         <div className="space-y-2">
-          <p className="py-2 text-center text-xs text-text-secondary/70">
+          <p className="py-2 text-center text-xs text-[var(--text-secondary)]/70">
             No connections configured
           </p>
           <button
             type="button"
             onClick={onOpenSettings}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-text-secondary hover:border-accent/50 hover:text-accent transition"
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-[var(--glass-border)] px-3 py-2 text-xs text-[var(--text-secondary)] hover:border-[var(--color-accent)]/50 hover:text-[var(--color-accent)] transition"
           >
             <Settings size={12} />
             Add in Settings
@@ -76,46 +87,35 @@ export default function ConnectionManager({
         </div>
       ) : (
         <div className="space-y-2">
-          {/* Dropdown selector */}
-          <select
+          {/* Dropdown selector with GlassSelect */}
+          <GlassSelect
             value={activeConnectionId ?? ''}
-            onChange={(e) => onSelectConnection(e.target.value || null)}
-            className="w-full rounded-lg border border-border bg-surface px-2.5 py-2 text-xs text-text-primary focus:border-accent focus:outline-none"
-          >
-            <option value="">Select a connection...</option>
-            {connections.map((conn) => {
-              const status = connectionStatuses[conn.id]
-              const connected = status?.connected ?? false
-              return (
-                <option key={conn.id} value={conn.id}>
-                  {conn.name} ({conn.host}:{conn.port}){connected ? ' [connected]' : ''}
-                </option>
-              )
-            })}
-          </select>
+            onChange={(val) => onSelectConnection(val || null)}
+            options={[{ value: '', label: 'Select a connection...' }, ...connectionOptions]}
+          />
 
           {/* Selected connection info + actions */}
           {activeConnection && (
             <div className="space-y-2">
-              {/* Connection info */}
-              <div className="rounded-lg border border-border bg-surface-elevated/50 px-3 py-2">
+              {/* Connection info with status dot */}
+              <div className="rounded-lg border border-[var(--glass-border)] bg-white/[0.02] px-3 py-2">
                 <div className="flex items-center gap-2">
                   <span
                     className={`h-2 w-2 shrink-0 rounded-full ${
                       isConnected
-                        ? 'bg-success'
+                        ? 'bg-green-400'
                         : activeStatus?.error
-                          ? 'bg-error'
+                          ? 'bg-red-400'
                           : isConnecting
-                            ? 'bg-warning animate-status-pulse'
-                            : 'bg-text-secondary/30'
+                            ? 'bg-yellow-400 animate-pulse'
+                            : 'bg-[var(--text-secondary)]/30'
                     }`}
                   />
-                  <span className="text-xs font-medium text-text-primary">
+                  <span className="text-xs font-medium text-[var(--text-primary)]">
                     {activeConnection.name}
                   </span>
                 </div>
-                <p className="mt-0.5 pl-4 text-[10px] text-text-secondary">
+                <p className="mt-0.5 pl-4 text-[10px] text-[var(--text-secondary)]">
                   {activeConnection.host}:{activeConnection.port} · {activeConnection.username} · {activeConnection.readStrategy}
                 </p>
                 {activeStatus?.error && (
@@ -125,20 +125,22 @@ export default function ConnectionManager({
 
               {/* Connect / Disconnect button */}
               {isConnected ? (
-                <button
-                  type="button"
+                <GlassButton
+                  variant="danger"
+                  size="sm"
+                  className="w-full justify-center"
                   onClick={() => onDisconnect(activeConnection.id)}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary hover:border-orange-400/50 hover:text-orange-400 transition"
                 >
                   <Unplug size={12} />
                   Disconnect
-                </button>
+                </GlassButton>
               ) : (
-                <button
-                  type="button"
+                <GlassButton
+                  variant="primary"
+                  size="sm"
+                  className="w-full justify-center"
                   onClick={() => onConnect(activeConnection.id)}
                   disabled={isConnecting}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90 transition disabled:opacity-50"
                 >
                   {isConnecting ? (
                     <Loader2 size={12} className="animate-spin" />
@@ -146,7 +148,7 @@ export default function ConnectionManager({
                     <Plug size={12} />
                   )}
                   Connect
-                </button>
+                </GlassButton>
               )}
             </div>
           )}

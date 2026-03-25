@@ -4,7 +4,7 @@
  */
 import { motion } from 'framer-motion'
 import type { AnalysisProgress as AnalysisProgressType } from '../../../types/cortex'
-import { GLASS_CARD } from '../cortex-theme'
+import { GlassCard } from '@renderer/components/ui'
 
 interface Props {
   progress: AnalysisProgressType
@@ -33,7 +33,7 @@ export default function AnalysisProgress({ progress }: Props): React.JSX.Element
   const barColor = PHASE_BAR_COLORS[progress.phase] ?? 'bg-accent'
 
   return (
-    <div className={`flex flex-col gap-1.5 rounded-xl p-2.5 ${GLASS_CARD}`}>
+    <GlassCard className="flex flex-col gap-1.5 rounded-xl p-2.5">
       <div className="flex items-center justify-between text-[10px]">
         <span className="font-medium text-text-primary">{label}</span>
         <span className="text-text-secondary">{Math.round(progress.progress)}%</span>
@@ -48,6 +48,6 @@ export default function AnalysisProgress({ progress }: Props): React.JSX.Element
       {progress.detail && (
         <span className="text-[10px] text-text-secondary">{progress.detail}</span>
       )}
-    </div>
+    </GlassCard>
   )
 }

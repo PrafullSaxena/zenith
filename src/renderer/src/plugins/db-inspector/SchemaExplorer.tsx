@@ -9,11 +9,11 @@ import {
   ChevronRight,
   Key,
   Link2,
-  Loader2,
   Database,
   Search
 } from 'lucide-react'
 import type { TableInfo, ColumnInfo, ForeignKey, IndexInfo, TableStats } from '../../types/database'
+import { GlassSelect, GlassSkeleton, EmptyState } from '../../components/ui'
 
 interface SchemaExplorerProps {
   databases: string[]
@@ -73,83 +73,75 @@ export default function SchemaExplorer({
     return tables.filter((t) => fuzzyMatch(searchQuery.trim(), t.name))
   }, [tables, searchQuery])
 
+  // Build options for GlassSelect
+  const dbOptions = [
+    { value: '', label: 'Select database...' },
+    ...databases.map((db) => ({ value: db, label: db }))
+  ]
+  const schemaOptions = [
+    { value: '', label: 'Select schema...' },
+    ...schemas.map((s) => ({ value: s, label: s }))
+  ]
+
   return (
     <div className="space-y-3">
       {/* Database selector */}
       <div>
-        <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+        <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
           <Database size={11} />
           Database
         </label>
         {isLoadingDatabases ? (
-          <div className="flex items-center gap-1.5 py-1.5 text-[11px] text-text-secondary">
-            <Loader2 size={10} className="animate-spin" />
-            Loading databases…
-          </div>
+          <GlassSkeleton variant="text" lines={1} />
         ) : (
-          <select
+          <GlassSelect
             value={activeDatabase ?? ''}
-            onChange={(e) => onDatabaseChange(e.target.value)}
-            className="w-full rounded-lg border border-border/50 bg-surface px-2 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none"
-          >
-            <option value="" disabled>
-              Select database…
-            </option>
-            {databases.map((db) => (
-              <option key={db} value={db}>
-                {db}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => val && onDatabaseChange(val)}
+            options={dbOptions}
+          />
         )}
       </div>
 
       {/* Schema selector */}
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+        <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
           Schema
         </label>
-        <select
+        <GlassSelect
           value={activeSchema ?? ''}
-          onChange={(e) => onSchemaChange(e.target.value)}
+          onChange={(val) => val && onSchemaChange(val)}
+          options={schemaOptions}
           disabled={!activeDatabase}
-          className="w-full rounded-lg border border-border/50 bg-surface px-2 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none disabled:opacity-50"
-        >
-          <option value="" disabled>
-            Select schema…
-          </option>
-          {schemas.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       {/* Table search */}
       {tables.length > 0 && (
         <div className="relative">
-          <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-text-secondary/60" />
+          <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]/60" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={`Search ${tables.length} tables…`}
-            className="w-full rounded-lg border border-border/50 bg-surface pl-7 pr-2 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/60 focus:border-accent focus:outline-none"
+            placeholder={`Search ${tables.length} tables...`}
+            className="w-full rounded-lg border border-[var(--glass-border)] bg-white/[0.03] pl-7 pr-2 py-1.5 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/60 focus:border-[var(--color-accent)] focus:outline-none"
           />
         </div>
       )}
 
       {/* Tables list */}
       {isLoadingTables ? (
-        <div className="flex items-center gap-2 py-4 text-xs text-text-secondary">
-          <Loader2 size={12} className="animate-spin" />
-          Loading tables…
-        </div>
+        <GlassSkeleton variant="text" lines={8} />
+      ) : !activeSchema ? (
+        <EmptyState
+          icon={Database}
+          title="Connect a database"
+          description="Select a connection to explore schema"
+        />
       ) : tables.length === 0 && activeSchema ? (
-        <p className="py-4 text-center text-xs text-text-secondary/70">No tables in this schema</p>
+        <p className="py-4 text-center text-xs text-[var(--text-secondary)]/70">No tables in this schema</p>
       ) : filteredTables.length === 0 && searchQuery ? (
-        <p className="py-4 text-center text-xs text-text-secondary/70">
+        <p className="py-4 text-center text-xs text-[var(--text-secondary)]/70">
           No tables matching &ldquo;{searchQuery}&rdquo;
         </p>
       ) : (
@@ -162,10 +154,10 @@ export default function SchemaExplorer({
                   type="button"
                   onClick={() => onSelectTable(table.name)}
                   onDoubleClick={() => onInsertAtCursor?.(table.name)}
-                  className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs transition-colors ${
+                  className={`flex w-full items-center gap-2 hover:bg-white/[0.04] transition-colors rounded-lg px-2 py-1.5 text-xs ${
                     isSelected
-                      ? 'bg-accent/10 text-accent'
-                      : 'text-text-primary hover:bg-surface-elevated'
+                      ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]'
+                      : 'text-[var(--text-primary)]'
                   } ${onInsertAtCursor ? 'cursor-pointer' : ''}`}
                   title={onInsertAtCursor ? `Click to expand · Double-click to insert "${table.name}"` : undefined}
                 >
@@ -175,12 +167,12 @@ export default function SchemaExplorer({
                     <ChevronRight size={12} className="shrink-0" />
                   )}
                   {table.type === 'VIEW' ? (
-                    <Eye size={12} className="shrink-0 text-text-secondary" />
+                    <Eye size={12} className="shrink-0 text-[var(--text-secondary)]" />
                   ) : (
-                    <Table2 size={12} className="shrink-0 text-text-secondary" />
+                    <Table2 size={12} className="shrink-0 text-[var(--text-secondary)]" />
                   )}
                   <span className="truncate">{table.name}</span>
-                  <span className="ml-auto flex shrink-0 items-center gap-1.5 text-[10px] text-text-secondary">
+                  <span className="ml-auto flex shrink-0 items-center gap-1.5 text-[10px] text-[var(--text-secondary)]">
                     {table.totalSize && (
                       <span>{table.totalSize}</span>
                     )}
@@ -192,17 +184,14 @@ export default function SchemaExplorer({
 
                 {/* Expanded details */}
                 {isSelected && (
-                  <div className="ml-6 mt-1 space-y-2 border-l border-border pl-3">
+                  <div className="ml-6 mt-1 space-y-2 border-l border-white/[0.06] pl-3 transition-all duration-200">
                     {isLoadingDetails ? (
-                      <div className="flex items-center gap-1 py-2 text-[10px] text-text-secondary">
-                        <Loader2 size={10} className="animate-spin" />
-                        Loading…
-                      </div>
+                      <GlassSkeleton variant="text" lines={4} />
                     ) : (
                       <>
                         {/* Stats */}
                         {tableStats && (
-                          <div className="text-[10px] text-text-secondary">
+                          <div className="text-[10px] text-[var(--text-secondary)]">
                             {tableStats.totalSize} · {tableStats.indexSize} indexes
                           </div>
                         )}
@@ -213,9 +202,9 @@ export default function SchemaExplorer({
                             <div
                               key={col.name}
                               onDoubleClick={() => onInsertAtCursor?.(col.name)}
-                              className={`flex items-center gap-1.5 text-[11px] text-text-primary rounded px-1 py-0.5 -mx-1 ${
+                              className={`flex items-center gap-1.5 text-[11px] text-[var(--text-primary)] hover:bg-white/[0.04] transition-colors rounded-lg px-1 py-0.5 -mx-1 ${
                                 onInsertAtCursor
-                                  ? 'cursor-pointer hover:bg-accent/10'
+                                  ? 'cursor-pointer'
                                   : ''
                               }`}
                               title={onInsertAtCursor ? `Double-click to insert "${col.name}"` : undefined}
@@ -232,7 +221,7 @@ export default function SchemaExplorer({
                                   <span className="w-[9px] shrink-0" />
                                 )}
                               <span className="font-mono">{col.name}</span>
-                              <span className="text-text-secondary">{col.dataType}</span>
+                              <span className="text-[var(--text-secondary)]">{col.dataType}</span>
                               {!col.isNullable && (
                                 <span className="text-[9px] text-orange-400">NOT NULL</span>
                               )}
@@ -243,13 +232,13 @@ export default function SchemaExplorer({
                         {/* Indexes */}
                         {indexes.length > 0 && (
                           <div className="mt-1">
-                            <p className="text-[10px] font-semibold uppercase text-text-secondary">
+                            <p className="text-[10px] font-semibold uppercase text-[var(--text-secondary)]">
                               Indexes
                             </p>
                             {indexes.map((idx) => (
                               <div
                                 key={idx.name}
-                                className="text-[10px] text-text-secondary"
+                                className="text-[10px] text-[var(--text-secondary)]"
                               >
                                 {idx.name}: ({Array.isArray(idx.columns) ? idx.columns.join(', ') : String(idx.columns)}){' '}
                                 {idx.isUnique ? 'UNIQUE' : ''} {idx.indexType}

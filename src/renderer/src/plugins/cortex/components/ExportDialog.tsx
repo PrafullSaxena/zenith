@@ -1,12 +1,11 @@
 /**
- * ExportDialog — Modal dialog for exporting documentation in Markdown, PDF, or Plain Text.
+ * ExportDialog -- Modal dialog for exporting documentation in Markdown, PDF, or Plain Text.
  * Supports section selection and format-specific options.
  */
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, FileDown, AlignLeft, X, Download, Loader2 } from 'lucide-react'
+import { FileText, FileDown, AlignLeft, Download, Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { GLASS_CARD } from '../cortex-theme'
+import { GlassModal, GlassButton } from '@renderer/components/ui'
 import { analysisResultToMermaidBlocks } from './flow-utils'
 
 type ExportFormat = 'markdown' | 'pdf' | 'plaintext'
@@ -116,7 +115,6 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
 
     const lines = hldContent.split('\n')
     const filtered: string[] = []
-    let currentSection = ''
     let include = false
 
     // Always include the title
@@ -128,12 +126,10 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
     for (const line of lines) {
       if (line.startsWith('## ')) {
         const heading = line.slice(3).trim()
-        currentSection = ''
         include = false
 
         for (const [sectionId, headings] of Object.entries(sectionMap)) {
           if (headings.some((h) => heading.startsWith(h)) && selectedSections.has(sectionId)) {
-            currentSection = sectionId
             include = true
             break
           }
@@ -219,118 +215,88 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
   }, [format, selectedSections, hldContent, repoName, isExporting, onClose, analysisResult])
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-2xl">
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className={`w-[480px] ${GLASS_CARD} p-6 shadow-2xl`}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <Download size={16} className="text-accent" />
-              <h2 className="text-sm font-semibold text-text-primary">Export Documentation</h2>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded p-1 text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors"
-            >
-              <X size={14} />
-            </button>
-          </div>
-
-          {/* Format selector */}
-          <div className="mb-5">
-            <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-text-secondary">
-              Format
-            </p>
-            <div className="flex gap-2">
-              {FORMAT_OPTIONS.map((opt) => {
-                const Icon = opt.icon
-                const isActive = format === opt.id
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setFormat(opt.id)}
-                    className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors ${
-                      isActive
-                        ? 'border-accent/30 bg-accent/[0.08] text-accent'
-                        : 'border-white/[0.08] bg-white/[0.02] text-text-secondary hover:bg-white/[0.04]'
-                    }`}
-                  >
-                    <Icon size={14} />
-                    {opt.label}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Section checkboxes */}
-          <div className="mb-5">
-            <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-text-secondary">
-              Sections
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {availableSections.map((section) => (
-                <label
-                  key={section.id}
-                  className="flex items-center gap-2 text-sm text-text-primary cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedSections.has(section.id)}
-                    onChange={() => toggleSection(section.id)}
-                    className="h-3.5 w-3.5 rounded border-border accent-accent"
-                  />
-                  <span className="text-xs">{section.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Error message */}
-          {error && (
-            <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/[0.05] backdrop-blur-sm px-3 py-2 text-xs text-red-400">
-              {error}
-            </div>
-          )}
-
-          {/* Action buttons */}
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg px-4 py-2 text-xs font-medium text-text-secondary hover:bg-surface-elevated transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleExport}
-              disabled={isExporting || selectedSections.size === 0}
-              className="flex items-center gap-2 rounded-lg bg-accent/15 px-4 py-2 text-xs font-medium text-accent hover:bg-accent/25 transition-colors disabled:opacity-50"
-            >
-              {isExporting ? (
-                <>
-                  <Loader2 size={13} className="animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <Download size={13} />
-                  Export
-                </>
-              )}
-            </button>
-          </div>
-        </motion.div>
+    <GlassModal isOpen={true} onClose={onClose} title="Export Documentation" size="md">
+      {/* Format selector */}
+      <div className="mb-5">
+        <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+          Format
+        </p>
+        <div className="flex gap-2">
+          {FORMAT_OPTIONS.map((opt) => {
+            const Icon = opt.icon
+            const isActive = format === opt.id
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setFormat(opt.id)}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors ${
+                  isActive
+                    ? 'border-accent/30 bg-accent/[0.08] text-accent'
+                    : 'border-white/[0.08] bg-white/[0.02] text-text-secondary hover:bg-white/[0.04]'
+                }`}
+              >
+                <Icon size={14} />
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
       </div>
-    </AnimatePresence>
+
+      {/* Section checkboxes */}
+      <div className="mb-5">
+        <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+          Sections
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {availableSections.map((section) => (
+            <label
+              key={section.id}
+              className="flex items-center gap-2 text-sm text-text-primary cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={selectedSections.has(section.id)}
+                onChange={() => toggleSection(section.id)}
+                className="h-3.5 w-3.5 rounded border-border accent-accent"
+              />
+              <span className="text-xs">{section.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/[0.05] backdrop-blur-sm px-3 py-2 text-xs text-red-400">
+          {error}
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div className="flex justify-end gap-2">
+        <GlassButton variant="ghost" onClick={onClose}>
+          Cancel
+        </GlassButton>
+        <GlassButton
+          variant="primary"
+          onClick={handleExport}
+          disabled={isExporting || selectedSections.size === 0}
+        >
+          {isExporting ? (
+            <>
+              <Loader2 size={13} className="animate-spin" />
+              Exporting...
+            </>
+          ) : (
+            <>
+              <Download size={13} />
+              Export
+            </>
+          )}
+        </GlassButton>
+      </div>
+    </GlassModal>
   )
 }

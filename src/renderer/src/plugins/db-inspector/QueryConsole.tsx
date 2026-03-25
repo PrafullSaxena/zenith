@@ -6,14 +6,14 @@
  */
 
 import React, { useState, useRef, useCallback } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, Terminal } from 'lucide-react'
 import { useDbStore } from '../../stores/db-store'
 import type { TableInfo } from '../../types/database'
+import { GlassCard, GlassSurface, EmptyState } from '../../components/ui'
 import QueryTab from './QueryTab'
 import type { EditorView } from '@codemirror/view'
 
-// ── Props ─────────────────────────────────────────────────────────────
-
+// -- Props
 interface QueryConsoleProps {
   connectionId: string | null
   isConnected: boolean
@@ -24,8 +24,7 @@ interface QueryConsoleProps {
   onEditorReady?: (view: EditorView) => void
 }
 
-// ── Component ─────────────────────────────────────────────────────────
-
+// -- Component
 export default function QueryConsole({
   connectionId,
   isConnected,
@@ -43,7 +42,7 @@ export default function QueryConsole({
     renameQueryTab
   } = useDbStore()
 
-  // ── Rename state ─────────────────────────────────────────────────
+  // -- Rename state
   const [renamingTabId, setRenamingTabId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
   const renameInputRef = useRef<HTMLInputElement>(null)
@@ -52,7 +51,6 @@ export default function QueryConsole({
     (tabId: string, currentLabel: string) => {
       setRenamingTabId(tabId)
       setRenameValue(currentLabel)
-      // Focus input on next tick
       setTimeout(() => renameInputRef.current?.select(), 10)
     },
     []
@@ -85,26 +83,30 @@ export default function QueryConsole({
 
   if (!isConnected || !connectionId) {
     return (
-      <div className="flex h-full items-center justify-center text-text-secondary text-sm">
-        Connect to a database to open the query console.
+      <div className="flex h-full items-center justify-center">
+        <EmptyState
+          icon={Terminal}
+          title="No connection"
+          description="Connect to a database to open the query console."
+        />
       </div>
     )
   }
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* Tab bar */}
-      <div className="flex shrink-0 items-center border-b border-border overflow-x-auto">
+      {/* Tab bar with glass appearance */}
+      <GlassSurface className="flex shrink-0 items-center overflow-x-auto rounded-none border-x-0 border-t-0">
         {queryTabs.map((tab) => {
           const isActive = tab.id === activeQueryTabId
           return (
             <div
               key={tab.id}
               onClick={() => setActiveQueryTab(tab.id)}
-              className={`group relative flex shrink-0 cursor-pointer items-center gap-1 px-3 py-2 text-xs font-medium animate-tab-enter transition-colors ${
+              className={`group relative flex shrink-0 cursor-pointer items-center gap-1 px-3 py-2 text-xs font-medium transition-colors ${
                 isActive
-                  ? 'border-b-2 border-accent text-accent'
-                  : 'text-text-secondary hover:text-text-primary'
+                  ? 'border-b-2 border-[var(--color-accent)] text-[var(--color-accent)] bg-white/[0.04]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/[0.02]'
               }`}
             >
               {renamingTabId === tab.id ? (
@@ -115,7 +117,7 @@ export default function QueryConsole({
                   onBlur={commitRename}
                   onKeyDown={handleRenameKeyDown}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-24 bg-transparent outline-none border-b border-accent text-text-primary"
+                  className="w-24 bg-transparent outline-none border-b border-[var(--color-accent)] text-[var(--text-primary)]"
                   autoFocus
                 />
               ) : (
@@ -128,13 +130,13 @@ export default function QueryConsole({
               )}
               {/* Running indicator */}
               {tab.lastResult?.status === 'running' && (
-                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)] animate-pulse" />
               )}
               {/* Close button */}
               <button
                 type="button"
                 onClick={(e) => handleCloseTab(e, tab.id)}
-                className="ml-0.5 rounded p-0.5 opacity-0 group-hover:opacity-100 hover:bg-surface-hover transition-opacity"
+                className="ml-0.5 rounded p-0.5 opacity-0 group-hover:opacity-100 hover:bg-white/[0.06] transition-opacity"
               >
                 <X size={10} />
               </button>
@@ -146,12 +148,12 @@ export default function QueryConsole({
         <button
           type="button"
           onClick={addQueryTab}
-          className="flex shrink-0 items-center gap-1 px-2 py-2 text-text-secondary hover:text-text-primary transition-colors"
+          className="flex shrink-0 items-center gap-1 px-2 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           title="Add query tab"
         >
           <Plus size={14} />
         </button>
-      </div>
+      </GlassSurface>
 
       {/* Active tab content */}
       <div className="flex-1 overflow-hidden">
@@ -165,15 +167,12 @@ export default function QueryConsole({
             onEditorReady={onEditorReady}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-text-secondary text-sm">
-            No query tabs open.{' '}
-            <button
-              type="button"
-              onClick={addQueryTab}
-              className="ml-1 text-accent hover:underline"
-            >
-              Add a tab
-            </button>
+          <div className="flex h-full items-center justify-center">
+            <EmptyState
+              icon={Terminal}
+              title="No query tabs"
+              description="Add a tab to start writing queries."
+            />
           </div>
         )}
       </div>

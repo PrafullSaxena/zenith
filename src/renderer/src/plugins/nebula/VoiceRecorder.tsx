@@ -2,7 +2,7 @@
  * VoiceRecorder -- Floating Action Button (FAB) with animated expansion for voice recording.
  *
  * Features:
- *  - Round FAB in bottom-right corner with Mic icon (idle state)
+ *  - Round FAB in bottom-right corner with Mic icon (idle state) using GlassButton
  *  - Expands into recording card with animated equalizer bars, timer, and stop button
  *  - Processing state with spinner while transcription runs in the background
  *  - Background transcription: user can continue editing while transcription processes
@@ -10,12 +10,15 @@
  *
  * Uses framer-motion AnimatePresence for smooth FAB <-> card transitions.
  * Security: Audio buffer sent as number[] array across contextBridge (sandbox=true).
+ *
+ * Migrated to Obsidian Glass: idle FAB is circular GlassButton with accent glow on recording.
  */
 
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { Mic, Square, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNebulaStore, getNebulaAgent } from '../../stores/nebula-store'
+import { GlassButton } from '../../components/ui'
 import type { DiarizedTranscript } from '../../types/nebula'
 
 interface VoiceRecorderProps {
@@ -105,7 +108,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
           const agent = getNebulaAgent()
           if (!agent) {
             addToast({
-              message: 'No AI agent configured. Set one in Settings → AI Agents.',
+              message: 'No AI agent configured. Set one in Settings -> AI Agents.',
               type: 'error'
             })
             setVoiceState('idle')
@@ -167,28 +170,31 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
   return (
     <div className="absolute bottom-6 right-6 z-40">
       <AnimatePresence mode="wait">
-        {/* Idle state: Round FAB button */}
+        {/* Idle state: Round GlassButton FAB */}
         {voiceState === 'idle' && (
-          <motion.button
+          <motion.div
             key="fab-idle"
-            type="button"
-            onClick={startRecording}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-accent shadow-lg transition-colors hover:bg-accent/90"
-            title="Start voice recording"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
-            <Mic size={20} className="text-surface" />
-          </motion.button>
+            <GlassButton
+              variant="primary"
+              onClick={startRecording}
+              title="Start voice recording"
+              className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
+            >
+              <Mic size={20} />
+            </GlassButton>
+          </motion.div>
         )}
 
-        {/* Recording state: Expanded card */}
+        {/* Recording state: Expanded card with accent glow */}
         {voiceState === 'recording' && (
           <motion.div
             key="fab-recording"
-            className="flex items-center gap-3 rounded-2xl bg-surface-elevated border border-border px-4 shadow-xl"
+            className="flex items-center gap-3 rounded-2xl bg-surface-elevated/80 backdrop-blur-xl border border-white/[0.08] px-4 shadow-[0_0_20px_rgba(var(--color-accent-rgb),0.4)]"
             initial={{ width: 48, height: 48, borderRadius: 24 }}
             animate={{ width: 280, height: 80, borderRadius: 16 }}
             exit={{ width: 48, height: 48, borderRadius: 24, opacity: 0 }}
@@ -232,7 +238,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
         {voiceState === 'processing' && (
           <motion.div
             key="fab-processing"
-            className="flex items-center gap-3 rounded-2xl bg-surface-elevated border border-border px-4 shadow-xl"
+            className="flex items-center gap-3 rounded-2xl bg-surface-elevated/80 backdrop-blur-xl border border-white/[0.08] px-4 shadow-xl"
             initial={{ width: 280, height: 80, borderRadius: 16 }}
             animate={{ width: 220, height: 56, borderRadius: 16 }}
             exit={{ scale: 0, opacity: 0 }}

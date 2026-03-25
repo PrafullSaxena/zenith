@@ -19,6 +19,7 @@
 import { useCallback, useRef, useEffect, memo } from 'react'
 import { Tldraw } from 'tldraw'
 import type { Editor, TLEditorSnapshot, TLStoreSnapshot } from 'tldraw'
+import { GlassCard } from '../../components/ui'
 
 interface DrawingCanvasProps {
   snapshot: object | null
@@ -94,7 +95,7 @@ function DrawingCanvas({
   const tldrawSnapshot = isValidSnapshot(snapshot) ? snapshot : undefined
 
   return (
-    <div className="h-full w-full">
+    <GlassCard className="h-full w-full overflow-hidden rounded-none border-x-0 border-t-0 p-0">
       <div className="tldraw__editor h-full">
         <Tldraw
           snapshot={tldrawSnapshot}
@@ -103,7 +104,7 @@ function DrawingCanvas({
           options={{ maxPages: 1 }}
         />
       </div>
-    </div>
+    </GlassCard>
   )
 }
 

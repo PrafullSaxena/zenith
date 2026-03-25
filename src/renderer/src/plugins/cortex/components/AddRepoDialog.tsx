@@ -3,10 +3,9 @@
  * Validates URL, fetches branches, and triggers clone.
  */
 import { useState, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, Loader2, FolderGit2 } from 'lucide-react'
+import { Loader2, FolderGit2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { GLASS_CARD } from '../cortex-theme'
+import { GlassModal, GlassInput, GlassButton } from '@renderer/components/ui'
 
 interface Props {
   open: boolean
@@ -128,132 +127,77 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
     }
   }
 
-  if (!open) return null
-
   return (
-    <AnimatePresence>
-      <motion.div
-        key="add-repo-overlay"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-2xl"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 8 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className={`w-[520px] p-6 shadow-2xl ${GLASS_CARD}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FolderGit2 size={18} className="text-accent" />
-              <h2 className="text-base font-semibold text-text-primary">Add Repository</h2>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              title="Close"
-              className="rounded-lg p-1 text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+    <GlassModal isOpen={open} onClose={onClose} title="Add Repository" size="md">
+      {/* Form */}
+      <div className="flex flex-col gap-4">
+        {/* Repository URL */}
+        <GlassInput
+          label="Repository URL"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onBlur={handleUrlBlur}
+          placeholder="https://github.com/org/repo.git"
+        />
+
+        {/* Branch */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-medium text-text-secondary">Branch</label>
+          <div className="relative">
+            <select
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+              disabled={branches.length === 0}
+              className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary focus:border-accent/40 focus:outline-none focus:ring-1 focus:ring-accent/20 disabled:opacity-50"
             >
-              <X size={16} />
-            </button>
-          </div>
-
-          {/* Form */}
-          <div className="flex flex-col gap-4">
-            {/* Repository URL */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-medium text-text-secondary">
-                Repository URL
-              </label>
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onBlur={handleUrlBlur}
-                placeholder="https://github.com/org/repo.git"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-accent/40 focus:outline-none focus:ring-1 focus:ring-accent/20"
+              {branches.length === 0 && (
+                <option value="">
+                  {loadingBranches ? 'Loading...' : 'Enter URL first'}
+                </option>
+              )}
+              {branches.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+            {loadingBranches && (
+              <Loader2
+                size={14}
+                className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-text-secondary"
               />
-            </div>
-
-            {/* Branch */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-medium text-text-secondary">Branch</label>
-              <div className="relative">
-                <select
-                  value={branch}
-                  onChange={(e) => setBranch(e.target.value)}
-                  disabled={branches.length === 0}
-                  className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary focus:border-accent/40 focus:outline-none focus:ring-1 focus:ring-accent/20 disabled:opacity-50"
-                >
-                  {branches.length === 0 && (
-                    <option value="">
-                      {loadingBranches ? 'Loading...' : 'Enter URL first'}
-                    </option>
-                  )}
-                  {branches.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
-                {loadingBranches && (
-                  <Loader2
-                    size={14}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-text-secondary"
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Repository Name */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-medium text-text-secondary">
-                Repository Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="my-repo"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary/50 focus:border-accent/40 focus:outline-none focus:ring-1 focus:ring-accent/20"
-              />
-            </div>
-
-            {/* Error */}
-            {error && (
-              <p className="rounded-lg bg-error/10 px-3 py-2 text-[11px] text-error">{error}</p>
             )}
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="mt-6 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              title="Cancel"
-              className="rounded-lg px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!isValidRepoUrl(url) || !name || !branch || cloning}
-              title="Clone the repository and add it to Cortex"
-              className="flex items-center gap-1.5 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {cloning && <Loader2 size={12} className="animate-spin" />}
-              Add & Clone
-            </button>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        {/* Repository Name */}
+        <GlassInput
+          label="Repository Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="my-repo"
+        />
+
+        {/* Error */}
+        {error && (
+          <p className="rounded-lg bg-error/10 px-3 py-2 text-[11px] text-error">{error}</p>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="mt-6 flex items-center justify-end gap-3">
+        <GlassButton variant="ghost" onClick={onClose}>
+          Cancel
+        </GlassButton>
+        <GlassButton
+          variant="primary"
+          onClick={handleSubmit}
+          disabled={!isValidRepoUrl(url) || !name || !branch || cloning}
+        >
+          {cloning && <Loader2 size={12} className="animate-spin" />}
+          Add & Clone
+        </GlassButton>
+      </div>
+    </GlassModal>
   )
 }
