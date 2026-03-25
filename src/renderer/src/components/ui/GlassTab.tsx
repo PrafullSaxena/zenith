@@ -18,13 +18,15 @@ export interface GlassTabProps {
   onTabChange: (id: string) => void
   orientation?: 'horizontal' | 'vertical'
   className?: string
+  /** Unique layoutId for the active underline animation. Scope this when multiple GlassTab instances coexist on the same page. */
+  layoutId?: string
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function GlassTab({ tabs, activeTab, onTabChange, orientation = 'horizontal', className }: GlassTabProps): React.JSX.Element {
+export function GlassTab({ tabs, activeTab, onTabChange, orientation = 'horizontal', className, layoutId: layoutIdProp }: GlassTabProps): React.JSX.Element {
   const isVertical = orientation === 'vertical'
 
   return (
@@ -60,7 +62,7 @@ export function GlassTab({ tabs, activeTab, onTabChange, orientation = 'horizont
 
             {isActive && (
               <motion.div
-                layoutId="activeTab"
+                layoutId={layoutIdProp ?? 'activeTab'}
                 className={cn(
                   'absolute bg-[var(--color-accent)]',
                   isVertical
