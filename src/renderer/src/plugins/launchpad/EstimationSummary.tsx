@@ -5,21 +5,70 @@
  * Uses GlassBadge for service type labels and GlassButton for actions.
  * Includes Save Estimation, Export PDF, and Clear All actions.
  */
-import { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { DollarSign, Download, Trash2, Save } from 'lucide-react'
 import {
   GlassCard,
   GlassBadge,
   GlassButton,
   GlassInput,
-  EmptyState
+  EmptyState,
+  Scene3DWrapper
 } from '@renderer/components/ui'
+
+// ---- Lazy-load 3D treemap ────────────────────────────────────────────────
+const CostTreemap3D = React.lazy(() => import('./CostTreemap3D'))
 import AnimatedCounter from '@renderer/components/ui/AnimatedCounter'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { getCatalog } from '../../data/cloud-pricing/index'
 import { calculateTotalCost } from '../../data/cloud-pricing/calculator'
 
 type DisplayMode = 'monthly' | 'yearly'
+
+// ---- 2D fallback for cost treemap ──────────────────────────────────────────
+
+const FALLBACK_CATEGORY_COLORS: Record<string, string> = {
+  compute: '#3b82f6',
+  storage: '#10b981',
+  network: '#8b5cf6',
+  database: '#f59e0b'
+}
+const FALLBACK_DEFAULT_COLOR = '#94a3b8'
+
+function CostTreemapFallback({
+  items
+}: {
+  items: Array<{ serviceId: string; serviceName: string; monthly: number; categoryId?: string }>
+}): React.JSX.Element {
+  const maxCost = Math.max(...items.map((i) => i.monthly), 0.01)
+
+  return (
+    <div className="flex h-full flex-col justify-center gap-1 py-2">
+      {items.slice(0, 10).map((item) => {
+        const pct = Math.max((item.monthly / maxCost) * 100, 4)
+        const color =
+          FALLBACK_CATEGORY_COLORS[item.categoryId?.toLowerCase() ?? ''] ?? FALLBACK_DEFAULT_COLOR
+
+        return (
+          <div key={item.serviceId} className="flex items-center gap-2">
+            <span className="w-20 truncate text-[9px] text-[var(--text-secondary)]">
+              {item.serviceName}
+            </span>
+            <div className="flex-1 h-3 rounded-sm bg-white/[0.03] overflow-hidden">
+              <div
+                className="h-full rounded-sm"
+                style={{ width: `${pct}%`, backgroundColor: color, opacity: 0.7 }}
+              />
+            </div>
+            <span className="text-[9px] text-[var(--text-secondary)] w-14 text-right">
+              ${item.monthly.toFixed(2)}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 export default function EstimationSummary(): React.JSX.Element {
   const provider = useLaunchpadStore((s) => s.provider)
@@ -159,6 +208,31 @@ export default function EstimationSummary(): React.JSX.Element {
           </div>
         )}
       </div>
+
+      {/* 3D Cost Treemap */}
+      {result && selectedServices.length > 0 && (
+        <div className="border-t border-white/[0.06] px-4 pt-2 pb-1">
+          <p className="text-[10px] text-[var(--text-secondary)] mb-1">Cost Distribution</p>
+          <div className="h-[200px]">
+            <Scene3DWrapper
+              fallback={<CostTreemapFallback items={result.items} />}
+              loadingMessage="Loading cost view..."
+            >
+              <CostTreemap3D
+                services={result.items.map((item) => {
+                  const sel = selectedServices.find((s) => s.serviceId === item.serviceId)
+                  return {
+                    serviceId: item.serviceId,
+                    serviceName: item.serviceName,
+                    monthly: item.monthly,
+                    category: sel?.categoryId
+                  }
+                })}
+              />
+            </Scene3DWrapper>
+          </div>
+        </div>
+      )}
 
       {/* Totals — sticky GlassCard */}
       <GlassCard className="sticky bottom-0 rounded-none border-x-0 border-b-0 mx-0">
