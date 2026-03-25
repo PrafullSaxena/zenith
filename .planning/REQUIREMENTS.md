@@ -74,9 +74,9 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 
 - [ ] **MICRO-01**: Button press feedback — scale(0.97) on press for all GlassButtons
 - [ ] **MICRO-02**: Icon morph — Copy to Check spring animation on copy actions, revert after 2s
-- [ ] **MICRO-03**: Staggered card entrances — all card grids use shared staggerItem variant
+- [x] **MICRO-03**: Staggered card entrances — all card grids use shared staggerItem variant
 - [ ] **MICRO-04**: Tab sliding underline — active underline slides to new tab with layout animation
-- [ ] **MICRO-05**: Skeleton loaders — all loading states replaced with contextual shimmer (card/table/text shapes)
+- [x] **MICRO-05**: Skeleton loaders — all loading states replaced with contextual shimmer (card/table/text shapes)
 - [ ] **MICRO-06**: Scroll progress bar — thin accent bar at top of scrollable containers
 - [ ] **MICRO-07**: Scroll shadows — top/bottom fade shadows when content overflows
 - [ ] **MICRO-08**: Sidebar hover glow — scale(1.08) + accent glow ring on icon hover
@@ -160,9 +160,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | 3D-06 | Phase 6 | Complete |
 | MICRO-01 | Phase 7 | Pending |
 | MICRO-02 | Phase 7 | Pending |
-| MICRO-03 | Phase 7 | Pending |
+| MICRO-03 | Phase 7 | Complete |
 | MICRO-04 | Phase 7 | Pending |
-| MICRO-05 | Phase 7 | Pending |
+| MICRO-05 | Phase 7 | Complete |
 | MICRO-06 | Phase 7 | Pending |
 | MICRO-07 | Phase 7 | Pending |
 | MICRO-08 | Phase 7 | Pending |
