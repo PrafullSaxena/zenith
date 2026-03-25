@@ -173,6 +173,21 @@ export default function NoteEditor({
             'Mod-k': () => {
               openLinkDialog()
               return true
+            },
+            // Tab to indent list items or insert soft-tab in normal text
+            Tab: () => {
+              if (this.editor.isActive('listItem')) {
+                return this.editor.commands.sinkListItem('listItem')
+              }
+              // Insert 4 spaces as a tab in normal text
+              return this.editor.commands.insertContent('    ')
+            },
+            // Shift-Tab to outdent list items
+            'Shift-Tab': () => {
+              if (this.editor.isActive('listItem')) {
+                return this.editor.commands.liftListItem('listItem')
+              }
+              return false
             }
           }
         }
@@ -630,11 +645,8 @@ export default function NoteEditor({
         </div>
       </div>
 
-      {/* Table controls (shown when cursor is in a table) */}
-      {editor && <TableControls editor={editor} />}
-
-      {/* Insert table button (subtle, below title/tags area) */}
-      {editor && !editor.isActive('table') && (
+      {/* Table toolbar — always in same spot, controls appear inline when table active */}
+      {editor && (
         <div className="flex items-center border-b border-border/50 px-4 py-1">
           <button
             type="button"
@@ -645,11 +657,12 @@ export default function NoteEditor({
             <TableIcon size={10} />
             Table
           </button>
+          <TableControls editor={editor} />
         </div>
       )}
 
       {/* Editor content area */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="relative flex-1 overflow-y-auto">
         <EditorContent
           editor={editor}
           className={`nebula-editor max-w-none px-4 py-3${lineNumbersEnabled ? ' nebula-line-numbers' : ''}`}

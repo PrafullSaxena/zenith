@@ -160,14 +160,14 @@ export default function MissionControl(): React.JSX.Element {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="space-y-6 pb-4"
+      className="space-y-4 pb-4"
     >
       {/* ── Hero Header ─────────────────────────────────────────────── */}
       <motion.div variants={staggerItem}>
-        <GlassSurface className="relative overflow-hidden p-6">
+        <GlassSurface className="relative overflow-hidden px-5 py-4">
           {/* Subtle glow effect */}
-          <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/[0.04] blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-accent/[0.03] blur-2xl" />
+          <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-accent/[0.04] blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-accent/[0.03] blur-2xl" />
 
           <div className="relative flex items-start justify-between">
             <div className="flex items-center gap-4">
@@ -188,7 +188,7 @@ export default function MissionControl(): React.JSX.Element {
 
             {/* 3D Activity Mesh — right side of hero */}
             {entries.length > 0 && (
-              <div className="hidden h-[250px] w-[250px] flex-shrink-0 lg:block">
+              <div className="hidden h-[160px] w-[200px] flex-shrink-0 lg:block">
                 <Scene3DWrapper
                   fallback={<ActivityMeshFallback />}
                   loadingMessage="Loading activity mesh..."
@@ -200,7 +200,7 @@ export default function MissionControl(): React.JSX.Element {
           </div>
 
           {/* Quick Stats Row */}
-          <div className="relative mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="relative mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
             <QuickStat
               icon={Zap}
               label="Token Usage"

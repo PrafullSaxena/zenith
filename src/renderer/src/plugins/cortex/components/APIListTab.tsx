@@ -202,10 +202,10 @@ export default function APIListTab(): React.JSX.Element {
       )}
 
       {/* Table */}
-      <GlassCard className="flex-1 min-h-0">
-        <ScrollContainer className="h-full">
+      <GlassCard className="flex-1 min-h-0 overflow-hidden flex flex-col !p-0">
+        <ScrollContainer className="flex-1 min-h-0 overflow-auto">
         <table className="w-full text-xs">
-          <thead className="sticky top-0 bg-white/[0.03] text-[10px] uppercase tracking-wider text-text-secondary">
+          <thead className="sticky top-0 bg-surface-elevated text-[10px] uppercase tracking-wider text-text-secondary z-10">
             <tr>
               <SortHeader label="Method" field="method" />
               <SortHeader label="Path" field="path" />

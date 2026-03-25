@@ -43,7 +43,7 @@ export function PluginHeader({
       <GlassSurface className="flex items-center justify-between px-6 py-3 rounded-none border-x-0 border-t-0">
         <div className="flex gap-2 items-center">
           <Icon size={18} className="text-[var(--color-accent)]" />
-          <h1 className="bg-gradient-to-r from-[var(--text-primary)] to-[var(--color-accent)] bg-clip-text text-lg font-semibold text-transparent">
+          <h1 className="bg-gradient-to-r from-[oklch(92%_0.01_0)] to-[var(--color-accent)] bg-clip-text text-lg font-semibold text-transparent">
             {title}
           </h1>
         </div>

@@ -9,60 +9,62 @@
   color: var(--color-text-primary);
 }
 
-/* Keywords, built-ins */
+/* Keywords, built-ins — bold accent color for maximum visibility */
 .hljs-keyword,
 .hljs-selector-tag,
 .hljs-built_in,
 .hljs-name,
 .hljs-tag {
-  color: var(--color-accent);
-  font-weight: 500;
+  color: oklch(72% 0.18 340); /* Vivid magenta-pink */
+  font-weight: 600;
 }
 
-/* Strings, string-like */
+/* Strings, string-like — warm green */
 .hljs-string,
 .hljs-addition,
 .hljs-attribute,
 .hljs-template-tag,
 .hljs-template-variable {
-  color: oklch(72% 0.16 155); /* Teal green */
+  color: oklch(75% 0.17 155); /* Bright teal green */
 }
 
-/* Numbers, literals */
+/* Numbers, literals — amber orange */
 .hljs-number,
 .hljs-literal,
 .hljs-variable,
 .hljs-symbol,
 .hljs-bullet {
-  color: oklch(72% 0.14 55); /* Soft orange */
+  color: oklch(76% 0.16 55); /* Vivid orange */
 }
 
-/* Comments */
+/* Comments — muted, italic */
 .hljs-comment,
 .hljs-quote {
   color: var(--color-text-secondary);
   font-style: italic;
+  opacity: 0.7;
 }
 
 /* Meta / preprocessor */
 .hljs-meta,
 .hljs-meta .hljs-keyword {
-  color: oklch(65% 0.12 280); /* Muted purple */
+  color: oklch(70% 0.15 280); /* Purple */
 }
 
-/* Types, classes */
+/* Types, classes — sky blue */
 .hljs-type,
 .hljs-class .hljs-title,
 .hljs-title.class_,
 .hljs-title {
-  color: oklch(74% 0.13 240); /* Blue-purple */
+  color: oklch(78% 0.14 220); /* Sky blue */
+  font-weight: 500;
 }
 
-/* Functions */
+/* Functions — distinct blue-violet */
 .hljs-title.function_,
 .hljs-section {
-  color: oklch(74% 0.13 240); /* Blue-purple */
-  font-weight: 500;
+  color: oklch(76% 0.15 250); /* Blue-violet */
+  font-weight: 600;
 }
 
 /* Deletions (diff) */

@@ -87,20 +87,46 @@ function autoFormat(code: string, language: string): string {
         return code
       }
     }
+    case 'java':
+    case 'javascript':
+    case 'typescript':
+    case 'c':
+    case 'cpp':
+    case 'csharp':
+    case 'go':
+    case 'rust':
+    case 'kotlin':
+    case 'swift':
+    case 'scala':
+    case 'dart': {
+      // Brace-based re-indentation for C-style languages
+      const raw = trimmed.split('\n').map((l) => l.trim())
+      const result: string[] = []
+      let depth = 0
+      for (const line of raw) {
+        if (!line) { result.push(''); continue }
+        // Decrease depth for closing braces/parens at start of line
+        if (/^[}\])>]/.test(line)) depth = Math.max(0, depth - 1)
+        result.push('  '.repeat(depth) + line)
+        // Increase depth for opening braces at end of line
+        const stripped = line.replace(/\/\/.*$/, '').replace(/"[^"]*"/g, '').replace(/'[^']*'/g, '')
+        const opens = (stripped.match(/[{(\[]/g) ?? []).length
+        const closes = (stripped.match(/[})\]]/g) ?? []).length
+        depth = Math.max(0, depth + opens - closes)
+      }
+      return result.join('\n')
+    }
     default: {
       // General cleanup: normalize indentation to 2 spaces, trim trailing whitespace
       const lines = code.split('\n')
-      // Detect minimum non-empty indentation
       let minIndent = Infinity
       for (const line of lines) {
         if (line.trim().length === 0) continue
         const leading = line.match(/^(\s*)/)?.[1] ?? ''
-        // Normalize tabs to 2 spaces
         const normalized = leading.replace(/\t/g, '  ')
         if (normalized.length < minIndent) minIndent = normalized.length
       }
       if (minIndent === Infinity) minIndent = 0
-      // Strip common leading indent, trim trailing whitespace per line
       return lines
         .map((line) => {
           const normalized = line.replace(/\t/g, '  ')
@@ -117,7 +143,8 @@ function autoFormat(code: string, language: string): string {
 export default function CodeBlockNodeView({
   node,
   updateAttributes,
-  editor
+  editor,
+  getPos
 }: NodeViewProps): React.JSX.Element {
   const language: string = (node.attrs.language as string) || 'plaintext'
   const code = node.textContent
@@ -148,35 +175,16 @@ export default function CodeBlockNodeView({
     const formatted = autoFormat(code, language)
     if (formatted === code) return
 
-    // Replace the code block content via ProseMirror transaction
-    const pos = (node as unknown as { pos?: number }).pos
-    if (typeof pos !== 'number') {
-      // Fallback: use editor chain
-      editor.chain().focus().command(({ tr, state }) => {
-        // Find this code block in the document
-        let codeBlockPos: number | null = null
-        state.doc.descendants((n, p) => {
-          if (n === node) {
-            codeBlockPos = p
-            return false
-          }
-          return true
-        })
-        if (codeBlockPos === null) return false
-        const start = codeBlockPos + 1
-        const end = start + node.content.size
-        tr.replaceWith(start, end, state.schema.text(formatted))
-        return true
-      }).run()
-      return
-    }
+    // Use getPos() to find this node's position in the document
+    const pos = typeof getPos === 'function' ? getPos() : undefined
+    if (typeof pos !== 'number') return
 
     const start = pos + 1
     const end = start + node.content.size
-    const tr = editor.state.tr
+    const { tr } = editor.state
     tr.replaceWith(start, end, editor.state.schema.text(formatted))
     editor.view.dispatch(tr)
-  }, [code, language, node, editor])
+  }, [code, language, node, editor, getPos])
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(code).then(() => {

@@ -39,7 +39,7 @@ export default function FloatingToolbar({
       editor={editor}
       shouldShow={({ state }) => !state.selection.empty && !editor.isActive('image')}
     >
-      <GlassSurface className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 shadow-lg">
+      <GlassSurface className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 shadow-lg !bg-surface-elevated/95 backdrop-blur-xl !border-border">
         <ToolbarBtn
           icon={<Bold size={14} />}
           isActive={editor.isActive('bold')}
