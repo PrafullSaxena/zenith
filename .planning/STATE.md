@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 6 of 7 (3D Visualizations)
-Plan: 1 of 3 in current phase (1 complete)
-Status: In Progress
-Last activity: 2026-03-25 — Completed 06-01 (Scene3DWrapper + Dashboard Activity Mesh)
+Plan: 3 of 3 in current phase (3 complete)
+Status: Phase Complete
+Last activity: 2026-03-25 — Completed 06-03 (DbInspector Schema Orb)
 
-Progress: [███-------] 1/3 plans
+Progress: [██████████] 3/3 plans
 
 ## Performance Metrics
 
@@ -53,6 +53,8 @@ Progress: [███-------] 1/3 plans
 | Phase 05 P02 | 2min | 2 tasks | 3 files |
 | Phase 05 P03 | 2min | 2 tasks | 0 files |
 | Phase 06 P01 | 2min | 2 tasks | 4 files |
+| Phase 06 P02 | 3min | 2 tasks | 4 files |
+| Phase 06 P03 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -121,6 +123,8 @@ Recent decisions affecting current work:
 - [06-01]: ActivityMesh3D uses mesh refs (not state) for per-frame d3-force position updates to avoid 60fps re-renders
 - [06-01]: Activity mesh hidden on smaller screens (lg:block) to avoid cramped hero layout
 - [06-01]: Node radius scales by recency (0.8-2.0) using 24-hour age normalization
+- [Phase 06-03]: SchemaOrb3D uses manual radial clustering (not d3-force-3d) for cleaner schema visualization
+- [Phase 06-03]: FK edges parsed from mermaid syntax + inferredRelationships, avoiding extra API calls
 
 ### Pending Todos
 
@@ -133,5 +137,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 06-01-PLAN.md (Scene3DWrapper + Dashboard Activity Mesh)
+Stopped at: Completed 06-03-PLAN.md (DbInspector Schema Orb)
 Resume file: None
