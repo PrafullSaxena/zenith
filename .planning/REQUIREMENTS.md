@@ -72,16 +72,16 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 
 ### Micro-Interactions & Polish
 
-- [ ] **MICRO-01**: Button press feedback — scale(0.97) on press for all GlassButtons
+- [x] **MICRO-01**: Button press feedback — scale(0.97) on press for all GlassButtons
 - [x] **MICRO-02**: Icon morph — Copy to Check spring animation on copy actions, revert after 2s
 - [x] **MICRO-03**: Staggered card entrances — all card grids use shared staggerItem variant
-- [ ] **MICRO-04**: Tab sliding underline — active underline slides to new tab with layout animation
+- [x] **MICRO-04**: Tab sliding underline — active underline slides to new tab with layout animation
 - [x] **MICRO-05**: Skeleton loaders — all loading states replaced with contextual shimmer (card/table/text shapes)
 - [x] **MICRO-06**: Scroll progress bar — thin accent bar at top of scrollable containers
 - [x] **MICRO-07**: Scroll shadows — top/bottom fade shadows when content overflows
-- [ ] **MICRO-08**: Sidebar hover glow — scale(1.08) + accent glow ring on icon hover
-- [ ] **MICRO-09**: Sidebar active bar — left accent bar slides in with height animation on active icon
-- [ ] **MICRO-10**: Tooltip animation — 400ms delay, then fade + translateX(4px) from left
+- [x] **MICRO-08**: Sidebar hover glow — scale(1.08) + accent glow ring on icon hover
+- [x] **MICRO-09**: Sidebar active bar — left accent bar slides in with height animation on active icon
+- [x] **MICRO-10**: Tooltip animation — 400ms delay, then fade + translateX(4px) from left
 
 ## v2 Requirements
 
@@ -158,16 +158,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | 3D-04 | Phase 6 | Complete |
 | 3D-05 | Phase 6 | Complete |
 | 3D-06 | Phase 6 | Complete |
-| MICRO-01 | Phase 7 | Pending |
+| MICRO-01 | Phase 7 | Complete |
 | MICRO-02 | Phase 7 | Complete |
 | MICRO-03 | Phase 7 | Complete |
-| MICRO-04 | Phase 7 | Pending |
+| MICRO-04 | Phase 7 | Complete |
 | MICRO-05 | Phase 7 | Complete |
 | MICRO-06 | Phase 7 | Complete |
 | MICRO-07 | Phase 7 | Complete |
-| MICRO-08 | Phase 7 | Pending |
-| MICRO-09 | Phase 7 | Pending |
-| MICRO-10 | Phase 7 | Pending |
+| MICRO-08 | Phase 7 | Complete |
+| MICRO-09 | Phase 7 | Complete |
+| MICRO-10 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 55 total
