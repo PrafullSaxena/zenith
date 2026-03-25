@@ -3,6 +3,7 @@ import { useAgentStore } from '../../stores/agent-store'
 import { AgentRow } from './AgentRow'
 import { AddCustomAgentForm } from './AddCustomAgentForm'
 import { Plus } from 'lucide-react'
+import { GlassSkeleton } from '../ui'
 
 /**
  * Central AI agent configuration table view.
@@ -21,8 +22,11 @@ export function AIAgentsSettings(): React.JSX.Element {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+      <div className="space-y-4 py-4">
+        <GlassSkeleton variant="text" className="h-6 w-32" />
+        <GlassSkeleton variant="card" className="h-16" />
+        <GlassSkeleton variant="card" className="h-16" />
+        <GlassSkeleton variant="card" className="h-16" />
       </div>
     )
   }

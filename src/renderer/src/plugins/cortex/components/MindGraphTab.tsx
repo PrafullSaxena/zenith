@@ -571,7 +571,7 @@ export default function MindGraphTab(): React.JSX.Element {
               fallback={
                 <div className="flex h-full items-center justify-center">
                   <div className="text-center text-text-secondary">
-                    <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+                    <div className="mx-auto mb-2 h-8 w-8 rounded-full bg-gradient-to-r from-surface to-surface-elevated animate-[shimmer_1.5s_ease-in-out_infinite] bg-[length:200%_100%]" />
                     <p className="text-[11px]">Loading 3D graph…</p>
                   </div>
                 </div>

@@ -10,6 +10,7 @@
  *   </Scene3DWrapper>
  */
 import React, { Suspense } from 'react'
+import { GlassSkeleton } from './GlassSkeleton'
 
 // ── ErrorBoundary for WebGL / 3D failures ────────────────────────────────
 
@@ -59,7 +60,7 @@ export default function Scene3DWrapper({
         fallback={
           <div className="flex h-full items-center justify-center">
             <div className="text-center text-text-secondary">
-              <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+              <GlassSkeleton variant="circle" className="mx-auto mb-2 h-8 w-8" />
               {loadingMessage && (
                 <p className="text-[11px]">{loadingMessage}</p>
               )}

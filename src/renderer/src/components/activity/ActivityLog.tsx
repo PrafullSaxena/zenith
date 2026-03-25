@@ -4,7 +4,7 @@ import { Activity } from 'lucide-react'
 import { useActivityStore } from '../../stores/activity-store'
 import { ActivityFeed } from '../dashboard/ActivityFeed'
 import { PLUGINS } from '../../plugins/registry'
-import { GlassSurface, GlassSelect, GlassButton, EmptyState } from '../ui'
+import { GlassSurface, GlassSelect, GlassButton, EmptyState, GlassSkeleton } from '../ui'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import type { ActivityStatus } from '../../types/activity'
 
@@ -99,8 +99,11 @@ export default function ActivityLog(): React.JSX.Element {
       {/* Activity list */}
       <motion.div variants={staggerItem}>
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+          <div className="space-y-3 py-4">
+            <GlassSkeleton variant="card" className="h-14" />
+            <GlassSkeleton variant="card" className="h-14" />
+            <GlassSkeleton variant="card" className="h-14" />
+            <GlassSkeleton variant="card" className="h-14" />
           </div>
         ) : filteredEntries.length === 0 ? (
           <EmptyState
