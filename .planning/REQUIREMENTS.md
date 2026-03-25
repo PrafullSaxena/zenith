@@ -64,8 +64,8 @@ Requirements for the UI revamp. Each maps to roadmap phases.
 ### 3D Visualizations
 
 - [x] **3D-01**: Dashboard Activity Mesh — 3D wireframe sphere with activity nodes, auto-rotate, hover tooltips, max 50 nodes
-- [ ] **3D-02**: Nebula 3D Knowledge Graph — port MindGraph3D architecture, notes as nodes, tag edges, orbit controls, 2D/3D toggle
-- [ ] **3D-03**: Launchpad Cost Treemap — 3D extruded blocks, height = cost proportion, hover lift + tooltip, max 20 blocks
+- [x] **3D-02**: Nebula 3D Knowledge Graph — port MindGraph3D architecture, notes as nodes, tag edges, orbit controls, 2D/3D toggle
+- [x] **3D-03**: Launchpad Cost Treemap — 3D extruded blocks, height = cost proportion, hover lift + tooltip, max 20 blocks
 - [x] **3D-04**: DbInspector Schema Orb — floating table planes, FK relationship lines, orbit controls, toggle alongside mermaid, max 30 tables
 - [x] **3D-05**: Error boundaries + Suspense + lazy Canvas + 2D fallback for all 4 new 3D components
 - [x] **3D-06**: All 3D components respect usePrefersReducedMotion (disable auto-rotate, reduce particles)
@@ -153,8 +153,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PLUG-05 | Phase 4 | Complete |
 | PLUG-06 | Phase 4 | Complete |
 | 3D-01 | Phase 6 | Complete |
-| 3D-02 | Phase 6 | Pending |
-| 3D-03 | Phase 6 | Pending |
+| 3D-02 | Phase 6 | Complete |
+| 3D-03 | Phase 6 | Complete |
 | 3D-04 | Phase 6 | Complete |
 | 3D-05 | Phase 6 | Complete |
 | 3D-06 | Phase 6 | Complete |

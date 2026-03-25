@@ -124,6 +124,10 @@ Recent decisions affecting current work:
 - [06-01]: Activity mesh hidden on smaller screens (lg:block) to avoid cramped hero layout
 - [06-01]: Node radius scales by recency (0.8-2.0) using 24-hour age normalization
 - [Phase 06-03]: SchemaOrb3D uses manual radial clustering (not d3-force-3d) for cleaner schema visualization
+- [06-02]: KnowledgeGraph3D uses mesh refs (not state) for per-frame d3-force position updates -- same improvement as ActivityMesh3D
+- [06-02]: CostTreemap3D uses grid layout (not force-directed) with height proportional to monthly cost
+- [06-02]: CostTreemap3D hover-lift uses useFrame lerp for smooth animation without state re-renders
+- [06-02]: Nebula 3D nodes colored by cycling 8-color palette -- no tag data on GraphNode type
 - [Phase 06-03]: FK edges parsed from mermaid syntax + inferredRelationships, avoiding extra API calls
 
 ### Pending Todos
@@ -137,5 +141,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 06-03-PLAN.md (DbInspector Schema Orb)
+Stopped at: Completed 06-02-PLAN.md (Nebula KnowledgeGraph3D + Launchpad CostTreemap3D)
 Resume file: None
