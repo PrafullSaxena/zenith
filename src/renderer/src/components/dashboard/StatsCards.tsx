@@ -3,10 +3,12 @@
  * Displays: Total Queries, Total Reviews, Total Optimizations, Total Tokens.
  * Uses GlassCard with AnimatedCounter for animated numeric values.
  */
+import { motion } from 'framer-motion'
 import { BarChart3, GitPullRequest, Zap, Coins } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ActivityEntry } from '../../types/activity'
 import { GlassCard, AnimatedCounter } from '../ui'
+import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 
 interface StatCardDef {
   label: string
@@ -62,23 +64,25 @@ export function StatsCards({ entries, totalTokens }: StatsCardsProps): React.JSX
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <motion.div className="grid grid-cols-2 gap-3 lg:grid-cols-4" variants={staggerContainer} initial="hidden" animate="visible">
       {stats.map((stat) => {
         const Icon = stat.icon
         return (
-          <GlassCard key={stat.label} className="p-4">
-            <div className="flex items-center gap-3">
-              <div className={`rounded-lg ${stat.bgColor} p-2`}>
-                <Icon size={18} className={stat.color} />
+          <motion.div key={stat.label} variants={staggerItem}>
+            <GlassCard className="p-4">
+              <div className="flex items-center gap-3">
+                <div className={`rounded-lg ${stat.bgColor} p-2`}>
+                  <Icon size={18} className={stat.color} />
+                </div>
+                <div>
+                  <AnimatedCounter value={stat.value} className="text-xl font-bold text-text-primary" />
+                  <p className="text-[11px] text-text-secondary">{stat.label}</p>
+                </div>
               </div>
-              <div>
-                <AnimatedCounter value={stat.value} className="text-xl font-bold text-text-primary" />
-                <p className="text-[11px] text-text-secondary">{stat.label}</p>
-              </div>
-            </div>
-          </GlassCard>
+            </GlassCard>
+          </motion.div>
         )
       })}
-    </div>
+    </motion.div>
   )
 }

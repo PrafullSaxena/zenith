@@ -10,6 +10,7 @@
  */
 import { useMemo, useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import {
   Brain,
   Package,
@@ -41,7 +42,8 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
-import { GLASS_CARD, getKindColor, getMethodColor } from '../cortex-theme'
+import { getKindColor, getMethodColor } from '../cortex-theme'
+import { GlassCard } from '@renderer/components/ui'
 import { useAgentStore } from '../../../stores/agent-store'
 import InsightCard from './InsightCard'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
@@ -292,7 +294,7 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
       </div>
 
       {/* Route list */}
-      <div className={`${GLASS_CARD} divide-y divide-white/[0.04]`}>
+      <GlassCard className="divide-y divide-white/[0.04]">
         {topRoutes.map((route, i) => {
           const mc = getMethodColor(route.method)
           return (
@@ -326,7 +328,7 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
             +{routes.length - 10} more endpoints
           </div>
         )}
-      </div>
+      </GlassCard>
     </div>
   )
 }
@@ -345,7 +347,7 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
   }, [insights.dependencies])
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <motion.div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" variants={staggerContainer} initial="hidden" animate="visible">
       <InsightCard title="Dependencies" icon={Package} delay={0.05}>
         {insights.dependencies.length === 0 ? (
           <p className="text-xs text-text-secondary">No dependency data available</p>
@@ -474,7 +476,7 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
           </div>
         </InsightCard>
       )}
-    </div>
+    </motion.div>
   )
 }
 
@@ -586,7 +588,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           <p className="mb-3 text-[11px] text-text-tertiary">
             Grouped by kind — controllers, services, repositories. Edges show call/injection relationships.
           </p>
-          <div className={`h-72 overflow-hidden ${GLASS_CARD}`}>
+          <GlassCard className="h-72 overflow-hidden">
             {staticEntityGraph.nodes.length === 0 ? (
               <div className="flex h-full items-center justify-center text-xs text-text-secondary">
                 No entity data available
@@ -613,7 +615,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                 />
               </ReactFlow>
             )}
-          </div>
+          </GlassCard>
         </motion.section>
       )}
 
@@ -662,16 +664,16 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           )}
         </div>
         {displayContent ? (
-          <div className={`${GLASS_CARD} p-5`}>
+          <GlassCard className="p-5">
             <MarkdownRenderer text={displayContent} />
-          </div>
+          </GlassCard>
         ) : isHLDGenerating ? (
-          <div className={`flex flex-col items-center gap-3 ${GLASS_CARD} py-8`}>
+          <GlassCard className="flex flex-col items-center gap-3 py-8">
             <Loader2 size={24} className="animate-spin text-accent" />
             <p className="text-xs text-text-secondary">Generating design document...</p>
-          </div>
+          </GlassCard>
         ) : (
-          <div className={`${GLASS_CARD} p-5 text-center`}>
+          <GlassCard className="p-5 text-center">
             <BookOpen size={28} className="mx-auto mb-2 text-text-secondary/30" />
             <p className="text-xs text-text-secondary">
               Generate a High Level Design document with architecture diagrams and API flows.
@@ -690,7 +692,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                 Configure an AI agent in Settings to generate design documents
               </p>
             )}
-          </div>
+          </GlassCard>
         )}
       </motion.section>
 
@@ -734,7 +736,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
               <div className="space-y-6">
                 {/* Generate / Refresh controls */}
                 {!aiInsights && !isGeneratingInsights && (
-                  <div className={`${GLASS_CARD} p-5`}>
+                  <GlassCard className="p-5">
                     {hasAgent ? (
                       <div className="flex flex-col items-start gap-3">
                         <p className="text-xs text-text-secondary">
@@ -757,7 +759,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                         to unlock deeper architecture insights, pattern detection, and security analysis.
                       </p>
                     )}
-                  </div>
+                  </GlassCard>
                 )}
 
                 {/* Loading state */}

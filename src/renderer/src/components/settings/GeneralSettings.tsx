@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { PLUGINS } from '../../plugins/registry'
 import { GlassCard, GlassBadge } from '@renderer/components/ui'
 import { getClassicThemes, getNewThemes } from '@renderer/lib/theme-metadata'
 import type { ThemeMeta } from '@renderer/lib/theme-metadata'
+import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import { SettingsField } from './SettingsField'
 import type { SettingsField as SettingsFieldDef } from '../../types/plugin'
 
@@ -192,30 +194,32 @@ export function GeneralSettings(): React.JSX.Element {
         <div className="space-y-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">Classic Themes</p>
-            <div className="grid grid-cols-3 gap-3">
+            <motion.div className="grid grid-cols-3 gap-3" variants={staggerContainer} initial="hidden" animate="visible">
               {classicThemes.map((theme) => (
-                <ThemeCard
-                  key={theme.value}
-                  theme={theme}
-                  isActive={currentTheme === theme.value}
-                  onSelect={() => { triggerThemeCrossfade(); setSetting('general.theme', theme.value); }}
-                />
-              ))}
-            </div>
-          </div>
-          {newThemes.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">New Collection</p>
-              <div className="grid grid-cols-3 gap-3">
-                {newThemes.map((theme) => (
+                <motion.div key={theme.value} variants={staggerItem}>
                   <ThemeCard
-                    key={theme.value}
                     theme={theme}
                     isActive={currentTheme === theme.value}
                     onSelect={() => { triggerThemeCrossfade(); setSetting('general.theme', theme.value); }}
                   />
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+          {newThemes.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">New Collection</p>
+              <motion.div className="grid grid-cols-3 gap-3" variants={staggerContainer} initial="hidden" animate="visible">
+                {newThemes.map((theme) => (
+                  <motion.div key={theme.value} variants={staggerItem}>
+                    <ThemeCard
+                      theme={theme}
+                      isActive={currentTheme === theme.value}
+                      onSelect={() => { triggerThemeCrossfade(); setSetting('general.theme', theme.value); }}
+                    />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             </div>
           )}
         </div>
