@@ -121,12 +121,12 @@ Plans:
   3. All 4 new 3D components are wrapped in ErrorBoundary + Suspense and fall back to a 2D alternative on WebGL failure
   4. Enabling reduced-motion preference disables auto-rotate and reduces particle effects in all 3D scenes
   5. No WebGL context leaks: navigating away from a 3D view disposes its Canvas and context cleanly
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
-- [ ] 06-03: TBD
+- [ ] 06-01: Scene3DWrapper shared component + Dashboard Activity Mesh 3D (Wave 1)
+- [ ] 06-02: Nebula 3D Knowledge Graph + Launchpad Cost Treemap 3D (Wave 2)
+- [ ] 06-03: DbInspector Schema Orb 3D + ER/3D toggle (Wave 2)
 
 ### Phase 7: Micro-Interactions and Polish
 **Goal**: Every interactive element in the app has tactile feedback, and the entire UI passes cross-theme visual QA
