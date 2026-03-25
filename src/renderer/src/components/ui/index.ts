@@ -31,6 +31,10 @@ export { GlassResizeHandle } from './GlassResizeHandle'
 // 3D scene wrapper (Plan 06-01)
 export { default as Scene3DWrapper, Scene3DErrorBoundary } from './Scene3DWrapper'
 
+// Micro-interaction components (Plan 07-01)
+export { AnimatedIcon } from './AnimatedIcon'
+export { ScrollContainer } from './ScrollContainer'
+
 // Utilities
 export { cn, GLASS_BASE } from './glass-utils'
 export { default as AnimatedCounter } from './AnimatedCounter'
