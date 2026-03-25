@@ -28,6 +28,9 @@ export { GlassTable } from './GlassTable'
 export { PluginHeader } from './PluginHeader'
 export { GlassResizeHandle } from './GlassResizeHandle'
 
+// 3D scene wrapper (Plan 06-01)
+export { default as Scene3DWrapper, Scene3DErrorBoundary } from './Scene3DWrapper'
+
 // Utilities
 export { cn, GLASS_BASE } from './glass-utils'
 export { default as AnimatedCounter } from './AnimatedCounter'
