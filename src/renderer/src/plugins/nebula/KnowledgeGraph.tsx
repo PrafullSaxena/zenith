@@ -9,12 +9,15 @@
  * Nodes = notes, links = edges inferred from shared topics.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
-import { RefreshCw, Share2 } from 'lucide-react'
+import { RefreshCw, Share2, Box, Grid3X3 } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { GlassSurface, GlassButton, EmptyState } from '../../components/ui'
+import { GlassSurface, GlassButton, EmptyState, Scene3DWrapper } from '../../components/ui'
 import type { GraphNode } from '../../types/nebula'
+
+// ---- Lazy-load 3D graph ────────────────────────────────────────────────
+const KnowledgeGraph3D = React.lazy(() => import('./KnowledgeGraph3D'))
 
 // ── Color tokens (oklch dark-only, matching app theme) ───────────────
 
@@ -37,6 +40,7 @@ export default function KnowledgeGraph(): React.JSX.Element {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
+  const [use3D, setUse3D] = useState(true)
 
   // Load notes first (for fallback node generation), then graph data
   useEffect(() => {
@@ -92,6 +96,16 @@ export default function KnowledgeGraph(): React.JSX.Element {
         selectNote(node.id)
         setActiveTab('notes')
       }
+    },
+    [selectNote, setActiveTab, setSelectedGraphNode]
+  )
+
+  // Node click handler for 3D view — navigate to the note
+  const handleNodeClick3D = useCallback(
+    (nodeId: string) => {
+      setSelectedGraphNode(nodeId)
+      selectNote(nodeId)
+      setActiveTab('notes')
     },
     [selectNote, setActiveTab, setSelectedGraphNode]
   )
@@ -173,6 +187,32 @@ export default function KnowledgeGraph(): React.JSX.Element {
             {linkCount === 1 ? 'connection' : 'connections'}
           </span>
         </div>
+        {/* 3D / 2D toggle pill */}
+        <div className="flex items-center rounded-lg border border-white/[0.08] bg-white/[0.03] p-0.5">
+          <button
+            type="button"
+            onClick={() => setUse3D(true)}
+            className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
+              use3D ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary'
+            }`}
+            title="3D view"
+          >
+            <Box size={11} />
+            3D
+          </button>
+          <button
+            type="button"
+            onClick={() => setUse3D(false)}
+            className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
+              !use3D ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary'
+            }`}
+            title="2D view"
+          >
+            <Grid3X3 size={11} />
+            2D
+          </button>
+        </div>
+
         <GlassButton
           variant="ghost"
           size="sm"
@@ -186,28 +226,59 @@ export default function KnowledgeGraph(): React.JSX.Element {
       </div>
 
       {/* Graph container */}
-      <div ref={containerRef} className="flex-1 overflow-hidden">
-        <ForceGraph2D
-          graphData={safeGraphData}
-          width={dimensions.width}
-          height={dimensions.height}
-          nodeLabel="name"
-          nodeColor={nodeColor as (node: object) => string}
-          nodeVal={(node: object) => Math.max((node as GraphNode).val ?? 2, 2)}
-          nodeCanvasObject={nodeCanvasObject as (node: object, ctx: CanvasRenderingContext2D, globalScale: number) => void}
-          nodeCanvasObjectMode={() => 'replace' as const}
-          linkColor={linkColor as (link: object) => string}
-          linkWidth={linkWidth as (link: object) => number}
-          linkDirectionalArrowLength={0}
-          onNodeClick={handleNodeClick as (node: object, event: MouseEvent) => void}
-          backgroundColor="transparent"
-          enableZoomInteraction={true}
-          enablePanInteraction={true}
-          enableNodeDrag={true}
-          cooldownTicks={100}
-          d3AlphaDecay={0.02}
-          d3VelocityDecay={0.3}
-        />
+      <div ref={containerRef} className="relative flex-1 overflow-hidden" style={{ touchAction: 'none' }}>
+        {use3D ? (
+          <Scene3DWrapper
+            fallback={
+              <ForceGraph2D
+                graphData={safeGraphData}
+                width={dimensions.width}
+                height={dimensions.height}
+                nodeLabel="name"
+                nodeColor={nodeColor as (node: object) => string}
+                nodeVal={(node: object) => Math.max((node as GraphNode).val ?? 2, 2)}
+                nodeCanvasObject={nodeCanvasObject as (node: object, ctx: CanvasRenderingContext2D, globalScale: number) => void}
+                nodeCanvasObjectMode={() => 'replace' as const}
+                linkColor={linkColor as (link: object) => string}
+                linkWidth={linkWidth as (link: object) => number}
+                linkDirectionalArrowLength={0}
+                onNodeClick={handleNodeClick as (node: object, event: MouseEvent) => void}
+                backgroundColor="transparent"
+                enableZoomInteraction={true}
+                enablePanInteraction={true}
+                enableNodeDrag={true}
+                cooldownTicks={100}
+                d3AlphaDecay={0.02}
+                d3VelocityDecay={0.3}
+              />
+            }
+            loadingMessage="Loading 3D graph..."
+          >
+            <KnowledgeGraph3D graphData={safeGraphData} onNodeClick={handleNodeClick3D} />
+          </Scene3DWrapper>
+        ) : (
+          <ForceGraph2D
+            graphData={safeGraphData}
+            width={dimensions.width}
+            height={dimensions.height}
+            nodeLabel="name"
+            nodeColor={nodeColor as (node: object) => string}
+            nodeVal={(node: object) => Math.max((node as GraphNode).val ?? 2, 2)}
+            nodeCanvasObject={nodeCanvasObject as (node: object, ctx: CanvasRenderingContext2D, globalScale: number) => void}
+            nodeCanvasObjectMode={() => 'replace' as const}
+            linkColor={linkColor as (link: object) => string}
+            linkWidth={linkWidth as (link: object) => number}
+            linkDirectionalArrowLength={0}
+            onNodeClick={handleNodeClick as (node: object, event: MouseEvent) => void}
+            backgroundColor="transparent"
+            enableZoomInteraction={true}
+            enablePanInteraction={true}
+            enableNodeDrag={true}
+            cooldownTicks={100}
+            d3AlphaDecay={0.02}
+            d3VelocityDecay={0.3}
+          />
+        )}
       </div>
     </GlassSurface>
   )
