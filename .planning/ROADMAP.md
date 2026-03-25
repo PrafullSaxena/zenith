@@ -158,5 +158,5 @@ Note: Phase 5 and Phase 6 both depend on Phase 4 and can run in parallel.
 | 3. Core Pages Migration | 0/3 | Complete    | 2026-03-24 |
 | 4. Plugin Migration | 7/7 | Complete    | 2026-03-24 |
 | 5. Theme Collection | 0/3 | Complete    | 2026-03-24 |
-| 6. 3D Visualizations | 3/3 | Complete   | 2026-03-25 |
+| 6. 3D Visualizations | 3/3 | Complete    | 2026-03-25 |
 | 7. Micro-Interactions and Polish | 0/3 | Not started | - |
