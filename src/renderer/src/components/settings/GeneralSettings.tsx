@@ -183,18 +183,20 @@ export function GeneralSettings(): React.JSX.Element {
   }
 
   return (
-    <div>
-      <h2 className="mb-1 text-lg font-semibold text-text-primary">General</h2>
-      <p className="mb-6 text-xs text-text-secondary">Application-wide preferences and defaults.</p>
+    <div className="space-y-6">
+      <div>
+        <h2 className="mb-1 text-lg font-semibold text-[var(--text-primary)]">General</h2>
+        <p className="text-xs text-[var(--text-secondary)]">Application-wide preferences and defaults.</p>
+      </div>
 
-      {/* ── Theme Selector Grid ── */}
-      <GlassCard className="mb-6">
-        <h3 className="mb-1 text-sm font-medium text-text-primary">Theme</h3>
-        <p className="mb-4 text-xs text-text-secondary">Color theme for the application</p>
+      {/* ── Theme Selector Grid (visual centerpiece) ── */}
+      <GlassCard className="p-6 border-[var(--color-accent)]/10 shadow-[0_0_24px_-6px_var(--color-accent-glow)]">
+        <h3 className="mb-1 text-lg font-semibold text-[var(--text-primary)]">Theme</h3>
+        <p className="mb-5 text-xs text-[var(--text-secondary)]">Color theme for the application</p>
 
         <div className="space-y-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">Classic Themes</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-3">Classic Themes</p>
             <motion.div className="grid grid-cols-3 gap-3" variants={staggerContainer} initial="hidden" animate="visible">
               {classicThemes.map((theme) => (
                 <motion.div key={theme.value} variants={staggerItem}>
@@ -209,7 +211,7 @@ export function GeneralSettings(): React.JSX.Element {
           </div>
           {newThemes.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">New Collection</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-3">New Collection</p>
               <motion.div className="grid grid-cols-3 gap-3" variants={staggerContainer} initial="hidden" animate="visible">
                 {newThemes.map((theme) => (
                   <motion.div key={theme.value} variants={staggerItem}>
@@ -226,37 +228,52 @@ export function GeneralSettings(): React.JSX.Element {
         </div>
       </GlassCard>
 
-      {/* ── Other Settings ── */}
-      <GlassCard className="mb-5">
-        <SettingsField
-          field={hljsThemeField}
-          value={getSetting('general.hljsTheme')}
-          onChange={(value) => setSetting('general.hljsTheme', value)}
-        />
+      {/* ── Appearance ── */}
+      <GlassCard className="p-6">
+        <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Appearance</h3>
+        <div className="space-y-1">
+          <SettingsField
+            field={hljsThemeField}
+            value={getSetting('general.hljsTheme')}
+            onChange={(value) => setSetting('general.hljsTheme', value)}
+          />
+        </div>
+      </GlassCard>
 
-        <SettingsField
-          field={defaultViewField}
-          value={getSetting('general.defaultView')}
-          onChange={(value) => setSetting('general.defaultView', value)}
-        />
+      {/* ── Behavior ── */}
+      <GlassCard className="p-6">
+        <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Behavior</h3>
+        <div className="space-y-1">
+          <SettingsField
+            field={defaultViewField}
+            value={getSetting('general.defaultView')}
+            onChange={(value) => setSetting('general.defaultView', value)}
+          />
 
-        <SettingsField
-          field={showWelcomeField}
-          value={getSetting('general.showWelcomeOnStart')}
-          onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
-        />
+          <SettingsField
+            field={showWelcomeField}
+            value={getSetting('general.showWelcomeOnStart')}
+            onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
+          />
+        </div>
+      </GlassCard>
 
-        <SettingsField
-          field={pdfStyleField}
-          value={getSetting('general.pdfStyle')}
-          onChange={(value) => setSetting('general.pdfStyle', value)}
-        />
+      {/* ── Export ── */}
+      <GlassCard className="p-6">
+        <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Export</h3>
+        <div className="space-y-1">
+          <SettingsField
+            field={pdfStyleField}
+            value={getSetting('general.pdfStyle')}
+            onChange={(value) => setSetting('general.pdfStyle', value)}
+          />
 
-        <SettingsField
-          field={workingDirectoryField}
-          value={getSetting('general.workingDirectory')}
-          onChange={(value) => setSetting('general.workingDirectory', value)}
-        />
+          <SettingsField
+            field={workingDirectoryField}
+            value={getSetting('general.workingDirectory')}
+            onChange={(value) => setSetting('general.workingDirectory', value)}
+          />
+        </div>
       </GlassCard>
     </div>
   )

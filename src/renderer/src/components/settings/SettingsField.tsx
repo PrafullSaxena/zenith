@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Eye, EyeOff, FolderOpen, X } from 'lucide-react'
 import type { SettingsField as SettingsFieldType } from '../../types/plugin'
+import { GlassInput, GlassSelect, GlassButton } from '@renderer/components/ui'
 import { RepoListEditor } from './RepoListEditor'
 import type { RepoEntry } from './RepoListEditor'
 import { ConnectionListEditor } from './ConnectionListEditor'
@@ -13,12 +14,6 @@ interface SettingsFieldProps {
   error?: string | null
 }
 
-const inputClass =
-  'w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition'
-
-const selectClass =
-  'w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition appearance-none'
-
 export function SettingsField({ field, value, onChange, error }: SettingsFieldProps): React.JSX.Element {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -26,28 +21,30 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
     switch (field.type) {
       case 'text':
         return (
-          <input
+          <GlassInput
             type="text"
-            className={inputClass}
             value={(value as string) ?? ''}
             placeholder={field.placeholder}
             onChange={(e) => onChange(e.target.value)}
+            error={!!error}
+            errorMessage={error ?? undefined}
           />
         )
 
       case 'password':
         return (
           <div className="relative">
-            <input
+            <GlassInput
               type={showPassword ? 'text' : 'password'}
-              className={`${inputClass} pr-10`}
+              className="pr-10"
               value={(value as string) ?? ''}
               placeholder={field.placeholder}
               onChange={(e) => onChange(e.target.value)}
+              error={!!error}
             />
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
             >
@@ -58,12 +55,12 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
 
       case 'number':
         return (
-          <input
+          <GlassInput
             type="number"
-            className={inputClass}
             value={(value as number) ?? ''}
             placeholder={field.placeholder}
             onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
+            error={!!error}
           />
         )
 
@@ -88,23 +85,17 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
 
       case 'select':
         return (
-          <select
-            className={selectClass}
+          <GlassSelect
+            options={field.options?.map((opt) => ({ value: opt.value, label: opt.label })) ?? []}
             value={(value as string) ?? ''}
-            onChange={(e) => onChange(e.target.value)}
-          >
-            {field.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => onChange(val)}
+          />
         )
 
       case 'textarea':
         return (
           <textarea
-            className={`${inputClass} min-h-[120px] resize-y font-mono text-xs`}
+            className="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 transition-colors duration-[var(--duration-fast)] focus:outline-none focus:shadow-[var(--glass-glow)] min-h-[120px] resize-y font-mono text-xs"
             value={(value as string) ?? ''}
             placeholder={field.placeholder}
             onChange={(e) => onChange(e.target.value)}
@@ -131,16 +122,16 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
       case 'directory':
         return (
           <div className="flex items-center gap-2">
-            <input
+            <GlassInput
               type="text"
-              className={`${inputClass} flex-1`}
+              className="flex-1"
               value={(value as string) ?? ''}
               placeholder={field.placeholder ?? 'Default (OS Downloads folder)'}
               readOnly
             />
-            <button
-              type="button"
-              className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-secondary hover:text-text-primary transition"
+            <GlassButton
+              variant="ghost"
+              size="sm"
               onClick={async () => {
                 const result = await window.api.app.selectDirectory((value as string) || undefined)
                 if (!result.canceled && result.path) {
@@ -150,25 +141,25 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
             >
               <FolderOpen size={14} />
               Browse
-            </button>
+            </GlassButton>
             {value && (
-              <button
-                type="button"
-                className="rounded-lg border border-border/50 bg-surface px-2 py-1.5 text-sm text-text-secondary hover:text-red-400 hover:bg-red-500/10 transition"
+              <GlassButton
+                variant="ghost"
+                size="sm"
                 onClick={() => onChange('')}
                 title="Reset to default"
+                className="text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10"
               >
                 <X size={14} />
-              </button>
+              </GlassButton>
             )}
           </div>
         )
 
       default:
         return (
-          <input
+          <GlassInput
             type="text"
-            className={inputClass}
             value={String(value ?? '')}
             onChange={(e) => onChange(e.target.value)}
           />
@@ -177,31 +168,31 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
   }
 
   return (
-    <div className="-mx-2 mb-5 rounded-lg px-2 py-1 transition-colors hover:bg-surface-elevated/30">
-      {/* Label — skip for boolean (toggle has its own inline label) */}
+    <div className="-mx-2 mb-4 rounded-lg px-2 py-1.5 transition-colors hover:bg-[var(--glass-bg)]">
+      {/* Label -- skip for boolean (toggle has its own inline label) */}
       {field.type !== 'boolean' ? (
-        <label className="mb-1.5 block text-sm font-medium text-text-primary">
+        <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">
           {field.label}
           {field.required && <span className="ml-0.5 text-red-400">*</span>}
         </label>
       ) : (
         <div className="flex items-center gap-3">
           {renderInput()}
-          <label className="text-sm font-medium text-text-primary">{field.label}</label>
+          <label className="text-sm font-medium text-[var(--text-primary)]">{field.label}</label>
         </div>
       )}
 
-      {/* Input — rendered inline for boolean above, block for others */}
+      {/* Input -- rendered inline for boolean above, block for others */}
       {field.type !== 'boolean' && renderInput()}
 
       {/* Description */}
       {field.description && (
-        <p className="mt-1 text-xs text-text-secondary">{field.description}</p>
+        <p className="mt-1 text-xs text-[var(--text-secondary)]">{field.description}</p>
       )}
 
       {/* Error */}
       {error && (
-        <p className="mt-1 text-xs text-red-400">{error}</p>
+        <p className="mt-1 text-xs text-[var(--color-error)]">{error}</p>
       )}
     </div>
   )
