@@ -8,7 +8,7 @@
  *
  * Default-exported for React.lazy() compatibility in App.tsx.
  */
-import { useEffect, useCallback, useMemo } from 'react'
+import React, { useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   Zap,
@@ -22,11 +22,23 @@ import { useActivityStore } from '../../stores/activity-store'
 import { useTokenStore } from '../../stores/token-store'
 import { useHealthStore } from '../../stores/health-store'
 import { useDbStore } from '../../stores/db-store'
-import { GlassCard, GlassSurface, AnimatedCounter } from '../ui'
+import { GlassCard, GlassSurface, AnimatedCounter, Scene3DWrapper } from '../ui'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import { TokenChart } from './TokenChart'
 import { HealthPanel } from './HealthPanel'
 import { PluginCard } from './PluginCard'
+
+// ── Lazy-load 3D activity mesh ───────────────────────────────────────────
+const ActivityMesh3D = React.lazy(() => import('./ActivityMesh3D'))
+
+// ── 2D fallback for activity mesh ────────────────────────────────────────
+function ActivityMeshFallback(): React.JSX.Element {
+  return (
+    <div className="flex h-full w-full items-center justify-center rounded-xl bg-[radial-gradient(circle,rgba(var(--accent-rgb),0.08)_0%,transparent_70%)]">
+      <span className="text-[10px] text-text-secondary/50">Activity Mesh</span>
+    </div>
+  )
+}
 
 // ── Greeting based on time of day ──────────────────────────────────────────
 
@@ -173,6 +185,18 @@ export default function MissionControl(): React.JSX.Element {
                 </p>
               </div>
             </div>
+
+            {/* 3D Activity Mesh — right side of hero */}
+            {entries.length > 0 && (
+              <div className="hidden h-[250px] w-[250px] flex-shrink-0 lg:block">
+                <Scene3DWrapper
+                  fallback={<ActivityMeshFallback />}
+                  loadingMessage="Loading activity mesh..."
+                >
+                  <ActivityMesh3D />
+                </Scene3DWrapper>
+              </div>
+            )}
           </div>
 
           {/* Quick Stats Row */}
