@@ -19,7 +19,9 @@ import {
   Sparkles,
   Link2,
   FileDown,
-  Network
+  Network,
+  Box,
+  Grid3X3
 } from 'lucide-react'
 import type {
   TableInfo,
@@ -27,8 +29,11 @@ import type {
   RelationshipMode,
   ERInferenceStatus
 } from '../../types/database'
-import { GlassCard, GlassSurface, GlassButton, GlassSelect, EmptyState } from '../../components/ui'
+import { GlassCard, GlassSurface, GlassButton, GlassSelect, EmptyState, Scene3DWrapper } from '../../components/ui'
 import MermaidRenderer from './MermaidRenderer'
+
+// ── Lazy-load 3D schema orb ─────────────────────────────────────────────
+const SchemaOrb3D = React.lazy(() => import('./SchemaOrb3D'))
 
 interface ERDiagramProps {
   tables: TableInfo[]
@@ -88,6 +93,7 @@ export default function ERDiagram({
   const [viewMode, setViewMode] = useState<'visual' | 'code'>('visual')
   const [editableCode, setEditableCode] = useState('')
   const [editedSyntax, setEditedSyntax] = useState<string | null>(null)
+  const [show3D, setShow3D] = useState(false)
 
   // Sync editable code when session changes
   const currentSyntax = editedSyntax ?? session?.mermaidSyntax ?? ''
@@ -304,8 +310,34 @@ export default function ERDiagram({
                 Export PDF
               </GlassButton>
 
-              {/* View mode toggle */}
-              <div className="ml-auto flex rounded-lg border border-border overflow-hidden">
+              {/* ER / 3D toggle pill */}
+              <div className="ml-auto flex items-center rounded-lg border border-white/[0.08] bg-white/[0.03] p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setShow3D(false)}
+                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
+                    !show3D ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                  title="ER diagram view"
+                >
+                  <Grid3X3 size={11} />
+                  ER
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShow3D(true)}
+                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
+                    show3D ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                  title="3D schema orb view"
+                >
+                  <Box size={11} />
+                  3D
+                </button>
+              </div>
+
+              {/* View mode toggle (mermaid only) */}
+              {!show3D && <div className="flex rounded-lg border border-border overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setViewMode('visual')}
@@ -330,7 +362,7 @@ export default function ERDiagram({
                   <Code2 size={11} />
                   Code
                 </button>
-              </div>
+              </div>}
             </>
           )}
         </div>
@@ -374,7 +406,29 @@ export default function ERDiagram({
           </div>
         )}
 
-        {(session || editedSyntax) && viewMode === 'visual' && (
+        {/* 3D Schema Orb view */}
+        {show3D && session && selectedTables.length > 0 && (
+          <div className="h-full">
+            <Scene3DWrapper
+              fallback={
+                <GlassCard className="p-3" ref={diagramRef}>
+                  <MermaidRenderer syntax={currentSyntax} className="h-full" interactive />
+                </GlassCard>
+              }
+              loadingMessage="Loading 3D schema..."
+            >
+              <SchemaOrb3D
+                tables={tables}
+                selectedTables={selectedTables}
+                session={session}
+                onTableClick={onToggleTable}
+              />
+            </Scene3DWrapper>
+          </div>
+        )}
+
+        {/* Mermaid visual view */}
+        {!show3D && (session || editedSyntax) && viewMode === 'visual' && (
           <GlassCard className="p-3" ref={diagramRef}>
             {/* Legend when inferred relationships are present */}
             {inferredCount > 0 && (
@@ -404,7 +458,7 @@ export default function ERDiagram({
           </GlassCard>
         )}
 
-        {(session || editedSyntax) && viewMode === 'code' && (
+        {!show3D && (session || editedSyntax) && viewMode === 'code' && (
           <GlassSurface className="flex h-full flex-col gap-2 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium text-[var(--text-secondary)]">
