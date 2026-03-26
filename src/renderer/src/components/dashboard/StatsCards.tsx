@@ -1,13 +1,13 @@
 /**
  * StatsCards — Four summary metric cards for the Zenith dashboard.
  * Displays: Total Queries, Total Reviews, Total Optimizations, Total Tokens.
- * Uses GlassCard with AnimatedCounter for animated numeric values.
  */
 import { motion } from 'framer-motion'
 import { BarChart3, GitPullRequest, Zap, Coins } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ActivityEntry } from '../../types/activity'
-import { GlassCard, AnimatedCounter } from '../ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { cn } from '@renderer/lib/utils'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 
 interface StatCardDef {
@@ -21,6 +21,12 @@ interface StatCardDef {
 interface StatsCardsProps {
   entries: ActivityEntry[]
   totalTokens: number
+}
+
+function formatStatValue(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
+  return String(n)
 }
 
 export function StatsCards({ entries, totalTokens }: StatsCardsProps): React.JSX.Element {
@@ -69,17 +75,19 @@ export function StatsCards({ entries, totalTokens }: StatsCardsProps): React.JSX
         const Icon = stat.icon
         return (
           <motion.div key={stat.label} variants={staggerItem}>
-            <GlassCard className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`rounded-lg ${stat.bgColor} p-2`}>
-                  <Icon size={18} className={stat.color} />
+            <Card className="rounded-[22px]">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={cn('rounded-lg p-2', stat.bgColor)}>
+                    <Icon size={18} className={stat.color} />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold text-foreground">{formatStatValue(stat.value)}</p>
+                    <p className="text-[11px] text-muted-foreground">{stat.label}</p>
+                  </div>
                 </div>
-                <div>
-                  <AnimatedCounter value={stat.value} className="text-xl font-bold text-text-primary" />
-                  <p className="text-[11px] text-text-secondary">{stat.label}</p>
-                </div>
-              </div>
-            </GlassCard>
+              </CardContent>
+            </Card>
           </motion.div>
         )
       })}

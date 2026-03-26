@@ -12,8 +12,10 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { ActivityEntry, ActivityStatus } from '../../types/activity'
 import { getPluginById } from '../../plugins/registry'
-import { GlassCard, GlassBadge } from '../ui'
-import type { GlassBadgeVariant } from '../ui/GlassBadge'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import { formatRelativeTime } from './utils'
 
@@ -29,11 +31,11 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Rocket
 }
 
-/** Map activity status to GlassBadge variant */
-const STATUS_TO_BADGE: Record<ActivityStatus, GlassBadgeVariant> = {
-  success: 'success',
-  failure: 'error',
-  pending: 'warning'
+/** Map activity status to Badge variant */
+const STATUS_TO_BADGE: Record<ActivityStatus, 'default' | 'secondary' | 'destructive'> = {
+  success: 'default',
+  failure: 'destructive',
+  pending: 'secondary'
 }
 
 /** Per-plugin accent colors for the left bar */
@@ -61,12 +63,12 @@ export function ActivityFeed({
 
   if (entries.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-border/40 bg-surface-elevated/40 py-10">
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.06]">
-          <Inbox size={20} className="text-accent/30" />
+      <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card/40 py-10">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/[0.06]">
+          <Inbox size={20} className="text-primary/30" />
         </div>
-        <p className="text-sm font-medium text-text-secondary/70">No recent activity</p>
-        <p className="mt-1 text-[11px] text-text-secondary/60">
+        <p className="text-sm font-medium text-muted-foreground">No recent activity</p>
+        <p className="mt-1 text-[11px] text-muted-foreground/60">
           Operations from plugins will appear here
         </p>
       </div>
@@ -79,7 +81,7 @@ export function ActivityFeed({
 
   return (
     <div className="overflow-hidden rounded-xl">
-      <div className="max-h-[340px] overflow-y-auto">
+      <ScrollArea className="max-h-[340px]">
         <motion.div
           variants={staggerContainer}
           initial={shouldAnimate ? 'hidden' : false}
@@ -89,66 +91,69 @@ export function ActivityFeed({
           {entries.map((entry) => {
             const plugin = getPluginById(entry.pluginId)
             const Icon = plugin ? ICON_MAP[plugin.icon] : undefined
-            const pluginColor = PLUGIN_ACCENT_COLORS[entry.pluginId] ?? 'var(--color-accent)'
+            const pluginColor = PLUGIN_ACCENT_COLORS[entry.pluginId] ?? 'hsl(var(--primary))'
 
             return (
               <motion.div key={entry.id} variants={staggerItem}>
-                <GlassCard className="flex items-center gap-3 px-4 py-2.5">
-                  {/* Left accent bar */}
-                  <div
-                    className="h-8 w-[3px] shrink-0 rounded-full"
-                    style={{ backgroundColor: pluginColor }}
-                  />
+                <Card className="rounded-[22px]">
+                  <CardContent className="flex items-center gap-3 px-4 py-2.5">
+                    {/* Left accent bar */}
+                    <div
+                      className="h-8 w-[3px] shrink-0 rounded-full"
+                      style={{ backgroundColor: pluginColor }}
+                    />
 
-                  {/* Plugin icon */}
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface text-text-secondary/70">
-                    {Icon ? <Icon size={14} /> : <span className="text-[10px]">?</span>}
-                  </div>
+                    {/* Plugin icon */}
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+                      {Icon ? <Icon size={14} /> : <span className="text-[10px]">?</span>}
+                    </div>
 
-                  {/* Operation name + detail */}
-                  <div className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-text-primary">
-                      {entry.operation}
-                    </span>
-                    {entry.detail && (
-                      <span className="block truncate text-[11px] text-text-secondary/60">
-                        {entry.detail}
+                    {/* Operation name + detail */}
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-foreground">
+                        {entry.operation}
+                      </span>
+                      {entry.detail && (
+                        <span className="block truncate text-[11px] text-muted-foreground/60">
+                          {entry.detail}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Status badge */}
+                    <Badge variant={STATUS_TO_BADGE[entry.status]}>
+                      {entry.status}
+                    </Badge>
+
+                    {/* Duration */}
+                    {entry.durationMs != null && (
+                      <span className="flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground/60">
+                        <Clock size={11} />
+                        {(entry.durationMs / 1000).toFixed(1)}s
                       </span>
                     )}
-                  </div>
 
-                  {/* Status badge */}
-                  <GlassBadge variant={STATUS_TO_BADGE[entry.status]}>
-                    {entry.status}
-                  </GlassBadge>
-
-                  {/* Duration */}
-                  {entry.durationMs != null && (
-                    <span className="flex shrink-0 items-center gap-1 text-[11px] text-text-secondary/60">
-                      <Clock size={11} />
-                      {(entry.durationMs / 1000).toFixed(1)}s
+                    {/* Relative timestamp */}
+                    <span className="shrink-0 text-[11px] text-muted-foreground/60">
+                      {formatRelativeTime(entry.timestamp)}
                     </span>
-                  )}
-
-                  {/* Relative timestamp */}
-                  <span className="shrink-0 text-[11px] text-text-secondary/60">
-                    {formatRelativeTime(entry.timestamp)}
-                  </span>
-                </GlassCard>
+                  </CardContent>
+                </Card>
               </motion.div>
             )
           })}
         </motion.div>
-      </div>
+      </ScrollArea>
 
       {showViewAll && entries.length > 0 && (
-        <div className="border-t border-border/30 px-4 py-2">
-          <button
+        <div className="border-t border-border px-4 py-2">
+          <Button
+            variant="ghost"
+            className="w-full text-xs"
             onClick={onViewAll}
-            className="w-full rounded-md py-1.5 text-center text-xs font-medium text-accent transition hover:bg-accent/10"
           >
             View All Activity
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -11,15 +11,16 @@
 import { useMemo } from 'react'
 import { BarChart3 } from 'lucide-react'
 import type { TokenUsageEntry } from '../../stores/token-store'
-import { GlassCard } from '../ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
 
 interface TokenChartProps {
   entries: TokenUsageEntry[]
 }
 
-/** Provider color palette */
+/** Provider color palette using theme-aware values */
 const PROVIDER_COLORS = [
-  '#3b82f6', // blue
+  'hsl(var(--primary))',
   '#8b5cf6', // purple
   '#f59e0b', // amber
   '#10b981', // emerald
@@ -75,10 +76,8 @@ function monotoneCurvePath(pts: Point[]): string {
 
   for (let i = 1; i < n - 1; i++) {
     if (slopes[i - 1] * slopes[i] <= 0) {
-      // Sign change → flat tangent (prevent overshoot)
       tangents[i] = 0
     } else {
-      // Harmonic mean of neighboring slopes
       tangents[i] = (slopes[i - 1] + slopes[i]) / 2
     }
   }
@@ -91,7 +90,6 @@ function monotoneCurvePath(pts: Point[]): string {
     } else {
       const alpha = tangents[i] / slopes[i]
       const beta = tangents[i + 1] / slopes[i]
-      // Restrict to a circle of radius 3 for monotonicity
       const mag = alpha * alpha + beta * beta
       if (mag > 9) {
         const s = 3 / Math.sqrt(mag)
@@ -114,16 +112,14 @@ function monotoneCurvePath(pts: Point[]): string {
   return d
 }
 
-/** Build closed area path: baseline → curve along points → back to baseline */
+/** Build closed area path: baseline -> curve along points -> back to baseline */
 function monotoneAreaPath(pts: Point[], baseline: number): string {
   if (pts.length < 2) return ''
   const curvePart = monotoneCurvePath(pts)
-  // curvePart starts with M<first point>, draw curve to last point
-  // Close by going straight down to baseline, then back to start
   return (
     `M${pts[0].x},${baseline}` +
     `L${pts[0].x},${pts[0].y}` +
-    curvePart.slice(curvePart.indexOf('C')) + // append just the C segments
+    curvePart.slice(curvePart.indexOf('C')) +
     `L${pts[pts.length - 1].x},${baseline}Z`
   )
 }
@@ -136,7 +132,6 @@ function approxPathLength(pts: Point[]): number {
     const dy = pts[i].y - pts[i - 1].y
     len += Math.sqrt(dx * dx + dy * dy)
   }
-  // Curves are slightly longer than straight-line distance
   return Math.ceil(len * 1.15)
 }
 
@@ -184,7 +179,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
   const providerColorIndex: Record<string, number> = {}
   providerIds.forEach((pid, i) => { providerColorIndex[pid] = i })
 
-  // Chart SVG dimensions — viewBox sized close to rendered px so font sizes stay proportional
+  // Chart SVG dimensions
   const W = 640
   const H = 220
   const PAD_L = 48
@@ -229,197 +224,191 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
     label: v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}K` : String(Math.round(v))
   }))
 
-  // Unique ID suffix for this chart instance (avoids gradient ID collisions)
+  // Unique ID suffix for this chart instance
   const uid = useMemo(() => Math.random().toString(36).slice(2, 8), [])
 
   // ── Empty state ──
   if (entries.length === 0) {
     return (
-      <GlassCard className="flex h-full flex-col p-5">
-        <div className="mb-3">
-          <h3 className="text-sm font-semibold text-text-primary">Token Usage</h3>
-          <p className="text-[11px] text-text-secondary/60">7-day consumption by AI agent</p>
-        </div>
-        <div className="flex flex-1 items-center justify-center">
+      <Card className="flex h-full flex-col rounded-[28px]">
+        <CardHeader>
+          <CardTitle className="text-sm">Token Usage</CardTitle>
+          <p className="text-[11px] text-muted-foreground">7-day consumption by AI agent</p>
+        </CardHeader>
+        <CardContent className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/[0.08]">
-              <BarChart3 size={20} className="text-accent/40" />
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/[0.08]">
+              <BarChart3 size={20} className="text-primary/40" />
             </div>
-            <p className="text-sm font-medium text-text-secondary/70">No usage data yet</p>
-            <p className="mt-1 max-w-[200px] text-[11px] leading-relaxed text-text-secondary/60">
+            <p className="text-sm font-medium text-muted-foreground">No usage data yet</p>
+            <p className="mt-1 max-w-[200px] text-[11px] leading-relaxed text-muted-foreground/60">
               Token consumption will appear here after you run AI-powered queries
             </p>
           </div>
-        </div>
-      </GlassCard>
+        </CardContent>
+      </Card>
     )
   }
 
   // ── Data state ──
   return (
-    <GlassCard className="flex h-full flex-col p-5">
-      {/* Header */}
-      <div className="mb-3 flex items-center justify-between">
+    <Card className="flex h-full flex-col rounded-[28px]">
+      <CardHeader className="flex-row items-center justify-between space-y-0">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary">Token Usage</h3>
-          <p className="text-[11px] text-text-secondary/60">7-day consumption by AI agent</p>
+          <CardTitle className="text-sm">Token Usage</CardTitle>
+          <p className="text-[11px] text-muted-foreground">7-day consumption by AI agent</p>
         </div>
-        <span className="rounded-md bg-surface px-2 py-0.5 text-[11px] font-medium text-text-secondary">
+        <Badge variant="secondary" className="text-[11px]">
           {totalTokens.toLocaleString()} total
-        </span>
-      </div>
+        </Badge>
+      </CardHeader>
+      <CardContent className="flex-1 pb-5">
+        {/* Chart + Legend side-by-side */}
+        <div className="flex min-h-0 flex-1 gap-4">
+          {/* SVG Chart */}
+          <div className="min-w-0 flex-1">
+            <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full" preserveAspectRatio="xMidYMid meet">
+              {/* Animation keyframes */}
+              <defs>
+                {providerLines.map((line) => (
+                  <linearGradient key={`g-${line.pid}`} id={`area-${uid}-${line.pid}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={line.color} stopOpacity={0.15} />
+                    <stop offset="100%" stopColor={line.color} stopOpacity={0.01} />
+                  </linearGradient>
+                ))}
+              </defs>
 
-      {/* Chart + Legend side-by-side */}
-      <div className="flex min-h-0 flex-1 gap-4">
-        {/* SVG Chart */}
-        <div className="min-w-0 flex-1">
-          <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full" preserveAspectRatio="xMidYMid meet">
-            {/* Animation keyframes */}
-            <defs>
-              {providerLines.map((line) => (
-                <linearGradient key={`g-${line.pid}`} id={`area-${uid}-${line.pid}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={line.color} stopOpacity={0.15} />
-                  <stop offset="100%" stopColor={line.color} stopOpacity={0.01} />
-                </linearGradient>
+              {/* Inline CSS for SVG animations */}
+              <style>{`
+                .tc-grid-${uid} {
+                  opacity: 0;
+                  animation: tcFadeIn-${uid} 0.5s ease-out forwards;
+                }
+                .tc-xlabel-${uid} {
+                  opacity: 0;
+                  animation: tcFadeIn-${uid} 0.4s ease-out forwards;
+                }
+                ${providerLines.map((line, i) => `
+                .tc-line-${uid}-${i} {
+                  stroke-dasharray: ${line.pathLength};
+                  stroke-dashoffset: ${line.pathLength};
+                  animation: tcDraw-${uid}-${i} 1.2s cubic-bezier(0.4, 0, 0.2, 1) ${0.15 * i}s forwards;
+                }
+                @keyframes tcDraw-${uid}-${i} {
+                  to { stroke-dashoffset: 0; }
+                }
+                .tc-area-${uid}-${i} {
+                  opacity: 0;
+                  animation: tcFadeIn-${uid} 0.8s ease-out ${0.3 + 0.15 * i}s forwards;
+                }
+                .tc-dot-${uid}-${i} {
+                  transform-origin: center;
+                  transform: scale(0);
+                  opacity: 0;
+                  animation: tcDotPop-${uid} 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+                `).join('')}
+                @keyframes tcFadeIn-${uid} {
+                  to { opacity: 1; }
+                }
+                @keyframes tcDotPop-${uid} {
+                  to { transform: scale(1); opacity: 1; }
+                }
+              `}</style>
+
+              {/* Grid lines */}
+              {yLabels.map((yl, i) => (
+                <g key={i} className={`tc-grid-${uid}`} style={{ animationDelay: `${i * 0.08}s` }}>
+                  <line
+                    x1={PAD_L} y1={yl.y} x2={W - PAD_R} y2={yl.y}
+                    stroke="hsl(var(--border))" strokeOpacity={0.4}
+                    strokeDasharray={i === 0 ? undefined : '3,5'} strokeWidth={0.6}
+                  />
+                  <text x={PAD_L - 6} y={yl.y + 4} textAnchor="end" fill="hsl(var(--muted-foreground))" opacity={0.5} fontSize={10}>
+                    {yl.label}
+                  </text>
+                </g>
               ))}
-            </defs>
 
-            {/* Inline CSS for SVG animations */}
-            <style>{`
-              /* Grid lines fade in */
-              .tc-grid-${uid} {
-                opacity: 0;
-                animation: tcFadeIn-${uid} 0.5s ease-out forwards;
-              }
-              /* X-axis labels fade in */
-              .tc-xlabel-${uid} {
-                opacity: 0;
-                animation: tcFadeIn-${uid} 0.4s ease-out forwards;
-              }
-              ${providerLines.map((line, i) => `
-              /* Line draw animation — provider ${i} */
-              .tc-line-${uid}-${i} {
-                stroke-dasharray: ${line.pathLength};
-                stroke-dashoffset: ${line.pathLength};
-                animation: tcDraw-${uid}-${i} 1.2s cubic-bezier(0.4, 0, 0.2, 1) ${0.15 * i}s forwards;
-              }
-              @keyframes tcDraw-${uid}-${i} {
-                to { stroke-dashoffset: 0; }
-              }
-              /* Area fade-in — provider ${i} */
-              .tc-area-${uid}-${i} {
-                opacity: 0;
-                animation: tcFadeIn-${uid} 0.8s ease-out ${0.3 + 0.15 * i}s forwards;
-              }
-              /* Dot pop-in — provider ${i} */
-              .tc-dot-${uid}-${i} {
-                transform-origin: center;
-                transform: scale(0);
-                opacity: 0;
-                animation: tcDotPop-${uid} 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-              }
-              `).join('')}
-              @keyframes tcFadeIn-${uid} {
-                to { opacity: 1; }
-              }
-              @keyframes tcDotPop-${uid} {
-                to { transform: scale(1); opacity: 1; }
-              }
-            `}</style>
-
-            {/* Grid lines */}
-            {yLabels.map((yl, i) => (
-              <g key={i} className={`tc-grid-${uid}`} style={{ animationDelay: `${i * 0.08}s` }}>
-                <line
-                  x1={PAD_L} y1={yl.y} x2={W - PAD_R} y2={yl.y}
-                  stroke="currentColor" className="text-border/40"
-                  strokeDasharray={i === 0 ? undefined : '3,5'} strokeWidth={0.6}
-                />
-                <text x={PAD_L - 6} y={yl.y + 4} textAnchor="end" className="fill-text-secondary/50" fontSize={10}>
-                  {yl.label}
+              {/* X-axis labels */}
+              {buckets.map((b, bi) => (
+                <text
+                  key={bi} x={PAD_L + bi * xStep} y={H - 5}
+                  textAnchor="middle" fill="hsl(var(--muted-foreground))" opacity={0.5}
+                  className={`tc-xlabel-${uid}`}
+                  style={{ animationDelay: `${0.05 * bi}s` }}
+                  fontSize={10}
+                >
+                  {b.label}
                 </text>
-              </g>
-            ))}
+              ))}
 
-            {/* X-axis labels */}
-            {buckets.map((b, bi) => (
-              <text
-                key={bi} x={PAD_L + bi * xStep} y={H - 5}
-                textAnchor="middle" className={`fill-text-secondary/50 tc-xlabel-${uid}`}
-                style={{ animationDelay: `${0.05 * bi}s` }}
-                fontSize={10}
-              >
-                {b.label}
-              </text>
-            ))}
-
-            {/* Area fills (smooth) */}
-            {providerLines.map((line, lineIdx) => (
-              <path
-                key={`a-${line.pid}`}
-                d={line.areaPath}
-                fill={`url(#area-${uid}-${line.pid})`}
-                className={`tc-area-${uid}-${lineIdx}`}
-              />
-            ))}
-
-            {/* Smooth curve lines + animated dots */}
-            {providerLines.map((line, lineIdx) => (
-              <g key={line.pid}>
-                {/* Smooth curve line */}
+              {/* Area fills (smooth) */}
+              {providerLines.map((line, lineIdx) => (
                 <path
-                  d={line.linePath}
-                  fill="none"
-                  stroke={line.color}
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={`tc-line-${uid}-${lineIdx}`}
+                  key={`a-${line.pid}`}
+                  d={line.areaPath}
+                  fill={`url(#area-${uid}-${line.pid})`}
+                  className={`tc-area-${uid}-${lineIdx}`}
                 />
-                {/* Data point dots — staggered pop-in */}
-                {line.points.map((p, bi) => {
-                  const val = buckets[bi].byProvider[line.pid] || 0
-                  if (val === 0) return null
-                  return (
-                    <circle
-                      key={bi}
-                      cx={p.x}
-                      cy={p.y}
-                      r={2.5}
-                      fill={line.color}
-                      className={`tc-dot-${uid}-${lineIdx}`}
-                      style={{ animationDelay: `${0.6 + 0.15 * lineIdx + 0.06 * bi}s` }}
-                    />
-                  )
-                })}
-              </g>
-            ))}
-          </svg>
-        </div>
+              ))}
 
-        {/* Agent Legend — right column */}
-        <div className="flex w-[140px] shrink-0 flex-col justify-center space-y-2">
-          {sortedProviderIds.map((pid) => {
-            const pi = providerColorIndex[pid]
-            const total = providerTotals[pid] || 0
-            const pct = totalTokens > 0 ? (total / totalTokens) * 100 : 0
-            const color = PROVIDER_COLORS[pi % PROVIDER_COLORS.length]
-            return (
-              <div key={pid} className="flex items-center gap-2">
-                <span className="h-2 w-2 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[11px] font-medium leading-tight text-text-primary">
-                    {providerMap[pid]}
-                  </p>
-                  <p className="text-[10px] leading-tight text-text-secondary/60">
-                    {fmtTokens(total)} · {pct.toFixed(0)}%
-                  </p>
+              {/* Smooth curve lines + animated dots */}
+              {providerLines.map((line, lineIdx) => (
+                <g key={line.pid}>
+                  <path
+                    d={line.linePath}
+                    fill="none"
+                    stroke={line.color}
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`tc-line-${uid}-${lineIdx}`}
+                  />
+                  {line.points.map((p, bi) => {
+                    const val = buckets[bi].byProvider[line.pid] || 0
+                    if (val === 0) return null
+                    return (
+                      <circle
+                        key={bi}
+                        cx={p.x}
+                        cy={p.y}
+                        r={2.5}
+                        fill={line.color}
+                        className={`tc-dot-${uid}-${lineIdx}`}
+                        style={{ animationDelay: `${0.6 + 0.15 * lineIdx + 0.06 * bi}s` }}
+                      />
+                    )
+                  })}
+                </g>
+              ))}
+            </svg>
+          </div>
+
+          {/* Agent Legend — right column */}
+          <div className="flex w-[140px] shrink-0 flex-col justify-center space-y-2">
+            {sortedProviderIds.map((pid) => {
+              const pi = providerColorIndex[pid]
+              const total = providerTotals[pid] || 0
+              const pct = totalTokens > 0 ? (total / totalTokens) * 100 : 0
+              const color = PROVIDER_COLORS[pi % PROVIDER_COLORS.length]
+              return (
+                <div key={pid} className="flex items-center gap-2">
+                  <span className="h-2 w-2 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[11px] font-medium leading-tight text-foreground">
+                      {providerMap[pid]}
+                    </p>
+                    <p className="text-[10px] leading-tight text-muted-foreground/60">
+                      {fmtTokens(total)} · {pct.toFixed(0)}%
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
-      </div>
-    </GlassCard>
+      </CardContent>
+    </Card>
   )
 }

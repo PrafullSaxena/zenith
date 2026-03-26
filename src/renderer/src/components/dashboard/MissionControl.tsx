@@ -22,23 +22,13 @@ import { useActivityStore } from '../../stores/activity-store'
 import { useTokenStore } from '../../stores/token-store'
 import { useHealthStore } from '../../stores/health-store'
 import { useDbStore } from '../../stores/db-store'
-import { GlassCard, GlassSurface, AnimatedCounter, Scene3DWrapper } from '../ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { cn } from '@renderer/lib/utils'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import { TokenChart } from './TokenChart'
 import { HealthPanel } from './HealthPanel'
 import { PluginCard } from './PluginCard'
-
-// ── Lazy-load 3D activity mesh ───────────────────────────────────────────
-const ActivityMesh3D = React.lazy(() => import('./ActivityMesh3D'))
-
-// ── 2D fallback for activity mesh ────────────────────────────────────────
-function ActivityMeshFallback(): React.JSX.Element {
-  return (
-    <div className="flex h-full w-full items-center justify-center rounded-xl bg-[radial-gradient(circle,rgba(var(--accent-rgb),0.08)_0%,transparent_70%)]">
-      <span className="text-[10px] text-text-secondary/50">Activity Mesh</span>
-    </div>
-  )
-}
 
 // ── Greeting based on time of day ──────────────────────────────────────────
 
@@ -64,29 +54,25 @@ function QuickStat({
   icon: Icon,
   label,
   value,
-  numericValue,
   accent
 }: {
   icon: React.ComponentType<{ size?: number; className?: string }>
   label: string
   value: string
-  numericValue?: number
   accent: string
 }): React.JSX.Element {
   return (
-    <GlassCard className="flex items-center gap-3 px-4 py-3">
-      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${accent}`}>
-        <Icon size={16} />
-      </div>
-      <div className="min-w-0">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-text-secondary/70">{label}</p>
-        {numericValue != null ? (
-          <AnimatedCounter value={numericValue} className="text-lg font-semibold leading-tight text-text-primary" />
-        ) : (
-          <p className="text-lg font-semibold leading-tight text-text-primary">{value}</p>
-        )}
-      </div>
-    </GlassCard>
+    <Card className="rounded-[22px]">
+      <CardContent className="flex items-center gap-3 px-4 py-3">
+        <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', accent)}>
+          <Icon size={16} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+          <p className="text-lg font-semibold leading-tight text-foreground">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -164,74 +150,71 @@ export default function MissionControl(): React.JSX.Element {
     >
       {/* ── Hero Header ─────────────────────────────────────────────── */}
       <motion.div variants={staggerItem}>
-        <GlassSurface className="relative overflow-hidden px-5 py-4">
-          {/* Subtle glow effect */}
-          <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-accent/[0.04] blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-accent/[0.03] blur-2xl" />
+        <Card className="relative overflow-hidden rounded-[28px] backdrop-blur-sm bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.08),transparent_60%)]">
+          <CardContent className="px-5 py-4">
+            {/* Subtle glow effect */}
+            <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-primary/[0.04] blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-primary/[0.03] blur-2xl" />
 
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <img
-                src={zenithLogo}
-                alt="Zenith"
-                className="h-12 w-12 drop-shadow-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-                  {getGreeting()}
-                </h1>
-                <p className="mt-0.5 text-sm text-text-secondary">
-                  {getFormattedDate()}
-                </p>
+            <div className="relative flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                <img
+                  src={zenithLogo}
+                  alt="Zenith"
+                  className="h-12 w-12 drop-shadow-lg"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                    {getGreeting()}
+                  </h1>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    {getFormattedDate()}
+                  </p>
+                </div>
               </div>
+
+              {/* Recent operations summary */}
+              {entries.length > 0 && (
+                <div className="hidden lg:flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {entries.length} recent operations
+                  </Badge>
+                </div>
+              )}
             </div>
 
-            {/* 3D Activity Mesh — right side of hero */}
-            {entries.length > 0 && (
-              <div className="hidden h-[160px] w-[200px] flex-shrink-0 lg:block">
-                <Scene3DWrapper
-                  fallback={<ActivityMeshFallback />}
-                  loadingMessage="Loading activity mesh..."
-                >
-                  <ActivityMesh3D />
-                </Scene3DWrapper>
-              </div>
-            )}
-          </div>
-
-          {/* Quick Stats Row */}
-          <div className="relative mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
-            <QuickStat
-              icon={Zap}
-              label="Token Usage"
-              value={formatTokens(totalTokens)}
-              numericValue={totalTokens}
-              accent="bg-blue-500/15 text-blue-400"
-            />
-            <QuickStat
-              icon={Database}
-              label="Connections"
-              value={`${activeConnections}/${connections.length}`}
-              accent="bg-emerald-500/15 text-emerald-400"
-            />
-            <QuickStat
-              icon={Activity}
-              label="Today's Ops"
-              value={String(todayOps)}
-              numericValue={todayOps}
-              accent="bg-amber-500/15 text-amber-400"
-            />
-            <QuickStat
-              icon={Shield}
-              label="Health"
-              value={healthResources.length > 0
-                ? `${healthyCount}/${healthResources.length}`
-                : '—'
-              }
-              accent="bg-purple-500/15 text-purple-400"
-            />
-          </div>
-        </GlassSurface>
+            {/* Quick Stats Row */}
+            <div className="relative mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
+              <QuickStat
+                icon={Zap}
+                label="Token Usage"
+                value={formatTokens(totalTokens)}
+                accent="bg-blue-500/15 text-blue-400"
+              />
+              <QuickStat
+                icon={Database}
+                label="Connections"
+                value={`${activeConnections}/${connections.length}`}
+                accent="bg-emerald-500/15 text-emerald-400"
+              />
+              <QuickStat
+                icon={Activity}
+                label="Today's Ops"
+                value={String(todayOps)}
+                accent="bg-amber-500/15 text-amber-400"
+              />
+              <QuickStat
+                icon={Shield}
+                label="Health"
+                value={healthResources.length > 0
+                  ? `${healthyCount}/${healthResources.length}`
+                  : '—'
+                }
+                accent="bg-purple-500/15 text-purple-400"
+              />
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* ── Token Chart + Health Panel — responsive 2:1 layout ───── */}
@@ -252,10 +235,10 @@ export default function MissionControl(): React.JSX.Element {
       {/* ── Plugin Cards ─────────────────────────────────────────── */}
       <motion.div variants={staggerItem}>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Plugins
           </h2>
-          <span className="text-[11px] text-text-secondary/70">{PLUGINS.length} available</span>
+          <span className="text-[11px] text-muted-foreground/70">{PLUGINS.length} available</span>
         </div>
         <motion.div
           variants={staggerContainer}
