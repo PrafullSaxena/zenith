@@ -51,11 +51,22 @@ const ICON_MAP: Record<string, LucideIcon> = {
 export function useSidebarCollapsed(): [boolean, () => void] {
   const getSetting = useSettingsStore((s) => s.getSetting)
   const setSetting = useSettingsStore((s) => s.setSetting)
-  const isCollapsed = (getSetting('general.sidebarCollapsed') as boolean) ?? true
+  const storedValue = (getSetting('general.sidebarCollapsed') as boolean) ?? true
+
+  const [isCollapsed, setIsCollapsed] = useState(storedValue)
+
+  // Sync local state when store value changes (e.g. from another consumer)
+  useEffect(() => {
+    setIsCollapsed(storedValue)
+  }, [storedValue])
 
   const toggleCollapsed = useCallback(() => {
-    setSetting('general.sidebarCollapsed', !isCollapsed)
-  }, [isCollapsed, setSetting])
+    setIsCollapsed((prev) => {
+      const next = !prev
+      setSetting('general.sidebarCollapsed', next)
+      return next
+    })
+  }, [setSetting])
 
   return [isCollapsed, toggleCollapsed]
 }
@@ -172,11 +183,21 @@ export function Sidebar(): React.JSX.Element {
   const getSetting = useSettingsStore((s) => s.getSetting)
   const setSetting = useSettingsStore((s) => s.setSetting)
 
-  const isCollapsed = (getSetting('general.sidebarCollapsed') as boolean) ?? true
+  const storedCollapsed = (getSetting('general.sidebarCollapsed') as boolean) ?? true
+  const [isCollapsed, setIsCollapsed] = useState(storedCollapsed)
+
+  // Keep local state in sync with store changes from other consumers
+  useEffect(() => {
+    setIsCollapsed(storedCollapsed)
+  }, [storedCollapsed])
 
   const toggleCollapsed = useCallback(() => {
-    setSetting('general.sidebarCollapsed', !isCollapsed)
-  }, [isCollapsed, setSetting])
+    setIsCollapsed((prev) => {
+      const next = !prev
+      setSetting('general.sidebarCollapsed', next)
+      return next
+    })
+  }, [setSetting])
 
   // Cmd+B / Ctrl+B keyboard shortcut
   useEffect(() => {
