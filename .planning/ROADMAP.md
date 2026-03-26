@@ -128,10 +128,12 @@ Plans:
   4. Keyboard shortcuts work consistently: Cmd+K (palette), Cmd+B (sidebar), Cmd+N (new item where applicable), Escape (close modals/palette)
   5. Focus rings are visible on all interactive elements, ARIA attributes are correct, and prefers-reduced-motion disables animations
   6. Bundle size is measurably smaller than before (Three.js removal saves 500KB+)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 06-01: TBD
+- [ ] 06-01-PLAN.md -- Micro-interactions utilities + EmptyState update + wire empty states into all 6 plugins
+- [ ] 06-02-PLAN.md -- Wire CommandPalette to all routes/activity/settings + keyboard shortcuts audit
+- [ ] 06-03-PLAN.md -- Accessibility audit (focus rings, ARIA, reduced motion) + bundle size audit
 
 ## Progress
 
@@ -145,7 +147,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Shared Components | 0/6 | Complete    | 2026-03-26 |
 | 4. Screen Migration | 0/10 | Not started | - |
 | 5. 3D Removal & Cleanup | 0/1 | Not started | - |
-| 6. Polish | 0/1 | Not started | - |
+| 6. Polish | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-03-27*
