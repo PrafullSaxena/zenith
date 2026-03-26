@@ -7,10 +7,10 @@
 
 ### Foundation
 
-- [ ] **FOUND-01**: shadcn/ui + Animate-UI installed and configured with Tailwind CSS v4
+- [x] **FOUND-01**: shadcn/ui + Animate-UI installed and configured with Tailwind CSS v4
 - [ ] **FOUND-02**: CSS custom property theme system with zenith-violet tokens applied globally
-- [ ] **FOUND-03**: Inter + JetBrains Mono fonts loaded with font-display: swap
-- [ ] **FOUND-04**: cn() utility (clsx + tailwind-merge) available project-wide
+- [x] **FOUND-03**: Inter + JetBrains Mono fonts loaded with font-display: swap
+- [x] **FOUND-04**: cn() utility (clsx + tailwind-merge) available project-wide
 - [ ] **FOUND-05**: Radial gradient page background from primary color at top
 
 ### Base Components
@@ -170,10 +170,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1 | Pending |
+| FOUND-01 | Phase 1 | Complete |
 | FOUND-02 | Phase 1 | Pending |
-| FOUND-03 | Phase 1 | Pending |
-| FOUND-04 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Complete |
+| FOUND-04 | Phase 1 | Complete |
 | FOUND-05 | Phase 1 | Pending |
 | COMP-01 | Phase 2 | Pending |
 | COMP-02 | Phase 2 | Pending |
