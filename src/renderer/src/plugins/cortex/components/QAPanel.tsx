@@ -298,7 +298,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
       </Card>
 
       {/* Messages area */}
-      <div className="flex-1 px-4 py-3 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
         {qaMessages.length === 0 ? (
           /* Empty state with suggested questions */
           <div className="flex h-full flex-col items-center justify-center gap-4">

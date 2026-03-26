@@ -88,16 +88,18 @@ export function MCPSettings(): React.JSX.Element {
   }
 
   return (
-    <div className="stagger-children">
-      <h2 className="mb-1 text-lg font-semibold text-foreground">MCP Servers</h2>
-      <p className="mb-6 text-xs text-muted-foreground">
-        Configure Model Context Protocol servers for enhanced AI capabilities and tool
-        orchestration.
-      </p>
+    <div className="stagger-children space-y-6">
+      <div>
+        <h2 className="mb-1 text-lg font-semibold text-foreground">MCP Servers</h2>
+        <p className="text-xs text-muted-foreground">
+          Configure Model Context Protocol servers for enhanced AI capabilities and tool
+          orchestration.
+        </p>
+      </div>
 
       {/* Server list */}
       {servers.length === 0 && !showAddForm && (
-        <div className="mb-4 rounded-lg border border-dashed border-border/50 px-4 py-8 text-center">
+        <div className="rounded-lg border border-dashed border-border/50 px-4 py-8 text-center">
           <Server size={24} className="mx-auto mb-2 text-muted-foreground/30" />
           <p className="text-sm text-muted-foreground">No MCP servers configured</p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -107,7 +109,7 @@ export function MCPSettings(): React.JSX.Element {
       )}
 
       {servers.length > 0 && (
-        <div className="mb-4 divide-y divide-border/30 rounded-xl border border-border/50">
+        <div className="divide-y divide-border/30 rounded-xl border border-border/50">
           {servers.map((server) => (
             <div
               key={server.id}
@@ -258,7 +260,7 @@ export function MCPSettings(): React.JSX.Element {
       )}
 
       {/* Info box */}
-      <div className="mt-6 rounded-lg border border-border bg-secondary/30 px-4 py-3">
+      <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3">
         <p className="text-[11px] font-medium text-muted-foreground">About MCP</p>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground/60">
           The Model Context Protocol (MCP) allows AI agents to access external tools, data

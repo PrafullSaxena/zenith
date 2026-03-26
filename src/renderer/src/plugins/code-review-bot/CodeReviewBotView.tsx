@@ -354,7 +354,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
       ) : (
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel: PR list */}
-        <div className="w-1/3 overflow-y-auto border-r border-border p-3">
+        <div className="w-1/3 overflow-y-auto border-r border-border p-4">
           <PRList
             pullRequests={pullRequests}
             isLoading={isLoadingPRs}
@@ -379,7 +379,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
               initial="initial"
               animate="animate"
               exit="exit"
-              className="flex-1 overflow-y-auto p-3"
+              className="flex-1 overflow-y-auto p-4"
             >
               {activeTab === 'diff' && (
                 <PRDiffView

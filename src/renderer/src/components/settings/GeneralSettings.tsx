@@ -118,7 +118,7 @@ export function GeneralSettings(): React.JSX.Element {
           <CardTitle className="text-lg">Appearance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-1">
+          <div className="space-y-4">
             <SettingsField
               field={hljsThemeField}
               value={getSetting('general.hljsTheme')}
@@ -134,7 +134,7 @@ export function GeneralSettings(): React.JSX.Element {
           <CardTitle className="text-lg">Behavior</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-1">
+          <div className="space-y-4">
             <SettingsField
               field={defaultViewField}
               value={getSetting('general.defaultView')}
@@ -155,7 +155,7 @@ export function GeneralSettings(): React.JSX.Element {
           <CardTitle className="text-lg">Export</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-1">
+          <div className="space-y-4">
             <SettingsField
               field={pdfStyleField}
               value={getSetting('general.pdfStyle')}

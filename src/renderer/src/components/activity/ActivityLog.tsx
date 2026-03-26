@@ -82,7 +82,7 @@ export default function ActivityLog(): React.JSX.Element {
 
       {/* Filter bar */}
       <motion.div variants={staggerItem} className="shrink-0">
-        <Card className="flex items-center gap-3">
+        <Card className="flex items-center gap-3 px-4 py-3">
           <SimpleSelect
             options={PLUGIN_OPTIONS}
             value={pluginFilter}

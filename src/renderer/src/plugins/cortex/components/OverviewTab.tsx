@@ -152,7 +152,7 @@ export default function OverviewTab(): React.JSX.Element {
         )}
       </div>
       {/* Stats cards */}
-      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {statCards.map((card) => {
           const Icon = card.icon
           return (

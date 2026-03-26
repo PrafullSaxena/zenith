@@ -80,7 +80,7 @@ export default function ControlsPanel(): React.JSX.Element {
   }
 
   return (
-    <Card className="flex flex-col h-full gap-4 overflow-y-auto rounded-none border-x-0 border-t-0">
+    <Card className="flex flex-col h-full gap-4 overflow-y-auto rounded-none border-x-0 border-t-0 p-4">
       {/* Header */}
       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
         Controls

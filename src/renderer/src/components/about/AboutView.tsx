@@ -137,7 +137,7 @@ export default function AboutView(): React.JSX.Element {
   return (
     <div className="mx-auto max-w-3xl space-y-8 p-6">
       {/* ── App Header ── */}
-      <Card className="text-center">
+      <Card className="text-center p-6">
         <img
           src={zenithLogo}
           alt="Zenith"
@@ -168,7 +168,7 @@ export default function AboutView(): React.JSX.Element {
             const Icon = cap.icon
             return (
               <motion.div key={cap.title} variants={staggerItem}>
-                <Card interactive className="h-full">
+                <Card interactive className="h-full p-4">
                   <div className="mb-2 flex items-center gap-2">
                     <Icon size={16} className="shrink-0 text-primary" />
                     <h3 className="text-sm font-semibold text-foreground">
@@ -191,7 +191,7 @@ export default function AboutView(): React.JSX.Element {
           <User size={14} className="text-primary" />
           About the Author
         </h2>
-        <Card>
+        <Card className="p-5">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
               PS
@@ -238,7 +238,7 @@ export default function AboutView(): React.JSX.Element {
         </h2>
         <div className="space-y-3">
           {GETTING_STARTED.map((item, index) => (
-            <Card key={item.step} className="relative pl-10">
+            <Card key={item.step} className="relative pl-10 p-4">
               {/* Numbered step indicator */}
               <div className="absolute left-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
                 {item.step}
@@ -264,8 +264,8 @@ export default function AboutView(): React.JSX.Element {
           <Wrench size={14} className="text-primary" />
           Diagnostics
         </h2>
-        <Card>
-          <div className="flex items-center justify-between">
+        <Card className="p-5">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h4 className="text-sm font-semibold text-foreground">
                 Export Diagnostic Logs

@@ -245,7 +245,7 @@ export default function OutputPanel(): React.JSX.Element {
   const showActions = (isComplete || hasOutput) && !isStreaming
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden rounded-none border-x-0 border-t-0">
+    <Card className="flex flex-col h-full overflow-hidden rounded-none border-x-0 border-t-0 p-4">
       {/* Header */}
       <div className="flex items-center justify-between pb-2">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">

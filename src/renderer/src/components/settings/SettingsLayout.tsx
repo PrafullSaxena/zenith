@@ -36,7 +36,7 @@ export function SettingsLayout(): React.JSX.Element {
         className="flex h-full w-full"
       >
         {/* Left sidebar — vertical tabs */}
-        <div className="w-48 flex-shrink-0 overflow-y-auto py-4 px-2">
+        <div className="w-48 flex-shrink-0 overflow-y-auto border-r border-border/50 py-4 px-2">
           <div className="px-1 mb-2">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Settings

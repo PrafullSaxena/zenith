@@ -132,25 +132,25 @@ export function ReviewPanel({
   if (session.status === 'streaming') {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center gap-2 px-3 py-2">
+        <div className="flex items-center gap-2 px-4 py-3">
           <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-primary" />
           <span className="text-sm font-medium text-foreground">
             AI Review in progress...
           </span>
         </div>
 
-        <Card className="mx-3 mb-3 flex-1 overflow-y-auto">
+        <Card className="mx-4 mb-3 flex-1 overflow-y-auto p-4">
           <div ref={scrollRef} className="font-mono text-sm text-foreground">
             <pre className="whitespace-pre-wrap">{session.rawText || 'Waiting for response...'}</pre>
           </div>
         </Card>
 
         {/* Streaming placeholder skeleton */}
-        <div className="mx-3 mb-3">
+        <div className="mx-4 mb-3">
           <Skeleton className="h-4 w-full" />
         </div>
 
-        <div className="px-3 pb-3">
+        <div className="px-4 pb-4">
           <Button variant="destructive" onClick={onCancel}>
             Cancel Review
           </Button>
@@ -179,8 +179,8 @@ export function ReviewPanel({
     // If AI produced output but parser found 0 comments, show the raw output
     if (safeComments.length === 0 && session.rawText.trim().length > 0) {
       return (
-        <div className="flex h-full flex-col overflow-y-auto p-3">
-          <Card className="mb-3 bg-yellow-500/10">
+        <div className="flex h-full flex-col overflow-y-auto p-4 gap-3">
+          <Card className="bg-yellow-500/10 p-4">
             <p className="text-sm font-medium text-yellow-400">
               AI review completed but no comments were parsed
             </p>
@@ -188,12 +188,12 @@ export function ReviewPanel({
               The AI output did not match the expected format. Raw output is shown below.
             </p>
           </Card>
-          <div className="mb-3 flex gap-2">
+          <div className="flex gap-2">
             <Button variant="default" onClick={onNewReview}>
               Retry Review
             </Button>
           </div>
-          <pre className="flex-1 overflow-auto rounded-md bg-card p-3 text-xs text-muted-foreground font-mono whitespace-pre-wrap">
+          <pre className="flex-1 overflow-auto rounded-md bg-card p-4 text-xs text-muted-foreground font-mono whitespace-pre-wrap">
             {session.rawText}
           </pre>
         </div>
@@ -203,7 +203,7 @@ export function ReviewPanel({
     return (
       <div className="flex h-full flex-col">
         {/* Summary header */}
-        <div className="border-b border-border px-3 py-3">
+        <div className="border-b border-border px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-sm font-medium text-foreground">
@@ -259,7 +259,7 @@ export function ReviewPanel({
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="flex-1 space-y-2 p-3"
+          className="flex-1 space-y-3 p-4"
         >
           {safeComments.map((comment, idx) => (
             <motion.div key={idx} variants={staggerItem}>
@@ -288,7 +288,7 @@ export function ReviewPanel({
   if (session.status === 'error') {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <Card className="bg-red-500/10 text-center">
+        <Card className="bg-red-500/10 text-center p-4">
           <p className="text-sm text-red-400">{session.error || 'An error occurred during the review.'}</p>
         </Card>
         <div className="mt-4 flex gap-2">

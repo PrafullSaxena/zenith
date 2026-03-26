@@ -59,7 +59,7 @@ export function PRList({
       </div>
 
       {/* PR list */}
-      <div className="flex-1 space-y-1.5 overflow-y-auto">
+      <div className="flex-1 space-y-2 overflow-y-auto">
         {/* Loading state with skeleton cards */}
         {isLoading && (pullRequests?.length ?? 0) === 0 && (
           <div className="space-y-2">
@@ -106,7 +106,7 @@ export function PRList({
               return (
                 <motion.div key={pr.id} variants={staggerItem}>
                   <Card
-                    className={`cursor-pointer ${isSelected ? 'border-l-2 border-l-accent' : ''}`}
+                    className={`cursor-pointer p-4 ${isSelected ? 'border-l-2 border-l-accent' : ''}`}
                     onClick={() => onSelect(pr)}
                   >
                     {/* Top row: PR title + link icon (left), file count badge (right) */}

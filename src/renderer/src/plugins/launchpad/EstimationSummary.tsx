@@ -214,7 +214,7 @@ export default function EstimationSummary(): React.JSX.Element {
       )}
 
       {/* Totals — sticky Card */}
-      <Card className="sticky bottom-0 rounded-none border-x-0 border-b-0 mx-0">
+      <Card className="sticky bottom-0 rounded-none border-x-0 border-b-0 mx-0 p-4">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
             Grand Total

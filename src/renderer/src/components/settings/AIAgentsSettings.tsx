@@ -33,27 +33,29 @@ export function AIAgentsSettings(): React.JSX.Element {
   }
 
   return (
-    <div className="stagger-children">
-      <h2 className="mb-1 text-lg font-semibold text-foreground">AI Agents</h2>
-      <p className="mb-6 text-xs text-muted-foreground">
-        Configure AI providers for your plugins
-      </p>
+    <div className="stagger-children space-y-6">
+      <div>
+        <h2 className="mb-1 text-lg font-semibold text-foreground">AI Agents</h2>
+        <p className="text-xs text-muted-foreground">
+          Configure AI providers for your plugins
+        </p>
+      </div>
 
       {/* Providers table */}
       <div className="overflow-hidden rounded-lg border border-border/50">
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-border">
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Provider
               </th>
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Status
               </th>
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 API Key
               </th>
-              <th className="pb-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Actions
               </th>
             </tr>
@@ -80,7 +82,7 @@ export function AIAgentsSettings(): React.JSX.Element {
           variant="outline"
           size="sm"
           onClick={() => setShowAddForm(true)}
-          className="mt-4"
+          className=""
         >
           <Plus size={14} className="mr-1.5" />
           Add Custom Provider

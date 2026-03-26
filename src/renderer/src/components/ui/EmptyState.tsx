@@ -51,20 +51,20 @@ export function EmptyState({
 
   return (
     <div
-      className={cn('flex flex-col items-center justify-center py-16 text-center', className)}
+      className={cn('flex flex-col items-center justify-center gap-2 py-16 text-center', className)}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
       <motion.div
         animate={reducedMotion ? { x: 0, y: 0 } : { x: offset.x, y: offset.y }}
         transition={{ type: 'spring', stiffness: 150, damping: 15 }}
-        className="mb-6"
+        className="mb-4"
       >
         <Icon size={64} className="text-muted-foreground/30" />
       </motion.div>
 
-      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground mb-6 max-w-sm">{description}</p>
+      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      <p className="text-sm text-muted-foreground mb-4 max-w-sm">{description}</p>
 
       <div className="flex items-center gap-3">
         {actionLabel && onAction && (

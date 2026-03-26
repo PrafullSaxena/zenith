@@ -125,7 +125,7 @@ export default function AiAdvisor(): React.JSX.Element {
             </p>
           </div>
 
-          <div className="w-full max-w-lg space-y-2">
+          <div className="w-full max-w-lg space-y-3">
             <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]/60 text-center mb-3">
               Example prompts
             </p>
@@ -186,14 +186,14 @@ export default function AiAdvisor(): React.JSX.Element {
 
       {/* Error state */}
       {aiSession.status === 'error' && aiSession.error && (
-        <Card className="mx-4 mb-2 border-[var(--destructive)]/30 bg-[var(--destructive)]/5">
+        <Card className="mx-4 mb-2 border-[var(--destructive)]/30 bg-[var(--destructive)]/5 p-4">
           <p className="text-xs text-[var(--destructive)]">{aiSession.error}</p>
         </Card>
       )}
 
       {/* Suggestion banner */}
       {pendingSuggestions && aiSession.status === 'complete' && (
-        <Card className="mx-4 mb-4 border-[var(--primary)]/30 bg-[var(--primary)]/5">
+        <Card className="mx-4 mb-4 border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
