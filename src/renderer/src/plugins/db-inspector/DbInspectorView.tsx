@@ -32,6 +32,7 @@ import type { DbInspectorTab, DbHistoryEntry } from '../../types/database'
 import { Card, CardContent } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { pageTransition } from '../../lib/motion'
 import ConnectionManager from './ConnectionManager'
 import SchemaExplorer from './SchemaExplorer'
@@ -307,7 +308,18 @@ export default function DbInspectorView(): React.JSX.Element {
         statusIndicator={connectionBadge}
       />
 
-      {/* Main content */}
+      {/* Empty state when no connections configured */}
+      {connections.length === 0 ? (
+        <EmptyState
+          icon={Database}
+          title="No database connections"
+          description="Connect to a PostgreSQL database to explore schemas, run queries, and get AI-powered insights."
+          actionLabel="Add Connection"
+          onAction={handleOpenSettings}
+          className="flex-1"
+        />
+      ) : (
+      /* Main content */
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel -- Connections (sticky) + Schema Explorer (scrollable) + collapse toggle */}
         <div
@@ -452,6 +464,7 @@ export default function DbInspectorView(): React.JSX.Element {
           </AnimatePresence>
         </div>
       </div>
+      )}
     </div>
   )
 }

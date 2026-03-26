@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useReviewStore } from '../../stores/review-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -13,6 +14,7 @@ import { GitPullRequest } from 'lucide-react'
 import { Card, CardContent } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { pageTransition } from '../../lib/motion'
 import type { PullRequest } from '../../types/bitbucket'
 import type { ReviewComment, ReviewHistoryEntry } from '../../types/review'
@@ -26,6 +28,7 @@ type Tab = 'diff' | 'review' | 'history'
  * with tab navigation. Default-exported for React.lazy() in registry.
  */
 export default function CodeReviewBotView(): React.JSX.Element {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<Tab>('diff')
 
   // Review store state and actions
@@ -338,6 +341,16 @@ export default function CodeReviewBotView(): React.JSX.Element {
       )}
 
       {/* Main content area */}
+      {effectiveRepos.length === 0 ? (
+        <EmptyState
+          icon={GitPullRequest}
+          title="No pull requests"
+          description="Configure your Bitbucket repositories in Settings to start reviewing pull requests with AI."
+          actionLabel="Open Settings"
+          onAction={() => navigate('/settings')}
+          className="flex-1"
+        />
+      ) : (
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel: PR list */}
         <div className="w-1/3 overflow-y-auto border-r border-border p-3">
@@ -393,6 +406,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
           </AnimatePresence>
         </div>
       </div>
+      )}
     </div>
   )
 }

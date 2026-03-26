@@ -1,15 +1,22 @@
 import * as React from "react"
 
 import { cn } from "@renderer/lib/utils"
+import { interactiveCardClasses } from "@renderer/lib/micro-interactions"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+function Card({
+  className,
+  interactive = false,
+  ...props
+}: React.ComponentProps<"div"> & { interactive?: boolean }) {
   return (
     <div
       data-slot="card"
       className={cn(
         "bg-card text-card-foreground rounded-[28px] border shadow-sm",
+        interactive && interactiveCardClasses,
         className
       )}
+      {...(interactive ? { tabIndex: 0, role: 'button' } : {})}
       {...props}
     />
   )

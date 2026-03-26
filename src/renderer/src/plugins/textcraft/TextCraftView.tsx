@@ -10,17 +10,14 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Wand2, Clock } from 'lucide-react'
+import { Wand2, Clock, PenLine } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { pageTransition } from '@renderer/lib/motion'
 import { Card, CardContent } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { Skeleton } from '@renderer/components/ui/skeleton'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import InputPanel from './InputPanel'
 import ControlsPanel from './ControlsPanel'
@@ -42,6 +39,8 @@ export default function TextCraftView(): React.JSX.Element {
   const [rightWidth, setRightWidth] = useState(33)
   const containerRef = useRef<HTMLDivElement>(null)
   const containerWidthRef = useRef(800)
+
+  const history = useTextCraftStore((s) => s.history)
 
   // Load history on mount
   useEffect(() => {
@@ -121,7 +120,16 @@ export default function TextCraftView(): React.JSX.Element {
             exit="exit"
             className="flex flex-1 overflow-hidden"
           >
-            <HistoryPanel />
+            {history.length === 0 ? (
+              <EmptyState
+                icon={PenLine}
+                title="No refinements yet"
+                description="Write or paste text in the input panel and refine it with AI to see your history here."
+                className="flex-1"
+              />
+            ) : (
+              <HistoryPanel />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

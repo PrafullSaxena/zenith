@@ -32,6 +32,7 @@ import { useNebulaStore } from '../../stores/nebula-store'
 import { Card, CardContent } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { pageTransition } from '../../lib/motion'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
@@ -52,6 +53,8 @@ export default function NebulaView(): React.JSX.Element {
   const activeTab = useNebulaStore((s) => s.activeTab)
   const setActiveTab = useNebulaStore((s) => s.setActiveTab)
   const loadNotes = useNebulaStore((s) => s.loadNotes)
+  const notes = useNebulaStore((s) => s.notes)
+  const createNote = useNebulaStore((s) => s.createNote)
   const activeNote = useNebulaStore((s) => s.activeNote)
   const saveNote = useNebulaStore((s) => s.saveNote)
   const isSaving = useNebulaStore((s) => s.isSaving)
@@ -374,8 +377,17 @@ export default function NebulaView(): React.JSX.Element {
                       </div>
                     )}
                   </div>
+                ) : notes.length === 0 ? (
+                  <EmptyState
+                    icon={BookOpen}
+                    title="No notes yet"
+                    description="Create your first note to start building your knowledge base with AI-powered search and summarization."
+                    actionLabel="Create Note"
+                    onAction={() => createNote()}
+                    className="flex-1"
+                  />
                 ) : (
-                  <div
+                  <EmptyState
                     icon={FileText}
                     title="No note selected"
                     description="Select a note from the sidebar or create a new one"

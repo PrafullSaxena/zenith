@@ -20,6 +20,7 @@ import { Card, CardContent } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { pageTransition } from '@renderer/lib/motion'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { LaunchpadTab, CloudProvider } from '../../types/launchpad'
@@ -45,6 +46,7 @@ export default function LaunchpadView(): React.JSX.Element {
   const setActiveTab = useLaunchpadStore((s) => s.setActiveTab)
   const setProvider = useLaunchpadStore((s) => s.setProvider)
   const clearEstimation = useLaunchpadStore((s) => s.clearEstimation)
+  const estimationHistory = useLaunchpadStore((s) => s.history)
   const loadHistory = useLaunchpadStore((s) => s.loadHistory)
 
   // Load history on mount
@@ -118,7 +120,17 @@ export default function LaunchpadView(): React.JSX.Element {
           {activeTab === 'ai-advisor' && <AiAdvisor />}
 
           {/* History tab */}
-          {activeTab === 'history' && <EstimationHistory />}
+          {activeTab === 'history' && (
+            estimationHistory.length === 0 ? (
+              <EmptyState
+                icon={Rocket}
+                title="No estimations yet"
+                description="Select a cloud provider and configure services to generate your first cost estimation."
+              />
+            ) : (
+              <EstimationHistory />
+            )
+          )}
 
           {/* Compare tab */}
           {activeTab === 'compare' && <ComparisonView />}

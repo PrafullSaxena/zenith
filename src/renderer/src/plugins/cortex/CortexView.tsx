@@ -18,6 +18,7 @@ import { Card, CardContent } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { pageTransition } from '@renderer/lib/motion'
 
 type CortexTab = 'insights' | 'code' | 'qa' | 'repos'
@@ -109,11 +110,23 @@ export default function CortexView(): React.JSX.Element {
             exit="exit"
             className="h-full"
           >
-            {activeTab === 'repos' && <RepoManager />}
+            {activeTab === 'repos' && (
+              repos.length === 0 ? (
+                <EmptyState
+                  icon={Brain}
+                  title="No repositories analyzed"
+                  description="Add a repository to get started with code analysis, insights, and documentation."
+                  actionLabel="Add Repository"
+                  onAction={() => setActiveTab('repos')}
+                />
+              ) : (
+                <RepoManager />
+              )
+            )}
             {activeTab === 'insights' && analysisResult ? (
               <InsightsPanel />
             ) : activeTab === 'insights' && !analysisResult ? (
-              <div
+              <EmptyState
                 icon={LayoutDashboard}
                 title="No insights yet"
                 description="Analyze a repository to see insights"
@@ -124,7 +137,7 @@ export default function CortexView(): React.JSX.Element {
             {activeTab === 'code' && analysisResult ? (
               <CodePanel />
             ) : activeTab === 'code' && !analysisResult ? (
-              <div
+              <EmptyState
                 icon={Code2}
                 title="No code to browse"
                 description="Analyze a repository first to browse code"
@@ -135,7 +148,7 @@ export default function CortexView(): React.JSX.Element {
             {activeTab === 'qa' && analysisResult ? (
               <QAPanel />
             ) : activeTab === 'qa' && !analysisResult ? (
-              <div
+              <EmptyState
                 icon={MessageSquare}
                 title="No codebase loaded"
                 description="Analyze a repository first to ask questions"
