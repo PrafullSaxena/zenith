@@ -70,19 +70,19 @@ export default function TableControls({ editor }: TableControlsProps): React.JSX
         icon={<Minus size={10} />}
         onClick={() => editor.chain().focus().deleteRow().run()}
         title="Delete Row"
-        variant="danger"
+        variant="destructive"
       />
       <CtrlBtn
         icon={<Minus size={10} className="rotate-90" />}
         onClick={() => editor.chain().focus().deleteColumn().run()}
         title="Delete Column"
-        variant="danger"
+        variant="destructive"
       />
       <CtrlBtn
         icon={<Trash2 size={10} />}
         onClick={() => editor.chain().focus().deleteTable().run()}
         title="Delete Table"
-        variant="danger"
+        variant="destructive"
       />
     </div>
   )

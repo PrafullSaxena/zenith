@@ -95,9 +95,9 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
   if (isLoading) {
     return (
       <div className="p-3 space-y-3">
-        <Skeleton variant="card" />
-        <Skeleton variant="card" />
-        <Skeleton variant="card" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
       </div>
     )
   }
@@ -176,7 +176,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                         {category.name}
                       </span>
                       {selectedCount > 0 && (
-                        <Badge variant="accent">{selectedCount}</Badge>
+                        <Badge variant="default">{selectedCount}</Badge>
                       )}
                     </div>
                     <span className="text-[10px] text-[hsl(var(--muted-foreground))]/40">

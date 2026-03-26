@@ -530,7 +530,7 @@ export default function ResultsGrid({
         {/* Load-more spinner at bottom */}
         {isLoading && rows.length > 0 && (
           <div className="flex items-center justify-center py-3">
-            <Skeleton variant="text" lines={2} />
+            <Skeleton className="h-4 w-full" lines={2} />
           </div>
         )}
 

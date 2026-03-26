@@ -45,7 +45,7 @@ export function SettingsPanel({
           Disconnect
         </Button>
       ) : (
-        <Button variant="primary" size="sm" onClick={onConnect}>
+        <Button variant="default" size="sm" onClick={onConnect}>
           Connect to Bitbucket
         </Button>
       )}

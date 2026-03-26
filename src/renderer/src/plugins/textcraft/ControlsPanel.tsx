@@ -169,7 +169,7 @@ export default function ControlsPanel(): React.JSX.Element {
 
         {isStreaming ? (
           <Button
-            variant="danger"
+            variant="destructive"
             size="lg"
             className="w-full"
             onClick={handleCancel}
@@ -178,7 +178,7 @@ export default function ControlsPanel(): React.JSX.Element {
           </Button>
         ) : (
           <Button
-            variant="primary"
+            variant="default"
             size="lg"
             className="w-full"
             onClick={handleRefine}

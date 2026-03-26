@@ -41,7 +41,7 @@ export default function DeleteConfirmDialog({
           Cancel
         </Button>
         <Button
-          variant="primary"
+          variant="default"
           onClick={onConfirm}
           className="bg-red-500/80 hover:bg-red-500 text-white"
         >

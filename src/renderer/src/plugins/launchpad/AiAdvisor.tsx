@@ -135,7 +135,7 @@ export default function AiAdvisor(): React.JSX.Element {
             {EXAMPLE_PROMPTS.map((prompt, i) => (
               <Card
                 key={i}
-                variant="interactive"
+                variant="default"
                 className="p-3 cursor-pointer"
                 onClick={() => handleExamplePrompt(prompt)}
               >
@@ -181,7 +181,7 @@ export default function AiAdvisor(): React.JSX.Element {
       {/* Streaming controls */}
       {isStreaming && (
         <div className="shrink-0 border-t border-white/[0.06] px-4 py-2 flex justify-center">
-          <Button variant="danger" size="sm" onClick={cancelAiChat}>
+          <Button variant="destructive" size="sm" onClick={cancelAiChat}>
             <Square size={12} />
             Stop
           </Button>
@@ -213,7 +213,7 @@ export default function AiAdvisor(): React.JSX.Element {
               </p>
               <div className="flex flex-wrap gap-1 mt-2">
                 {pendingSuggestions.services.map((svc, i) => (
-                  <Badge key={i} variant="accent">
+                  <Badge key={i} variant="default">
                     {svc.serviceId}
                   </Badge>
                 ))}
@@ -229,7 +229,7 @@ export default function AiAdvisor(): React.JSX.Element {
             </button>
           </div>
           <div className="mt-3 flex items-center gap-2">
-            <Button variant="primary" size="sm" onClick={handleApply}>
+            <Button variant="default" size="sm" onClick={handleApply}>
               Apply Suggestions
             </Button>
             <Button variant="default" size="sm" onClick={dismissSuggestions}>

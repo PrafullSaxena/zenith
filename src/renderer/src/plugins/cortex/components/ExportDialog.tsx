@@ -283,7 +283,7 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
           Cancel
         </Button>
         <Button
-          variant="primary"
+          variant="default"
           onClick={handleExport}
           disabled={isExporting || selectedSections.size === 0}
         >

@@ -191,12 +191,12 @@ export default function ComparisonView(): React.JSX.Element {
                   </span>
                   <div className="flex items-center gap-1.5">
                     {isCurrentProvider && (
-                      <Badge variant="accent" className="text-[9px]">
+                      <Badge variant="default" className="text-[9px]">
                         current
                       </Badge>
                     )}
                     {isCheapest && (
-                      <Badge variant="success" className="text-[9px]">
+                      <Badge variant="default" className="text-[9px]">
                         Best Value
                       </Badge>
                     )}

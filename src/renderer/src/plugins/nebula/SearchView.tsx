@@ -147,7 +147,7 @@ export default function SearchView(): React.JSX.Element {
           <Search size={15} className="text-primary" />
           <h3 className="text-sm font-medium text-foreground">Search notes</h3>
           {searchResults.length > 0 && searchQuery.trim() && (
-            <Badge variant="accent">{searchResults.length}</Badge>
+            <Badge variant="default">{searchResults.length}</Badge>
           )}
           <ChevronDown
             size={14}
@@ -174,9 +174,9 @@ export default function SearchView(): React.JSX.Element {
             <div className="flex-1 overflow-y-auto">
               {isSearching ? (
                 <div className="space-y-2">
-                  <Skeleton variant="card" />
-                  <Skeleton variant="card" />
-                  <Skeleton variant="card" />
+                  <Skeleton className="h-24 w-full rounded-xl" />
+                  <Skeleton className="h-24 w-full rounded-xl" />
+                  <Skeleton className="h-24 w-full rounded-xl" />
                 </div>
               ) : searchQuery.trim() && searchResults.length === 0 ? (
                 <div
@@ -202,7 +202,7 @@ export default function SearchView(): React.JSX.Element {
                   {searchResults.map((result) => (
                     <motion.div key={result.id} variants={staggerItem}>
                       <Card
-                        variant="interactive"
+                        variant="default"
                         className="cursor-pointer p-4"
                         onClick={() => handleResultClick(result.id)}
                       >
@@ -289,7 +289,7 @@ export default function SearchView(): React.JSX.Element {
                 </Button>
               ) : (
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={handleAskQuestion}
                   disabled={!questionText.trim()}
                 >

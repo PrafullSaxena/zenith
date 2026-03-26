@@ -93,7 +93,7 @@ export default function ProviderSelector({ onSelect }: ProviderSelectorProps): R
           return (
             <motion.div key={card.id} variants={staggerItem}>
               <Card
-                variant="interactive"
+                variant="default"
                 className="cursor-pointer p-6 text-left h-full"
                 style={
                   {

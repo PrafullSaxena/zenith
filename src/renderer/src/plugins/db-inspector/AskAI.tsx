@@ -227,13 +227,13 @@ export default function AskAI({
           />
           <div className="flex flex-col gap-1">
             {isStreaming ? (
-              <Button variant="danger" size="sm" onClick={onCancel}>
+              <Button variant="destructive" size="sm" onClick={onCancel}>
                 <Square size={12} />
                 Stop
               </Button>
             ) : (
               <Button
-                variant="primary"
+                variant="default"
                 size="sm"
                 onClick={handleSubmit}
                 disabled={!canAsk || !question.trim()}

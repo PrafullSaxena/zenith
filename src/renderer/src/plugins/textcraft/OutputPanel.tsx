@@ -348,7 +348,7 @@ export default function OutputPanel(): React.JSX.Element {
                 <span className="animate-pulse text-[var(--primary)] text-sm">Refining...</span>
               </>
             ) : (
-              <Skeleton variant="text" lines={6} />
+              <Skeleton className="h-4 w-full" lines={6} />
             )}
           </div>
         )}

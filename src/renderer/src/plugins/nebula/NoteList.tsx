@@ -335,7 +335,7 @@ function NoteItem({
 
   return (
     <Card
-      variant="interactive"
+      variant="default"
       className={`relative mx-2 mb-1 cursor-pointer p-3 ${
         isActive ? 'border-l-2 border-primary' : ''
       }`}
@@ -368,7 +368,7 @@ function NoteItem({
         {note.tags && note.tags.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
             {note.tags.map((tag) => (
-              <Badge key={tag.id} variant="accent" className="text-[9px] px-1.5 py-0.5">
+              <Badge key={tag.id} variant="default" className="text-[9px] px-1.5 py-0.5">
                 {tag.label}
               </Badge>
             ))}

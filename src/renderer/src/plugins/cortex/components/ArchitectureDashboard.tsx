@@ -673,7 +673,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
         ) : isHLDGenerating ? (
           <div className="p-4 space-y-3">
             <p className="text-xs text-muted-foreground">Generating design document...</p>
-            <Skeleton variant="text" lines={4} />
+            <Skeleton className="h-4 w-full" lines={4} />
           </div>
         ) : (
           <Card className="p-5 text-center">

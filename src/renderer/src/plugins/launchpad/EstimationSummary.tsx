@@ -287,7 +287,7 @@ export default function EstimationSummary(): React.JSX.Element {
               className="flex-1"
             />
             <Button
-              variant="primary"
+              variant="default"
               size="sm"
               onClick={() => void handleSave()}
               disabled={isSaving || !saveName.trim()}
@@ -301,7 +301,7 @@ export default function EstimationSummary(): React.JSX.Element {
       {/* Action buttons */}
       <div className="border-t border-white/[0.06] px-4 py-3 flex flex-col gap-2">
         <Button
-          variant="primary"
+          variant="default"
           size="sm"
           onClick={() => setShowSaveInput((prev) => !prev)}
           disabled={selectedServices.length === 0}
@@ -324,7 +324,7 @@ export default function EstimationSummary(): React.JSX.Element {
           </Button>
 
           <Button
-            variant="danger"
+            variant="destructive"
             size="sm"
             onClick={clearEstimation}
           >

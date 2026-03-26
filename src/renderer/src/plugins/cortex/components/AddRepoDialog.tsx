@@ -193,7 +193,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
           Cancel
         </Button>
         <Button
-          variant="primary"
+          variant="default"
           onClick={handleSubmit}
           disabled={!isValidRepoUrl(url) || !name || !branch || cloning}
         >

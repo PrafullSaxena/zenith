@@ -70,7 +70,7 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
 
   return (
     <motion.div variants={staggerItem}>
-      <Card variant="interactive" className="cursor-pointer" onClick={() => onLoad(entry)}>
+      <Card variant="default" className="cursor-pointer" onClick={() => onLoad(entry)}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
@@ -109,7 +109,7 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
               Load
             </Button>
             <Button
-              variant="danger"
+              variant="destructive"
               size="sm"
               onClick={handleDelete}
               aria-label="Delete estimation"

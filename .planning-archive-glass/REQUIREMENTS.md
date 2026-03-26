@@ -1,0 +1,179 @@
+# Requirements: Zenith UI Revamp — "Obsidian Glass"
+
+**Defined:** 2026-03-24
+**Core Value:** Every screen in Zenith must feel like the same app — consistent glass styling, shared animation, unified components.
+
+## v1 Requirements
+
+Requirements for the UI revamp. Each maps to roadmap phases.
+
+### Foundation
+
+- [x] **FOUND-01**: Glass design tokens added to CSS @theme block (--glass-bg, --glass-border, --glass-blur, --glass-glow) that adapt per theme
+- [x] **FOUND-02**: Shared motion variants module created at lib/motion.ts with stagger, page transition, modal, hover lift, and slide panel variants
+- [x] **FOUND-03**: Plus Jakarta Sans Variable font installed and set as --font-sans
+- [x] **FOUND-04**: Geist Mono font installed and set as --font-mono
+- [x] **FOUND-05**: Typography scale CSS classes defined (hero, h1, h2, h3, body, small, caption, mono)
+- [x] **FOUND-06**: Timing tokens (--duration-instant/fast/normal/slow/slower) and easing tokens (--ease-out/spring/smooth) defined in :root
+- [x] **FOUND-07**: Two-tier blur strategy implemented (translucent-only for nested surfaces, blur for top-level glass)
+
+### Components
+
+- [x] **COMP-01**: GlassCard component with default, interactive, and selected variants
+- [x] **COMP-02**: GlassSurface component for headers, toolbars, panel backgrounds
+- [x] **COMP-03**: GlassButton component with default, primary, danger, ghost variants and sm/md/lg sizes
+- [x] **COMP-04**: GlassInput component with focus glow and error state
+- [x] **COMP-05**: GlassSelect component with glass dropdown and selected accent
+- [x] **COMP-06**: GlassTab component with sliding underline animation
+- [x] **COMP-07**: GlassBadge component with success, error, warning, info, accent, neutral variants
+- [x] **COMP-08**: GlassModal component with backdrop blur and scale entrance/exit
+- [x] **COMP-09**: GlassToast component with slide entrance, auto-dismiss progress bar, and type variants
+- [x] **COMP-10**: GlassSkeleton component with shimmer animation and text/card/circle/table variants
+- [x] **COMP-11**: EmptyState component with floating SVG illustration, parallax mouse effect, and CTA button
+
+### Themes
+
+- [x] **THEME-01**: Midnight Bloom theme defined (magenta-orchid accent on violet-black)
+- [x] **THEME-02**: Copper Forge theme defined (burnished copper accent on warm charcoal)
+- [x] **THEME-03**: Ocean Depth theme defined (aquamarine accent on abyssal blue)
+- [x] **THEME-04**: Nebula Dust theme defined (stellar pink-coral accent on deep space purple)
+- [x] **THEME-05**: Obsidian theme defined (pure monochrome, zero saturation, silver on near-black)
+- [x] **THEME-06**: Jade Temple theme defined (jade green accent on dark forest green)
+- [x] **THEME-07**: Visual theme selector grid in Settings with Classic (12) and New Collection (6) sections
+- [x] **THEME-08**: Each theme card shows name, 4 color dots, mini preview strip; active theme has accent border glow
+- [x] **THEME-09**: All 12 legacy themes converted from hex to OKLch color space
+- [x] **THEME-10**: Glass components validated across all 18 themes (visual QA)
+
+### Core Pages Migration
+
+- [x] **CORE-01**: Mission Control Dashboard migrated — GlassCards for stats, staggered entrance, AnimatedCounter reuse
+- [x] **CORE-02**: Activity Log migrated — GlassCard entries, GlassSurface toolbar, GlassBadge status
+- [x] **CORE-03**: About View migrated — GlassCards for capabilities, stagger entrance, glass timeline
+- [x] **CORE-04**: Settings migrated — GlassTab sidebar, theme grid selector, GlassCard sections
+- [x] **CORE-05**: Sidebar upgraded — hover scale + glow ring, active bar slide animation, tooltip delay + fade
+
+### Plugin Migration
+
+- [x] **PLUG-01**: Cortex migrated — shared GlassCard/GlassTab replacing inline glass classes, shared motion variants
+- [x] **PLUG-02**: CodeReviewBot migrated — PR list GlassCards, review comments GlassCards, GlassTab bar, skeleton loaders
+- [x] **PLUG-03**: DbInspector migrated — GlassSelect connection manager, glass tree explorer, glass-wrapped console, GlassTab bar
+- [x] **PLUG-04**: Launchpad migrated — GlassCard provider selector, GlassInput/GlassSelect forms, GlassTab bar, AnimatedCounter
+- [x] **PLUG-05**: Nebula migrated — GlassCard note list, GlassSurface editor wrapper, GlassBadge tags, GlassTab bar
+- [x] **PLUG-06**: TextCraft migrated — GlassCard panels, GlassSelect controls, GlassTab bar, GlassButton actions
+
+### 3D Visualizations
+
+- [x] **3D-01**: Dashboard Activity Mesh — 3D wireframe sphere with activity nodes, auto-rotate, hover tooltips, max 50 nodes
+- [x] **3D-02**: Nebula 3D Knowledge Graph — port MindGraph3D architecture, notes as nodes, tag edges, orbit controls, 2D/3D toggle
+- [x] **3D-03**: Launchpad Cost Treemap — 3D extruded blocks, height = cost proportion, hover lift + tooltip, max 20 blocks
+- [x] **3D-04**: DbInspector Schema Orb — floating table planes, FK relationship lines, orbit controls, toggle alongside mermaid, max 30 tables
+- [x] **3D-05**: Error boundaries + Suspense + lazy Canvas + 2D fallback for all 4 new 3D components
+- [x] **3D-06**: All 3D components respect usePrefersReducedMotion (disable auto-rotate, reduce particles)
+
+### Micro-Interactions & Polish
+
+- [x] **MICRO-01**: Button press feedback — scale(0.97) on press for all GlassButtons
+- [x] **MICRO-02**: Icon morph — Copy to Check spring animation on copy actions, revert after 2s
+- [x] **MICRO-03**: Staggered card entrances — all card grids use shared staggerItem variant
+- [x] **MICRO-04**: Tab sliding underline — active underline slides to new tab with layout animation
+- [x] **MICRO-05**: Skeleton loaders — all loading states replaced with contextual shimmer (card/table/text shapes)
+- [x] **MICRO-06**: Scroll progress bar — thin accent bar at top of scrollable containers
+- [x] **MICRO-07**: Scroll shadows — top/bottom fade shadows when content overflows
+- [x] **MICRO-08**: Sidebar hover glow — scale(1.08) + accent glow ring on icon hover
+- [x] **MICRO-09**: Sidebar active bar — left accent bar slides in with height animation on active icon
+- [x] **MICRO-10**: Tooltip animation — 400ms delay, then fade + translateX(4px) from left
+
+## v2 Requirements
+
+Deferred to future release. Tracked but not in current roadmap.
+
+### Future Enhancements
+
+- **V2-01**: Light mode / light themes
+- **V2-02**: Command palette (Cmd+K) global search
+- **V2-03**: Success celebration effects (confetti/sparkle on significant actions)
+- **V2-04**: Animated empty state SVG illustrations (custom per plugin)
+- **V2-05**: Responsive layouts for variable window sizes
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Light mode | Dark-only by design decision — would double theme work |
+| New plugin functionality | UI-only revamp, no feature additions |
+| Mobile/responsive layouts | Desktop Electron app only |
+| Replacing Tailwind with a UI library | Existing Tailwind v4 + custom components is the chosen approach |
+| New npm dependencies | All needed libs already installed |
+| Per-component theme overrides | Anti-feature per research — creates drift |
+| Heavy animated backgrounds | Anti-feature per research — GPU drain with negative UX impact |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| FOUND-01 | Phase 1 | Complete |
+| FOUND-02 | Phase 1 | Complete |
+| FOUND-03 | Phase 1 | Complete |
+| FOUND-04 | Phase 1 | Complete |
+| FOUND-05 | Phase 1 | Complete |
+| FOUND-06 | Phase 1 | Complete |
+| FOUND-07 | Phase 1 | Complete |
+| COMP-01 | Phase 2 | Complete |
+| COMP-02 | Phase 2 | Complete |
+| COMP-03 | Phase 2 | Complete |
+| COMP-04 | Phase 2 | Complete |
+| COMP-05 | Phase 2 | Complete |
+| COMP-06 | Phase 2 | Complete |
+| COMP-07 | Phase 2 | Complete |
+| COMP-08 | Phase 2 | Complete |
+| COMP-09 | Phase 2 | Complete |
+| COMP-10 | Phase 2 | Complete |
+| COMP-11 | Phase 2 | Complete |
+| THEME-01 | Phase 5 | Complete |
+| THEME-02 | Phase 5 | Complete |
+| THEME-03 | Phase 5 | Complete |
+| THEME-04 | Phase 5 | Complete |
+| THEME-05 | Phase 5 | Complete |
+| THEME-06 | Phase 5 | Complete |
+| THEME-07 | Phase 5 | Complete |
+| THEME-08 | Phase 5 | Complete |
+| THEME-09 | Phase 5 | Complete |
+| THEME-10 | Phase 5 | Complete |
+| CORE-01 | Phase 3 | Complete |
+| CORE-02 | Phase 3 | Complete |
+| CORE-03 | Phase 3 | Complete |
+| CORE-04 | Phase 3 | Complete |
+| CORE-05 | Phase 3 | Complete |
+| PLUG-01 | Phase 4 | Complete |
+| PLUG-02 | Phase 4 | Complete |
+| PLUG-03 | Phase 4 | Complete |
+| PLUG-04 | Phase 4 | Complete |
+| PLUG-05 | Phase 4 | Complete |
+| PLUG-06 | Phase 4 | Complete |
+| 3D-01 | Phase 6 | Complete |
+| 3D-02 | Phase 6 | Complete |
+| 3D-03 | Phase 6 | Complete |
+| 3D-04 | Phase 6 | Complete |
+| 3D-05 | Phase 6 | Complete |
+| 3D-06 | Phase 6 | Complete |
+| MICRO-01 | Phase 7 | Complete |
+| MICRO-02 | Phase 7 | Complete |
+| MICRO-03 | Phase 7 | Complete |
+| MICRO-04 | Phase 7 | Complete |
+| MICRO-05 | Phase 7 | Complete |
+| MICRO-06 | Phase 7 | Complete |
+| MICRO-07 | Phase 7 | Complete |
+| MICRO-08 | Phase 7 | Complete |
+| MICRO-09 | Phase 7 | Complete |
+| MICRO-10 | Phase 7 | Complete |
+
+**Coverage:**
+- v1 requirements: 55 total
+- Mapped to phases: 55
+- Unmapped: 0
+
+---
+*Requirements defined: 2026-03-24*
+*Last updated: 2026-03-24 after roadmap creation*

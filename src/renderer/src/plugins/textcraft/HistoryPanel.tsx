@@ -49,7 +49,7 @@ export default function HistoryPanel(): React.JSX.Element {
       >
         {history.map((entry) => (
           <motion.div key={entry.id} variants={staggerItem}>
-            <Card variant="interactive" className="cursor-pointer group">
+            <Card variant="default" className="cursor-pointer group">
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   {/* Input preview */}
@@ -59,7 +59,7 @@ export default function HistoryPanel(): React.JSX.Element {
 
                   {/* Metadata row */}
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <Badge variant="accent">
+                    <Badge variant="default">
                       {FORMAT_LABELS[entry.options.format] || entry.options.format}
                     </Badge>
                     {entry.options.tones.map((tone) => (

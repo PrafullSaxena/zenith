@@ -127,7 +127,7 @@ export default function ConnectionManager({
               {/* Connect / Disconnect button */}
               {isConnected ? (
                 <Button
-                  variant="danger"
+                  variant="destructive"
                   size="sm"
                   className="w-full justify-center"
                   onClick={() => onDisconnect(activeConnection.id)}
@@ -137,7 +137,7 @@ export default function ConnectionManager({
                 </Button>
               ) : (
                 <Button
-                  variant="primary"
+                  variant="default"
                   size="sm"
                   className="w-full justify-center"
                   onClick={() => onConnect(activeConnection.id)}

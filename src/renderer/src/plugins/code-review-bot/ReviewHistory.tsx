@@ -23,9 +23,9 @@ export function ReviewHistory({
   if (isLoading) {
     return (
       <div className="space-y-2 p-2">
-        <Skeleton variant="card" />
-        <Skeleton variant="card" />
-        <Skeleton variant="card" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
       </div>
     )
   }
@@ -49,7 +49,7 @@ export function ReviewHistory({
     >
       {history.map((entry) => (
         <motion.div key={entry.id} variants={staggerItem}>
-          <Card variant="interactive" className="flex items-center gap-3">
+          <Card variant="default" className="flex items-center gap-3">
             {/* PR title with external link */}
             <div className="min-w-0 flex-1">
               <button

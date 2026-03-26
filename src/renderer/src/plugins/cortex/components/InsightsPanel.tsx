@@ -40,7 +40,7 @@ const INSIGHT_TABS = [
 function TabFallback(): React.JSX.Element {
   return (
     <div className="p-4 space-y-3">
-      <Skeleton variant="text" lines={4} />
+      <Skeleton className="h-4 w-full" lines={4} />
     </div>
   )
 }

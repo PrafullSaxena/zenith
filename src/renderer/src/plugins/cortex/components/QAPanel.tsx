@@ -318,7 +318,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
               {suggestedQuestions.map((q) => (
                 <Card
                   key={q}
-                  variant="interactive"
+                  variant="default"
                   className="px-4 py-2.5 text-xs text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-all text-left disabled:opacity-40 cursor-pointer"
                   onClick={() => { if (!isQAStreaming && hasAgent) handleSend(q) }}
                 >

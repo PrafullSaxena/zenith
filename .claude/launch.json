@@ -12,6 +12,12 @@
       "runtimeExecutable": "/opt/homebrew/bin/node",
       "runtimeArgs": ["node_modules/electron-vite/bin/electron-vite.js", "preview"],
       "port": 5173
+    },
+    {
+      "name": "palette-preview",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["-e", "const h=require('http'),f=require('fs'),p=require('path');h.createServer((q,r)=>{r.writeHead(200,{'Content-Type':'text/html'});r.end(f.readFileSync(p.join(process.cwd(),'palette-preview','index.html')))}).listen(3456)"],
+      "port": 3456
     }
   ]
 }

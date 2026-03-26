@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zenith — Reference Theme</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { font-family: 'Inter', system-ui, sans-serif; }
+</style>
+</head>
+<body class="min-h-screen" style="background:radial-gradient(circle at top, hsl(263 70% 58% / 0.16), transparent 26%), hsl(240 10% 4%); color:hsl(0 0% 95%)">
+<div class="mx-auto max-w-7xl p-6 md:p-10">
+<div class="grid gap-6 lg:grid-cols-[260px_1fr]">
+
+<!-- Sidebar -->
+<aside class="rounded-[28px] border p-5 shadow-2xl" style="background:hsl(240 6% 8% / 0.88);border-color:hsl(240 4% 16%);backdrop-filter:blur(14px)">
+  <div class="mb-8 flex items-center gap-3">
+    <div class="flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-semibold" style="background:hsl(263 70% 58%);color:white">Z</div>
+    <div>
+      <div class="font-semibold">Zenith Ops</div>
+      <div class="text-sm" style="color:hsl(240 5% 65%)">Dark theme preview</div>
+    </div>
+  </div>
+  <div class="space-y-2">
+    <div class="rounded-2xl px-4 py-3 text-sm font-medium" style="background:hsl(263 70% 58% / 0.18);color:white;border:1px solid hsl(263 70% 58% / 0.35)">Overview</div>
+    <div class="rounded-2xl px-4 py-3 text-sm font-medium" style="color:hsl(240 5% 65%);border:1px solid transparent">Incidents</div>
+    <div class="rounded-2xl px-4 py-3 text-sm font-medium" style="color:hsl(240 5% 65%);border:1px solid transparent">Deployments</div>
+    <div class="rounded-2xl px-4 py-3 text-sm font-medium" style="color:hsl(240 5% 65%);border:1px solid transparent">Metrics</div>
+    <div class="rounded-2xl px-4 py-3 text-sm font-medium" style="color:hsl(240 5% 65%);border:1px solid transparent">Audit Logs</div>
+    <div class="rounded-2xl px-4 py-3 text-sm font-medium" style="color:hsl(240 5% 65%);border:1px solid transparent">Settings</div>
+  </div>
+
+  <div class="mt-8 rounded-3xl border p-4" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+    <div class="mb-3 text-sm font-medium">Palette tokens</div>
+    <div class="space-y-3">
+      <div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl border" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)"></div><div><div class="text-sm">--background</div><div class="text-xs" style="color:hsl(240 5% 65%)">#09090b</div></div></div>
+      <div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl border" style="background:hsl(240 6% 8%);border-color:hsl(240 4% 16%)"></div><div><div class="text-sm">--card</div><div class="text-xs" style="color:hsl(240 5% 65%)">#131318</div></div></div>
+      <div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl border" style="background:hsl(263 70% 58%);border-color:hsl(240 4% 16%)"></div><div><div class="text-sm">--primary</div><div class="text-xs" style="color:hsl(240 5% 65%)">#7c3aed</div></div></div>
+      <div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl border" style="background:hsl(240 4% 16%);border-color:hsl(240 4% 16%)"></div><div><div class="text-sm">--secondary</div><div class="text-xs" style="color:hsl(240 5% 65%)">#27272d</div></div></div>
+      <div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl border" style="background:hsl(240 5% 65%);border-color:hsl(240 4% 16%)"></div><div><div class="text-sm">--muted-fg</div><div class="text-xs" style="color:hsl(240 5% 65%)">#a1a1aa</div></div></div>
+      <div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl border" style="background:hsl(0 63% 51%);border-color:hsl(240 4% 16%)"></div><div><div class="text-sm">--destructive</div><div class="text-xs" style="color:hsl(240 5% 65%)">#d13434</div></div></div>
+      <div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl border" style="background:hsl(142 71% 45%);border-color:hsl(240 4% 16%)"></div><div><div class="text-sm">--success</div><div class="text-xs" style="color:hsl(240 5% 65%)">#21c55d</div></div></div>
+      <div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl border" style="background:hsl(38 92% 50%);border-color:hsl(240 4% 16%)"></div><div><div class="text-sm">--warning</div><div class="text-xs" style="color:hsl(240 5% 65%)">#f59e0b</div></div></div>
+      <div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl border" style="background:hsl(217 91% 60%);border-color:hsl(240 4% 16%)"></div><div><div class="text-sm">--info</div><div class="text-xs" style="color:hsl(240 5% 65%)">#3b82f6</div></div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="space-y-6">
+
+  <!-- Header -->
+  <section class="rounded-[28px] border p-5 shadow-2xl" style="background:hsl(240 6% 8% / 0.88);border-color:hsl(240 4% 16%);backdrop-filter:blur(14px)">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <div class="mb-2 inline-flex rounded-full border px-3 py-1 text-xs font-medium" style="border-color:hsl(240 4% 16%);color:hsl(240 5% 65%)">Applied theme system</div>
+        <h1 class="text-3xl font-semibold tracking-tight md:text-4xl">Operational dashboard mock</h1>
+        <p class="mt-2 max-w-2xl text-sm md:text-base" style="color:hsl(240 5% 65%)">This is an actual UI composition using your tokens, not a lazy row of color chips pretending to be design.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2 rounded-2xl border px-4 py-3" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(240 5% 65%)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span style="color:hsl(240 5% 65%)">Search anything</span>
+        </div>
+        <button class="rounded-2xl px-4 py-3 font-medium" style="background:hsl(263 70% 58%);color:white">Deploy Update</button>
+        <button class="rounded-2xl border p-3" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Metrics -->
+  <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div class="rounded-[24px] border p-5 shadow-xl" style="background:hsl(240 6% 8%);border-color:hsl(240 4% 16%)">
+      <div class="mb-5 flex items-start justify-between">
+        <div><div class="text-sm" style="color:hsl(240 5% 65%)">System Health</div><div class="mt-2 text-3xl font-semibold">99.94%</div></div>
+        <div class="rounded-2xl p-3" style="background:hsl(142 71% 45% / 0.13);color:hsl(142 71% 45%)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm"><span style="color:hsl(142 71% 45%)">↑ +0.12%</span><span style="color:hsl(240 5% 65%)">vs previous hour</span></div>
+    </div>
+    <div class="rounded-[24px] border p-5 shadow-xl" style="background:hsl(240 6% 8%);border-color:hsl(240 4% 16%)">
+      <div class="mb-5 flex items-start justify-between">
+        <div><div class="text-sm" style="color:hsl(240 5% 65%)">Latency</div><div class="mt-2 text-3xl font-semibold">184ms</div></div>
+        <div class="rounded-2xl p-3" style="background:hsl(217 91% 60% / 0.13);color:hsl(217 91% 60%)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm"><span style="color:hsl(217 91% 60%)">↓ -22ms</span><span style="color:hsl(240 5% 65%)">vs previous hour</span></div>
+    </div>
+    <div class="rounded-[24px] border p-5 shadow-xl" style="background:hsl(240 6% 8%);border-color:hsl(240 4% 16%)">
+      <div class="mb-5 flex items-start justify-between">
+        <div><div class="text-sm" style="color:hsl(240 5% 65%)">Warnings</div><div class="mt-2 text-3xl font-semibold">12</div></div>
+        <div class="rounded-2xl p-3" style="background:hsl(38 92% 50% / 0.13);color:hsl(38 92% 50%)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm"><span style="color:hsl(38 92% 50%)">↑ +3</span><span style="color:hsl(240 5% 65%)">vs previous hour</span></div>
+    </div>
+    <div class="rounded-[24px] border p-5 shadow-xl" style="background:hsl(240 6% 8%);border-color:hsl(240 4% 16%)">
+      <div class="mb-5 flex items-start justify-between">
+        <div><div class="text-sm" style="color:hsl(240 5% 65%)">Failures</div><div class="mt-2 text-3xl font-semibold">2</div></div>
+        <div class="rounded-2xl p-3" style="background:hsl(0 63% 51% / 0.13);color:hsl(0 63% 51%)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm"><span style="color:hsl(0 63% 51%)">↓ -1</span><span style="color:hsl(240 5% 65%)">vs previous hour</span></div>
+    </div>
+  </section>
+
+  <!-- Incident stream + Action panel -->
+  <section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+    <div class="rounded-[28px] border p-5 shadow-2xl" style="background:hsl(240 6% 8%);border-color:hsl(240 4% 16%)">
+      <div class="mb-6 flex items-center justify-between">
+        <div><h2 class="text-xl font-semibold">Incident stream</h2><p class="text-sm" style="color:hsl(240 5% 65%)">Status colors against your dark surfaces.</p></div>
+        <div class="rounded-full border px-3 py-1 text-xs" style="border-color:hsl(240 4% 16%);color:hsl(240 5% 65%)">Live</div>
+      </div>
+      <div class="space-y-4">
+        <div class="flex flex-col gap-4 rounded-[22px] border p-4 md:flex-row md:items-center md:justify-between" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+          <div class="flex items-center gap-4">
+            <div class="h-3 w-3 rounded-full" style="background:hsl(38 92% 50%);box-shadow:0 0 20px hsl(38 92% 50%)"></div>
+            <div><div class="font-medium">Provider sync delay</div><div class="text-sm" style="color:hsl(240 5% 65%)">Data Pipeline</div></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="rounded-full px-3 py-1 text-xs font-medium" style="background:hsl(38 92% 50% / 0.13);color:hsl(38 92% 50%)">Warning</span>
+            <span class="text-sm" style="color:hsl(240 5% 65%)">ETA 24m</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-4 rounded-[22px] border p-4 md:flex-row md:items-center md:justify-between" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+          <div class="flex items-center gap-4">
+            <div class="h-3 w-3 rounded-full" style="background:hsl(217 91% 60%);box-shadow:0 0 20px hsl(217 91% 60%)"></div>
+            <div><div class="font-medium">OSRM fallback triggered</div><div class="text-sm" style="color:hsl(240 5% 65%)">Routing</div></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="rounded-full px-3 py-1 text-xs font-medium" style="background:hsl(217 91% 60% / 0.13);color:hsl(217 91% 60%)">Info</span>
+            <span class="text-sm" style="color:hsl(240 5% 65%)">ETA Stable</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-4 rounded-[22px] border p-4 md:flex-row md:items-center md:justify-between" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+          <div class="flex items-center gap-4">
+            <div class="h-3 w-3 rounded-full" style="background:hsl(142 71% 45%);box-shadow:0 0 20px hsl(142 71% 45%)"></div>
+            <div><div class="font-medium">Credential rotation complete</div><div class="text-sm" style="color:hsl(240 5% 65%)">Platform</div></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="rounded-full px-3 py-1 text-xs font-medium" style="background:hsl(142 71% 45% / 0.13);color:hsl(142 71% 45%)">Success</span>
+            <span class="text-sm" style="color:hsl(240 5% 65%)">ETA Done</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-4 rounded-[22px] border p-4 md:flex-row md:items-center md:justify-between" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+          <div class="flex items-center gap-4">
+            <div class="h-3 w-3 rounded-full" style="background:hsl(0 63% 51%);box-shadow:0 0 20px hsl(0 63% 51%)"></div>
+            <div><div class="font-medium">One stale market cache</div><div class="text-sm" style="color:hsl(240 5% 65%)">Analytics</div></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="rounded-full px-3 py-1 text-xs font-medium" style="background:hsl(0 63% 51% / 0.13);color:hsl(0 63% 51%)">Critical</span>
+            <span class="text-sm" style="color:hsl(240 5% 65%)">ETA 9m</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <div class="rounded-[28px] border p-5 shadow-2xl" style="background:hsl(240 6% 8%);border-color:hsl(240 4% 16%)">
+        <h2 class="mb-4 text-xl font-semibold">Action panel</h2>
+        <div class="space-y-3">
+          <button class="w-full rounded-2xl px-4 py-3 text-left font-medium" style="background:hsl(263 70% 58%);color:white">Promote build to production</button>
+          <button class="w-full rounded-2xl border px-4 py-3 text-left font-medium" style="background:hsl(240 4% 16%);border-color:hsl(240 4% 16%)">Review incident details</button>
+          <button class="w-full rounded-2xl px-4 py-3 text-left font-medium" style="background:hsl(0 63% 51%);color:white">Roll back deployment</button>
+        </div>
+      </div>
+
+      <div class="rounded-[28px] border p-5 shadow-2xl" style="background:hsl(240 6% 8%);border-color:hsl(240 4% 16%)">
+        <h2 class="mb-4 text-xl font-semibold">Notification styles</h2>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3 rounded-2xl border p-4" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(142 71% 45%)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div><div class="font-medium">Deployment completed</div><div class="text-sm" style="color:hsl(240 5% 65%)">Success state uses green without burning the eyes.</div></div>
+          </div>
+          <div class="flex items-start gap-3 rounded-2xl border p-4" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(38 92% 50%)" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div><div class="font-medium">Threshold nearing limit</div><div class="text-sm" style="color:hsl(240 5% 65%)">Warning gets attention without looking radioactive.</div></div>
+          </div>
+          <div class="flex items-start gap-3 rounded-2xl border p-4" style="background:hsl(240 10% 4%);border-color:hsl(240 4% 16%)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(217 91% 60%)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div><div class="font-medium">System message</div><div class="text-sm" style="color:hsl(240 5% 65%)">Info blue sits cleanly with the violet accent.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+</div>
+</body>
+</html>

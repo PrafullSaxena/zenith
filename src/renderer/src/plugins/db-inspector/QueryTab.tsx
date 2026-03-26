@@ -394,7 +394,7 @@ export default function QueryTab({
         {/* Run current statement */}
         <Tooltip content="Run statement" shortcut="⌘↵">
           <Button
-            variant="primary"
+            variant="default"
             size="sm"
             onClick={handleRunCurrent}
             disabled={isRunning}
@@ -421,7 +421,7 @@ export default function QueryTab({
         {isRunning && (
           <Tooltip content="Cancel query">
             <Button
-              variant="danger"
+              variant="destructive"
               size="sm"
               onClick={handleCancel}
             >
@@ -539,7 +539,7 @@ export default function QueryTab({
               className="h-6 w-28 rounded border border-primary bg-transparent px-1.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
             />
             <Button
-              variant="primary"
+              variant="default"
               size="sm"
               onClick={handleSaveQuery}
               disabled={!saveQueryName.trim()}

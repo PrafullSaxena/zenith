@@ -35,10 +35,10 @@ export default function DbHistory({
   if (isLoading) {
     return (
       <div className="p-4 space-y-3">
-        <Skeleton variant="card" />
-        <Skeleton variant="card" />
-        <Skeleton variant="card" />
-        <Skeleton variant="card" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
       </div>
     )
   }
@@ -72,7 +72,7 @@ export default function DbHistory({
 
           return (
             <motion.div key={entry.id} variants={staggerItem}>
-              <Card variant="interactive" className="flex items-start gap-3 p-3">
+              <Card variant="default" className="flex items-start gap-3 p-3">
                 {/* Type badge */}
                 <Badge variant={config.variant}>
                   <Icon size={10} />

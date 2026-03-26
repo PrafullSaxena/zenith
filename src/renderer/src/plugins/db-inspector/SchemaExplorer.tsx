@@ -92,7 +92,7 @@ export default function SchemaExplorer({
           Database
         </label>
         {isLoadingDatabases ? (
-          <Skeleton variant="text" lines={1} />
+          <Skeleton className="h-4 w-full" lines={1} />
         ) : (
           <Select
             value={activeDatabase ?? ''}
@@ -131,7 +131,7 @@ export default function SchemaExplorer({
 
       {/* Tables list */}
       {isLoadingTables ? (
-        <Skeleton variant="text" lines={8} />
+        <Skeleton className="h-4 w-full" lines={8} />
       ) : !activeSchema ? (
         <div
           icon={Database}
@@ -186,7 +186,7 @@ export default function SchemaExplorer({
                 {isSelected && (
                   <div className="ml-6 mt-1 space-y-2 border-l border-white/[0.06] pl-3 transition-all duration-200">
                     {isLoadingDetails ? (
-                      <Skeleton variant="text" lines={4} />
+                      <Skeleton className="h-4 w-full" lines={4} />
                     ) : (
                       <>
                         {/* Stats */}

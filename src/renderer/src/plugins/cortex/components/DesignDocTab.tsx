@@ -64,10 +64,10 @@ export default function DesignDocTab(): React.JSX.Element {
     return (
       <div className="p-6 space-y-4">
         <p className="text-sm text-muted-foreground">Generating design document...</p>
-        <Skeleton variant="text" lines={3} />
-        <Skeleton variant="card" />
-        <Skeleton variant="text" lines={4} />
-        <Skeleton variant="card" />
+        <Skeleton className="h-4 w-full" lines={3} />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-4 w-full" lines={4} />
+        <Skeleton className="h-24 w-full rounded-xl" />
       </div>
     )
   }

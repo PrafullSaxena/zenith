@@ -60,9 +60,9 @@ export function PRList({
         {/* Loading state with skeleton cards */}
         {isLoading && (pullRequests?.length ?? 0) === 0 && (
           <div className="space-y-2">
-            <Skeleton variant="card" />
-            <Skeleton variant="card" />
-            <Skeleton variant="card" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
           </div>
         )}
 
@@ -103,7 +103,7 @@ export function PRList({
               return (
                 <motion.div key={pr.id} variants={staggerItem}>
                   <Card
-                    variant="interactive"
+                    variant="default"
                     className={`cursor-pointer ${isSelected ? 'border-l-2 border-l-accent' : ''}`}
                     onClick={() => onSelect(pr)}
                   >

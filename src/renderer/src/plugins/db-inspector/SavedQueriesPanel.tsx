@@ -86,7 +86,7 @@ export default function SavedQueriesPanel({ onLoadQuery, connectionId }: SavedQu
             {filtered.map((q) => (
               <Card
                 key={q.id}
-                variant="interactive"
+                variant="default"
                 className="mx-2 my-1.5 flex flex-col px-3 py-2"
               >
                 <div className="flex items-center justify-between gap-2">
@@ -132,7 +132,7 @@ export default function SavedQueriesPanel({ onLoadQuery, connectionId }: SavedQu
                 {otherQueries.map((q) => (
                   <Card
                     key={q.id}
-                    variant="interactive"
+                    variant="default"
                     className="mx-2 my-1.5 flex flex-col px-3 py-2 opacity-60"
                   >
                     <div className="flex items-center justify-between gap-2">

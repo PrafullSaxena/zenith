@@ -241,13 +241,13 @@ export default function QueryOptimizer({
         />
         <div className="mt-2 flex items-center gap-2">
           {isActive ? (
-            <Button variant="danger" size="sm" onClick={onCancel}>
+            <Button variant="destructive" size="sm" onClick={onCancel}>
               <Square size={12} />
               Cancel
             </Button>
           ) : (
             <Button
-              variant="primary"
+              variant="default"
               size="sm"
               onClick={handleAnalyze}
               disabled={!canAnalyze || !sql.trim()}
@@ -413,12 +413,12 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
         {/* Right region: badges + export actions */}
         <div className="flex shrink-0 items-center gap-2">
           {highCount > 0 && (
-            <Badge variant="error">
+            <Badge variant="destructive">
               {highCount} critical
             </Badge>
           )}
           {sugCount > 0 && (
-            <Badge variant="info">
+            <Badge variant="secondary">
               {sugCount} suggestion{sugCount !== 1 ? 's' : ''}
             </Badge>
           )}

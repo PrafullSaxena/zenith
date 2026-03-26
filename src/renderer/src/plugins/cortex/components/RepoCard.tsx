@@ -78,7 +78,7 @@ export default function RepoCard({
 
   return (
     <Card
-      variant="interactive"
+      variant="default"
       onClick={onSelect}
       className={`relative cursor-pointer overflow-hidden p-4 transition-colors ${STATUS_BORDER[repo.status]} ${
         isActive ? 'ring-1 ring-primary/40' : ''

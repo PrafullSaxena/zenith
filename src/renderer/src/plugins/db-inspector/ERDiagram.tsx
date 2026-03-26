@@ -282,7 +282,7 @@ export default function ERDiagram({
 
         <div className="mt-3 flex items-center gap-2">
           <Button
-            variant="primary"
+            variant="default"
             size="sm"
             onClick={handleGenerate}
             disabled={noneSelected || isGenerating || !hasConnection}
@@ -464,7 +464,7 @@ export default function ERDiagram({
               <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
                 Mermaid Syntax (editable)
               </p>
-              <Button variant="primary" size="sm" onClick={handleReRender}>
+              <Button variant="default" size="sm" onClick={handleReRender}>
                 <RefreshCw size={11} />
                 Re-render
               </Button>

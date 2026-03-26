@@ -141,7 +141,7 @@ export default function LinkDialog({
 
       <div className="flex items-center gap-2">
         <Button
-          variant="primary"
+          variant="default"
           size="sm"
           onClick={handleApply}
           disabled={!url.trim()}

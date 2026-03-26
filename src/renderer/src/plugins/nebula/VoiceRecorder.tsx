@@ -182,7 +182,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
             <Button
-              variant="primary"
+              variant="default"
               onClick={startRecording}
               title="Start voice recording"
               className="rounded-full w-12 h-12 p-0 flex items-center justify-center"

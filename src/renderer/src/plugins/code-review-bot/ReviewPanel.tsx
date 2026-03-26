@@ -144,11 +144,11 @@ export function ReviewPanel({
 
         {/* Streaming placeholder skeleton */}
         <div className="mx-3 mb-3">
-          <Skeleton variant="text" lines={3} />
+          <Skeleton className="h-4 w-full" lines={3} />
         </div>
 
         <div className="px-3 pb-3">
-          <Button variant="danger" onClick={onCancel}>
+          <Button variant="destructive" onClick={onCancel}>
             Cancel Review
           </Button>
         </div>
@@ -186,7 +186,7 @@ export function ReviewPanel({
             </p>
           </Card>
           <div className="mb-3 flex gap-2">
-            <Button variant="primary" onClick={onNewReview}>
+            <Button variant="default" onClick={onNewReview}>
               Retry Review
             </Button>
           </div>
@@ -207,17 +207,17 @@ export function ReviewPanel({
                 {safeComments.length} findings
               </p>
               {blockingCount > 0 && (
-                <Badge variant="error">
+                <Badge variant="destructive">
                   {SEVERITY_CONFIG.blocking.emoji} {blockingCount} Blocking
                 </Badge>
               )}
               {importantCount > 0 && (
-                <Badge variant="warning">
+                <Badge variant="secondary">
                   {SEVERITY_CONFIG.important.emoji} {importantCount} Important
                 </Badge>
               )}
               {suggestionCount > 0 && (
-                <Badge variant="info">
+                <Badge variant="secondary">
                   {SEVERITY_CONFIG.suggestion.emoji} {suggestionCount} Suggestion
                 </Badge>
               )}
@@ -234,14 +234,14 @@ export function ReviewPanel({
 
           <div className="mt-2 flex items-center gap-2">
             {!allPosted && (
-              <Button variant="primary" onClick={onPostAll}>
+              <Button variant="default" onClick={onPostAll}>
                 {postedCount > 0
                   ? `Post Remaining (${safeComments.filter((c) => c.shouldPost && !c.posted).length})`
                   : 'Post All Inline Comments'}
               </Button>
             )}
             {allPosted && (
-              <Badge variant="success">
+              <Badge variant="default">
                 All comments posted
               </Badge>
             )}
@@ -289,7 +289,7 @@ export function ReviewPanel({
           <p className="text-sm text-red-400">{session.error || 'An error occurred during the review.'}</p>
         </Card>
         <div className="mt-4 flex gap-2">
-          <Button variant="primary" onClick={() => { onNewReview(); onStart() }}>
+          <Button variant="default" onClick={() => { onNewReview(); onStart() }}>
             Retry Review
           </Button>
           <Button variant="ghost" onClick={onNewReview}>
@@ -310,7 +310,7 @@ export function ReviewPanel({
         </p>
       )}
       <div className="mt-4 flex gap-2">
-        <Button variant="primary" onClick={() => { onNewReview(); onStart() }}>
+        <Button variant="default" onClick={() => { onNewReview(); onStart() }}>
           Start New Review
         </Button>
         <Button variant="ghost" onClick={onNewReview}>
@@ -401,7 +401,7 @@ function FindingCard({
 
         {/* Posted indicator */}
         {comment.posted && (
-          <Badge variant="success">Posted</Badge>
+          <Badge variant="default">Posted</Badge>
         )}
 
         {/* Expand/collapse chevron */}
