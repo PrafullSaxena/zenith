@@ -12,7 +12,7 @@ Migrate the entire Zenith UI from the custom Glass Design System to shadcn/ui + 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Install deps, configure theming tokens, fonts, and cn() utility
+- [x] **Phase 1: Foundation** - Install deps, configure theming tokens, fonts, and cn() utility (completed 2026-03-27)
 - [ ] **Phase 2: Token Layer** - Generate all shadcn/Animate-UI base components customized with zenith-violet tokens
 - [ ] **Phase 3: Shared Components** - Build 9 reusable components, AppLayout, Sidebar, PluginShell, CommandPalette, and global toast
 - [ ] **Phase 4: Screen Migration** - Migrate all 10 screens/plugins to use shared components (parallel agents)
