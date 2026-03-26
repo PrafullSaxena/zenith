@@ -409,7 +409,7 @@ export default function ERDiagram({
         {/* 3D Schema Orb view */}
         {show3D && session && selectedTables.length > 0 && (
           <div className="h-full">
-            <Scene3DWrapper
+            <div
               fallback={
                 <Card className="p-3" ref={diagramRef}>
                   <MermaidRenderer syntax={currentSyntax} className="h-full" interactive />
@@ -423,7 +423,7 @@ export default function ERDiagram({
                 session={session}
                 onTableClick={onToggleTable}
               />
-            </Scene3DWrapper>
+            </div>
           </div>
         )}
 

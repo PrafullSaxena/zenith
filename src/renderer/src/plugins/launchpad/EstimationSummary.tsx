@@ -7,14 +7,10 @@
  */
 import React, { useState, useMemo } from 'react'
 import { DollarSign, Download, Trash2, Save } from 'lucide-react'
-import {
-  Card,
-  Badge,
-  Button,
-  Input,
-  div,
-  Scene3DWrapper
-} from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Input } from '@renderer/components/ui/input'
 
 // ---- Lazy-load 3D treemap ────────────────────────────────────────────────
 const CostTreemap3D = React.lazy(() => import('./CostTreemap3D'))
@@ -214,7 +210,7 @@ export default function EstimationSummary(): React.JSX.Element {
         <div className="border-t border-white/[0.06] px-4 pt-2 pb-1">
           <p className="text-[10px] text-[hsl(var(--muted-foreground))] mb-1">Cost Distribution</p>
           <div className="h-[200px]">
-            <Scene3DWrapper
+            <div
               fallback={<CostTreemapFallback items={result.items} />}
               loadingMessage="Loading cost view..."
             >
@@ -229,7 +225,7 @@ export default function EstimationSummary(): React.JSX.Element {
                   }
                 })}
               />
-            </Scene3DWrapper>
+            </div>
           </div>
         </div>
       )}

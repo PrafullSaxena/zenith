@@ -228,7 +228,7 @@ export default function KnowledgeGraph(): React.JSX.Element {
       {/* Graph container */}
       <div ref={containerRef} className="relative flex-1 overflow-hidden" style={{ touchAction: 'none' }}>
         {use3D ? (
-          <Scene3DWrapper
+          <div
             fallback={
               <ForceGraph2D
                 graphData={safeGraphData}
@@ -255,7 +255,7 @@ export default function KnowledgeGraph(): React.JSX.Element {
             loadingMessage="Loading 3D graph..."
           >
             <KnowledgeGraph3D graphData={safeGraphData} onNodeClick={handleNodeClick3D} />
-          </Scene3DWrapper>
+          </div>
         ) : (
           <ForceGraph2D
             graphData={safeGraphData}
