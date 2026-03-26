@@ -46,10 +46,12 @@ Plans:
   3. Animate-UI Dialog opens with scale+fade animation, Tabs show animated indicator bar, Accordion/Sheet animate open/close
   4. Command component (cmdk) renders a searchable list with keyboard navigation
   5. All components respect the CSS custom property tokens (changing a token value changes appearance globally)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md -- Core form/display components: Card, Input, Label, Select, Badge, Skeleton, Button customization
+- [ ] 02-02-PLAN.md -- Utility components + Sonner toast: ScrollArea, Tooltip, Progress, DropdownMenu, Popover, AlertDialog
+- [ ] 02-03-PLAN.md -- Animated components + Command: Tabs, Dialog, Accordion, Sheet (Animate-UI), Command (cmdk)
 
 ### Phase 3: Shared Components
 **Goal**: All 9 cross-plugin components plus layout primitives (AppLayout, Sidebar, PluginShell, SplitPanel, CommandPalette) are built and independently testable, enabling parallel screen migration
@@ -134,7 +136,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/2 | Not started | - |
-| 2. Token Layer | 0/1 | Not started | - |
+| 2. Token Layer | 0/3 | Not started | - |
 | 3. Shared Components | 0/3 | Not started | - |
 | 4. Screen Migration | 0/8 | Not started | - |
 | 5. 3D Removal & Cleanup | 0/1 | Not started | - |
