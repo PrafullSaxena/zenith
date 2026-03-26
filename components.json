@@ -16,5 +16,14 @@
     "lib": "@renderer/lib",
     "utils": "@renderer/lib/utils"
   },
+  "resolvedPaths": {
+    "tailwindConfig": "",
+    "tailwindCss": "src/renderer/src/assets/main.css",
+    "components": "src/renderer/src/components",
+    "ui": "src/renderer/src/components/ui",
+    "hooks": "src/renderer/src/hooks",
+    "lib": "src/renderer/src/lib",
+    "utils": "src/renderer/src/lib/utils"
+  },
   "iconLibrary": "lucide"
 }
