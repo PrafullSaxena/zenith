@@ -1,92 +1,10 @@
 import { useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Check } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { PLUGINS } from '../../plugins/registry'
 import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
 import { Skeleton } from '@renderer/components/ui/skeleton'
-import { cn } from '@renderer/lib/utils'
-import { getClassicThemes, getNewThemes } from '@renderer/lib/theme-metadata'
-import type { ThemeMeta } from '@renderer/lib/theme-metadata'
-import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import { SettingsField } from './SettingsField'
 import type { SettingsField as SettingsFieldDef } from '../../types/plugin'
-
-// ---------------------------------------------------------------------------
-// Theme crossfade — adds a brief transition class on theme switch
-// ---------------------------------------------------------------------------
-
-function triggerThemeCrossfade(): void {
-  document.documentElement.classList.add('theme-transitioning')
-  setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 350)
-}
-
-// ---------------------------------------------------------------------------
-// ThemeCard — inline sub-component for the visual theme selector grid
-// ---------------------------------------------------------------------------
-
-function ThemeCard({
-  theme,
-  isActive,
-  onSelect
-}: {
-  theme: ThemeMeta
-  isActive: boolean
-  onSelect: () => void
-}): React.JSX.Element {
-  return (
-    <Card
-      className={cn(
-        'relative cursor-pointer rounded-[22px] transition-all duration-200 hover:-translate-y-0.5',
-        isActive && 'border-primary shadow-[0_0_8px_hsl(var(--primary)/0.3)]'
-      )}
-      onClick={onSelect}
-    >
-      <CardContent className="p-4">
-        <span className="text-sm font-medium text-foreground">{theme.label}</span>
-        <div className="mt-2 flex gap-1.5">
-          {Object.values(theme.colors).map((color, i) => (
-            <span
-              key={i}
-              className="h-3 w-3 rounded-full border border-border/20"
-              style={{ backgroundColor: color || 'hsl(var(--card))' }}
-            />
-          ))}
-        </div>
-
-        {/* Mini preview strip */}
-        <div
-          className="mt-2 h-5 w-20 rounded-sm overflow-hidden relative"
-          style={{ backgroundColor: theme.colors.bg }}
-        >
-          <div
-            className="absolute inset-0.5 rounded-sm border"
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.03)',
-              borderColor: 'rgba(255,255,255,0.08)'
-            }}
-          />
-          <div
-            className="absolute bottom-0 left-1 right-1 h-px"
-            style={{ backgroundColor: theme.colors.accent }}
-          />
-        </div>
-
-        {/* Active check icon OR NEW badge for new collection themes */}
-        {isActive ? (
-          <Check size={14} className="absolute top-2 right-2 text-primary" />
-        ) : (
-          theme.section === 'new' && (
-            <Badge variant="default" className="absolute top-2 right-2 text-[10px]">
-              NEW
-            </Badge>
-          )
-        )}
-      </CardContent>
-    </Card>
-  )
-}
 
 // ---------------------------------------------------------------------------
 // GeneralSettings
@@ -114,11 +32,7 @@ export function GeneralSettings(): React.JSX.Element {
     )
   }
 
-  const currentTheme = (getSetting('general.theme') as string) ?? 'default'
-  const classicThemes = getClassicThemes()
-  const newThemes = getNewThemes().filter((t) => t.colors.bg !== '')
-
-  // Define general settings fields (non-theme)
+  // Define general settings fields
   const defaultViewField: SettingsFieldDef = {
     key: 'defaultView',
     label: 'Default View',
@@ -197,48 +111,6 @@ export function GeneralSettings(): React.JSX.Element {
         <h2 className="mb-1 text-lg font-semibold text-foreground">General</h2>
         <p className="text-xs text-muted-foreground">Application-wide preferences and defaults.</p>
       </div>
-
-      {/* ── Theme Selector Grid (visual centerpiece) ── */}
-      <Card className="rounded-[22px] border-primary/10 shadow-[0_0_24px_-6px_hsl(var(--primary)/0.15)]">
-        <CardHeader>
-          <CardTitle className="text-lg">Theme</CardTitle>
-          <p className="text-xs text-muted-foreground">Color theme for the application</p>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Classic Themes</p>
-              <motion.div className="grid grid-cols-3 gap-3" variants={staggerContainer} initial="hidden" animate="visible">
-                {classicThemes.map((theme) => (
-                  <motion.div key={theme.value} variants={staggerItem}>
-                    <ThemeCard
-                      theme={theme}
-                      isActive={currentTheme === theme.value}
-                      onSelect={() => { triggerThemeCrossfade(); setSetting('general.theme', theme.value); }}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-            {newThemes.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">New Collection</p>
-                <motion.div className="grid grid-cols-3 gap-3" variants={staggerContainer} initial="hidden" animate="visible">
-                  {newThemes.map((theme) => (
-                    <motion.div key={theme.value} variants={staggerItem}>
-                      <ThemeCard
-                        theme={theme}
-                        isActive={currentTheme === theme.value}
-                        onSelect={() => { triggerThemeCrossfade(); setSetting('general.theme', theme.value); }}
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* ── Appearance ── */}
       <Card className="rounded-[22px]">
