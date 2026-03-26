@@ -63,12 +63,15 @@ Plans:
   3. Each of the 9 shared components (RichTextEditor, ContentRenderer, ChatInterface, DataTable, HistoryList, PdfExporter, SearchInput, CodeEditor, FileTree) renders in isolation with mock data
   4. CommandPalette opens on Cmd+K and displays a searchable list (wiring to real data deferred to Phase 6)
   5. Page transitions (fade + slide) work when navigating between routes
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01-PLAN.md -- Migrate AppLayout + Sidebar with collapsible behavior (56px <-> 240px, Cmd+B) + page transitions
+- [ ] 03-02-PLAN.md -- PluginShell (Card header + Tabs wrapper), SplitPanel (resizable panels), SearchInput (debounced)
+- [ ] 03-03-PLAN.md -- DataTable (sortable, paginated, virtual scroll) + HistoryList (timestamped entries with actions)
+- [ ] 03-04-PLAN.md -- CodeEditor (CodeMirror 6 wrapper, edit/readOnly/execute) + FileTree (animated tree with search)
+- [ ] 03-05-PLAN.md -- RichTextEditor (Tiptap full/minimal modes), PdfExporter (utility), CommandPalette (Cmd+K)
+- [ ] 03-06-PLAN.md -- ContentRenderer (markdown + code + mermaid + streaming + actions) + ChatInterface (AI chat)
 
 ### Phase 4: Screen Migration
 **Goal**: All 6 plugins and 4 system screens are fully migrated to use shared components and base primitives -- every screen renders correctly with the new design system
@@ -137,7 +140,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/2 | Not started | - |
 | 2. Token Layer | 0/3 | Not started | - |
-| 3. Shared Components | 0/3 | Not started | - |
+| 3. Shared Components | 0/6 | Not started | - |
 | 4. Screen Migration | 0/8 | Not started | - |
 | 5. 3D Removal & Cleanup | 0/1 | Not started | - |
 | 6. Polish | 0/1 | Not started | - |
