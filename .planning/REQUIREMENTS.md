@@ -30,23 +30,23 @@
 
 ### Shared Components
 
-- [ ] **SHAR-01**: RichTextEditor -- Tiptap wrapper with full/minimal modes
-- [ ] **SHAR-02**: ContentRenderer -- markdown output with code blocks, mermaid, streaming, actions
-- [ ] **SHAR-03**: ChatInterface -- AI conversation with messages, suggestions, streaming
-- [ ] **SHAR-04**: DataTable -- sortable, paginated, virtual scroll, cell expand
-- [ ] **SHAR-05**: HistoryList -- historical entries with filters, restore/delete
-- [ ] **SHAR-06**: PdfExporter -- unified PDF generation (report/document/diagram formats)
-- [ ] **SHAR-07**: SearchInput -- debounced search with shortcut hint
-- [ ] **SHAR-08**: CodeEditor -- CodeMirror 6 wrapper (editable/readOnly/execute modes)
-- [ ] **SHAR-09**: FileTree -- Animate-UI Files based tree with search, virtual scroll
+- [x] **SHAR-01**: RichTextEditor -- Tiptap wrapper with full/minimal modes
+- [x] **SHAR-02**: ContentRenderer -- markdown output with code blocks, mermaid, streaming, actions
+- [x] **SHAR-03**: ChatInterface -- AI conversation with messages, suggestions, streaming
+- [x] **SHAR-04**: DataTable -- sortable, paginated, virtual scroll, cell expand
+- [x] **SHAR-05**: HistoryList -- historical entries with filters, restore/delete
+- [x] **SHAR-06**: PdfExporter -- unified PDF generation (report/document/diagram formats)
+- [x] **SHAR-07**: SearchInput -- debounced search with shortcut hint
+- [x] **SHAR-08**: CodeEditor -- CodeMirror 6 wrapper (editable/readOnly/execute modes)
+- [x] **SHAR-09**: FileTree -- Animate-UI Files based tree with search, virtual scroll
 
 ### Layout
 
-- [ ] **LYOT-01**: Collapsible sidebar (56px icon rail <-> 240px expanded, Cmd+B toggle)
-- [ ] **LYOT-02**: PluginShell -- shared header + tabs wrapper for all plugins
-- [ ] **LYOT-03**: SplitPanel -- shared resizable panel layout
-- [ ] **LYOT-04**: CommandPalette -- Cmd+K global search across plugins, activity, settings
-- [ ] **LYOT-05**: Page transitions preserved with Framer Motion (fade + slide)
+- [x] **LYOT-01**: Collapsible sidebar (56px icon rail <-> 240px expanded, Cmd+B toggle)
+- [x] **LYOT-02**: PluginShell -- shared header + tabs wrapper for all plugins
+- [x] **LYOT-03**: SplitPanel -- shared resizable panel layout
+- [x] **LYOT-04**: CommandPalette -- Cmd+K global search across plugins, activity, settings
+- [x] **LYOT-05**: Page transitions preserved with Framer Motion (fade + slide)
 
 ### Dashboard
 
@@ -187,20 +187,20 @@
 | COMP-10 | Phase 2 | Pending |
 | COMP-11 | Phase 2 | Pending |
 | COMP-12 | Phase 2 | Pending |
-| SHAR-01 | Phase 3 | Pending |
-| SHAR-02 | Phase 3 | Pending |
-| SHAR-03 | Phase 3 | Pending |
-| SHAR-04 | Phase 3 | Pending |
-| SHAR-05 | Phase 3 | Pending |
-| SHAR-06 | Phase 3 | Pending |
-| SHAR-07 | Phase 3 | Pending |
-| SHAR-08 | Phase 3 | Pending |
-| SHAR-09 | Phase 3 | Pending |
-| LYOT-01 | Phase 3 | Pending |
-| LYOT-02 | Phase 3 | Pending |
-| LYOT-03 | Phase 3 | Pending |
-| LYOT-04 | Phase 3 | Pending |
-| LYOT-05 | Phase 3 | Pending |
+| SHAR-01 | Phase 3 | Complete |
+| SHAR-02 | Phase 3 | Complete |
+| SHAR-03 | Phase 3 | Complete |
+| SHAR-04 | Phase 3 | Complete |
+| SHAR-05 | Phase 3 | Complete |
+| SHAR-06 | Phase 3 | Complete |
+| SHAR-07 | Phase 3 | Complete |
+| SHAR-08 | Phase 3 | Complete |
+| SHAR-09 | Phase 3 | Complete |
+| LYOT-01 | Phase 3 | Complete |
+| LYOT-02 | Phase 3 | Complete |
+| LYOT-03 | Phase 3 | Complete |
+| LYOT-04 | Phase 3 | Complete |
+| LYOT-05 | Phase 3 | Complete |
 | DASH-01 | Phase 4 | Pending |
 | DASH-02 | Phase 4 | Pending |
 | DASH-03 | Phase 4 | Pending |
