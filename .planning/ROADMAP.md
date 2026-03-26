@@ -30,10 +30,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Inter renders for all UI text and JetBrains Mono renders for code/monospace elements
   3. cn() can be imported from lib/utils and correctly merges Tailwind classes (clsx + tailwind-merge)
   4. shadcn components.json is configured and `npx shadcn add button` generates a component that uses the project tokens
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
+- [ ] 01-01-PLAN.md -- Install deps, configure shadcn CLI, cn() utility, replace fonts with Inter + JetBrains Mono
+- [ ] 01-02-PLAN.md -- Migrate CSS tokens to HSL shadcn format, radial gradient bg, theme.ts, verify with Button generation
 
 ### Phase 2: Token Layer
 **Goal**: Every base UI primitive (buttons, cards, inputs, dialogs, tabs, toasts, etc.) exists as a themed shadcn/Animate-UI component ready for consumption by shared components and screens
@@ -132,7 +133,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/1 | Not started | - |
+| 1. Foundation | 0/2 | Not started | - |
 | 2. Token Layer | 0/1 | Not started | - |
 | 3. Shared Components | 0/3 | Not started | - |
 | 4. Screen Migration | 0/8 | Not started | - |
