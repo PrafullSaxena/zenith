@@ -3,9 +3,9 @@
  * and their call-graph connections. Supports 3D (react-three-fiber) with
  * automatic fallback to 2D (react-force-graph-2d). Glass UI throughout.
  */
-import React, { useState, useRef, useMemo, useCallback, useEffect, Suspense } from 'react'
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react'
 import ForceGraph2D, { type ForceGraphMethods } from 'react-force-graph-2d'
-import { Search, X, Share2, ZoomIn, ZoomOut, Maximize2, Box, Grid3X3 } from 'lucide-react'
+import { Search, X, Share2, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { CodeEntity, CallEdge } from '../../../types/cortex'
 import { getKindColor } from '../cortex-theme'
@@ -13,39 +13,6 @@ import { Card, CardContent } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { Skeleton } from '@renderer/components/ui/skeleton'
-
-// ── Lazy-load 3D graph ──────────────────────────────────────────────────
-
-const MindGraph3D = React.lazy(() => import('./MindGraph3D'))
-
-// ── ErrorBoundary for 3D fallback ───────────────────────────────────────
-
-interface ErrorBoundaryProps {
-  fallback: React.ReactNode
-  children: React.ReactNode
-}
-
-interface ErrorBoundaryState {
-  hasError: boolean
-}
-
-class Graph3DErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props)
-    this.state = { hasError: false }
-  }
-
-  static getDerivedStateFromError(): ErrorBoundaryState {
-    return { hasError: true }
-  }
-
-  render(): React.ReactNode {
-    if (this.state.hasError) {
-      return this.props.fallback
-    }
-    return this.props.children
-  }
-}
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -282,7 +249,6 @@ export default function MindGraphTab(): React.JSX.Element {
   const [search, setSearch] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [showMethods, setShowMethods] = useState(false)
-  const [use3D, setUse3D] = useState(true)
   const [highlightedNodes, setHighlightedNodes] = useState<Set<string>>(new Set())
   const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -373,14 +339,6 @@ export default function MindGraphTab(): React.JSX.Element {
       navigateToFile(node.filePath, node.line)
     },
     [navigateToFile]
-  )
-
-  const handle3DNodeClick = useCallback(
-    (entityId: string) => {
-      const entity = analysisResult?.entities.find((e) => e.id === entityId)
-      if (entity) navigateToFile(entity.filePath, entity.line)
-    },
-    [analysisResult, navigateToFile]
   )
 
   const handleZoomIn = useCallback(() => {
@@ -501,35 +459,8 @@ export default function MindGraphTab(): React.JSX.Element {
           Methods
         </label>
 
-        {/* 3D / 2D toggle pill */}
-        <div className="flex items-center rounded-lg border border-white/[0.08] bg-white/[0.03] p-0.5">
-          <button
-            type="button"
-            onClick={() => setUse3D(true)}
-            className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
-              use3D ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
-            }`}
-            title="3D view"
-          >
-            <Box size={11} />
-            3D
-          </button>
-          <button
-            type="button"
-            onClick={() => setUse3D(false)}
-            className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
-              !use3D ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
-            }`}
-            title="2D view"
-          >
-            <Grid3X3 size={11} />
-            2D
-          </button>
-        </div>
-
-        {/* Zoom controls (2D only) */}
-        {!use3D && (
-          <div className="flex items-center gap-0.5">
+        {/* Zoom controls */}
+        <div className="flex items-center gap-0.5">
             <button
               type="button"
               onClick={handleZoomIn}
@@ -555,7 +486,6 @@ export default function MindGraphTab(): React.JSX.Element {
               <Maximize2 size={14} />
             </button>
           </div>
-        )}
 
         {/* Node / edge count */}
         <span className="text-[10px] text-muted-foreground">
@@ -568,28 +498,7 @@ export default function MindGraphTab(): React.JSX.Element {
         {/* Ambient radial glow */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(var(--accent-rgb),0.03),transparent_70%)]" />
 
-        {use3D ? (
-          <Graph3DErrorBoundary fallback={fallback2D}>
-            <Suspense
-              fallback={
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <div className="mx-auto mb-2 h-8 w-8 rounded-full bg-gradient-to-r from-surface to-surface-elevated animate-[shimmer_1.5s_ease-in-out_infinite] bg-[length:200%_100%]" />
-                    <p className="text-[11px]">Loading 3D graph…</p>
-                  </div>
-                </div>
-              }
-            >
-              <MindGraph3D
-                entities={analysisResult.entities}
-                calls={analysisResult.calls}
-                onNodeClick={handle3DNodeClick}
-              />
-            </Suspense>
-          </Graph3DErrorBoundary>
-        ) : (
-          fallback2D
-        )}
+        {fallback2D}
 
         {/* Glass legend overlay */}
         <Card className="absolute bottom-3 left-3 flex flex-wrap gap-2 px-3 py-2">
@@ -607,8 +516,8 @@ export default function MindGraphTab(): React.JSX.Element {
           })}
         </Card>
 
-        {/* Glass hovered tooltip (2D mode only) */}
-        {!use3D && hoveredNode && (
+        {/* Hovered tooltip */}
+        {hoveredNode && (
           <Card className="absolute right-3 top-3 max-w-xs px-3 py-2 shadow-lg">
             <div className="flex items-center gap-2">
               <span

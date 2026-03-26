@@ -5,8 +5,7 @@
  * decoration system — the same highlight.js engine used by lib/highlight.ts.
  * We register the same languages here, plus popular extras for note-taking.
  *
- * The hljs-zenith.css theme (imported globally in main.tsx) provides
- * all .hljs-* class styling — no additional theme import needed.
+ * The hljs theme provides all .hljs-* class styling.
  */
 
 import { createLowlight } from 'lowlight'

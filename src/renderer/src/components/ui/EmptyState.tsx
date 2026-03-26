@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
-import { cn } from './glass-utils'
-import { GlassButton } from './GlassButton'
+import { cn } from '../../lib/utils'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,9 +59,12 @@ export function EmptyState({
       <p className="text-body text-[var(--text-secondary)] mb-6 max-w-sm">{description}</p>
 
       {actionLabel && onAction && (
-        <GlassButton variant="primary" onClick={onAction}>
+        <button
+          className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+          onClick={onAction}
+        >
           {actionLabel}
-        </GlassButton>
+        </button>
       )}
     </div>
   )

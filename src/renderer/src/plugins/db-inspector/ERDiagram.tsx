@@ -19,9 +19,7 @@ import {
   Sparkles,
   Link2,
   FileDown,
-  Network,
-  Box,
-  Grid3X3
+  Network
 } from 'lucide-react'
 import type {
   TableInfo,
@@ -32,8 +30,6 @@ import type {
 import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import MermaidRenderer from './MermaidRenderer'
 
-// ── Lazy-load 3D schema orb ─────────────────────────────────────────────
-const SchemaOrb3D = React.lazy(() => import('./SchemaOrb3D'))
 
 interface ERDiagramProps {
   tables: TableInfo[]
@@ -93,7 +89,6 @@ export default function ERDiagram({
   const [viewMode, setViewMode] = useState<'visual' | 'code'>('visual')
   const [editableCode, setEditableCode] = useState('')
   const [editedSyntax, setEditedSyntax] = useState<string | null>(null)
-  const [show3D, setShow3D] = useState(false)
 
   // Sync editable code when session changes
   const currentSyntax = editedSyntax ?? session?.mermaidSyntax ?? ''
@@ -310,34 +305,8 @@ export default function ERDiagram({
                 Export PDF
               </Button>
 
-              {/* ER / 3D toggle pill */}
-              <div className="ml-auto flex items-center rounded-lg border border-white/[0.08] bg-white/[0.03] p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setShow3D(false)}
-                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
-                    !show3D ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  title="ER diagram view"
-                >
-                  <Grid3X3 size={11} />
-                  ER
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShow3D(true)}
-                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
-                    show3D ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  title="3D schema orb view"
-                >
-                  <Box size={11} />
-                  3D
-                </button>
-              </div>
-
-              {/* View mode toggle (mermaid only) */}
-              {!show3D && <div className="flex rounded-lg border border-border overflow-hidden">
+              {/* View mode toggle */}
+              <div className="ml-auto flex rounded-lg border border-border overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setViewMode('visual')}
@@ -362,7 +331,7 @@ export default function ERDiagram({
                   <Code2 size={11} />
                   Code
                 </button>
-              </div>}
+              </div>
             </>
           )}
         </div>
@@ -406,29 +375,8 @@ export default function ERDiagram({
           </div>
         )}
 
-        {/* 3D Schema Orb view */}
-        {show3D && session && selectedTables.length > 0 && (
-          <div className="h-full">
-            <div
-              fallback={
-                <Card className="p-3" ref={diagramRef}>
-                  <MermaidRenderer syntax={currentSyntax} className="h-full" interactive />
-                </Card>
-              }
-              loadingMessage="Loading 3D schema..."
-            >
-              <SchemaOrb3D
-                tables={tables}
-                selectedTables={selectedTables}
-                session={session}
-                onTableClick={onToggleTable}
-              />
-            </div>
-          </div>
-        )}
-
         {/* Mermaid visual view */}
-        {!show3D && (session || editedSyntax) && viewMode === 'visual' && (
+        {(session || editedSyntax) && viewMode === 'visual' && (
           <Card className="p-3" ref={diagramRef}>
             {/* Legend when inferred relationships are present */}
             {inferredCount > 0 && (
@@ -458,7 +406,7 @@ export default function ERDiagram({
           </Card>
         )}
 
-        {!show3D && (session || editedSyntax) && viewMode === 'code' && (
+        {(session || editedSyntax) && viewMode === 'code' && (
           <Card className="flex h-full flex-col gap-2 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">

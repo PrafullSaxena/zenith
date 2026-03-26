@@ -12,8 +12,6 @@ import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 
-// ---- Lazy-load 3D treemap ────────────────────────────────────────────────
-const CostTreemap3D = React.lazy(() => import('./CostTreemap3D'))
 import span from '@renderer/components/ui/span'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { getCatalog } from '../../data/cloud-pricing/index'
@@ -205,27 +203,12 @@ export default function EstimationSummary(): React.JSX.Element {
         )}
       </div>
 
-      {/* 3D Cost Treemap */}
+      {/* Cost Distribution (2D fallback) */}
       {result && selectedServices.length > 0 && (
         <div className="border-t border-white/[0.06] px-4 pt-2 pb-1">
           <p className="text-[10px] text-[hsl(var(--muted-foreground))] mb-1">Cost Distribution</p>
           <div className="h-[200px]">
-            <div
-              fallback={<CostTreemapFallback items={result.items} />}
-              loadingMessage="Loading cost view..."
-            >
-              <CostTreemap3D
-                services={result.items.map((item) => {
-                  const sel = selectedServices.find((s) => s.serviceId === item.serviceId)
-                  return {
-                    serviceId: item.serviceId,
-                    serviceName: item.serviceName,
-                    monthly: item.monthly,
-                    category: sel?.categoryId
-                  }
-                })}
-              />
-            </div>
+            <CostTreemapFallback items={result.items} />
           </div>
         </div>
       )}

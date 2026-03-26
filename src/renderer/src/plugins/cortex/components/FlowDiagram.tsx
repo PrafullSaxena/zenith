@@ -17,7 +17,6 @@ import {
   type Edge
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import './flow-styles.css'
 import FlowNodeComponent from './FlowNode'
 import FlowEdgeComponent from './FlowEdge'
 import { layoutGraph } from './flow-utils'

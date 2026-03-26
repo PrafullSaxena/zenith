@@ -6,7 +6,6 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { SettingsLayout } from './components/settings/SettingsLayout'
 import { useSettingsStore } from './stores/settings-store'
 import { HLJS_THEME_CSS } from './lib/hljs-themes'
-import { GlassSkeleton } from './components/ui'
 
 const MissionControl = React.lazy(() => import('./components/dashboard/MissionControl'))
 const ActivityLog = React.lazy(() => import('./components/activity/ActivityLog'))
@@ -15,9 +14,13 @@ const AboutView = React.lazy(() => import('./components/about/AboutView'))
 function LoadingFallback(): React.JSX.Element {
   return (
     <div className="p-4 space-y-3">
-      <GlassSkeleton variant="card" />
-      <GlassSkeleton variant="card" />
-      <GlassSkeleton variant="text" lines={3} />
+      <div className="h-32 rounded-lg bg-[var(--bg-secondary)] animate-pulse" />
+      <div className="h-32 rounded-lg bg-[var(--bg-secondary)] animate-pulse" />
+      <div className="space-y-2">
+        <div className="h-4 rounded bg-[var(--bg-secondary)] animate-pulse" />
+        <div className="h-4 rounded bg-[var(--bg-secondary)] animate-pulse w-3/4" />
+        <div className="h-4 rounded bg-[var(--bg-secondary)] animate-pulse w-1/2" />
+      </div>
     </div>
   )
 }
