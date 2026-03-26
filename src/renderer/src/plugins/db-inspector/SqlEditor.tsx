@@ -17,12 +17,11 @@ import { EditorView, keymap, hoverTooltip } from '@codemirror/view'
 import { EditorState, Compartment } from '@codemirror/state'
 import { defaultKeymap, historyKeymap, history } from '@codemirror/commands'
 import { sql, PostgreSQL, MySQL } from '@codemirror/lang-sql'
-import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
-import { tags } from '@lezer/highlight'
 import { basicSetup } from 'codemirror'
 import { Decoration, DecorationSet, ViewUpdate } from '@codemirror/view'
 import { StateField, StateEffect, RangeSetBuilder } from '@codemirror/state'
 import { format as sqlFormat } from 'sql-formatter'
+import { useCodeMirrorTheme } from '../../hooks/useCodeMirrorTheme'
 
 // ── Props ────────────────────────────────────────────────────────────
 
@@ -132,12 +131,11 @@ function getFormatterDialect(dialect: 'postgresql' | 'mysql'): 'postgresql' | 'm
   return dialect === 'mysql' ? 'mysql' : 'postgresql'
 }
 
-// ── App theme override ────────────────────────────────────────────────
+// ── SQL-specific style overlay (error lines, tooltips, etc.) ──────────
+// The main syntax theme comes from useCodeMirrorTheme() — syncs with settings.
 
-const appTheme = EditorView.theme({
+const sqlOverlayTheme = EditorView.theme({
   '&': {
-    backgroundColor: 'var(--color-surface)',
-    color: 'var(--color-text-primary)',
     height: '100%',
     fontSize: '13px'
   },
@@ -145,38 +143,8 @@ const appTheme = EditorView.theme({
     fontFamily: "'Geist Mono', 'Fira Code', 'Cascadia Code', monospace",
     overflow: 'auto'
   },
-  '.cm-gutters': {
-    backgroundColor: 'var(--color-background)',
-    borderRight: '1px solid var(--color-border)',
-    color: 'var(--color-text-secondary)'
-  },
-  '.cm-activeLineGutter': {
-    backgroundColor: 'transparent'
-  },
   '.cm-error-line': {
     backgroundColor: 'rgba(239, 68, 68, 0.2)'
-  },
-  '.cm-cursor': {
-    borderLeftColor: 'var(--color-accent)'
-  },
-  // Selection
-  '.cm-selectionBackground, &.cm-focused .cm-selectionBackground': {
-    backgroundColor: 'oklch(72% 0.15 195 / 0.2) !important'
-  },
-  '.cm-activeLine': {
-    backgroundColor: 'oklch(14% 0 0 / 0.5)'
-  },
-  '.cm-searchMatch': {
-    backgroundColor: 'oklch(72% 0.15 195 / 0.3)',
-    outline: '1px solid oklch(72% 0.15 195 / 0.5)'
-  },
-  '.cm-selectionMatch': {
-    backgroundColor: 'oklch(72% 0.15 195 / 0.15)'
-  },
-  // Matching brackets
-  '&.cm-focused .cm-matchingBracket': {
-    backgroundColor: 'oklch(72% 0.15 195 / 0.25)',
-    outline: '1px solid oklch(72% 0.15 195 / 0.5)'
   },
   // Tooltips & autocomplete
   '.cm-tooltip': {
@@ -211,28 +179,6 @@ const appTheme = EditorView.theme({
   }
 })
 
-const appHighlighting = HighlightStyle.define([
-  { tag: tags.keyword, color: 'oklch(75% 0.15 195)' },
-  { tag: tags.definitionKeyword, color: 'oklch(75% 0.15 195)' },
-  { tag: tags.operatorKeyword, color: 'oklch(75% 0.15 195)' },
-  { tag: tags.controlKeyword, color: 'oklch(75% 0.15 195)' },
-  { tag: tags.moduleKeyword, color: 'oklch(75% 0.15 195)' },
-  { tag: tags.standard(tags.name), color: 'oklch(75% 0.15 195)' },
-  { tag: tags.string, color: 'oklch(75% 0.15 145)' },
-  { tag: tags.number, color: 'oklch(78% 0.15 70)' },
-  { tag: tags.bool, color: 'oklch(78% 0.15 70)' },
-  { tag: tags.null, color: 'oklch(65% 0.12 30)' },
-  { tag: tags.operator, color: 'oklch(80% 0.08 60)' },
-  { tag: tags.punctuation, color: 'oklch(60% 0 0)' },
-  { tag: tags.comment, color: 'oklch(45% 0 0)', fontStyle: 'italic' },
-  { tag: tags.lineComment, color: 'oklch(45% 0 0)', fontStyle: 'italic' },
-  { tag: tags.blockComment, color: 'oklch(45% 0 0)', fontStyle: 'italic' },
-  { tag: tags.name, color: 'var(--color-text-primary)' },
-  { tag: tags.typeName, color: 'oklch(75% 0.12 280)' },
-  { tag: tags.propertyName, color: 'oklch(80% 0.1 220)' },
-  { tag: tags.special(tags.string), color: 'oklch(75% 0.15 145)' }
-])
-
 // ── Component ────────────────────────────────────────────────────────
 
 const SqlEditor = React.memo(function SqlEditor({
@@ -251,6 +197,7 @@ const SqlEditor = React.memo(function SqlEditor({
   const viewRef = useRef<EditorView | null>(null)
   const sqlCompartmentRef = useRef(new Compartment())
   const readOnlyCompartmentRef = useRef(new Compartment())
+  const { compartment: themeCompartment, theme: cmTheme, hljsTheme } = useCodeMirrorTheme()
   const autoFormatTimerRef = useRef<number | undefined>(undefined)
   const isFormattingRef = useRef(false)
   const editorReadyRef = useRef(false)
@@ -333,8 +280,8 @@ const SqlEditor = React.memo(function SqlEditor({
         basicSetup,
         history(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
-        appTheme,
-        syntaxHighlighting(appHighlighting),
+        themeCompartment.of(cmTheme),
+        sqlOverlayTheme,
         sqlCompartment.of(
           sql({
             dialect: getSqlDialect(dialect),
@@ -477,6 +424,15 @@ const SqlEditor = React.memo(function SqlEditor({
       effects: setErrorLine.of(errorLine ?? null)
     })
   }, [errorLine])
+
+  // ── Reactively update CodeMirror theme when the setting changes ──
+  useEffect(() => {
+    const view = viewRef.current
+    if (!view) return
+    view.dispatch({
+      effects: themeCompartment.reconfigure(cmTheme)
+    })
+  }, [hljsTheme, cmTheme, themeCompartment])
 
   // ── Format method (can be called from toolbar) ────────────────────
   const format = useCallback(() => {

@@ -6,9 +6,9 @@
 import { useEffect, useRef } from 'react'
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
-import { oneDark } from '@codemirror/theme-one-dark'
 import { FileCode } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
+import { useCodeMirrorTheme } from '../../../hooks/useCodeMirrorTheme'
 import type { Extension } from '@codemirror/state'
 
 // ── Language extension loader ───────────────────────────────────────
@@ -69,6 +69,7 @@ export default function CodeViewer(): React.JSX.Element {
   const openFiles = useCortexStore((s) => s.openFiles)
   const scrollToLine = useCortexStore((s) => s.scrollToLine)
   const setScrollToLine = useCortexStore((s) => s.setScrollToLine)
+  const { compartment: themeCompartment, theme: cmTheme, hljsTheme } = useCodeMirrorTheme()
 
   // Get language from openFiles list for the active file
   const activeFileEntry = openFiles.find((f) => f.path === activeFilePath)
@@ -93,7 +94,7 @@ export default function CodeViewer(): React.JSX.Element {
         doc: fileContent!.content,
         extensions: [
           basicSetup,
-          oneDark,
+          themeCompartment.of(cmTheme),
           langExt,
           EditorView.editable.of(false),
           EditorState.readOnly.of(true),
@@ -115,7 +116,16 @@ export default function CodeViewer(): React.JSX.Element {
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fileContent, language])
+
+  // Reactively update CodeMirror theme when the setting changes
+  useEffect(() => {
+    if (!viewRef.current) return
+    viewRef.current.dispatch({
+      effects: themeCompartment.reconfigure(cmTheme)
+    })
+  }, [hljsTheme, cmTheme, themeCompartment])
 
   // Scroll to line when requested
   useEffect(() => {

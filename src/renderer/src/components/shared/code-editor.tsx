@@ -3,7 +3,6 @@ import { Copy, Check } from 'lucide-react'
 import { EditorView, keymap, placeholder as cmPlaceholder, lineNumbers } from '@codemirror/view'
 import { EditorState, Compartment } from '@codemirror/state'
 import { defaultKeymap, historyKeymap, history } from '@codemirror/commands'
-import { oneDark } from '@codemirror/theme-one-dark'
 import { sql, PostgreSQL, MySQL } from '@codemirror/lang-sql'
 import { javascript } from '@codemirror/lang-javascript'
 import { python } from '@codemirror/lang-python'
@@ -15,6 +14,7 @@ import { markdown } from '@codemirror/lang-markdown'
 import type { Extension } from '@codemirror/state'
 import { cn } from '@renderer/lib/utils'
 import { Button } from '@renderer/components/ui/button'
+import { useCodeMirrorTheme } from '@renderer/hooks/useCodeMirrorTheme'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -74,34 +74,7 @@ function getLanguageExtension(
   }
 }
 
-const zenithTheme = EditorView.theme({
-  '&': {
-    backgroundColor: 'hsl(240 6% 8%)',
-    color: 'hsl(0 0% 95%)',
-    fontSize: '13px'
-  },
-  '.cm-content': {
-    caretColor: 'hsl(263 70% 58%)',
-    fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace'
-  },
-  '.cm-cursor': {
-    borderLeftColor: 'hsl(263 70% 58%)'
-  },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
-    backgroundColor: 'hsl(263 70% 58% / 0.2) !important'
-  },
-  '.cm-activeLine': {
-    backgroundColor: 'hsl(240 4% 16% / 0.5)'
-  },
-  '.cm-gutters': {
-    backgroundColor: 'hsl(240 6% 8%)',
-    color: 'hsl(240 5% 65%)',
-    borderRight: '1px solid hsl(240 4% 16%)'
-  },
-  '.cm-activeLineGutter': {
-    backgroundColor: 'hsl(240 4% 16% / 0.5)'
-  }
-})
+// Theme is now provided by useCodeMirrorTheme() hook — syncs with settings
 
 // ---------------------------------------------------------------------------
 // Component
@@ -125,6 +98,7 @@ export function CodeEditor({
   const langCompartment = useRef(new Compartment())
   const readOnlyCompartment = useRef(new Compartment())
   const [copied, setCopied] = useState(false)
+  const { compartment: themeCompartment, theme: cmTheme, hljsTheme } = useCodeMirrorTheme()
 
   const handleCopy = useCallback(async () => {
     await navigator.clipboard.writeText(value)
@@ -137,8 +111,7 @@ export function CodeEditor({
     if (!containerRef.current) return
 
     const extensions: Extension[] = [
-      zenithTheme,
-      oneDark,
+      themeCompartment.of(cmTheme),
       history(),
       langCompartment.current.of(getLanguageExtension(language, dialect, schemaCompletions)),
       readOnlyCompartment.current.of([
@@ -237,6 +210,15 @@ export function CodeEditor({
       ])
     })
   }, [readOnly])
+
+  // Reactively update CodeMirror theme when the setting changes
+  useEffect(() => {
+    const view = viewRef.current
+    if (!view) return
+    view.dispatch({
+      effects: themeCompartment.reconfigure(cmTheme)
+    })
+  }, [hljsTheme, cmTheme, themeCompartment])
 
   return (
     <div
