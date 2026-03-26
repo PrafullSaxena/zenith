@@ -90,9 +90,10 @@ export default function ConnectionManager({
         <div className="space-y-2">
           {/* Dropdown selector with Select */}
           <SimpleSelect
-            value={activeConnectionId ?? ''}
+            value={activeConnectionId ?? undefined}
             onChange={(val) => onSelectConnection(val || null)}
-            options={[{ value: '', label: 'Select a connection...' }, ...connectionOptions]}
+            options={connectionOptions}
+            placeholder="Select a connection..."
           />
 
           {/* Selected connection info + actions */}

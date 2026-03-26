@@ -75,15 +75,9 @@ export default function SchemaExplorer({
     return tables.filter((t) => fuzzyMatch(searchQuery.trim(), t.name))
   }, [tables, searchQuery])
 
-  // Build options for Select
-  const dbOptions = [
-    { value: '', label: 'Select database...' },
-    ...databases.map((db) => ({ value: db, label: db }))
-  ]
-  const schemaOptions = [
-    { value: '', label: 'Select schema...' },
-    ...schemas.map((s) => ({ value: s, label: s }))
-  ]
+  // Build options for Select (empty-string values are filtered by SimpleSelect)
+  const dbOptions = databases.map((db) => ({ value: db, label: db }))
+  const schemaOptions = schemas.map((s) => ({ value: s, label: s }))
 
   return (
     <div className="space-y-3">
@@ -97,9 +91,10 @@ export default function SchemaExplorer({
           <Skeleton className="h-4 w-full" />
         ) : (
           <SimpleSelect
-            value={activeDatabase ?? ''}
+            value={activeDatabase ?? undefined}
             onChange={(val) => val && onDatabaseChange(val)}
             options={dbOptions}
+            placeholder="Select database..."
           />
         )}
       </div>
@@ -110,9 +105,10 @@ export default function SchemaExplorer({
           Schema
         </label>
         <SimpleSelect
-          value={activeSchema ?? ''}
+          value={activeSchema ?? undefined}
           onChange={(val) => val && onSchemaChange(val)}
           options={schemaOptions}
+          placeholder="Select schema..."
           disabled={!activeDatabase}
         />
       </div>
