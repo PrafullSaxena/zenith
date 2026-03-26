@@ -1332,3 +1332,28 @@ body {
     border-color 300ms var(--ease-smooth, ease),
     box-shadow 300ms var(--ease-smooth, ease) !important;
 }
+
+/* ── Global focus-visible ring ──────────────────────────────── */
+/* Baseline visible focus indicator for keyboard navigation.
+   Components with their own focus-visible:ring-* classes
+   override this via specificity. */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+/* Nuclear option: disables ALL CSS animations and transitions
+   when the user prefers reduced motion. Framer Motion already
+   respects its own useReducedMotion, but this catches plain CSS
+   transitions on all components. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

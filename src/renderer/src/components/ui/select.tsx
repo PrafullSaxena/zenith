@@ -19,7 +19,7 @@ function SelectTrigger({
       className={cn(
         "flex h-9 w-full items-center justify-between gap-2 rounded-2xl border bg-card px-3 py-2 text-sm shadow-xs transition-colors",
         "placeholder:text-muted-foreground",
-        "focus:border-primary focus:ring-2 focus:ring-primary/25 focus:outline-none",
+        "focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:outline-none",
         "disabled:cursor-not-allowed disabled:opacity-50",
         "[&>span]:line-clamp-1",
         className

@@ -79,7 +79,7 @@ function SidebarIcon({
 
   const linkContent = (
     <NavLink to={to} className="no-drag group relative flex items-center w-full">
-      {({ isActive }) => (
+      {({ isActive }: { isActive: boolean }) => (
         <>
           {/* Active indicator — sliding left accent bar via layoutId */}
           {isActive && (
@@ -212,6 +212,8 @@ export function Sidebar(): React.JSX.Element {
   return (
     <TooltipProvider>
       <motion.aside
+        role="navigation"
+        aria-label="Main navigation"
         className={cn(
           'relative z-10 flex h-full flex-shrink-0 flex-col',
           'border-r border-border bg-card/88 backdrop-blur-[14px]'
@@ -269,6 +271,7 @@ export function Sidebar(): React.JSX.Element {
               onReorder={handleReorder}
               className="flex flex-col gap-1"
               as="div"
+              aria-label="Plugin navigation"
             >
               {orderedPlugins.map((plugin) => (
                 <Reorder.Item
