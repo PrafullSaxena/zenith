@@ -74,6 +74,30 @@ export default function TextCraftView(): React.JSX.Element {
     setRightWidth((prev) => clamp(prev - (dx * 100) / containerWidthRef.current, 20, 50))
   }, [])
 
+  /** Creates onMouseDown for a resize handle that fires `onDrag(dx)` per mouse-move. */
+  const makeResizeHandler = useCallback(
+    (onDrag: (dx: number) => void) => (e: React.MouseEvent) => {
+      e.preventDefault()
+      let lastX = e.clientX
+      const onMouseMove = (ev: MouseEvent): void => {
+        const dx = ev.clientX - lastX
+        lastX = ev.clientX
+        onDrag(dx)
+      }
+      const onMouseUp = (): void => {
+        document.removeEventListener('mousemove', onMouseMove)
+        document.removeEventListener('mouseup', onMouseUp)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+      document.addEventListener('mousemove', onMouseMove)
+      document.addEventListener('mouseup', onMouseUp)
+    },
+    []
+  )
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
       {/* Header + tab bar */}
@@ -102,14 +126,20 @@ export default function TextCraftView(): React.JSX.Element {
               <InputPanel />
             </div>
 
-            <div className="w-px cursor-col-resize bg-border hover:bg-primary/50 transition-colors" />
+            <div
+              onMouseDown={makeResizeHandler(handleLeftResize)}
+              className="w-1 shrink-0 cursor-col-resize bg-border hover:bg-primary/50 active:bg-primary/70 transition-colors"
+            />
 
             {/* Middle: Controls */}
             <div className="flex-1 overflow-hidden">
               <ControlsPanel />
             </div>
 
-            <div className="w-px cursor-col-resize bg-border hover:bg-primary/50 transition-colors" />
+            <div
+              onMouseDown={makeResizeHandler(handleRightResize)}
+              className="w-1 shrink-0 cursor-col-resize bg-border hover:bg-primary/50 active:bg-primary/70 transition-colors"
+            />
 
             {/* Right: Output */}
             <div style={{ width: rightWidth + '%' }} className="shrink-0 overflow-hidden">
