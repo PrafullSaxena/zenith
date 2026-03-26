@@ -29,22 +29,22 @@
 
 /* -- shadcn HSL Token System (zenith-violet theme) ----------------------- */
 :root, [data-theme="zenith-violet"] {
-  /* Base surfaces */
-  --background: 240 10% 4%;
+  /* Base surfaces — slightly lighter than OLED black for depth */
+  --background: 240 10% 5.5%;
   --foreground: 0 0% 95%;
-  --card: 240 6% 8%;
+  --card: 240 6% 10%;
   --card-foreground: 0 0% 95%;
-  --popover: 240 6% 8%;
+  --popover: 240 6% 10%;
   --popover-foreground: 0 0% 95%;
 
   /* Accent */
   --primary: 263 70% 58%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary surfaces */
-  --secondary: 240 4% 16%;
+  /* Secondary surfaces — more visible */
+  --secondary: 240 4% 18%;
   --secondary-foreground: 0 0% 85%;
-  --muted: 240 4% 16%;
+  --muted: 240 4% 18%;
   --muted-foreground: 240 5% 65%;
 
   /* Accent alias */
@@ -57,9 +57,9 @@
   --warning: 38 92% 50%;
   --info: 217 91% 60%;
 
-  /* Chrome */
-  --border: 240 4% 16%;
-  --input: 240 4% 16%;
+  /* Chrome — more visible borders */
+  --border: 240 4% 20%;
+  --input: 240 4% 20%;
   --ring: 263 70% 58%;
 
   /* Radius */
@@ -69,13 +69,13 @@
   --radius-pill: 9999px;
 
   /* Sidebar (shadcn sidebar component tokens) */
-  --sidebar: 240 6% 8%;
+  --sidebar: 240 6% 10%;
   --sidebar-foreground: 0 0% 95%;
   --sidebar-primary: 263 70% 58%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 4% 16%;
+  --sidebar-accent: 240 4% 18%;
   --sidebar-accent-foreground: 0 0% 85%;
-  --sidebar-border: 240 4% 16%;
+  --sidebar-border: 240 4% 20%;
   --sidebar-ring: 263 70% 58%;
 
   /* Chart colors */
@@ -579,10 +579,14 @@
 
 html,
 body {
-  background: radial-gradient(circle at top, hsl(var(--primary) / 0.16), transparent 26%), hsl(var(--background));
+  background:
+    radial-gradient(circle at top, hsl(var(--primary) / 0.20), transparent 26%),
+    radial-gradient(ellipse at 80% 60%, hsl(30 40% 12% / 0.06), transparent 50%),
+    hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-sans);
   min-height: 100vh;
+  backdrop-filter: blur(1px);
 }
 
 * {
