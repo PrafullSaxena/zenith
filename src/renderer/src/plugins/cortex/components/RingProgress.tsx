@@ -1,7 +1,6 @@
 /**
  * RingProgress — Animated circular progress ring for test coverage etc.
  */
-import span from './span'
 
 interface Props {
   value: number      // 0-100
@@ -47,7 +46,7 @@ export default function RingProgress({ value, size = 80, strokeWidth = 6, color 
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span value={Math.round(value)} className="text-sm font-bold text-foreground" />
+        <span className="text-sm font-bold text-foreground">{Math.round(value)}</span>
         <span className="text-[7px] uppercase tracking-wide text-muted-foreground">{label ?? '%'}</span>
       </div>
     </div>

@@ -59,7 +59,7 @@ export type ToastMessage = {
   id: string
   message: string
   noteId?: string
-  type: 'info' | 'success'
+  type: 'info' | 'success' | 'error' | 'warning'
 }
 
 // ── Knowledge graph types ───────────────────────────────────────────

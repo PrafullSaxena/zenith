@@ -10,10 +10,10 @@
  */
 import { useState, useCallback, useEffect } from 'react'
 import { Settings2 } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
+import { Input } from '@renderer/components/ui/input'
+import { SimpleSelect } from '@renderer/components/ui/select'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { getCatalog } from '../../data/cloud-pricing/index'
 import type { ResourceConfig, ConfigField, SelectOption } from '../../types/launchpad'
@@ -28,7 +28,7 @@ function NumberInput({
   value,
   min,
   max,
-  label,
+  label: _label,
   onChange
 }: {
   value: number
@@ -81,7 +81,7 @@ function NumberInput({
       value={localValue}
       min={min}
       max={max}
-      label={label}
+     
       onChange={handleChange}
       onBlur={handleBlur}
     />
@@ -95,7 +95,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
 
   if (selectedServices.length === 0) {
     return (
-      <div
+      <EmptyState
         icon={Settings2}
         title="No services selected"
         description="Select services from the catalog on the left to configure their resources"
@@ -165,7 +165,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
                             {field.label}
                           </label>
                         )}
-                        <Select
+                        <SimpleSelect
                           options={field.options.map((opt: SelectOption) => ({
                             value: opt.value,
                             label: opt.label

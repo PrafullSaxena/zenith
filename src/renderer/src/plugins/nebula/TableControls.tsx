@@ -97,7 +97,7 @@ function CtrlBtn({
   icon: React.ReactNode
   onClick: () => void
   title: string
-  variant?: 'default' | 'danger'
+  variant?: 'default' | 'destructive'
 }): React.JSX.Element {
   return (
     <button
@@ -105,7 +105,7 @@ function CtrlBtn({
       onClick={onClick}
       title={title}
       className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded transition-colors ${
-        variant === 'danger'
+        variant === 'destructive'
           ? 'text-muted-foreground/50 hover:bg-red-400/10 hover:text-red-400'
           : 'text-muted-foreground/50 hover:bg-primary/10 hover:text-primary'
       }`}

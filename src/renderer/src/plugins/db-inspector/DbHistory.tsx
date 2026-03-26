@@ -9,7 +9,11 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { Eye, MessageSquare, Zap, GitFork, Clock } from 'lucide-react'
 import type { DbHistoryEntry } from '../../types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface DbHistoryProps {
@@ -46,7 +50,7 @@ export default function DbHistory({
   if (history.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div
+        <EmptyState
           icon={Clock}
           title="No query history"
           description="Executed queries will appear here"
@@ -72,7 +76,7 @@ export default function DbHistory({
 
           return (
             <motion.div key={entry.id} variants={staggerItem}>
-              <Card variant="default" className="flex items-start gap-3 p-3">
+              <Card className="flex items-start gap-3 p-3">
                 {/* Type badge */}
                 <Badge variant={config.variant}>
                   <Icon size={10} />

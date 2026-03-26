@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PLUGINS } from '../../plugins/registry'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@renderer/components/ui/tabs'

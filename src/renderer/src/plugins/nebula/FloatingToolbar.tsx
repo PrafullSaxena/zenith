@@ -23,7 +23,7 @@ import {
   Quote,
   Link
 } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 
 interface FloatingToolbarProps {
   editor: Editor

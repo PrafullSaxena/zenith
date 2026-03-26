@@ -6,9 +6,8 @@
  */
 
 import { AlertTriangle } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
+import { Dialog } from '@renderer/components/ui/dialog'
 
 interface DeleteConfirmDialogProps {
   isOpen: boolean
@@ -26,7 +25,7 @@ export default function DeleteConfirmDialog({
   const displayTitle = noteTitle || 'Untitled'
 
   return (
-    <Dialog isOpen={isOpen} onClose={onCancel} title="Delete Note">
+    <Dialog open={isOpen} onOpenChange={onCancel}>
       <div className="flex flex-col items-center text-center">
         <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10">
           <AlertTriangle size={20} className="text-red-400" />

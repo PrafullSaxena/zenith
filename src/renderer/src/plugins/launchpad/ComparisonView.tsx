@@ -7,10 +7,9 @@
  */
 import React from 'react'
 import { GitCompare, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { CloudProvider, ServiceSelection } from '../../types/launchpad'
 import { getCatalog, PROVIDER_INFO } from '../../data/cloud-pricing/index'
@@ -100,7 +99,7 @@ export default function ComparisonView(): React.JSX.Element {
   // Empty state
   if (!provider || selectedServices.length === 0) {
     return (
-      <div
+      <EmptyState
         icon={GitCompare}
         title="Nothing to compare"
         description="Estimate costs for multiple providers to compare. Select a provider and add services in the Estimator tab."

@@ -13,8 +13,8 @@ import {
   Settings
 } from 'lucide-react'
 import type { DbConnection, ConnectionStatus } from '../../types/database'
-import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
+import { SimpleSelect } from '@renderer/components/ui/select'
 
 interface ConnectionManagerProps {
   connections: DbConnection[]
@@ -89,7 +89,7 @@ export default function ConnectionManager({
       ) : (
         <div className="space-y-2">
           {/* Dropdown selector with Select */}
-          <Select
+          <SimpleSelect
             value={activeConnectionId ?? ''}
             onChange={(val) => onSelectConnection(val || null)}
             options={[{ value: '', label: 'Select a connection...' }, ...connectionOptions]}

@@ -20,7 +20,10 @@ import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Pin, Trash2, Pencil, Sparkles, FileText } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import NoteContextMenu from './NoteContextMenu'
 import DeleteConfirmDialog from './DeleteConfirmDialog'
@@ -212,7 +215,7 @@ export default function NoteList(): React.JSX.Element {
       {/* Notes list */}
       <div className="flex-1">
         {notes.length === 0 ? (
-          <div
+          <EmptyState
             icon={FileText}
             title="No notes yet"
             description="Create your first note"
@@ -335,7 +338,6 @@ function NoteItem({
 
   return (
     <Card
-      variant="default"
       className={`relative mx-2 mb-1 cursor-pointer p-3 ${
         isActive ? 'border-l-2 border-primary' : ''
       }`}
@@ -353,7 +355,7 @@ function NoteItem({
             {note.title || 'Untitled'}
           </span>
           {note.summary && (
-            <Sparkles size={10} className="shrink-0 text-primary/60" title="AI summarized" />
+            <span title="AI summarized"><Sparkles size={10} className="shrink-0 text-primary/60" /></span>
           )}
         </div>
 
@@ -381,7 +383,7 @@ function NoteItem({
             {relativeTime(note.updatedAt)}
           </span>
           {note.hasDrawing && (
-            <Pencil size={9} className="text-muted-foreground/40" title="Has drawing" />
+            <span title="Has drawing"><Pencil size={9} className="text-muted-foreground/40" /></span>
           )}
         </div>
       </div>

@@ -9,10 +9,9 @@
 import { Eye, Clock, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import type { FormatOption } from '../../types/textcraft'
 
@@ -30,7 +29,7 @@ export default function HistoryPanel(): React.JSX.Element {
 
   if (history.length === 0) {
     return (
-      <div
+      <EmptyState
         icon={Clock}
         title="No history yet"
         description="Paste text to refine"
@@ -49,7 +48,7 @@ export default function HistoryPanel(): React.JSX.Element {
       >
         {history.map((entry) => (
           <motion.div key={entry.id} variants={staggerItem}>
-            <Card variant="default" className="cursor-pointer group">
+            <Card className="cursor-pointer group">
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   {/* Input preview */}
@@ -63,7 +62,7 @@ export default function HistoryPanel(): React.JSX.Element {
                       {FORMAT_LABELS[entry.options.format] || entry.options.format}
                     </Badge>
                     {entry.options.tones.map((tone) => (
-                      <Badge key={tone} variant="neutral">
+                      <Badge key={tone} variant="default">
                         {tone}
                       </Badge>
                     ))}

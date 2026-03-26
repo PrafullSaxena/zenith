@@ -15,9 +15,7 @@ import {
   Download
 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
+import { Card } from '@renderer/components/ui/card'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
@@ -40,7 +38,7 @@ const INSIGHT_TABS = [
 function TabFallback(): React.JSX.Element {
   return (
     <div className="p-4 space-y-3">
-      <Skeleton className="h-4 w-full" lines={4} />
+      <Skeleton className="h-4 w-full" />
     </div>
   )
 }

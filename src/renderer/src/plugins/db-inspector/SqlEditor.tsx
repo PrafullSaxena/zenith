@@ -20,7 +20,7 @@ import { sql, PostgreSQL, MySQL } from '@codemirror/lang-sql'
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { tags } from '@lezer/highlight'
 import { basicSetup } from 'codemirror'
-import { Decoration, DecorationSet, ViewPlugin, ViewUpdate } from '@codemirror/view'
+import { Decoration, DecorationSet, ViewUpdate } from '@codemirror/view'
 import { StateField, StateEffect, RangeSetBuilder } from '@codemirror/state'
 import { format as sqlFormat } from 'sql-formatter'
 

@@ -4,7 +4,7 @@
  * EXPLAIN, Insights, Query Flow (Mermaid), Tradeoffs, Suggestions, Optimized Query.
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Zap,
   Square,
@@ -33,7 +33,10 @@ import type {
   OptimizerTile
 } from '../../types/database'
 import { useDbStore } from '../../stores/db-store'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import MermaidRenderer from './MermaidRenderer'
 import { highlightCode } from '../../lib/highlight'
@@ -275,7 +278,7 @@ export default function QueryOptimizer({
       <div ref={streamRef} className="flex-1 overflow-auto p-4">
         {!session && tiles.length === 0 && (
           <div className="flex h-full items-center justify-center">
-            <div
+            <EmptyState
               icon={Zap}
               title="No query to optimize"
               description="Paste a SQL query and click Analyze. AI will run EXPLAIN ANALYZE, inspect indexes and statistics, then suggest optimizations."
@@ -447,7 +450,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
             className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             title="Copy plain text (no formatting)"
           >
-            <span icon={copiedMode === 'raw' ? Check : AlignLeft} iconKey={copiedMode === 'raw' ? 'check' : 'alignleft'} size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} />
+            {copiedMode === 'raw' ? <Check size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} /> : <AlignLeft size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} />}
             {copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}
           </button>
           <button
@@ -456,7 +459,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
             className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             title="Copy formatted markdown"
           >
-            <span icon={copiedMode === 'formatted' ? Check : FileText} iconKey={copiedMode === 'formatted' ? 'check' : 'filetext'} size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} />
+            {copiedMode === 'formatted' ? <Check size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} /> : <FileText size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} />}
             {copiedMode === 'formatted' ? 'Copied!' : 'Formatted'}
           </button>
         </div>
@@ -656,7 +659,7 @@ function SuggestionCard({
     }
   }, [suggestion.suggestedSQL])
 
-  const badgeVariant = suggestion.severity === 'high' ? 'error' as const : suggestion.severity === 'medium' ? 'warning' as const : 'info' as const
+  const badgeVariant = suggestion.severity === 'high' ? 'destructive' as const : suggestion.severity === 'medium' ? 'warning' as const : 'info' as const
 
   return (
     <Card
@@ -698,7 +701,7 @@ function SuggestionCard({
               onClick={handleCopySql}
               className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
             >
-              <span icon={sqlCopied ? Check : Copy} iconKey={sqlCopied ? 'check' : 'copy'} size={9} className={sqlCopied ? 'text-success' : undefined} />
+              {sqlCopied ? <Check size={9} className={sqlCopied ? 'text-success' : undefined} /> : <Copy size={9} className={sqlCopied ? 'text-success' : undefined} />}
               {sqlCopied ? 'Copied!' : 'Copy'}
             </button>
           </div>
@@ -741,7 +744,7 @@ function OptimizedQueryBlock({
           onClick={handleCopy}
           className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[var(--primary)]/10 hover:text-[hsl(var(--foreground))]"
         >
-          <span icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={10} className={copied ? 'text-emerald-400' : undefined} />
+          {copied ? <Check size={10} className={copied ? 'text-emerald-400' : undefined} /> : <Copy size={10} className={copied ? 'text-emerald-400' : undefined} />}
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>

@@ -5,14 +5,14 @@
  * Uses Badge for service type labels and Button for actions.
  * Includes Save Estimation, Export PDF, and Clear All actions.
  */
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { DollarSign, Download, Trash2, Save } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 
-import span from '@renderer/components/ui/span'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { getCatalog } from '../../data/cloud-pricing/index'
 import { calculateTotalCost } from '../../data/cloud-pricing/calculator'
@@ -148,7 +148,7 @@ export default function EstimationSummary(): React.JSX.Element {
       {/* Line items */}
       <div className="flex-1 overflow-y-auto">
         {!result || selectedServices.length === 0 ? (
-          <div
+          <EmptyState
             icon={DollarSign}
             title="No services selected"
             description="Add services from the catalog to see cost estimates"
@@ -222,9 +222,7 @@ export default function EstimationSummary(): React.JSX.Element {
           <div className="text-right">
             <p className="text-lg font-bold text-[hsl(var(--foreground))] flex items-center gap-0.5">
               $
-              <span
-                value={Math.round(displayMode === 'monthly' ? totalMonthly : totalYearly)}
-              />
+              <span>{Math.round(displayMode === 'monthly' ? totalMonthly : totalYearly)}</span>
             </p>
             <p className="text-xs text-[hsl(var(--muted-foreground))]/70">
               per {displayMode === 'monthly' ? 'month' : 'year'}

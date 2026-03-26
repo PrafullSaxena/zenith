@@ -3,7 +3,10 @@ import { motion } from 'framer-motion'
 import { Pencil, Check, X, ChevronDown, ChevronRight } from 'lucide-react'
 import type { ReviewSession, ReviewComment } from '../../types/review'
 import { SEVERITY_CONFIG, CONFIDENCE_CONFIG, KIND_CONFIG } from '../../types/review'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface ReviewPanelProps {
@@ -105,7 +108,7 @@ export function ReviewPanel({
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Button
-          variant={canStart ? 'primary' : 'ghost'}
+          variant={canStart ? 'default' : 'ghost'}
           disabled={!canStart}
           onClick={onStart}
         >
@@ -144,7 +147,7 @@ export function ReviewPanel({
 
         {/* Streaming placeholder skeleton */}
         <div className="mx-3 mb-3">
-          <Skeleton className="h-4 w-full" lines={3} />
+          <Skeleton className="h-4 w-full" />
         </div>
 
         <div className="px-3 pb-3">
@@ -380,7 +383,7 @@ function FindingCard({
         />
 
         {/* Severity badge */}
-        <Badge variant={comment.severity === 'blocking' ? 'error' : comment.severity === 'important' ? 'warning' : 'info'}>
+        <Badge variant={comment.severity === 'blocking' ? 'destructive' : comment.severity === 'important' ? 'warning' : 'info'}>
           {sevConfig.emoji} {sevConfig.label}
         </Badge>
 

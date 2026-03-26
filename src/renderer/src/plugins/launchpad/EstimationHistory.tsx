@@ -8,10 +8,10 @@
 import React from 'react'
 import { Clock, Trash2, RotateCcw } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { EstimationEntry } from '../../types/launchpad'
@@ -40,9 +40,9 @@ function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
-const PROVIDER_BADGE_VARIANT: Record<string, 'default' | 'accent' | 'success' | 'warning' | 'error'> = {
+const PROVIDER_BADGE_VARIANT: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'info'> = {
   aws: 'warning',
-  gcp: 'accent',
+  gcp: 'info',
   azure: 'default'
 }
 
@@ -70,7 +70,7 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
 
   return (
     <motion.div variants={staggerItem}>
-      <Card variant="default" className="cursor-pointer" onClick={() => onLoad(entry)}>
+      <Card className="cursor-pointer" onClick={() => onLoad(entry)}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
@@ -158,7 +158,7 @@ export default function EstimationHistory(): React.JSX.Element {
       {/* Content */}
       <div className="flex-1 p-4">
         {history.length === 0 ? (
-          <div
+          <EmptyState
             icon={Clock}
             title="No estimation history"
             description="Your cost estimates will appear here. Save an estimation from the Estimator tab to get started."

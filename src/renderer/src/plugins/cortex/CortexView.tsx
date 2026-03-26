@@ -14,11 +14,9 @@ import RepoManager from './components/RepoManager'
 import InsightsPanel from './components/InsightsPanel'
 import CodePanel from './components/CodePanel'
 import QAPanel from './components/QAPanel'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
+import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '@renderer/lib/motion'
 
 type CortexTab = 'insights' | 'code' | 'qa' | 'repos'
@@ -73,7 +71,7 @@ export default function CortexView(): React.JSX.Element {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-background">
       {/* Card with Brain icon, gradient title, and tab bar */}
-      <Card
+      <PageHeader
         icon={Brain}
         title="Cortex"
         tabs={TABS}

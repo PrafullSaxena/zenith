@@ -27,7 +27,9 @@ import type {
   RelationshipMode,
   ERInferenceStatus
 } from '../../types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Button } from '@renderer/components/ui/button'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import MermaidRenderer from './MermaidRenderer'
 
 
@@ -292,7 +294,7 @@ export default function ERDiagram({
           {(session || editedSyntax) && (
             <>
               <Button variant="ghost" size="sm" onClick={handleCopy}>
-                <span icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={12} className={copied ? 'text-emerald-400' : undefined} />
+                {copied ? <Check size={12} className={copied ? 'text-emerald-400' : undefined} /> : <Copy size={12} className={copied ? 'text-emerald-400' : undefined} />}
                 {copied ? 'Copied!' : 'Copy Mermaid'}
               </Button>
               <Button
@@ -367,7 +369,7 @@ export default function ERDiagram({
       <div className="flex-1 overflow-auto p-4">
         {!session && !editedSyntax && (
           <div className="flex h-full items-center justify-center">
-            <div
+            <EmptyState
               icon={Network}
               title="No ER diagram"
               description="Select tables and generate an ER diagram. Columns, primary keys, foreign keys, and relationships will be visualized. All three modes are generated at once."

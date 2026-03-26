@@ -16,11 +16,9 @@
 import { useEffect } from 'react'
 import { Rocket, Calculator, MessageSquare, Clock, GitCompare } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
+import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '@renderer/lib/motion'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { LaunchpadTab, CloudProvider } from '../../types/launchpad'
@@ -61,7 +59,7 @@ export default function LaunchpadView(): React.JSX.Element {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
       {/* Card with gradient title and GlassTab bar */}
-      <Card
+      <PageHeader
         icon={Rocket}
         title="Launchpad"
         tabs={TABS}

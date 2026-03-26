@@ -11,10 +11,11 @@ import { ReviewPanel } from './ReviewPanel'
 import { ReviewHistory } from './ReviewHistory'
 import { SettingsPanel } from './SettingsPanel'
 import { GitPullRequest } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
+import { SimpleSelect } from '@renderer/components/ui/select'
+import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '../../lib/motion'
 import type { PullRequest } from '../../types/bitbucket'
 import type { ReviewComment, ReviewHistoryEntry } from '../../types/review'
@@ -308,7 +309,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Card with gradient title and tabs */}
-      <Card
+      <PageHeader
         icon={GitPullRequest}
         title="Code Review"
         tabs={tabs}
@@ -325,7 +326,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
               {workspace} / {repoSlug}
             </Badge>
           ) : (
-            <Select
+            <SimpleSelect
               value={String(selectedRepoIndex)}
               onChange={(val) => handleRepoSwitch(Number(val))}
               options={repoOptions}

@@ -9,17 +9,14 @@
  */
 import React, { useState, useMemo } from 'react'
 import { Sparkles, MessageSquare, Square, X } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useSettingsStore } from '../../stores/settings-store'
+import { ChatInterface, type ChatMessage } from '../../components/shared/chat-interface'
 import MarkdownRenderer from '../../components/MarkdownRenderer'
 
 const EXAMPLE_PROMPTS = [
@@ -30,7 +27,7 @@ const EXAMPLE_PROMPTS = [
 ]
 
 export default function AiAdvisor(): React.JSX.Element {
-  const [question, setQuestion] = useState('')
+  const [setQuestion] = useState('')
 
   // Store
   const aiSession = useLaunchpadStore((s) => s.aiSession)
@@ -73,9 +70,9 @@ export default function AiAdvisor(): React.JSX.Element {
   }
 
   // Map AI session data to ChatInterface messages
-  const messages: ChatInterfaceMessage[] = useMemo(() => {
+  const messages: ChatMessage[] = useMemo(() => {
     if (!aiSession) return []
-    const msgs: ChatInterfaceMessage[] = []
+    const msgs: ChatMessage[] = []
 
     // Question message
     msgs.push({
@@ -105,7 +102,7 @@ export default function AiAdvisor(): React.JSX.Element {
   if (!hasAgent && !aiSession) {
     return (
       <div className="flex flex-col h-full">
-        <div
+        <EmptyState
           icon={MessageSquare}
           title="Configure an AI agent"
           description="Set up an AI agent in Settings to get cloud cost advice and service recommendations"
@@ -135,7 +132,7 @@ export default function AiAdvisor(): React.JSX.Element {
             {EXAMPLE_PROMPTS.map((prompt, i) => (
               <Card
                 key={i}
-                variant="default"
+                interactive
                 className="p-3 cursor-pointer"
                 onClick={() => handleExamplePrompt(prompt)}
               >
@@ -173,7 +170,6 @@ export default function AiAdvisor(): React.JSX.Element {
               ? 'Waiting for response...'
               : 'Ask another question... (Enter to send)'
           }
-          renderContent={renderContent}
           className="flex-1"
         />
       </div>

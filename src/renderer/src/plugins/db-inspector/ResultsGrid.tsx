@@ -1,7 +1,10 @@
 import { useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Download, Copy, Check, AlertCircle, Table2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import CellModal from './CellModal'
 
 // -- Types
@@ -371,7 +374,7 @@ export default function ResultsGrid({
   if (isLoading && rows.length === 0) {
     return (
       <div className="p-4">
-        <Skeleton variant="table" />
+        <Skeleton />
       </div>
     )
   }
@@ -379,7 +382,7 @@ export default function ResultsGrid({
   if (rows.length === 0 && !isLoading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div
+        <EmptyState
           icon={Table2}
           title="No results"
           description="Run a query to see results"
@@ -405,7 +408,7 @@ export default function ResultsGrid({
           onClick={handleCopyAllTsv}
           className={copiedTsv ? 'text-green-400' : ''}
         >
-          <span icon={copiedTsv ? Check : Copy} iconKey={copiedTsv ? 'check' : 'copy'} size={12} className={copiedTsv ? 'text-emerald-400' : undefined} />
+          {copiedTsv ? <Check size={12} className={copiedTsv ? 'text-emerald-400' : undefined} /> : <Copy size={12} className={copiedTsv ? 'text-emerald-400' : undefined} />}
           {copiedTsv ? 'Copied!' : 'Copy TSV'}
         </Button>
         <Button variant="ghost" size="sm" onClick={handleExportCsv}>
@@ -530,7 +533,7 @@ export default function ResultsGrid({
         {/* Load-more spinner at bottom */}
         {isLoading && rows.length > 0 && (
           <div className="flex items-center justify-center py-3">
-            <Skeleton className="h-4 w-full" lines={2} />
+            <Skeleton className="h-4 w-full" />
           </div>
         )}
 

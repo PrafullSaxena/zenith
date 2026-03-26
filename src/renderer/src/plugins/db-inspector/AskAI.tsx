@@ -19,7 +19,9 @@ import {
   Clock
 } from 'lucide-react'
 import type { DbQASession } from '../../types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Button } from '@renderer/components/ui/button'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import MarkdownRenderer from '../../components/MarkdownRenderer'
 import type { QueryExecState } from '../../components/MarkdownRenderer'
 
@@ -178,7 +180,7 @@ export default function AskAI({
   if (!hasConnection) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div
+        <EmptyState
           icon={MessageSquare}
           title="Connect a database"
           description="Select and connect to a database to ask AI questions about your schema"
@@ -344,7 +346,7 @@ export default function AskAI({
                       onClick={handleCopy}
                       className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))] transition-colors hover:bg-white/[0.04] hover:text-[hsl(var(--foreground))]"
                     >
-                      <span icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={10} className={copied ? 'text-emerald-400' : undefined} />
+                      {copied ? <Check size={10} className={copied ? 'text-emerald-400' : undefined} /> : <Copy size={10} className={copied ? 'text-emerald-400' : undefined} />}
                       {copied ? 'Copied!' : 'Copy'}
                     </button>
                   </div>

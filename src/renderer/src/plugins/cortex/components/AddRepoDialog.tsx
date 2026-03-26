@@ -3,12 +3,11 @@
  * Validates URL, fetches branches, and triggers clone.
  */
 import { useState, useCallback, useEffect } from 'react'
-import { Loader2, FolderGit2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Dialog } from '@renderer/components/ui/dialog'
+import { Input } from '@renderer/components/ui/input'
 
 interface Props {
   open: boolean
@@ -131,12 +130,12 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
   }
 
   return (
-    <Dialog isOpen={open} onClose={onClose} title="Add Repository" size="md">
+    <Dialog open={open} onOpenChange={onClose}>
       {/* Form */}
       <div className="flex flex-col gap-4">
         {/* Repository URL */}
         <Input
-          label="Repository URL"
+         
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onBlur={handleUrlBlur}
@@ -175,7 +174,7 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
 
         {/* Repository Name */}
         <Input
-          label="Repository Name"
+         
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="my-repo"

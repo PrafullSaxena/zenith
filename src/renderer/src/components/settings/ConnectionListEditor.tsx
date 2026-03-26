@@ -10,7 +10,7 @@ import {
   EyeOff,
   Database
 } from 'lucide-react'
-import type { DbConnection, ReadStrategy } from '../../types/database'
+import type { ReadStrategy } from '../../types/database'
 
 /** Stored connection entry (same as DbConnection but kept flat for settings). */
 export interface ConnectionEntry {

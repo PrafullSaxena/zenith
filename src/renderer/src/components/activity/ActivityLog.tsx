@@ -4,7 +4,11 @@ import { Activity } from 'lucide-react'
 import { useActivityStore } from '../../stores/activity-store'
 import { ActivityFeed } from '../dashboard/ActivityFeed'
 import { PLUGINS } from '../../plugins/registry'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Button } from '@renderer/components/ui/button'
+import { SimpleSelect } from '@renderer/components/ui/select'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import type { ActivityStatus } from '../../types/activity'
 
@@ -79,14 +83,14 @@ export default function ActivityLog(): React.JSX.Element {
       {/* Filter bar */}
       <motion.div variants={staggerItem}>
         <Card className="flex items-center gap-3">
-          <Select
+          <SimpleSelect
             options={PLUGIN_OPTIONS}
             value={pluginFilter}
             onChange={setPluginFilter}
             placeholder="All Plugins"
             className="w-48"
           />
-          <Select
+          <SimpleSelect
             options={STATUS_OPTIONS}
             value={statusFilter}
             onChange={(val) => setStatusFilter(val as ActivityStatus | 'all')}
@@ -100,13 +104,13 @@ export default function ActivityLog(): React.JSX.Element {
       <motion.div variants={staggerItem}>
         {isLoading ? (
           <div className="space-y-3 py-4">
-            <Skeleton variant="card" className="h-14" />
-            <Skeleton variant="card" className="h-14" />
-            <Skeleton variant="card" className="h-14" />
-            <Skeleton variant="card" className="h-14" />
+            <Skeleton className="h-14" />
+            <Skeleton className="h-14" />
+            <Skeleton className="h-14" />
+            <Skeleton className="h-14" />
           </div>
         ) : filteredEntries.length === 0 ? (
-          <div
+          <EmptyState
             icon={Activity}
             title="No activities found"
             description="Try adjusting your filters to see more results"

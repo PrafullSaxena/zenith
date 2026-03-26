@@ -14,9 +14,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
 import { Link, X } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
+import { Input } from '@renderer/components/ui/input'
 
 interface LinkDialogProps {
   editor: Editor

@@ -11,10 +11,9 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Check, FileText, AlignLeft, Copy, FileDown, ChevronDown, ChevronRight, ChevronsUpDown, Loader2, BookOpen } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
+import { Card } from '@renderer/components/ui/card'
 import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import { renderAllMermaidBlocks } from '../../lib/mermaid-to-png'
 import { markdownToTiptapJson } from '../../lib/markdown-to-tiptap'
@@ -277,7 +276,7 @@ export default function OutputPanel(): React.JSX.Element {
               className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
               title="Copy plain text"
             >
-              <span icon={copiedMode === 'raw' ? Check : AlignLeft} iconKey={copiedMode === 'raw' ? 'check' : 'alignleft'} size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} />
+              {copiedMode === 'raw' ? <Check size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} /> : <AlignLeft size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} />}
               <span>{copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}</span>
             </button>
 
@@ -287,7 +286,7 @@ export default function OutputPanel(): React.JSX.Element {
               className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
               title="Copy markdown source"
             >
-              <span icon={copiedMode === 'formatted' ? Check : FileText} iconKey={copiedMode === 'formatted' ? 'check' : 'filetext'} size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} />
+              {copiedMode === 'formatted' ? <Check size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} /> : <FileText size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} />}
               <span>{copiedMode === 'formatted' ? 'Copied!' : 'Markdown'}</span>
             </button>
 
@@ -312,7 +311,7 @@ export default function OutputPanel(): React.JSX.Element {
               className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
               title="Save as Nebula note"
             >
-              <span icon={savedAsNote ? Check : BookOpen} iconKey={savedAsNote ? 'check' : 'bookopen'} size={13} className={savedAsNote ? 'text-success' : undefined} />
+              {savedAsNote ? <Check size={13} className={savedAsNote ? 'text-success' : undefined} /> : <BookOpen size={13} className={savedAsNote ? 'text-success' : undefined} />}
               <span>{savedAsNote ? 'Saved!' : 'Note'}</span>
             </button>
           </div>
@@ -331,7 +330,7 @@ export default function OutputPanel(): React.JSX.Element {
       <div ref={contentRef} className="flex-1 overflow-y-auto">
         {/* Empty state */}
         {isEmpty && (
-          <div
+          <EmptyState
             icon={FileText}
             title="No output yet"
             description="Paste text and click Refine to see results"
@@ -348,7 +347,7 @@ export default function OutputPanel(): React.JSX.Element {
                 <span className="animate-pulse text-[var(--primary)] text-sm">Refining...</span>
               </>
             ) : (
-              <Skeleton className="h-4 w-full" lines={6} />
+              <Skeleton className="h-4 w-full" />
             )}
           </div>
         )}

@@ -156,8 +156,49 @@ function SelectSeparator({
   )
 }
 
+/**
+ * SimpleSelect -- Convenience wrapper for common Select pattern with options array.
+ * Accepts the same API as the legacy GlassSelect for migration compatibility.
+ */
+interface SimpleSelectProps {
+  options: { value: string; label: string }[]
+  value?: string
+  onChange?: (value: string) => void
+  onValueChange?: (value: string) => void
+  placeholder?: string
+  className?: string
+  disabled?: boolean
+}
+
+function SimpleSelect({
+  options,
+  value,
+  onChange,
+  onValueChange,
+  placeholder,
+  className,
+  disabled,
+}: SimpleSelectProps) {
+  const handleChange = onValueChange ?? onChange
+  return (
+    <Select value={value} onValueChange={handleChange} disabled={disabled}>
+      <SelectTrigger className={className}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
 export {
   Select,
+  SimpleSelect,
   SelectGroup,
   SelectValue,
   SelectTrigger,

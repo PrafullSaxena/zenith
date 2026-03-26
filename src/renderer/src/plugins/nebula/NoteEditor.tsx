@@ -34,7 +34,7 @@ import { useNebulaStore } from '../../stores/nebula-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { tiptapToMarkdown, tiptapToPlainText } from './tiptap-to-markdown'
 import { renderAllMermaidBlocks } from '../../lib/mermaid-to-png'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 import FloatingToolbar from './FloatingToolbar'
 import LinkDialog from './LinkDialog'
 import TableControls from './TableControls'
@@ -529,7 +529,7 @@ export default function NoteEditor({
               className={`p-1 rounded transition-colors ${copiedMode === 'raw' ? 'text-green-400' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title="Copy as plain text"
             >
-              <span icon={copiedMode === 'raw' ? Check : ClipboardCopy} iconKey={copiedMode === 'raw' ? 'check' : 'clipboard'} size={13} className={copiedMode === 'raw' ? 'text-green-400' : undefined} />
+              {copiedMode === 'raw' ? <Check size={13} className={copiedMode === 'raw' ? 'text-green-400' : undefined} /> : <ClipboardCopy size={13} className={copiedMode === 'raw' ? 'text-green-400' : undefined} />}
             </button>
             {/* Copy Markdown */}
             <button
@@ -538,7 +538,7 @@ export default function NoteEditor({
               className={`p-1 rounded transition-colors ${copiedMode === 'markdown' ? 'text-green-400' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title="Copy as markdown"
             >
-              <span icon={copiedMode === 'markdown' ? Check : FileText} iconKey={copiedMode === 'markdown' ? 'check' : 'filetext'} size={13} className={copiedMode === 'markdown' ? 'text-green-400' : undefined} />
+              {copiedMode === 'markdown' ? <Check size={13} className={copiedMode === 'markdown' ? 'text-green-400' : undefined} /> : <FileText size={13} className={copiedMode === 'markdown' ? 'text-green-400' : undefined} />}
             </button>
             {/* Export PDF */}
             <button
@@ -559,7 +559,7 @@ export default function NoteEditor({
               className={`p-1 rounded transition-colors ${mermaidPreviewEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title={mermaidPreviewEnabled ? 'Show mermaid code' : 'Show mermaid diagrams'}
             >
-              <span icon={mermaidPreviewEnabled ? Eye : EyeOff} iconKey={mermaidPreviewEnabled ? 'eye' : 'eyeoff'} size={13} />
+              {mermaidPreviewEnabled ? <Eye size={13} /> : <EyeOff size={13} />}
             </button>
             {/* Line numbers toggle */}
             <button

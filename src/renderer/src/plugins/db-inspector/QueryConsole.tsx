@@ -9,7 +9,8 @@ import React, { useState, useRef, useCallback } from 'react'
 import { Plus, X, Terminal } from 'lucide-react'
 import { useDbStore } from '../../stores/db-store'
 import type { TableInfo } from '../../types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import QueryTab from './QueryTab'
 import type { EditorView } from '@codemirror/view'
 
@@ -84,7 +85,7 @@ export default function QueryConsole({
   if (!isConnected || !connectionId) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div
+        <EmptyState
           icon={Terminal}
           title="No connection"
           description="Connect to a database to open the query console."
@@ -168,7 +169,7 @@ export default function QueryConsole({
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <div
+            <EmptyState
               icon={Terminal}
               title="No query tabs"
               description="Add a tab to start writing queries."

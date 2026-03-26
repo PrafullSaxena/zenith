@@ -2,7 +2,10 @@ import { motion } from 'framer-motion'
 import type { PullRequest } from '../../types/bitbucket'
 import { formatRelativeTime } from '../../components/dashboard/utils'
 import { RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, ExternalLink, Files, GitPullRequest } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface PRListProps {
@@ -83,7 +86,7 @@ export function PRList({
 
         {/* Empty state */}
         {!isLoading && !error && (pullRequests?.length ?? 0) === 0 && (
-          <div
+          <EmptyState
             icon={GitPullRequest}
             title="No open pull requests"
             description="Pull requests will appear here once detected"
@@ -103,7 +106,6 @@ export function PRList({
               return (
                 <motion.div key={pr.id} variants={staggerItem}>
                   <Card
-                    variant="default"
                     className={`cursor-pointer ${isSelected ? 'border-l-2 border-l-accent' : ''}`}
                     onClick={() => onSelect(pr)}
                   >

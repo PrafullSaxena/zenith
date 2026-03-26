@@ -6,9 +6,7 @@
 import { motion } from 'framer-motion'
 import { BookOpen, RefreshCw, Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
+import { Card } from '@renderer/components/ui/card'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 
@@ -64,9 +62,9 @@ export default function DesignDocTab(): React.JSX.Element {
     return (
       <div className="p-6 space-y-4">
         <p className="text-sm text-muted-foreground">Generating design document...</p>
-        <Skeleton className="h-4 w-full" lines={3} />
+        <Skeleton className="h-4 w-full" />
         <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-4 w-full" lines={4} />
+        <Skeleton className="h-4 w-full" />
         <Skeleton className="h-24 w-full rounded-xl" />
       </div>
     )

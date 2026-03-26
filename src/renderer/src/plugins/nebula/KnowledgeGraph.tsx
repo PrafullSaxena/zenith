@@ -13,7 +13,9 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import { RefreshCw, Share2 } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Button } from '@renderer/components/ui/button'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import type { GraphNode } from '../../types/nebula'
 
 
@@ -150,7 +152,7 @@ export default function KnowledgeGraph(): React.JSX.Element {
         </div>
 
         {/* Empty state */}
-        <div
+        <EmptyState
           icon={Share2}
           title="No notes yet"
           description="Create notes in the Notes tab to see them visualized here. AI will extract topics and reveal connections between your ideas."

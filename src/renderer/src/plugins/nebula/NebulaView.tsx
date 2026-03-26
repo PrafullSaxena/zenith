@@ -29,10 +29,10 @@ import {
   Minimize2
 } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
+import { Card } from '@renderer/components/ui/card'
 import { Button } from '@renderer/components/ui/button'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
+import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '../../lib/motion'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
@@ -244,7 +244,7 @@ export default function NebulaView(): React.JSX.Element {
       <ToastContainer />
 
       {/* Header with Card */}
-      <Card
+      <PageHeader
         icon={BookOpen}
         title="Nebula"
         tabs={TABS}

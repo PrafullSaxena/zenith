@@ -21,10 +21,8 @@ import {
   CheckCircle,
   Loader2
 } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
+import { Card } from '@renderer/components/ui/card'
 import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import zenithLogo from '../../assets/zenith-logo.png'
 
@@ -170,7 +168,7 @@ export default function AboutView(): React.JSX.Element {
             const Icon = cap.icon
             return (
               <motion.div key={cap.title} variants={staggerItem}>
-                <Card variant="interactive" className="h-full">
+                <Card interactive className="h-full">
                   <div className="mb-2 flex items-center gap-2">
                     <Icon size={16} className="shrink-0 text-primary" />
                     <h3 className="text-sm font-semibold text-foreground">

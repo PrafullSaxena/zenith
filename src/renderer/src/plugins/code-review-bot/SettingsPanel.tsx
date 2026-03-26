@@ -24,7 +24,7 @@ export function SettingsPanel({
   return (
     <div className="flex items-center gap-3">
       {/* Connection status indicator */}
-      <Badge variant={isConnected ? 'success' : connectionError ? 'error' : 'default'}>
+      <Badge variant={isConnected ? 'success' : connectionError ? 'destructive' : 'default'}>
         <span
           className={`inline-block h-2 w-2 rounded-full mr-1.5 ${
             isConnected

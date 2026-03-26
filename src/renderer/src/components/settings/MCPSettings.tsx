@@ -6,20 +6,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Trash2, Server, ChevronDown } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Button } from '@renderer/components/ui/button'
-import { Input } from '@renderer/components/ui/input'
-import { Label } from '@renderer/components/ui/label'
-import { Switch } from '@renderer/components/ui/switch'
-import { Badge } from '@renderer/components/ui/badge'
 import { Skeleton } from '@renderer/components/ui/skeleton'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@renderer/components/ui/select'
 import type { MCPServerConfig, MCPTransport } from '../../types/mcp'
 
 const MCP_STORAGE_KEY = 'mcp.servers'

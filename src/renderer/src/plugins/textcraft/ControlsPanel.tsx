@@ -6,10 +6,9 @@
  * Agent resolution follows the AiAdvisor.tsx pattern with fallback.
  */
 
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
+import { Card } from '@renderer/components/ui/card'
 import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { SimpleSelect } from '@renderer/components/ui/select'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -131,7 +130,7 @@ export default function ControlsPanel(): React.JSX.Element {
         <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
           Format
         </h3>
-        <Select
+        <SimpleSelect
           options={FORMAT_OPTIONS}
           value={options.format}
           onChange={handleFormatChange}

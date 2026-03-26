@@ -10,10 +10,6 @@ import { useCortexStore } from '../../../stores/cortex-store'
 import RepoCard from './RepoCard'
 import AddRepoDialog from './AddRepoDialog'
 import { staggerContainer } from '@renderer/lib/motion'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
 
 export default function RepoManager(): React.JSX.Element {
   const [showAddDialog, setShowAddDialog] = useState(false)

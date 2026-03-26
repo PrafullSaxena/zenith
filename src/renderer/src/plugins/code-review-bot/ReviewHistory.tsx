@@ -1,8 +1,11 @@
 import { motion } from 'framer-motion'
-import { ExternalLink, Eye, Clock, History } from 'lucide-react'
+import { ExternalLink, Eye, History } from 'lucide-react'
 import type { ReviewHistoryEntry } from '../../types/review'
 import { formatRelativeTime } from '../../components/dashboard/utils'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface ReviewHistoryProps {
@@ -32,7 +35,7 @@ export function ReviewHistory({
 
   if (!history || history.length === 0) {
     return (
-      <div
+      <EmptyState
         icon={History}
         title="No review history"
         description="Reviews will appear here after completion"
@@ -49,7 +52,7 @@ export function ReviewHistory({
     >
       {history.map((entry) => (
         <motion.div key={entry.id} variants={staggerItem}>
-          <Card variant="default" className="flex items-center gap-3">
+          <Card className="flex items-center gap-3">
             {/* PR title with external link */}
             <div className="min-w-0 flex-1">
               <button
@@ -82,7 +85,7 @@ export function ReviewHistory({
                   ? 'success'
                   : entry.status === 'partial'
                     ? 'warning'
-                    : 'error'
+                    : 'destructive'
               }
             >
               {entry.status}

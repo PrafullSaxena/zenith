@@ -5,10 +5,8 @@
 import { useState, useCallback } from 'react'
 import { FileText, FileDown, AlignLeft, Download, Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Dialog } from '@renderer/components/ui/dialog'
 import { analysisResultToMermaidBlocks } from './flow-utils'
 
 type ExportFormat = 'markdown' | 'pdf' | 'plaintext'
@@ -218,7 +216,7 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
   }, [format, selectedSections, hldContent, repoName, isExporting, onClose, analysisResult])
 
   return (
-    <Dialog isOpen={true} onClose={onClose} title="Export Documentation" size="md">
+    <Dialog open={true} onOpenChange={onClose}>
       {/* Format selector */}
       <div className="mb-5">
         <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">

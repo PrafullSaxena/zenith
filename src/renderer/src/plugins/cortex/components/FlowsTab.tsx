@@ -9,10 +9,7 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import FlowDiagram from './FlowDiagram'
 import { buildAPIFlowNodes, buildComponentTreeNodes, buildPipelineNodes } from './flow-utils'
 import ValidationPanel from './ValidationPanel'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 
 type FlowType = 'api' | 'components' | 'pipeline'
 

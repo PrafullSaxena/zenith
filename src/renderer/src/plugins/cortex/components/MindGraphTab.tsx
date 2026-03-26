@@ -9,10 +9,7 @@ import { Search, X, Share2, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { CodeEntity, CallEdge } from '../../../types/cortex'
 import { getKindColor } from '../cortex-theme'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 
 // ── Types ───────────────────────────────────────────────────────────────
 

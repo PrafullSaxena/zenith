@@ -5,10 +5,7 @@
  * displaying live word and character counts.
  */
 
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 
 export default function InputPanel(): React.JSX.Element {

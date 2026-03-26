@@ -1417,7 +1417,7 @@ For each table, examine every non-PK column and check if it could reference a PK
 
   toggleOutputMode: (tabId) => {
     const tabs = get().queryTabs.map((t) =>
-      t.id === tabId ? { ...t, outputMode: t.outputMode === 'split' ? 'inline' : 'split' } : t
+      t.id === tabId ? { ...t, outputMode: (t.outputMode === 'split' ? 'inline' : 'split') as const } : t
     )
     set({ queryTabs: tabs })
     get().saveQueryTabs()

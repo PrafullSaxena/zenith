@@ -3,10 +3,7 @@
  */
 import { Check, X, AlertTriangle, Info } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 import type { ValidationCorrection } from '../../../types/cortex'
 
 const TYPE_LABELS: Record<ValidationCorrection['type'], { label: string; icon: typeof AlertTriangle; color: string }> = {

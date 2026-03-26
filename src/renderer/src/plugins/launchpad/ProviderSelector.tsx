@@ -7,10 +7,8 @@
  */
 import { Cloud, Globe, Server, Rocket } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import type { CloudProvider } from '../../types/launchpad'
 import { PROVIDER_INFO } from '../../data/cloud-pricing/index'
@@ -59,7 +57,7 @@ const PROVIDER_CARDS: Array<{
 export default function ProviderSelector({ onSelect }: ProviderSelectorProps): React.JSX.Element {
   if (PROVIDER_CARDS.length === 0) {
     return (
-      <div
+      <EmptyState
         icon={Rocket}
         title="Select a Provider"
         description="Choose a cloud provider to start estimating"
@@ -93,7 +91,6 @@ export default function ProviderSelector({ onSelect }: ProviderSelectorProps): R
           return (
             <motion.div key={card.id} variants={staggerItem}>
               <Card
-                variant="default"
                 className="cursor-pointer p-6 text-left h-full"
                 style={
                   {

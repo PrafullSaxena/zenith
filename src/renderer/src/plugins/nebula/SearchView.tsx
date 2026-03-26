@@ -19,7 +19,12 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, MessageCircleQuestion, FileText, Loader2, X, ChevronDown } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Input } from '@renderer/components/ui/input'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import MarkdownRenderer from '../../components/MarkdownRenderer'
 
@@ -179,14 +184,14 @@ export default function SearchView(): React.JSX.Element {
                   <Skeleton className="h-24 w-full rounded-xl" />
                 </div>
               ) : searchQuery.trim() && searchResults.length === 0 ? (
-                <div
+                <EmptyState
                   icon={Search}
                   title="No results found"
                   description="Try a different search term"
                   className="py-12"
                 />
               ) : !searchQuery.trim() ? (
-                <div
+                <EmptyState
                   icon={FileText}
                   title="Search your notes"
                   description="Find notes by keyword or phrase"
@@ -202,7 +207,6 @@ export default function SearchView(): React.JSX.Element {
                   {searchResults.map((result) => (
                     <motion.div key={result.id} variants={staggerItem}>
                       <Card
-                        variant="default"
                         className="cursor-pointer p-4"
                         onClick={() => handleResultClick(result.id)}
                       >
@@ -317,7 +321,7 @@ export default function SearchView(): React.JSX.Element {
                   <MarkdownRenderer text={qaAnswer} className="text-sm" />
                 </div>
               ) : (
-                <div
+                <EmptyState
                   icon={MessageCircleQuestion}
                   title="Ask your notes anything"
                   description="AI will search your knowledge base and provide an answer"

@@ -14,10 +14,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import { ChevronDown, Wand2, FileCode2, Copy, Check } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
 import { LANGUAGES } from '../../lib/lowlight-setup'
 
 // ── File extension map ──────────────────────────────────────────────
@@ -251,7 +247,7 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
         className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
         title="Copy code"
       >
-        <span icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={11} className={copied ? 'text-emerald-400' : undefined} />
+        {copied ? <Check size={11} className={copied ? 'text-emerald-400' : undefined} /> : <Copy size={11} className={copied ? 'text-emerald-400' : undefined} />}
       </button>
     </div>
   )

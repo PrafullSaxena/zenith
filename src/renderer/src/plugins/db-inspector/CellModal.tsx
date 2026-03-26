@@ -4,9 +4,8 @@
  * Migrated to Obsidian Glass design system using Dialog and Button.
  */
 import { Copy } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
+import { Dialog } from '@renderer/components/ui/dialog'
 
 interface CellModalProps {
   value: unknown
@@ -44,7 +43,7 @@ export default function CellModal({ value, fieldName, isOpen, onClose }: CellMod
   }
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title={fieldName} size="lg">
+    <Dialog open={isOpen} onOpenChange={() => onClose()}>
       {/* Body */}
       <div className="max-h-[60vh] overflow-auto">
         {isNull ? (

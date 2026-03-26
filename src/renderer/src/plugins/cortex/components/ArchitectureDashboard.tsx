@@ -10,7 +10,7 @@
  */
 import { useMemo, useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { staggerContainer, staggerItem } from '@renderer/lib/motion'
+import { staggerContainer } from '@renderer/lib/motion'
 import {
   Brain,
   Package,
@@ -43,9 +43,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { getKindColor, getMethodColor } from '../cortex-theme'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
+import { Card } from '@renderer/components/ui/card'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useAgentStore } from '../../../stores/agent-store'
 import InsightCard from './InsightCard'
@@ -673,7 +671,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
         ) : isHLDGenerating ? (
           <div className="p-4 space-y-3">
             <p className="text-xs text-muted-foreground">Generating design document...</p>
-            <Skeleton className="h-4 w-full" lines={4} />
+            <Skeleton className="h-4 w-full" />
           </div>
         ) : (
           <Card className="p-5 text-center">

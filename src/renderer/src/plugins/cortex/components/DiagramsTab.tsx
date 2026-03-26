@@ -11,6 +11,7 @@ import {
 import {
   ReactFlow,
   Background,
+  BackgroundVariant,
   Controls,
   type Node,
   type Edge
@@ -20,10 +21,7 @@ import { motion } from 'framer-motion'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { AnalysisResult, CodeEntity } from '../../../types/cortex'
 import { getKindColor } from '../cortex-theme'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 
 const DIAGRAM_TABS = [
   { id: 'entities', label: 'Entity Graph', icon: Network },
@@ -383,7 +381,7 @@ export default function DiagramsTab(): React.JSX.Element {
             minZoom={0.3}
             maxZoom={2}
           >
-            <Background gap={20} size={1} color="#1e293b" variant="dots" />
+            <Background gap={20} size={1} color="#1e293b" variant={BackgroundVariant.Dots} />
             <Controls
               showInteractive={false}
               className="!bg-white/[0.03] !backdrop-blur-xl !border-white/[0.08] !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/[0.06] [&>button]:!text-muted-foreground"

@@ -10,10 +10,7 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { useAgentStore } from '../../../stores/agent-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { QAMessage, RepoType } from '../../../types/cortex'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 
 // ── Suggested questions by repo type ────────────────────────────────
 
@@ -301,7 +298,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
       </Card>
 
       {/* Messages area */}
-      <div className="flex-1 px-4 py-3 space-y-3" showProgress={false}>
+      <div className="flex-1 px-4 py-3 space-y-3">
         {qaMessages.length === 0 ? (
           /* Empty state with suggested questions */
           <div className="flex h-full flex-col items-center justify-center gap-4">
@@ -318,7 +315,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
               {suggestedQuestions.map((q) => (
                 <Card
                   key={q}
-                  variant="default"
+                  interactive
                   className="px-4 py-2.5 text-xs text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-all text-left disabled:opacity-40 cursor-pointer"
                   onClick={() => { if (!isQAStreaming && hasAgent) handleSend(q) }}
                 >

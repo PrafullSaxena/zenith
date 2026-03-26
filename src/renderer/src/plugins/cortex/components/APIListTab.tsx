@@ -3,16 +3,12 @@
  * Filterable, sortable table with method badges and file links.
  */
 import { useState, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ArrowUpDown, Route, ShieldCheck, Loader2 } from 'lucide-react'
+import { Route, Search, ArrowUpDown, Loader2, ShieldCheck } from 'lucide-react'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import type { RouteInfo } from '../../../types/cortex'
 import ValidationPanel from './ValidationPanel'
 import { getMethodColor } from '../cortex-theme'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 
 type SortKey = 'path' | 'method' | 'handlerName' | 'controllerName'
 type SortDir = 'asc' | 'desc'

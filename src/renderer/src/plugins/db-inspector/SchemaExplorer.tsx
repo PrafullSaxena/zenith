@@ -14,6 +14,8 @@ import {
 } from 'lucide-react'
 import type { TableInfo, ColumnInfo, ForeignKey, IndexInfo, TableStats } from '../../types/database'
 import { Skeleton } from '@renderer/components/ui/skeleton'
+import { SimpleSelect } from '@renderer/components/ui/select'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 
 interface SchemaExplorerProps {
   databases: string[]
@@ -92,9 +94,9 @@ export default function SchemaExplorer({
           Database
         </label>
         {isLoadingDatabases ? (
-          <Skeleton className="h-4 w-full" lines={1} />
+          <Skeleton className="h-4 w-full" />
         ) : (
-          <Select
+          <SimpleSelect
             value={activeDatabase ?? ''}
             onChange={(val) => val && onDatabaseChange(val)}
             options={dbOptions}
@@ -107,7 +109,7 @@ export default function SchemaExplorer({
         <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
           Schema
         </label>
-        <Select
+        <SimpleSelect
           value={activeSchema ?? ''}
           onChange={(val) => val && onSchemaChange(val)}
           options={schemaOptions}
@@ -131,9 +133,9 @@ export default function SchemaExplorer({
 
       {/* Tables list */}
       {isLoadingTables ? (
-        <Skeleton className="h-4 w-full" lines={8} />
+        <Skeleton className="h-4 w-full" />
       ) : !activeSchema ? (
-        <div
+        <EmptyState
           icon={Database}
           title="Connect a database"
           description="Select a connection to explore schema"
@@ -186,7 +188,7 @@ export default function SchemaExplorer({
                 {isSelected && (
                   <div className="ml-6 mt-1 space-y-2 border-l border-white/[0.06] pl-3 transition-all duration-200">
                     {isLoadingDetails ? (
-                      <Skeleton className="h-4 w-full" lines={4} />
+                      <Skeleton className="h-4 w-full" />
                     ) : (
                       <>
                         {/* Stats */}

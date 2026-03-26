@@ -7,7 +7,9 @@
 import { useState, useEffect } from 'react'
 import { Trash2, Play, BookMarked, Save } from 'lucide-react'
 import { useDbStore } from '../../stores/db-store'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
+import { Button } from '@renderer/components/ui/button'
+import { EmptyState } from '@renderer/components/ui/EmptyState'
 
 // -- Types
 interface SavedQueriesPanelProps {
@@ -74,7 +76,7 @@ export default function SavedQueriesPanel({ onLoadQuery, connectionId }: SavedQu
       <div className="flex-1 overflow-y-auto min-h-0">
         {filtered.length === 0 && otherQueries.length === 0 ? (
           <div className="flex items-center justify-center h-24 px-4">
-            <div
+            <EmptyState
               icon={Save}
               title="No saved queries"
               description="Save a query to access it later"
@@ -86,7 +88,6 @@ export default function SavedQueriesPanel({ onLoadQuery, connectionId }: SavedQu
             {filtered.map((q) => (
               <Card
                 key={q.id}
-                variant="default"
                 className="mx-2 my-1.5 flex flex-col px-3 py-2"
               >
                 <div className="flex items-center justify-between gap-2">
@@ -111,7 +112,7 @@ export default function SavedQueriesPanel({ onLoadQuery, connectionId }: SavedQu
                     Load
                   </Button>
                   <Button
-                    variant={confirmDeleteId === q.id ? 'danger' : 'ghost'}
+                    variant={confirmDeleteId === q.id ? 'destructive' : 'ghost'}
                     size="sm"
                     onClick={(e) => { e.stopPropagation(); handleDelete(q.id) }}
                     className="ml-auto"
@@ -132,7 +133,6 @@ export default function SavedQueriesPanel({ onLoadQuery, connectionId }: SavedQu
                 {otherQueries.map((q) => (
                   <Card
                     key={q.id}
-                    variant="default"
                     className="mx-2 my-1.5 flex flex-col px-3 py-2 opacity-60"
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -156,7 +156,7 @@ export default function SavedQueriesPanel({ onLoadQuery, connectionId }: SavedQu
                         Load
                       </Button>
                       <Button
-                        variant={confirmDeleteId === q.id ? 'danger' : 'ghost'}
+                        variant={confirmDeleteId === q.id ? 'destructive' : 'ghost'}
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); handleDelete(q.id) }}
                         className="ml-auto"

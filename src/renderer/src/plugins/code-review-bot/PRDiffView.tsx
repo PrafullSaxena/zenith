@@ -4,7 +4,7 @@ import type { DiffFile, DiffChange } from '../../types/bitbucket'
 import type { ReviewComment } from '../../types/review'
 import { SEVERITY_CONFIG, KIND_CONFIG } from '../../types/review'
 import { highlightCode } from '../../lib/highlight'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 
 const EXT_TO_LANG: Record<string, string> = {
   ts: 'typescript', tsx: 'typescript', js: 'javascript', jsx: 'javascript',
@@ -69,7 +69,7 @@ export function PRDiffView({
           <Card key={filePath} className="overflow-hidden p-0">
             {/* File header toolbar */}
             <Card
-              as="button"
+             
               onClick={() => toggleFile(filePath)}
               className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-secondary rounded-none border-x-0 border-t-0"
             >

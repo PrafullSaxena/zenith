@@ -7,10 +7,7 @@ import { motion } from 'framer-motion'
 import { ChevronDown, ChevronUp, TestTube } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { TestStats } from '../../../types/cortex'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 
 interface TestCoverageCardProps {
   stats: TestStats

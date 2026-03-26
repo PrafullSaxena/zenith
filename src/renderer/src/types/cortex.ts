@@ -167,6 +167,7 @@ export type FlowNodeType =
   | 'model'
 
 export interface FlowNodeData {
+  [key: string]: unknown
   label: string
   type: FlowNodeType
   entityId: string
@@ -177,6 +178,7 @@ export interface FlowNodeData {
 }
 
 export interface FlowEdgeData {
+  [key: string]: unknown
   label: string
   type: CallEdge['type']
   animated: boolean

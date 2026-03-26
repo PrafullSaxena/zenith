@@ -13,12 +13,17 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Wand2, Clock, PenLine } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { pageTransition } from '@renderer/lib/motion'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
+import { PageHeader } from '../../components/shared/page-header'
+import type { LucideIcon } from 'lucide-react'
 import { useTextCraftStore } from '../../stores/textcraft-store'
+
+interface CardTab {
+  id: string
+  label: string
+  icon: LucideIcon
+}
 import InputPanel from './InputPanel'
 import ControlsPanel from './ControlsPanel'
 import OutputPanel from './OutputPanel'
@@ -72,7 +77,7 @@ export default function TextCraftView(): React.JSX.Element {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
       {/* Header + tab bar */}
-      <Card
+      <PageHeader
         icon={Wand2}
         title="TextCraft"
         tabs={tabs}
@@ -97,14 +102,14 @@ export default function TextCraftView(): React.JSX.Element {
               <InputPanel />
             </div>
 
-            <div onResize={handleLeftResize} />
+            <div className="w-px cursor-col-resize bg-border hover:bg-primary/50 transition-colors" />
 
             {/* Middle: Controls */}
             <div className="flex-1 overflow-hidden">
               <ControlsPanel />
             </div>
 
-            <div onResize={handleRightResize} />
+            <div className="w-px cursor-col-resize bg-border hover:bg-primary/50 transition-colors" />
 
             {/* Right: Output */}
             <div style={{ width: rightWidth + '%' }} className="shrink-0 overflow-hidden">

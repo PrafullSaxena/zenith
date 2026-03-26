@@ -16,11 +16,9 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { Mic, Square, Loader2 } from 'lucide-react'
+import { Button } from '@renderer/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNebulaStore, getNebulaAgent } from '../../stores/nebula-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
 import type { DiarizedTranscript } from '../../types/nebula'
 
 interface VoiceRecorderProps {

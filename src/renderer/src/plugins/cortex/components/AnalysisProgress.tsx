@@ -4,10 +4,7 @@
  */
 import { motion } from 'framer-motion'
 import type { AnalysisProgress as AnalysisProgressType } from '../../../types/cortex'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 
 interface Props {
   progress: AnalysisProgressType

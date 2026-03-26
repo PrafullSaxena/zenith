@@ -19,7 +19,7 @@
 import { useCallback, useRef, useEffect, memo } from 'react'
 import { Tldraw } from 'tldraw'
 import type { Editor, TLEditorSnapshot, TLStoreSnapshot } from 'tldraw'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 
 interface DrawingCanvasProps {
   snapshot: object | null

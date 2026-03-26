@@ -9,10 +9,10 @@
  */
 import { useState, useMemo } from 'react'
 import { ChevronDown, ChevronRight, Search, X } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
 import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Input } from '@renderer/components/ui/input'
 import type { CloudProvider } from '../../types/launchpad'
 import type { ServiceDefinition } from '../../data/cloud-pricing/types'
 import { getCatalog } from '../../data/cloud-pricing/index'

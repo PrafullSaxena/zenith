@@ -29,10 +29,10 @@ import { useAgentStore } from '../../stores/agent-store'
 import { useActivityStore } from '../../stores/activity-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import type { DbInspectorTab, DbHistoryEntry } from '../../types/database'
-import { Card, CardContent } from '@renderer/components/ui/card'
+import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
+import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '../../lib/motion'
 import ConnectionManager from './ConnectionManager'
 import SchemaExplorer from './SchemaExplorer'
@@ -119,7 +119,7 @@ export default function DbInspectorView(): React.JSX.Element {
     cancelOptimization,
     setSelectedTablesForER,
     toggleTableForER,
-    generateERDiagram,
+    
     switchERMode,
     generateAllERModes,
     loadHistory,
@@ -130,7 +130,6 @@ export default function DbInspectorView(): React.JSX.Element {
 
   const { providers, loadProviders } = useAgentStore()
   const { addEntry: addActivity } = useActivityStore()
-  const _settingsObj = useSettingsStore((s) => s.settings)
   const getSetting = useSettingsStore((s) => s.getSetting)
 
   // -- Agent selection
@@ -283,7 +282,7 @@ export default function DbInspectorView(): React.JSX.Element {
 
   // -- Connection status badge for Card
   const connectionBadge = activeConnection ? (
-    <Badge variant={isConnected ? 'success' : 'error'} className={
+    <Badge variant={isConnected ? 'success' : 'destructive'} className={
       connectionStatuses[activeConnectionId ?? ''] !== undefined &&
       !connectionStatuses[activeConnectionId ?? '']?.connected &&
       !connectionStatuses[activeConnectionId ?? '']?.error
@@ -299,7 +298,7 @@ export default function DbInspectorView(): React.JSX.Element {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
       {/* Header with Card */}
-      <Card
+      <PageHeader
         icon={Database}
         title="DB Inspector"
         tabs={TABS}

@@ -147,7 +147,7 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
               <FolderOpen size={14} className="mr-1" />
               Browse
             </Button>
-            {value && (
+            {!!value && (
               <Button
                 variant="ghost"
                 size="sm"

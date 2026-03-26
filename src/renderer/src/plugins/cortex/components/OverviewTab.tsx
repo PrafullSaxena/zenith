@@ -7,13 +7,9 @@ import { motion } from 'framer-motion'
 import { FileText, Hash, Route, Component, Sparkles, BookOpen, ChevronDown, ChevronRight } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
-import span from './span'
 import TestCoverageCard from './TestCoverageCard'
 import { getKindColor } from '../cortex-theme'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card } from '@renderer/components/ui/card'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import DonutChart from './DonutChart'
 
@@ -173,7 +169,7 @@ export default function OverviewTab(): React.JSX.Element {
                 </span>
               </div>
               <p className="mt-2 text-2xl font-bold text-foreground">
-                <span value={card.value} />
+                <span>{card.value}</span>
               </p>
             </Card>
             </motion.div>

@@ -8,10 +8,6 @@
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { ZoomIn, ZoomOut, Maximize2, Code2, Check } from 'lucide-react'
-import { Card, CardContent } from '@renderer/components/ui/card'
-import { Badge } from '@renderer/components/ui/badge'
-import { Button } from '@renderer/components/ui/button'
-import { Skeleton } from '@renderer/components/ui/skeleton'
 
 interface MermaidRendererProps {
   syntax: string
@@ -223,7 +219,7 @@ export default function MermaidRenderer({
         opacity-0 group-hover:opacity-100 transition-opacity"
       title="Copy mermaid code"
     >
-      <span icon={codeCopied ? Check : Code2} iconKey={codeCopied ? 'check' : 'code'} size={11} className={codeCopied ? 'text-emerald-400' : undefined} />
+      {codeCopied ? <Check size={11} className={codeCopied ? 'text-emerald-400' : undefined} /> : <Code2 size={11} className={codeCopied ? 'text-emerald-400' : undefined} />}
       {codeCopied ? ' Copied' : ' Code'}
     </button>
   ) : null
@@ -263,7 +259,7 @@ export default function MermaidRenderer({
             opacity-0 group-hover:opacity-100 transition-opacity"
           title="Copy mermaid code"
         >
-          <span icon={codeCopied ? Check : Code2} iconKey={codeCopied ? 'check' : 'code'} size={11} className={codeCopied ? 'text-emerald-400' : undefined} />
+          {codeCopied ? <Check size={11} className={codeCopied ? 'text-emerald-400' : undefined} /> : <Code2 size={11} className={codeCopied ? 'text-emerald-400' : undefined} />}
           {codeCopied ? ' Copied' : ' Code'}
         </button>
       )}
