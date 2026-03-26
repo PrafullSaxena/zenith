@@ -1,8 +1,8 @@
-# Roadmap: Zenith UI Revamp — "Obsidian Glass"
+# Roadmap: Zenith Full UI Revamp
 
 ## Overview
 
-Transform Zenith from an inconsistent mix of flat and glass styling into a unified "Obsidian Glass" experience. The build order is strictly bottom-up: CSS tokens and motion primitives first, then the shared component library, then migrate core pages and plugins to consume it, then add new themes tuned against stable glass components, then build 3D visualizations on the proven foundation, and finally polish micro-interactions across the complete app. Every phase delivers a coherent, verifiable capability.
+Migrate the entire Zenith UI from the custom Glass Design System to shadcn/ui + Animate-UI. The work flows bottom-up: install dependencies and theming tokens, generate base components, build 9 shared cross-plugin components plus layout primitives, migrate all 10 screens/plugins in parallel, remove old Glass and Three.js code, then polish with micro-interactions, empty states, and accessibility. Every plugin ends up on the same shared component library.
 
 ## Phases
 
@@ -12,152 +12,133 @@ Transform Zenith from an inconsistent mix of flat and glass styling into a unifi
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Design System Foundation** - Glass tokens, motion system, fonts, and typography scale (completed 2026-03-24)
-- [x] **Phase 2: Glass Component Library** - All 11 shared glass primitives built and theme-validated (completed 2026-03-24)
-- [x] **Phase 3: Core Pages Migration** - Dashboard, Activity Log, About, Settings, and Sidebar migrated to glass components (completed 2026-03-24)
-- [x] **Phase 4: Plugin Migration** - All 6 plugins migrated to shared glass components (completed 2026-03-24)
-- [x] **Phase 5: Theme Collection** - 6 new dark themes, OKLch conversion, and visual theme selector (completed 2026-03-24)
-- [x] **Phase 6: 3D Visualizations** - Four new 3D scenes with error boundaries and 2D fallbacks (completed 2026-03-25)
-- [x] **Phase 7: Micro-Interactions and Polish** - Button feedback, icon morphs, scroll indicators, sidebar animations, and cross-theme QA (completed 2026-03-25)
+- [ ] **Phase 1: Foundation** - Install deps, configure theming tokens, fonts, and cn() utility
+- [ ] **Phase 2: Token Layer** - Generate all shadcn/Animate-UI base components customized with zenith-violet tokens
+- [ ] **Phase 3: Shared Components** - Build 9 reusable components, AppLayout, Sidebar, PluginShell, CommandPalette, and global toast
+- [ ] **Phase 4: Screen Migration** - Migrate all 10 screens/plugins to use shared components (parallel agents)
+- [ ] **Phase 5: 3D Removal & Cleanup** - Delete Glass components, Three.js code, and old dependencies
+- [ ] **Phase 6: Polish** - Micro-interactions, empty states, command palette wiring, a11y audit, bundle audit
 
 ## Phase Details
 
-### Phase 1: Design System Foundation
-**Goal**: Every token, animation variant, and font needed by downstream components exists and works across all themes
+### Phase 1: Foundation
+**Goal**: The project has a working theming foundation -- shadcn/ui configured, CSS custom property tokens applied, fonts loaded, utility functions available
 **Depends on**: Nothing (first phase)
-**Requirements**: FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-05, FOUND-06, FOUND-07
+**Requirements**: FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-05
 **Success Criteria** (what must be TRUE):
-  1. Glass CSS tokens (--glass-bg, --glass-border, --glass-blur, --glass-glow) resolve correctly on all 12 existing themes
-  2. Importing any motion variant from lib/motion.ts works (stagger, page transition, modal, hover lift, slide panel) and respects reduced-motion preference
-  3. App renders body text in Plus Jakarta Sans and code blocks in Geist Mono
-  4. Typography scale classes (hero through caption) produce visually distinct, consistent sizing
-  5. Two-tier blur strategy is enforced: top-level glass surfaces use backdrop-blur, nested surfaces use translucent-only fills
+  1. Running the app shows the radial gradient background with zenith-violet tokens (dark page bg, violet accent)
+  2. Inter renders for all UI text and JetBrains Mono renders for code/monospace elements
+  3. cn() can be imported from lib/utils and correctly merges Tailwind classes (clsx + tailwind-merge)
+  4. shadcn components.json is configured and `npx shadcn add button` generates a component that uses the project tokens
 **Plans**: TBD
 
 Plans:
-- [ ] 01-01: Glass tokens, fonts, timing/easing tokens (Wave 1)
-- [ ] 01-02: Motion variants module + useReducedMotion relocation (Wave 1)
-- [ ] 01-03: Typography scale @utility classes + build verification (Wave 2)
+- [ ] 01-01: TBD
 
-### Phase 2: Glass Component Library
-**Goal**: A complete, standalone set of glass UI primitives that any page or plugin can import and render correctly on all themes
+### Phase 2: Token Layer
+**Goal**: Every base UI primitive (buttons, cards, inputs, dialogs, tabs, toasts, etc.) exists as a themed shadcn/Animate-UI component ready for consumption by shared components and screens
 **Depends on**: Phase 1
-**Requirements**: COMP-01, COMP-02, COMP-03, COMP-04, COMP-05, COMP-06, COMP-07, COMP-08, COMP-09, COMP-10, COMP-11
+**Requirements**: COMP-01, COMP-02, COMP-03, COMP-04, COMP-05, COMP-06, COMP-07, COMP-08, COMP-09, COMP-10, COMP-11, COMP-12
 **Success Criteria** (what must be TRUE):
-  1. All 11 glass components (GlassCard, GlassSurface, GlassButton, GlassInput, GlassSelect, GlassTab, GlassBadge, GlassModal, GlassToast, GlassSkeleton, EmptyState) are importable from ui/index.ts
-  2. GlassCard renders with visible frosted glass effect on all 12 existing themes without visual breakage
-  3. GlassModal opens with backdrop blur and scale animation, and closes cleanly without ghost elements
-  4. GlassSkeleton shimmer animation plays in card, text, circle, and table variants
-  5. EmptyState shows floating illustration with parallax mouse tracking and a CTA button
-**Plans**: 3 plans
-
-Plans:
-- [ ] 02-01: Glass utilities + simple components (GlassBadge, GlassButton, GlassInput, GlassSurface) (Wave 1)
-- [ ] 02-02: Compound components (GlassCard, GlassSelect, GlassTab, GlassSkeleton, EmptyState) (Wave 2)
-- [ ] 02-03: Overlay components (GlassModal, GlassToast) + toast store + barrel index.ts (Wave 3)
-
-### Phase 3: Core Pages Migration
-**Goal**: The app shell and all 4 core pages use glass components, delivering a consistent look before any plugin is touched
-**Depends on**: Phase 2
-**Requirements**: CORE-01, CORE-02, CORE-03, CORE-04, CORE-05
-**Success Criteria** (what must be TRUE):
-  1. Mission Control Dashboard shows stat cards as GlassCards with staggered entrance animation
-  2. Activity Log displays entries in GlassCards with status badges and a GlassSurface toolbar
-  3. Settings page uses GlassTab sidebar navigation and the theme grid selector area is ready for Phase 5 content
-  4. Sidebar icons show hover glow and the active indicator bar slides between items on navigation
-  5. Navigating between core pages plays a page transition animation (crossfade or slide)
-**Plans**: 3 plans
-
-Plans:
-- [ ] 03-01: Shared utilities — AnimatedCounter relocation, GlassTab vertical orientation, theme metadata, page transitions (Wave 1)
-- [ ] 03-02: Dashboard + Activity Log migration — GlassCards, AnimatedCounter, stagger animations, GlassBadge status (Wave 2)
-- [ ] 03-03: Sidebar + About View + Settings migration — hover glow, active bar slide, glass timeline, theme selector grid (Wave 2)
-
-### Phase 4: Plugin Migration
-**Goal**: Every plugin screen feels identical in quality and styling to the core pages — switching between plugins is seamless
-**Depends on**: Phase 3
-**Requirements**: PLUG-01, PLUG-02, PLUG-03, PLUG-04, PLUG-05, PLUG-06
-**Success Criteria** (what must be TRUE):
-  1. Cortex uses shared GlassCard and GlassTab from ui/ — all inline GLASS_CARD and GLASS_SURFACE constants are deleted
-  2. All 6 plugins use GlassTab bars with the sliding underline animation for tab navigation
-  3. All plugins show GlassSkeleton loaders during loading states instead of bare spinners
-  4. Zero-data views in all plugins show EmptyState components with CTAs
-  5. Switching between any two plugins produces no jarring visual style difference
+  1. A Storybook-style test page (or dev route) can render every base component (Button, Card, Input, Select, Tabs, Badge, Dialog, Toast, Skeleton, ScrollArea, Tooltip, Progress, DropdownMenu, Popover, Accordion, Sheet, Command) with zenith-violet theming
+  2. Sonner toasts fire with status colors (success/error/warning/info) and auto-dismiss
+  3. Animate-UI Dialog opens with scale+fade animation, Tabs show animated indicator bar, Accordion/Sheet animate open/close
+  4. Command component (cmdk) renders a searchable list with keyboard navigation
+  5. All components respect the CSS custom property tokens (changing a token value changes appearance globally)
 **Plans**: TBD
 
 Plans:
-- [ ] 04-00: Shared utilities — GlassChat, GlassTable, PluginHeader, GlassResizeHandle components (Wave 1)
-- [ ] 04-01: TextCraft migration — GlassCard panels, GlassSelect controls, GlassTab bar, resizable layout (Wave 2)
-- [ ] 04-02: Cortex migration — delete inline GLASS_CARD/GLASS_SURFACE, PluginHeader, GlassChat QA, GlassModal export (Wave 3)
-- [ ] 04-03: CodeReviewBot migration — PR list GlassCards, review GlassBadge severity, GlassTab bar (Wave 3)
-- [ ] 04-04: DbInspector migration — GlassTable results, GlassChat Ask AI, GlassSelect connection manager (Wave 3)
-- [ ] 04-05: Launchpad migration — brand-colored provider cards, AnimatedCounter costs, GlassChat advisor (Wave 3)
-- [ ] 04-06: Nebula migration — GlassCard note list, GlassSurface editor wrapper, GlassResizeHandle drawing panel (Wave 3)
+- [ ] 02-01: TBD
 
-### Phase 5: Theme Collection
-**Goal**: Users can choose from 18 curated dark themes via a visual selector, and all themes render glass components correctly
-**Depends on**: Phase 4
-**Requirements**: THEME-01, THEME-02, THEME-03, THEME-04, THEME-05, THEME-06, THEME-07, THEME-08, THEME-09, THEME-10
+### Phase 3: Shared Components
+**Goal**: All 9 cross-plugin components plus layout primitives (AppLayout, Sidebar, PluginShell, SplitPanel, CommandPalette) are built and independently testable, enabling parallel screen migration
+**Depends on**: Phase 2
+**Requirements**: SHAR-01, SHAR-02, SHAR-03, SHAR-04, SHAR-05, SHAR-06, SHAR-07, SHAR-08, SHAR-09, LYOT-01, LYOT-02, LYOT-03, LYOT-04, LYOT-05
 **Success Criteria** (what must be TRUE):
-  1. All 6 new themes (Midnight Bloom, Copper Forge, Ocean Depth, Nebula Dust, Obsidian, Jade Temple) are selectable and render the app correctly
-  2. Settings shows a visual theme selector grid with Classic (12 legacy) and New Collection (6) sections
-  3. Each theme card displays the theme name, 4 representative color dots, and a mini preview strip; the active theme has an accent border glow
-  4. All 12 legacy themes use OKLch color values (no remaining hex-only definitions)
-  5. Glass components render without visual breakage across all 18 themes (cross-theme QA pass)
+  1. Sidebar collapses between 56px icon rail and 240px expanded with Cmd+B toggle, and all route navigation works
+  2. PluginShell wraps any plugin with a consistent header + tabs layout
+  3. Each of the 9 shared components (RichTextEditor, ContentRenderer, ChatInterface, DataTable, HistoryList, PdfExporter, SearchInput, CodeEditor, FileTree) renders in isolation with mock data
+  4. CommandPalette opens on Cmd+K and displays a searchable list (wiring to real data deferred to Phase 6)
+  5. Page transitions (fade + slide) work when navigating between routes
+**Plans**: TBD
+
+Plans:
+- [ ] 03-01: TBD
+- [ ] 03-02: TBD
+- [ ] 03-03: TBD
+
+### Phase 4: Screen Migration
+**Goal**: All 6 plugins and 4 system screens are fully migrated to use shared components and base primitives -- every screen renders correctly with the new design system
+**Depends on**: Phase 3
+**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, SETT-01, SETT-02, SETT-03, SETT-04, SETT-05, SETT-06, CRTX-01, CRTX-02, CRTX-03, CRTX-04, CRTX-05, CRTX-06, CRTX-07, CRTX-08, CRTX-09, DBIP-01, DBIP-02, DBIP-03, DBIP-04, DBIP-05, DBIP-06, DBIP-07, NEBL-01, NEBL-02, NEBL-03, NEBL-04, NEBL-05, NEBL-06, TXCR-01, TXCR-02, TXCR-03, TXCR-04, TXCR-05, CRVW-01, CRVW-02, CRVW-03, CRVW-04, CRVW-05, LNCH-01, LNCH-02, LNCH-03, LNCH-04, LNCH-05, LNCH-06, LNCH-07, MISC-01, MISC-02
+**Success Criteria** (what must be TRUE):
+  1. Dashboard shows MissionControl header, 4 MetricCards, TokenChart, HealthPanel with glowing dots, ActivityFeed, and PluginCards grid -- all with zenith-violet theming
+  2. Settings screen has vertical tabs navigation and all sub-panels (General, AI Agents, MCP, Plugins, Connections/Repos) render with new components
+  3. Cortex plugin shows RepoManager, InsightsPanel with all 6 sub-tabs, CodePanel with FileTree+CodeEditor, QAPanel with ChatInterface, and ExportDialog with PdfExporter
+  4. DB Inspector shows ConnectionManager, SchemaExplorer, QueryConsole with CodeEditor+DataTable, AskAI with ChatInterface, QueryOptimizer, ERDiagram (2D mermaid, no 3D), and DbHistory
+  5. Nebula shows NoteList, NoteEditor with RichTextEditor, SearchView with ChatInterface, KnowledgeGraph (2D only, no 3D), VoiceRecorder/TranscriptionBlock/DrawingCanvas restyled, and all dialogs using Animate-UI
+  6. TextCraft shows 3-panel SplitPanel layout with RichTextEditor input, controls, ContentRenderer output, and HistoryList
+  7. Code Review Bot shows PRList, PRDiffView with theme diff colors, ReviewPanel with ContentRenderer, ReviewHistory, and SettingsPanel with RichTextEditor
+  8. Launchpad shows ProviderSelector, ServiceCatalog, ResourceConfigurator, EstimationSummary with PdfExporter, AiAdvisor with ChatInterface, EstimationHistory, and no CostTreemap3D
+  9. Activity Log renders with DataTable and filters; About page renders with Cards and capability Badges
+  10. All existing functionality is preserved -- stores, IPC channels, AI streaming, database queries all work unchanged
+**Plans**: TBD
+
+Plans:
+- [ ] 04-01: TBD (Dashboard)
+- [ ] 04-02: TBD (Settings)
+- [ ] 04-03: TBD (Cortex)
+- [ ] 04-04: TBD (DB Inspector)
+- [ ] 04-05: TBD (Nebula)
+- [ ] 04-06: TBD (TextCraft)
+- [ ] 04-07: TBD (Code Review Bot)
+- [ ] 04-08: TBD (Launchpad + Activity + About)
+
+### Phase 5: 3D Removal & Cleanup
+**Goal**: All legacy Glass components, Three.js 3D views, and associated dependencies are deleted -- the codebase has zero references to the old design system
+**Depends on**: Phase 4
+**Requirements**: CLEN-01, CLEN-02, CLEN-03, CLEN-04
+**Success Criteria** (what must be TRUE):
+  1. Zero imports of any Glass* component or glass-utils.ts anywhere in the codebase
+  2. Zero imports of three, @react-three/fiber, @react-three/drei, or d3-force-3d -- and these packages are removed from package.json
+  3. No references to ActivityMesh3D, SchemaOrb3D, MindGraph3D, KnowledgeGraph3D, CostTreemap3D, or Scene3DWrapper
+  4. Old CSS files (hljs-zenith.css, flow-styles.css) are removed or their needed styles are inlined
+  5. The app builds and runs cleanly with no dead-code warnings related to removed modules
 **Plans**: TBD
 
 Plans:
 - [ ] 05-01: TBD
-- [ ] 05-02: TBD
-- [ ] 05-03: TBD
 
-### Phase 6: 3D Visualizations
-**Goal**: Four new 3D data visualizations enhance key plugin views, with graceful fallbacks when 3D is unavailable
-**Depends on**: Phase 4
-**Requirements**: 3D-01, 3D-02, 3D-03, 3D-04, 3D-05, 3D-06
+### Phase 6: Polish
+**Goal**: The app feels finished -- every interaction has micro-animations, every empty state guides the user, keyboard shortcuts work consistently, and accessibility is solid
+**Depends on**: Phase 5
+**Requirements**: POLS-01, POLS-02, POLS-03, POLS-04, POLS-05, POLS-06
 **Success Criteria** (what must be TRUE):
-  1. Mission Control Dashboard shows a 3D Activity Mesh wireframe sphere with activity nodes (max 50), auto-rotate, and hover tooltips
-  2. Nebula plugin offers a 2D/3D toggle for its Knowledge Graph, with the 3D view showing notes as nodes and tag-based edges
-  3. All 4 new 3D components are wrapped in ErrorBoundary + Suspense and fall back to a 2D alternative on WebGL failure
-  4. Enabling reduced-motion preference disables auto-rotate and reduces particle effects in all 3D scenes
-  5. No WebGL context leaks: navigating away from a 3D view disposes its Canvas and context cleanly
-**Plans**: 3 plans
+  1. All interactive elements (buttons, cards, tabs, dialogs, accordions) have Animate-UI micro-interactions (hover, press, enter/exit)
+  2. Every plugin shows a meaningful empty state (illustration + description + action) when it has no data
+  3. Command palette (Cmd+K) searches across all plugin routes, recent activity entries, and settings sections
+  4. Keyboard shortcuts work consistently: Cmd+K (palette), Cmd+B (sidebar), Cmd+N (new item where applicable), Escape (close modals/palette)
+  5. Focus rings are visible on all interactive elements, ARIA attributes are correct, and prefers-reduced-motion disables animations
+  6. Bundle size is measurably smaller than before (Three.js removal saves 500KB+)
+**Plans**: TBD
 
 Plans:
-- [ ] 06-01: Scene3DWrapper shared component + Dashboard Activity Mesh 3D (Wave 1)
-- [ ] 06-02: Nebula 3D Knowledge Graph + Launchpad Cost Treemap 3D (Wave 2)
-- [ ] 06-03: DbInspector Schema Orb 3D + ER/3D toggle (Wave 2)
-
-### Phase 7: Micro-Interactions and Polish
-**Goal**: Every interactive element in the app has tactile feedback, and the entire UI passes cross-theme visual QA
-**Depends on**: Phase 5, Phase 6
-**Requirements**: MICRO-01, MICRO-02, MICRO-03, MICRO-04, MICRO-05, MICRO-06, MICRO-07, MICRO-08, MICRO-09, MICRO-10
-**Success Criteria** (what must be TRUE):
-  1. Pressing any GlassButton produces a visible scale-down effect (0.97) and copy buttons animate to a check icon for 2 seconds
-  2. All card grids throughout the app use staggered entrance animations
-  3. Scrollable containers show a thin accent progress bar at top and fade shadows at overflow edges
-  4. Tab bars across the entire app animate the active underline sliding to the selected tab
-  5. All micro-interactions respect reduced-motion preference (disabled or simplified when active)
-**Plans**: 4 plans
-
-Plans:
-- [ ] 07-01: AnimatedIcon + ScrollContainer shared components, icon morph application (Wave 1)
-- [ ] 07-02: Stagger animation gaps + skeleton loader audit-fix (Wave 1)
-- [ ] 07-03: ScrollContainer application + verify already-done micro-interactions (Wave 2)
-- [ ] 07-04: Settings extra polish + cross-theme visual QA across all 18 themes (Wave 3)
+- [ ] 06-01: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 > 2 > 3 > 4 > 5 > 6 > 7
-Note: Phase 5 and Phase 6 both depend on Phase 4 and can run in parallel.
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Design System Foundation | 0/3 | Complete    | 2026-03-24 |
-| 2. Glass Component Library | 3/3 | Complete    | 2026-03-24 |
-| 3. Core Pages Migration | 0/3 | Complete    | 2026-03-24 |
-| 4. Plugin Migration | 7/7 | Complete    | 2026-03-24 |
-| 5. Theme Collection | 0/3 | Complete    | 2026-03-24 |
-| 6. 3D Visualizations | 3/3 | Complete    | 2026-03-25 |
-| 7. Micro-Interactions and Polish | 0/3 | Complete    | 2026-03-25 |
+| 1. Foundation | 0/1 | Not started | - |
+| 2. Token Layer | 0/1 | Not started | - |
+| 3. Shared Components | 0/3 | Not started | - |
+| 4. Screen Migration | 0/8 | Not started | - |
+| 5. 3D Removal & Cleanup | 0/1 | Not started | - |
+| 6. Polish | 0/1 | Not started | - |
+
+---
+*Roadmap created: 2026-03-27*
+*Last updated: 2026-03-27*

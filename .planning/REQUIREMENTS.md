@@ -1,7 +1,7 @@
 # Requirements: Zenith Full UI Revamp
 
 **Defined:** 2026-03-27
-**Core Value:** Every plugin must use the same shared component library — consistency through reuse, not duplication.
+**Core Value:** Every plugin must use the same shared component library -- consistency through reuse, not duplication.
 
 ## v1 Requirements
 
@@ -30,22 +30,22 @@
 
 ### Shared Components
 
-- [ ] **SHAR-01**: RichTextEditor — Tiptap wrapper with full/minimal modes
-- [ ] **SHAR-02**: ContentRenderer — markdown output with code blocks, mermaid, streaming, actions
-- [ ] **SHAR-03**: ChatInterface — AI conversation with messages, suggestions, streaming
-- [ ] **SHAR-04**: DataTable — sortable, paginated, virtual scroll, cell expand
-- [ ] **SHAR-05**: HistoryList — historical entries with filters, restore/delete
-- [ ] **SHAR-06**: PdfExporter — unified PDF generation (report/document/diagram formats)
-- [ ] **SHAR-07**: SearchInput — debounced search with shortcut hint
-- [ ] **SHAR-08**: CodeEditor — CodeMirror 6 wrapper (editable/readOnly/execute modes)
-- [ ] **SHAR-09**: FileTree — Animate-UI Files based tree with search, virtual scroll
+- [ ] **SHAR-01**: RichTextEditor -- Tiptap wrapper with full/minimal modes
+- [ ] **SHAR-02**: ContentRenderer -- markdown output with code blocks, mermaid, streaming, actions
+- [ ] **SHAR-03**: ChatInterface -- AI conversation with messages, suggestions, streaming
+- [ ] **SHAR-04**: DataTable -- sortable, paginated, virtual scroll, cell expand
+- [ ] **SHAR-05**: HistoryList -- historical entries with filters, restore/delete
+- [ ] **SHAR-06**: PdfExporter -- unified PDF generation (report/document/diagram formats)
+- [ ] **SHAR-07**: SearchInput -- debounced search with shortcut hint
+- [ ] **SHAR-08**: CodeEditor -- CodeMirror 6 wrapper (editable/readOnly/execute modes)
+- [ ] **SHAR-09**: FileTree -- Animate-UI Files based tree with search, virtual scroll
 
 ### Layout
 
-- [ ] **LYOT-01**: Collapsible sidebar (56px icon rail ↔ 240px expanded, Cmd+B toggle)
-- [ ] **LYOT-02**: PluginShell — shared header + tabs wrapper for all plugins
-- [ ] **LYOT-03**: SplitPanel — shared resizable panel layout
-- [ ] **LYOT-04**: CommandPalette — Cmd+K global search across plugins, activity, settings
+- [ ] **LYOT-01**: Collapsible sidebar (56px icon rail <-> 240px expanded, Cmd+B toggle)
+- [ ] **LYOT-02**: PluginShell -- shared header + tabs wrapper for all plugins
+- [ ] **LYOT-03**: SplitPanel -- shared resizable panel layout
+- [ ] **LYOT-04**: CommandPalette -- Cmd+K global search across plugins, activity, settings
 - [ ] **LYOT-05**: Page transitions preserved with Framer Motion (fade + slide)
 
 ### Dashboard
@@ -168,16 +168,108 @@
 
 ## Traceability
 
-<!-- Populated during roadmap creation -->
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| FOUND-01 | Phase 1 | Pending |
+| FOUND-02 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Pending |
+| FOUND-04 | Phase 1 | Pending |
+| FOUND-05 | Phase 1 | Pending |
+| COMP-01 | Phase 2 | Pending |
+| COMP-02 | Phase 2 | Pending |
+| COMP-03 | Phase 2 | Pending |
+| COMP-04 | Phase 2 | Pending |
+| COMP-05 | Phase 2 | Pending |
+| COMP-06 | Phase 2 | Pending |
+| COMP-07 | Phase 2 | Pending |
+| COMP-08 | Phase 2 | Pending |
+| COMP-09 | Phase 2 | Pending |
+| COMP-10 | Phase 2 | Pending |
+| COMP-11 | Phase 2 | Pending |
+| COMP-12 | Phase 2 | Pending |
+| SHAR-01 | Phase 3 | Pending |
+| SHAR-02 | Phase 3 | Pending |
+| SHAR-03 | Phase 3 | Pending |
+| SHAR-04 | Phase 3 | Pending |
+| SHAR-05 | Phase 3 | Pending |
+| SHAR-06 | Phase 3 | Pending |
+| SHAR-07 | Phase 3 | Pending |
+| SHAR-08 | Phase 3 | Pending |
+| SHAR-09 | Phase 3 | Pending |
+| LYOT-01 | Phase 3 | Pending |
+| LYOT-02 | Phase 3 | Pending |
+| LYOT-03 | Phase 3 | Pending |
+| LYOT-04 | Phase 3 | Pending |
+| LYOT-05 | Phase 3 | Pending |
+| DASH-01 | Phase 4 | Pending |
+| DASH-02 | Phase 4 | Pending |
+| DASH-03 | Phase 4 | Pending |
+| DASH-04 | Phase 4 | Pending |
+| DASH-05 | Phase 4 | Pending |
+| DASH-06 | Phase 4 | Pending |
+| SETT-01 | Phase 4 | Pending |
+| SETT-02 | Phase 4 | Pending |
+| SETT-03 | Phase 4 | Pending |
+| SETT-04 | Phase 4 | Pending |
+| SETT-05 | Phase 4 | Pending |
+| SETT-06 | Phase 4 | Pending |
+| CRTX-01 | Phase 4 | Pending |
+| CRTX-02 | Phase 4 | Pending |
+| CRTX-03 | Phase 4 | Pending |
+| CRTX-04 | Phase 4 | Pending |
+| CRTX-05 | Phase 4 | Pending |
+| CRTX-06 | Phase 4 | Pending |
+| CRTX-07 | Phase 4 | Pending |
+| CRTX-08 | Phase 4 | Pending |
+| CRTX-09 | Phase 4 | Pending |
+| DBIP-01 | Phase 4 | Pending |
+| DBIP-02 | Phase 4 | Pending |
+| DBIP-03 | Phase 4 | Pending |
+| DBIP-04 | Phase 4 | Pending |
+| DBIP-05 | Phase 4 | Pending |
+| DBIP-06 | Phase 4 | Pending |
+| DBIP-07 | Phase 4 | Pending |
+| NEBL-01 | Phase 4 | Pending |
+| NEBL-02 | Phase 4 | Pending |
+| NEBL-03 | Phase 4 | Pending |
+| NEBL-04 | Phase 4 | Pending |
+| NEBL-05 | Phase 4 | Pending |
+| NEBL-06 | Phase 4 | Pending |
+| TXCR-01 | Phase 4 | Pending |
+| TXCR-02 | Phase 4 | Pending |
+| TXCR-03 | Phase 4 | Pending |
+| TXCR-04 | Phase 4 | Pending |
+| TXCR-05 | Phase 4 | Pending |
+| CRVW-01 | Phase 4 | Pending |
+| CRVW-02 | Phase 4 | Pending |
+| CRVW-03 | Phase 4 | Pending |
+| CRVW-04 | Phase 4 | Pending |
+| CRVW-05 | Phase 4 | Pending |
+| LNCH-01 | Phase 4 | Pending |
+| LNCH-02 | Phase 4 | Pending |
+| LNCH-03 | Phase 4 | Pending |
+| LNCH-04 | Phase 4 | Pending |
+| LNCH-05 | Phase 4 | Pending |
+| LNCH-06 | Phase 4 | Pending |
+| LNCH-07 | Phase 4 | Pending |
+| MISC-01 | Phase 4 | Pending |
+| MISC-02 | Phase 4 | Pending |
+| CLEN-01 | Phase 5 | Pending |
+| CLEN-02 | Phase 5 | Pending |
+| CLEN-03 | Phase 5 | Pending |
+| CLEN-04 | Phase 5 | Pending |
+| POLS-01 | Phase 6 | Pending |
+| POLS-02 | Phase 6 | Pending |
+| POLS-03 | Phase 6 | Pending |
+| POLS-04 | Phase 6 | Pending |
+| POLS-05 | Phase 6 | Pending |
+| POLS-06 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 64 total
-- Mapped to phases: 0
-- Unmapped: 64
+- v1 requirements: 94 total
+- Mapped to phases: 94
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-27*
-*Last updated: 2026-03-27 after initial definition*
+*Last updated: 2026-03-27 after roadmap creation*
