@@ -61,10 +61,10 @@ export default function ActivityLog(): React.JSX.Element {
       variants={staggerContainer}
       initial={shouldAnimate ? 'hidden' : false}
       animate="visible"
-      className="space-y-4"
+      className="flex h-full flex-col gap-4"
     >
       {/* Header */}
-      <motion.div variants={staggerItem} className="flex items-center justify-between">
+      <motion.div variants={staggerItem} className="shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-lg font-semibold text-foreground">Activity Log</h1>
           <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
@@ -81,7 +81,7 @@ export default function ActivityLog(): React.JSX.Element {
       </motion.div>
 
       {/* Filter bar */}
-      <motion.div variants={staggerItem}>
+      <motion.div variants={staggerItem} className="shrink-0">
         <Card className="flex items-center gap-3">
           <SimpleSelect
             options={PLUGIN_OPTIONS}
@@ -101,7 +101,7 @@ export default function ActivityLog(): React.JSX.Element {
       </motion.div>
 
       {/* Activity list */}
-      <motion.div variants={staggerItem}>
+      <motion.div variants={staggerItem} className="flex-1 min-h-0 overflow-y-auto">
         {isLoading ? (
           <div className="space-y-3 py-4">
             <Skeleton className="h-14" />
