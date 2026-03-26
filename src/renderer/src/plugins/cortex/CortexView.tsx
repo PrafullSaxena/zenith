@@ -98,7 +98,7 @@ export default function CortexView(): React.JSX.Element {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}

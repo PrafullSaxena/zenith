@@ -135,7 +135,7 @@ export default function AboutView(): React.JSX.Element {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-3xl space-y-8 p-6">
       {/* ── App Header ── */}
       <Card className="text-center">
         <img

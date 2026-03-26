@@ -401,7 +401,7 @@ export default function DbInspectorView(): React.JSX.Element {
               initial="initial"
               animate="animate"
               exit="exit"
-              className="flex-1 overflow-hidden"
+              className="flex-1 overflow-auto"
             >
               {activeTab === 'ask-ai' && (
                 <AskAI

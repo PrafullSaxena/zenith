@@ -238,6 +238,222 @@
   }
 }
 
+/* Tiptap / ProseMirror editor — suppress the global focus-visible ring
+   so the Nebula notes editor does not show a prominent purple box. */
+.tiptap:focus-visible,
+.ProseMirror:focus-visible,
+.tiptap:focus,
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Nebula code block styles */
+.nebula-code-block {
+  position: relative;
+  margin: 0.75rem 0;
+  border-radius: 0.75rem;
+  background: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
+  overflow: hidden;
+}
+
+.nebula-code-block .code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--secondary) / 0.6);
+}
+
+.nebula-code-block .code-block-filename {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  user-select: none;
+}
+
+.nebula-code-block .code-block-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.375rem;
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.nebula-code-block .code-block-action-btn:hover {
+  background: hsl(var(--primary) / 0.15);
+  color: hsl(var(--primary));
+}
+
+.nebula-code-block .code-block-hover-action {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.nebula-code-block:hover .code-block-hover-action {
+  opacity: 1;
+}
+
+.nebula-code-block .code-block-lang-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 50;
+  max-height: 14rem;
+  min-width: 8rem;
+  overflow-y: auto;
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--popover));
+  padding: 0.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.nebula-code-block .code-block-lang-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  color: hsl(var(--foreground));
+  transition: background-color 0.1s;
+}
+
+.nebula-code-block .code-block-lang-option:hover {
+  background: hsl(var(--primary) / 0.15);
+}
+
+.nebula-code-block .code-block-pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.nebula-code-block .code-block-pre code {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Nebula editor typography */
+.nebula-editor .tiptap {
+  outline: none;
+  min-height: 12rem;
+}
+
+.nebula-editor .tiptap p {
+  margin: 0.25rem 0;
+  line-height: 1.65;
+}
+
+.nebula-editor .tiptap h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.nebula-editor .tiptap h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1rem 0 0.375rem;
+}
+
+.nebula-editor .tiptap h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.875rem 0 0.25rem;
+}
+
+.nebula-editor .tiptap ul,
+.nebula-editor .tiptap ol {
+  padding-left: 1.5rem;
+  margin: 0.25rem 0;
+}
+
+.nebula-editor .tiptap ul {
+  list-style: disc;
+}
+
+.nebula-editor .tiptap ol {
+  list-style: decimal;
+}
+
+.nebula-editor .tiptap blockquote {
+  border-left: 3px solid hsl(var(--primary) / 0.4);
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+.nebula-editor .tiptap code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: hsl(var(--secondary));
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+}
+
+.nebula-editor .tiptap img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+
+/* Table styles for Nebula editor */
+.nebula-editor .tiptap table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5rem 0;
+}
+
+.nebula-editor .tiptap th,
+.nebula-editor .tiptap td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.375rem 0.5rem;
+  font-size: 0.8125rem;
+  min-width: 4rem;
+}
+
+.nebula-editor .tiptap th {
+  background: hsl(var(--secondary));
+  font-weight: 600;
+}
+
+.nebula-editor .tiptap .selectedCell {
+  background: hsl(var(--primary) / 0.1);
+}
+
+/* Line numbers mode */
+.nebula-line-numbers .tiptap {
+  counter-reset: tiptap-line;
+}
+
+.nebula-line-numbers .tiptap > * {
+  counter-increment: tiptap-line;
+  position: relative;
+  padding-left: 2.5rem;
+}
+
+.nebula-line-numbers .tiptap > *::before {
+  content: counter(tiptap-line);
+  position: absolute;
+  left: 0;
+  width: 2rem;
+  text-align: right;
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground) / 0.3);
+  font-family: var(--font-mono);
+  user-select: none;
+}
+
 /* Electron window drag region */
 .drag-region {
   -webkit-app-region: drag;

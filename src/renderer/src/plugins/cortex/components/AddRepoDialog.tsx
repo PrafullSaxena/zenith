@@ -6,7 +6,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import { Button } from '@renderer/components/ui/button'
-import { Dialog } from '@renderer/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@renderer/components/ui/dialog'
 import { Input } from '@renderer/components/ui/input'
 
 interface Props {
@@ -131,75 +131,78 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      {/* Form */}
-      <div className="flex flex-col gap-4">
-        {/* Repository URL */}
-        <Input
-         
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onBlur={handleUrlBlur}
-          placeholder="https://github.com/org/repo.git"
-        />
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Repository</DialogTitle>
+        </DialogHeader>
+        {/* Form */}
+        <div className="flex flex-col gap-4">
+          {/* Repository URL */}
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onBlur={handleUrlBlur}
+            placeholder="https://github.com/org/repo.git"
+          />
 
-        {/* Branch */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[11px] font-medium text-muted-foreground">Branch</label>
-          <div className="relative">
-            <select
-              value={branch}
-              onChange={(e) => setBranch(e.target.value)}
-              disabled={branches.length === 0}
-              className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20 disabled:opacity-50"
-            >
-              {branches.length === 0 && (
-                <option value="">
-                  {loadingBranches ? 'Loading...' : 'Enter URL first'}
-                </option>
+          {/* Branch */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-medium text-muted-foreground">Branch</label>
+            <div className="relative">
+              <select
+                value={branch}
+                onChange={(e) => setBranch(e.target.value)}
+                disabled={branches.length === 0}
+                className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20 disabled:opacity-50"
+              >
+                {branches.length === 0 && (
+                  <option value="">
+                    {loadingBranches ? 'Loading...' : 'Enter URL first'}
+                  </option>
+                )}
+                {branches.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+              {loadingBranches && (
+                <Loader2
+                  size={14}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
+                />
               )}
-              {branches.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
-            {loadingBranches && (
-              <Loader2
-                size={14}
-                className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
-              />
-            )}
+            </div>
           </div>
+
+          {/* Repository Name */}
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="my-repo"
+          />
+
+          {/* Error */}
+          {error && (
+            <p className="rounded-lg bg-error/10 px-3 py-2 text-[11px] text-error">{error}</p>
+          )}
         </div>
 
-        {/* Repository Name */}
-        <Input
-         
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="my-repo"
-        />
-
-        {/* Error */}
-        {error && (
-          <p className="rounded-lg bg-error/10 px-3 py-2 text-[11px] text-error">{error}</p>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="mt-6 flex items-center justify-end gap-3">
-        <Button variant="ghost" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button
-          variant="default"
-          onClick={handleSubmit}
-          disabled={!isValidRepoUrl(url) || !name || !branch || cloning}
-        >
-          {cloning && <Loader2 size={12} className="animate-spin" />}
-          Add & Clone
-        </Button>
-      </div>
+        {/* Actions */}
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="default"
+            onClick={handleSubmit}
+            disabled={!isValidRepoUrl(url) || !name || !branch || cloning}
+          >
+            {cloning && <Loader2 size={12} className="animate-spin" />}
+            Add & Clone
+          </Button>
+        </div>
+      </DialogContent>
     </Dialog>
   )
 }
