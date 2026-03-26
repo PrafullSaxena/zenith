@@ -1,7 +1,7 @@
 import React, { Suspense, useEffect } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { PLUGINS } from './plugins/registry'
-import { AppLayout } from './components/AppLayout'
+import { AppLayout } from './components/layout/app-layout'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { SettingsLayout } from './components/settings/SettingsLayout'
 import { useSettingsStore } from './stores/settings-store'
