@@ -88,17 +88,19 @@ Plans:
   8. Launchpad shows ProviderSelector, ServiceCatalog, ResourceConfigurator, EstimationSummary with PdfExporter, AiAdvisor with ChatInterface, EstimationHistory, and no CostTreemap3D
   9. Activity Log renders with DataTable and filters; About page renders with Cards and capability Badges
   10. All existing functionality is preserved -- stores, IPC channels, AI streaming, database queries all work unchanged
-**Plans**: TBD
+**Plans**: 10 plans
 
 Plans:
-- [ ] 04-01: TBD (Dashboard)
-- [ ] 04-02: TBD (Settings)
-- [ ] 04-03: TBD (Cortex)
-- [ ] 04-04: TBD (DB Inspector)
-- [ ] 04-05: TBD (Nebula)
-- [ ] 04-06: TBD (TextCraft)
-- [ ] 04-07: TBD (Code Review Bot)
-- [ ] 04-08: TBD (Launchpad + Activity + About)
+- [ ] 04-01-PLAN.md -- Dashboard: MissionControl, MetricCards, TokenChart, HealthPanel, ActivityFeed, PluginCards
+- [ ] 04-02-PLAN.md -- Settings: SettingsLayout with vertical Tabs, all sub-panels (General, AI Agents, MCP, Plugins, Connections, Repos)
+- [ ] 04-03-PLAN.md -- Cortex Insights: InsightsPanel with 6 sub-tabs (Overview, APIs, Flows, Architecture, Diagrams, Graph)
+- [ ] 04-04-PLAN.md -- Cortex Code/QA/Repos: CortexView with PluginShell, RepoManager, CodePanel, QAPanel, ExportDialog
+- [ ] 04-05-PLAN.md -- DB Inspector Query: DbInspectorView, ConnectionManager, SchemaExplorer, QueryConsole, ResultsGrid
+- [ ] 04-06-PLAN.md -- DB Inspector AI/ER: AskAI, QueryOptimizer, ERDiagram, MermaidRenderer, DbHistory
+- [ ] 04-07-PLAN.md -- Nebula: NebulaView, NoteList, NoteEditor, SearchView, KnowledgeGraph, VoiceRecorder, DrawingCanvas, all dialogs
+- [ ] 04-08-PLAN.md -- TextCraft: TextCraftView with SplitPanel, InputPanel, ControlsPanel, OutputPanel, HistoryPanel
+- [ ] 04-09-PLAN.md -- Code Review Bot: CodeReviewBotView, PRList, PRDiffView, ReviewPanel, ReviewHistory, SettingsPanel
+- [ ] 04-10-PLAN.md -- Launchpad + Activity + About: LaunchpadView, all sub-components, ActivityLog, AboutView
 
 ### Phase 5: 3D Removal & Cleanup
 **Goal**: All legacy Glass components, Three.js 3D views, and associated dependencies are deleted -- the codebase has zero references to the old design system
@@ -141,7 +143,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Foundation | 0/2 | Not started | - |
 | 2. Token Layer | 0/3 | Not started | - |
 | 3. Shared Components | 0/6 | Complete    | 2026-03-26 |
-| 4. Screen Migration | 0/8 | Not started | - |
+| 4. Screen Migration | 0/10 | Not started | - |
 | 5. 3D Removal & Cleanup | 0/1 | Not started | - |
 | 6. Polish | 0/1 | Not started | - |
 
