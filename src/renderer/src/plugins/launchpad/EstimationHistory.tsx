@@ -1,14 +1,17 @@
 /**
  * EstimationHistory — List of saved cloud cost estimations.
  *
- * Shows saved entries as stagger-animated GlassCards ordered by most recent first.
+ * Shows saved entries as stagger-animated Cards ordered by most recent first.
  * Each entry has Load (restores to estimator) and Delete (with confirm) actions.
- * Uses GlassBadge for provider labels and EmptyState for zero-data view.
+ * Uses Badge for provider labels and div for zero-data view.
  */
 import React from 'react'
 import { Clock, Trash2, RotateCcw } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { GlassCard, GlassBadge, GlassButton, EmptyState, ScrollContainer } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { EstimationEntry } from '../../types/launchpad'
@@ -67,27 +70,27 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
 
   return (
     <motion.div variants={staggerItem}>
-      <GlassCard variant="interactive" className="cursor-pointer" onClick={() => onLoad(entry)}>
+      <Card variant="interactive" className="cursor-pointer" onClick={() => onLoad(entry)}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-sm font-semibold text-[var(--text-primary)] truncate">
+              <span className="text-sm font-semibold text-[hsl(var(--foreground))] truncate">
                 {entry.name}
               </span>
-              <GlassBadge variant={badgeVariant} className="shrink-0">
+              <Badge variant={badgeVariant} className="shrink-0">
                 {providerInfo.shortName}
-              </GlassBadge>
+              </Badge>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
+            <div className="flex items-center gap-3 text-xs text-[hsl(var(--muted-foreground))]">
               <span>
                 {entry.services.length} service{entry.services.length !== 1 ? 's' : ''}
               </span>
-              <span className="text-[var(--text-secondary)]/30">&bull;</span>
-              <span className="font-medium text-[var(--text-primary)]">
+              <span className="text-[hsl(var(--muted-foreground))]/30">&bull;</span>
+              <span className="font-medium text-[hsl(var(--foreground))]">
                 {formatCurrency(entry.totalMonthly)}/mo
               </span>
-              <span className="text-[var(--text-secondary)]/30">&bull;</span>
+              <span className="text-[hsl(var(--muted-foreground))]/30">&bull;</span>
               <div className="flex items-center gap-1">
                 <Clock size={10} />
                 <span>{formatDate(entry.savedAt)}</span>
@@ -96,7 +99,7 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            <GlassButton
+            <Button
               variant="default"
               size="sm"
               onClick={handleLoad}
@@ -104,18 +107,18 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
             >
               <RotateCcw size={11} />
               Load
-            </GlassButton>
-            <GlassButton
+            </Button>
+            <Button
               variant="danger"
               size="sm"
               onClick={handleDelete}
               aria-label="Delete estimation"
             >
               <Trash2 size={11} />
-            </GlassButton>
+            </Button>
           </div>
         </div>
-      </GlassCard>
+      </Card>
     </motion.div>
   )
 }
@@ -140,22 +143,22 @@ export default function EstimationHistory(): React.JSX.Element {
       {/* Header */}
       <div className="shrink-0 border-b border-white/[0.06] px-4 py-3">
         <div className="flex items-center gap-2">
-          <Clock size={14} className="text-[var(--color-accent)]" />
-          <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+          <Clock size={14} className="text-[var(--primary)]" />
+          <h2 className="text-sm font-semibold text-[hsl(var(--foreground))]">
             Estimation History
             {history.length > 0 && (
-              <GlassBadge variant="default" className="ml-2">
+              <Badge variant="default" className="ml-2">
                 {history.length}
-              </GlassBadge>
+              </Badge>
             )}
           </h2>
         </div>
       </div>
 
       {/* Content */}
-      <ScrollContainer className="flex-1 p-4">
+      <div className="flex-1 p-4">
         {history.length === 0 ? (
-          <EmptyState
+          <div
             icon={Clock}
             title="No estimation history"
             description="Your cost estimates will appear here. Save an estimation from the Estimator tab to get started."
@@ -177,7 +180,7 @@ export default function EstimationHistory(): React.JSX.Element {
             ))}
           </motion.div>
         )}
-      </ScrollContainer>
+      </div>
     </div>
   )
 }

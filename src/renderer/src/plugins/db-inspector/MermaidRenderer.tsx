@@ -8,7 +8,10 @@
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { ZoomIn, ZoomOut, Maximize2, Code2, Check } from 'lucide-react'
-import { AnimatedIcon } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 interface MermaidRendererProps {
   syntax: string
@@ -215,12 +218,12 @@ export default function MermaidRenderer({
       type="button"
       onClick={handleCopyCode}
       className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-md
-        text-[10px] font-medium bg-surface/80 backdrop-blur-sm border border-border/50
-        text-text-secondary hover:text-text-primary hover:bg-surface-elevated
+        text-[10px] font-medium bg-card/80 backdrop-blur-sm border border-border/50
+        text-muted-foreground hover:text-foreground hover:bg-secondary
         opacity-0 group-hover:opacity-100 transition-opacity"
       title="Copy mermaid code"
     >
-      <AnimatedIcon icon={codeCopied ? Check : Code2} iconKey={codeCopied ? 'check' : 'code'} size={11} className={codeCopied ? 'text-emerald-400' : undefined} />
+      <span icon={codeCopied ? Check : Code2} iconKey={codeCopied ? 'check' : 'code'} size={11} className={codeCopied ? 'text-emerald-400' : undefined} />
       {codeCopied ? ' Copied' : ' Code'}
     </button>
   ) : null
@@ -255,33 +258,33 @@ export default function MermaidRenderer({
           type="button"
           onClick={handleCopyCode}
           className="absolute left-3 top-3 z-10 flex items-center gap-1 px-2 py-1 rounded-md
-            text-[10px] font-medium bg-surface/80 backdrop-blur-sm border border-border/50
-            text-text-secondary hover:text-text-primary hover:bg-surface-elevated
+            text-[10px] font-medium bg-card/80 backdrop-blur-sm border border-border/50
+            text-muted-foreground hover:text-foreground hover:bg-secondary
             opacity-0 group-hover:opacity-100 transition-opacity"
           title="Copy mermaid code"
         >
-          <AnimatedIcon icon={codeCopied ? Check : Code2} iconKey={codeCopied ? 'check' : 'code'} size={11} className={codeCopied ? 'text-emerald-400' : undefined} />
+          <span icon={codeCopied ? Check : Code2} iconKey={codeCopied ? 'check' : 'code'} size={11} className={codeCopied ? 'text-emerald-400' : undefined} />
           {codeCopied ? ' Copied' : ' Code'}
         </button>
       )}
 
       {/* Zoom controls */}
-      <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-lg border border-border bg-surface/90 p-1 shadow-lg backdrop-blur-sm">
+      <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-lg border border-border bg-card/90 p-1 shadow-lg backdrop-blur-sm">
         <button
           type="button"
           onClick={handleZoomOut}
-          className="rounded p-1 text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+          className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           title="Zoom out"
         >
           <ZoomOut size={14} />
         </button>
-        <span className="min-w-[3rem] text-center text-[10px] font-medium text-text-secondary">
+        <span className="min-w-[3rem] text-center text-[10px] font-medium text-muted-foreground">
           {zoomPercent}%
         </span>
         <button
           type="button"
           onClick={handleZoomIn}
-          className="rounded p-1 text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+          className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           title="Zoom in"
         >
           <ZoomIn size={14} />
@@ -290,7 +293,7 @@ export default function MermaidRenderer({
         <button
           type="button"
           onClick={handleReset}
-          className="rounded p-1 text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+          className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           title="Reset view"
         >
           <Maximize2 size={14} />
@@ -305,7 +308,7 @@ export default function MermaidRenderer({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`overflow-hidden rounded-lg border border-border bg-surface-elevated/30 ${
+        className={`overflow-hidden rounded-lg border border-border bg-secondary/30 ${
           isDragging ? 'cursor-grabbing' : 'cursor-grab'
         }`}
         style={{ minHeight: 200 }}
@@ -321,7 +324,7 @@ export default function MermaidRenderer({
       </div>
 
       {/* Hint */}
-      <p className="mt-1.5 text-center text-[10px] text-text-secondary/40">
+      <p className="mt-1.5 text-center text-[10px] text-muted-foreground/40">
         Scroll to zoom · Drag to pan · Click reset to fit
       </p>
     </div>

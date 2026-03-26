@@ -5,13 +5,16 @@
  * copy modes (formatted markdown & clean plain text), PDF export,
  * and word/character count footer.
  *
- * Four states: empty (EmptyState), streaming (GlassSkeleton shimmer + live markdown),
+ * Four states: empty (div), streaming (Skeleton shimmer + live markdown),
  * complete (final markdown + copy buttons), error (red message).
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Check, FileText, AlignLeft, Copy, FileDown, ChevronDown, ChevronRight, ChevronsUpDown, Loader2, BookOpen } from 'lucide-react'
-import { GlassCard, GlassSkeleton, EmptyState, AnimatedIcon } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import { renderAllMermaidBlocks } from '../../lib/mermaid-to-png'
 import { markdownToTiptapJson } from '../../lib/markdown-to-tiptap'
@@ -243,10 +246,10 @@ export default function OutputPanel(): React.JSX.Element {
   const showActions = (isComplete || hasOutput) && !isStreaming
 
   return (
-    <GlassCard className="flex flex-col h-full overflow-hidden rounded-none border-x-0 border-t-0">
+    <Card className="flex flex-col h-full overflow-hidden rounded-none border-x-0 border-t-0">
       {/* Header */}
       <div className="flex items-center justify-between pb-2">
-        <div className="text-xs font-medium text-text-secondary uppercase tracking-wider px-1">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
           Output
         </div>
 
@@ -258,7 +261,7 @@ export default function OutputPanel(): React.JSX.Element {
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
                   title={allCollapsed ? 'Expand all sections' : 'Collapse all sections'}
                 >
                   <ChevronsUpDown size={13} />
@@ -271,20 +274,20 @@ export default function OutputPanel(): React.JSX.Element {
             <button
               type="button"
               onClick={() => void handleCopyRaw()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
               title="Copy plain text"
             >
-              <AnimatedIcon icon={copiedMode === 'raw' ? Check : AlignLeft} iconKey={copiedMode === 'raw' ? 'check' : 'alignleft'} size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} />
+              <span icon={copiedMode === 'raw' ? Check : AlignLeft} iconKey={copiedMode === 'raw' ? 'check' : 'alignleft'} size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} />
               <span>{copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}</span>
             </button>
 
             <button
               type="button"
               onClick={() => void handleCopyFormatted()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
               title="Copy markdown source"
             >
-              <AnimatedIcon icon={copiedMode === 'formatted' ? Check : FileText} iconKey={copiedMode === 'formatted' ? 'check' : 'filetext'} size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} />
+              <span icon={copiedMode === 'formatted' ? Check : FileText} iconKey={copiedMode === 'formatted' ? 'check' : 'filetext'} size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} />
               <span>{copiedMode === 'formatted' ? 'Copied!' : 'Markdown'}</span>
             </button>
 
@@ -294,7 +297,7 @@ export default function OutputPanel(): React.JSX.Element {
               type="button"
               onClick={() => void handleExportPDF()}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
               title="Export as PDF"
             >
               {isExporting ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
@@ -306,10 +309,10 @@ export default function OutputPanel(): React.JSX.Element {
             <button
               type="button"
               onClick={() => void handleSaveAsNote()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-text-secondary hover:text-text-primary transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
               title="Save as Nebula note"
             >
-              <AnimatedIcon icon={savedAsNote ? Check : BookOpen} iconKey={savedAsNote ? 'check' : 'bookopen'} size={13} className={savedAsNote ? 'text-success' : undefined} />
+              <span icon={savedAsNote ? Check : BookOpen} iconKey={savedAsNote ? 'check' : 'bookopen'} size={13} className={savedAsNote ? 'text-success' : undefined} />
               <span>{savedAsNote ? 'Saved!' : 'Note'}</span>
             </button>
           </div>
@@ -317,7 +320,7 @@ export default function OutputPanel(): React.JSX.Element {
 
         {/* Streaming indicator in header */}
         {isStreaming && (
-          <span className="flex items-center gap-1.5 text-[11px] text-[var(--color-accent)]">
+          <span className="flex items-center gap-1.5 text-[11px] text-[var(--primary)]">
             <Copy size={12} className="animate-pulse" />
             Streaming...
           </span>
@@ -328,7 +331,7 @@ export default function OutputPanel(): React.JSX.Element {
       <div ref={contentRef} className="flex-1 overflow-y-auto">
         {/* Empty state */}
         {isEmpty && (
-          <EmptyState
+          <div
             icon={FileText}
             title="No output yet"
             description="Paste text and click Refine to see results"
@@ -336,16 +339,16 @@ export default function OutputPanel(): React.JSX.Element {
           />
         )}
 
-        {/* Streaming state -- GlassSkeleton shimmer + live content */}
+        {/* Streaming state -- Skeleton shimmer + live content */}
         {isStreaming && (
           <div className="px-2">
             {hasOutput ? (
               <>
                 <MarkdownRenderer text={rawText} className="text-sm leading-relaxed" />
-                <span className="animate-pulse text-[var(--color-accent)] text-sm">Refining...</span>
+                <span className="animate-pulse text-[var(--primary)] text-sm">Refining...</span>
               </>
             ) : (
-              <GlassSkeleton variant="text" lines={6} />
+              <Skeleton variant="text" lines={6} />
             )}
           </div>
         )}
@@ -374,12 +377,12 @@ export default function OutputPanel(): React.JSX.Element {
                     <button
                       type="button"
                       onClick={() => toggleSection(idx)}
-                      className={`flex w-full items-center gap-2 rounded-md py-1.5 px-1 -ml-1 text-left transition-colors hover:bg-white/[0.04] ${headingClass} text-text-primary`}
+                      className={`flex w-full items-center gap-2 rounded-md py-1.5 px-1 -ml-1 text-left transition-colors hover:bg-white/[0.04] ${headingClass} text-foreground`}
                     >
                       {isCollapsed ? (
-                        <ChevronRight size={14} className="shrink-0 text-text-secondary" />
+                        <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
                       ) : (
-                        <ChevronDown size={14} className="shrink-0 text-text-secondary" />
+                        <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
                       )}
                       <span>{section.heading.replace(/\*\*/g, '')}</span>
                     </button>
@@ -406,9 +409,9 @@ export default function OutputPanel(): React.JSX.Element {
       </div>
 
       {/* Footer: word/char count */}
-      <div className="text-xs text-text-secondary px-1 pt-2 border-t border-white/[0.06]">
+      <div className="text-xs text-muted-foreground px-1 pt-2 border-t border-white/[0.06]">
         {wordCount} words | {charCount} chars
       </div>
-    </GlassCard>
+    </Card>
   )
 }

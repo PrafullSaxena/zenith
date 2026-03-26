@@ -14,7 +14,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import { ChevronDown, Wand2, FileCode2, Copy, Check } from 'lucide-react'
-import { AnimatedIcon } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { LANGUAGES } from '../../lib/lowlight-setup'
 
 // ── File extension map ──────────────────────────────────────────────
@@ -192,10 +195,10 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
   if (!isInCodeBlock || !codeBlockInfo) return null
 
   return (
-    <div className="flex items-center gap-1 border-b border-border bg-surface-elevated px-3 py-1">
+    <div className="flex items-center gap-1 border-b border-border bg-secondary px-3 py-1">
       {/* Filename */}
-      <FileCode2 size={10} className="text-accent/50" />
-      <span className="font-mono text-[10px] text-text-secondary/60">{filename}</span>
+      <FileCode2 size={10} className="text-primary/50" />
+      <span className="font-mono text-[10px] text-muted-foreground/60">{filename}</span>
 
       <div className="mx-1.5 h-3.5 w-px bg-border" />
 
@@ -204,7 +207,7 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
         <button
           type="button"
           onClick={() => setShowLangPicker(!showLangPicker)}
-          className="flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent"
+          className="flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
           title="Change language"
         >
           {langLabel}
@@ -212,16 +215,16 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
         </button>
 
         {showLangPicker && (
-          <div className="absolute top-full right-0 z-50 mt-1 max-h-60 w-36 overflow-y-auto rounded-md border border-border bg-surface-elevated p-1 shadow-lg">
+          <div className="absolute top-full right-0 z-50 mt-1 max-h-60 w-36 overflow-y-auto rounded-md border border-border bg-secondary p-1 shadow-lg">
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.value}
                 type="button"
                 onClick={() => handleLanguageChange(lang.value)}
-                className={`block w-full rounded px-2 py-1 text-left font-mono text-[10px] transition-colors hover:bg-accent/10 hover:text-text-primary ${
+                className={`block w-full rounded px-2 py-1 text-left font-mono text-[10px] transition-colors hover:bg-primary/10 hover:text-foreground ${
                   lang.value === codeBlockInfo.language
-                    ? 'text-accent'
-                    : 'text-text-secondary'
+                    ? 'text-primary'
+                    : 'text-muted-foreground'
                 }`}
               >
                 {lang.label}
@@ -235,7 +238,7 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
       <button
         type="button"
         onClick={handleFormat}
-        className="flex h-5 w-5 items-center justify-center rounded text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent"
+        className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
         title="Auto-format code"
       >
         <Wand2 size={11} />
@@ -245,10 +248,10 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
       <button
         type="button"
         onClick={handleCopy}
-        className="flex h-5 w-5 items-center justify-center rounded text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent"
+        className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
         title="Copy code"
       >
-        <AnimatedIcon icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={11} className={copied ? 'text-emerald-400' : undefined} />
+        <span icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={11} className={copied ? 'text-emerald-400' : undefined} />
       </button>
     </div>
   )

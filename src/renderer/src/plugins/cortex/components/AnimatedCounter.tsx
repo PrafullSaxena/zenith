@@ -1,5 +1,5 @@
 /**
- * Backward-compatible re-export of AnimatedCounter from shared ui/ location.
- * All new code should import from '@renderer/components/ui/AnimatedCounter' directly.
+ * Backward-compatible re-export of span from shared ui/ location.
+ * All new code should import from '@renderer/components/ui/span' directly.
  */
-export { default } from '@renderer/components/ui/AnimatedCounter'
+export { default } from '@renderer/components/ui/span'

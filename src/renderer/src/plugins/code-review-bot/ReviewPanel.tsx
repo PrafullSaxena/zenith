@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Pencil, Check, X, ChevronDown, ChevronRight } from 'lucide-react'
 import type { ReviewSession, ReviewComment } from '../../types/review'
 import { SEVERITY_CONFIG, CONFIDENCE_CONFIG, KIND_CONFIG } from '../../types/review'
-import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, ScrollContainer } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface ReviewPanelProps {
@@ -104,20 +104,20 @@ export function ReviewPanel({
     const canStart = isConnected && hasAgent
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <GlassButton
+        <Button
           variant={canStart ? 'primary' : 'ghost'}
           disabled={!canStart}
           onClick={onStart}
         >
           Start Review
-        </GlassButton>
+        </Button>
         {!isConnected && (
-          <p className="mt-3 text-xs text-text-secondary">
+          <p className="mt-3 text-xs text-muted-foreground">
             Connect to Bitbucket first
           </p>
         )}
         {isConnected && !hasAgent && (
-          <p className="mt-3 text-xs text-text-secondary">
+          <p className="mt-3 text-xs text-muted-foreground">
             Configure AI agent in settings
           </p>
         )}
@@ -130,27 +130,27 @@ export function ReviewPanel({
     return (
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 px-3 py-2">
-          <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-accent" />
-          <span className="text-sm font-medium text-text-primary">
+          <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-primary" />
+          <span className="text-sm font-medium text-foreground">
             AI Review in progress...
           </span>
         </div>
 
-        <GlassCard className="mx-3 mb-3 flex-1 overflow-y-auto">
-          <div ref={scrollRef} className="font-mono text-sm text-text-primary">
+        <Card className="mx-3 mb-3 flex-1 overflow-y-auto">
+          <div ref={scrollRef} className="font-mono text-sm text-foreground">
             <pre className="whitespace-pre-wrap">{session.rawText || 'Waiting for response...'}</pre>
           </div>
-        </GlassCard>
+        </Card>
 
         {/* Streaming placeholder skeleton */}
         <div className="mx-3 mb-3">
-          <GlassSkeleton variant="text" lines={3} />
+          <Skeleton variant="text" lines={3} />
         </div>
 
         <div className="px-3 pb-3">
-          <GlassButton variant="danger" onClick={onCancel}>
+          <Button variant="danger" onClick={onCancel}>
             Cancel Review
-          </GlassButton>
+          </Button>
         </div>
       </div>
     )
@@ -177,20 +177,20 @@ export function ReviewPanel({
     if (safeComments.length === 0 && session.rawText.trim().length > 0) {
       return (
         <div className="flex h-full flex-col overflow-y-auto p-3">
-          <GlassCard className="mb-3 bg-yellow-500/10">
+          <Card className="mb-3 bg-yellow-500/10">
             <p className="text-sm font-medium text-yellow-400">
               AI review completed but no comments were parsed
             </p>
-            <p className="mt-1 text-xs text-text-secondary">
+            <p className="mt-1 text-xs text-muted-foreground">
               The AI output did not match the expected format. Raw output is shown below.
             </p>
-          </GlassCard>
+          </Card>
           <div className="mb-3 flex gap-2">
-            <GlassButton variant="primary" onClick={onNewReview}>
+            <Button variant="primary" onClick={onNewReview}>
               Retry Review
-            </GlassButton>
+            </Button>
           </div>
-          <pre className="flex-1 overflow-auto rounded-md bg-surface p-3 text-xs text-text-secondary font-mono whitespace-pre-wrap">
+          <pre className="flex-1 overflow-auto rounded-md bg-card p-3 text-xs text-muted-foreground font-mono whitespace-pre-wrap">
             {session.rawText}
           </pre>
         </div>
@@ -198,60 +198,60 @@ export function ReviewPanel({
     }
 
     return (
-      <ScrollContainer className="flex h-full flex-col">
+      <div className="flex h-full flex-col">
         {/* Summary header */}
         <div className="border-b border-border px-3 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-medium text-text-primary">
+              <p className="text-sm font-medium text-foreground">
                 {safeComments.length} findings
               </p>
               {blockingCount > 0 && (
-                <GlassBadge variant="error">
+                <Badge variant="error">
                   {SEVERITY_CONFIG.blocking.emoji} {blockingCount} Blocking
-                </GlassBadge>
+                </Badge>
               )}
               {importantCount > 0 && (
-                <GlassBadge variant="warning">
+                <Badge variant="warning">
                   {SEVERITY_CONFIG.important.emoji} {importantCount} Important
-                </GlassBadge>
+                </Badge>
               )}
               {suggestionCount > 0 && (
-                <GlassBadge variant="info">
+                <Badge variant="info">
                   {SEVERITY_CONFIG.suggestion.emoji} {suggestionCount} Suggestion
-                </GlassBadge>
+                </Badge>
               )}
             </div>
-            <span className="text-xs text-text-secondary">Reviewed {reviewAgeLabel}</span>
+            <span className="text-xs text-muted-foreground">Reviewed {reviewAgeLabel}</span>
           </div>
 
           {/* Summary text */}
           {session.summary && (
-            <p className="mt-2 text-xs text-text-secondary leading-relaxed">
+            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
               {session.summary}
             </p>
           )}
 
           <div className="mt-2 flex items-center gap-2">
             {!allPosted && (
-              <GlassButton variant="primary" onClick={onPostAll}>
+              <Button variant="primary" onClick={onPostAll}>
                 {postedCount > 0
                   ? `Post Remaining (${safeComments.filter((c) => c.shouldPost && !c.posted).length})`
                   : 'Post All Inline Comments'}
-              </GlassButton>
+              </Button>
             )}
             {allPosted && (
-              <GlassBadge variant="success">
+              <Badge variant="success">
                 All comments posted
-              </GlassBadge>
+              </Badge>
             )}
-            <GlassButton variant="ghost" onClick={onNewReview}>
+            <Button variant="ghost" onClick={onNewReview}>
               New Review
-            </GlassButton>
+            </Button>
           </div>
         </div>
 
-        {/* Finding cards — staggered GlassCard entries */}
+        {/* Finding cards — staggered Card entries */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -277,7 +277,7 @@ export function ReviewPanel({
             </motion.div>
           ))}
         </motion.div>
-      </ScrollContainer>
+      </div>
     )
   }
 
@@ -285,16 +285,16 @@ export function ReviewPanel({
   if (session.status === 'error') {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <GlassCard className="bg-red-500/10 text-center">
+        <Card className="bg-red-500/10 text-center">
           <p className="text-sm text-red-400">{session.error || 'An error occurred during the review.'}</p>
-        </GlassCard>
+        </Card>
         <div className="mt-4 flex gap-2">
-          <GlassButton variant="primary" onClick={() => { onNewReview(); onStart() }}>
+          <Button variant="primary" onClick={() => { onNewReview(); onStart() }}>
             Retry Review
-          </GlassButton>
-          <GlassButton variant="ghost" onClick={onNewReview}>
+          </Button>
+          <Button variant="ghost" onClick={onNewReview}>
             Dismiss
-          </GlassButton>
+          </Button>
         </div>
       </div>
     )
@@ -303,19 +303,19 @@ export function ReviewPanel({
   // --- Cancelled ---
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      <p className="text-sm text-text-secondary">Review was cancelled</p>
+      <p className="text-sm text-muted-foreground">Review was cancelled</p>
       {session.rawText && (
-        <p className="mt-1 text-xs text-text-secondary/60">
+        <p className="mt-1 text-xs text-muted-foreground/60">
           {session.rawText.length} characters of output received before cancellation
         </p>
       )}
       <div className="mt-4 flex gap-2">
-        <GlassButton variant="primary" onClick={() => { onNewReview(); onStart() }}>
+        <Button variant="primary" onClick={() => { onNewReview(); onStart() }}>
           Start New Review
-        </GlassButton>
-        <GlassButton variant="ghost" onClick={onNewReview}>
+        </Button>
+        <Button variant="ghost" onClick={onNewReview}>
           Dismiss
-        </GlassButton>
+        </Button>
       </div>
     </div>
   )
@@ -358,14 +358,14 @@ function FindingCard({
   const kindConfig = KIND_CONFIG[comment.kind]
 
   return (
-    <GlassCard
+    <Card
       className={`overflow-hidden border-l-4 p-0 ${sevConfig.border} ${
         !comment.shouldPost ? 'opacity-50' : ''
       }`}
     >
       {/* Card header -- always visible */}
       <div
-        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-elevated/50 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-secondary/50 transition-colors"
         onClick={onToggleExpand}
       >
         <input
@@ -380,35 +380,35 @@ function FindingCard({
         />
 
         {/* Severity badge */}
-        <GlassBadge variant={comment.severity === 'blocking' ? 'error' : comment.severity === 'important' ? 'warning' : 'info'}>
+        <Badge variant={comment.severity === 'blocking' ? 'error' : comment.severity === 'important' ? 'warning' : 'info'}>
           {sevConfig.emoji} {sevConfig.label}
-        </GlassBadge>
+        </Badge>
 
         {/* Kind tag */}
-        <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-surface-elevated text-text-secondary">
+        <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-secondary text-muted-foreground">
           {kindConfig.icon} {kindConfig.label}
         </span>
 
         {/* Title */}
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-primary">
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
           {comment.title}
         </span>
 
         {/* Confidence badge */}
-        <GlassBadge variant={comment.confidence === 'high' ? 'success' : comment.confidence === 'medium' ? 'warning' : 'default'}>
+        <Badge variant={comment.confidence === 'high' ? 'success' : comment.confidence === 'medium' ? 'warning' : 'default'}>
           {confConfig.label}
-        </GlassBadge>
+        </Badge>
 
         {/* Posted indicator */}
         {comment.posted && (
-          <GlassBadge variant="success">Posted</GlassBadge>
+          <Badge variant="success">Posted</Badge>
         )}
 
         {/* Expand/collapse chevron */}
         {isExpanded ? (
-          <ChevronDown size={14} className="shrink-0 text-text-secondary" />
+          <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
         ) : (
-          <ChevronRight size={14} className="shrink-0 text-text-secondary" />
+          <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
         )}
       </div>
 
@@ -416,7 +416,7 @@ function FindingCard({
       {isExpanded && (
         <div className="border-t border-border/50 px-3 py-2.5 pl-9">
           {/* File and line */}
-          <p className="mb-2 font-mono text-xs text-text-secondary">
+          <p className="mb-2 font-mono text-xs text-muted-foreground">
             {comment.file}:{comment.line}
           </p>
 
@@ -424,7 +424,7 @@ function FindingCard({
           {isEditing ? (
             <div className="flex items-start gap-1">
               <textarea
-                className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent resize-y"
+                className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-y"
                 value={editText}
                 onChange={(e) => onEditTextChange(e.target.value)}
                 rows={3}
@@ -441,7 +441,7 @@ function FindingCard({
               <button
                 type="button"
                 onClick={onCancelEdit}
-                className="rounded p-1 text-text-secondary hover:bg-surface-elevated"
+                className="rounded p-1 text-muted-foreground hover:bg-secondary"
                 title="Cancel"
               >
                 <X size={14} />
@@ -449,14 +449,14 @@ function FindingCard({
             </div>
           ) : (
             <div className="group flex items-start gap-1">
-              <p className="flex-1 text-sm text-text-primary leading-relaxed">
+              <p className="flex-1 text-sm text-foreground leading-relaxed">
                 {comment.body}
               </p>
               {!comment.posted && (
                 <button
                   type="button"
                   onClick={onStartEdit}
-                  className="shrink-0 rounded p-0.5 text-text-secondary/0 transition group-hover:text-text-secondary hover:!text-text-primary"
+                  className="shrink-0 rounded p-0.5 text-muted-foreground/0 transition group-hover:text-muted-foreground hover:!text-foreground"
                   title="Edit"
                 >
                   <Pencil size={12} />
@@ -471,7 +471,7 @@ function FindingCard({
               <p className="text-[11px] font-semibold text-green-400 uppercase tracking-wide mb-0.5">
                 Suggested Fix
               </p>
-              <p className="text-sm text-text-primary leading-relaxed">
+              <p className="text-sm text-foreground leading-relaxed">
                 {comment.suggestedFix}
               </p>
             </div>
@@ -485,6 +485,6 @@ function FindingCard({
           )}
         </div>
       )}
-    </GlassCard>
+    </Card>
   )
 }

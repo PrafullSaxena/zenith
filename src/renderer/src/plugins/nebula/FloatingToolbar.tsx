@@ -23,7 +23,7 @@ import {
   Quote,
   Link
 } from 'lucide-react'
-import { GlassSurface } from '../../components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
 
 interface FloatingToolbarProps {
   editor: Editor
@@ -39,7 +39,7 @@ export default function FloatingToolbar({
       editor={editor}
       shouldShow={({ state }) => !state.selection.empty && !editor.isActive('image')}
     >
-      <GlassSurface className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 shadow-lg !bg-surface-elevated/95 backdrop-blur-xl !border-border">
+      <Card className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 shadow-lg !bg-secondary/95 backdrop-blur-xl !border-border">
         <ToolbarBtn
           icon={<Bold size={14} />}
           isActive={editor.isActive('bold')}
@@ -115,7 +115,7 @@ export default function FloatingToolbar({
           onClick={onLinkClick}
           title="Link (Cmd+K)"
         />
-      </GlassSurface>
+      </Card>
     </BubbleMenu>
   )
 }
@@ -140,8 +140,8 @@ function ToolbarBtn({
       title={title}
       className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
         isActive
-          ? 'bg-accent/20 text-accent'
-          : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+          ? 'bg-primary/20 text-primary'
+          : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
       }`}
     >
       {icon}

@@ -4,12 +4,15 @@
  * Renders services grouped by category with collapsible sections.
  * Each service has a toggle checkbox to add/remove it from the estimation.
  * Selected services are highlighted with an accent border.
- * Uses GlassCard for category containers, GlassBadge for selected count,
- * GlassSkeleton for loading, and GlassInput for search.
+ * Uses Card for category containers, Badge for selected count,
+ * Skeleton for loading, and Input for search.
  */
 import { useState, useMemo } from 'react'
 import { ChevronDown, ChevronRight, Search, X } from 'lucide-react'
-import { GlassCard, GlassBadge, GlassSkeleton, GlassInput } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import type { CloudProvider } from '../../types/launchpad'
 import type { ServiceDefinition } from '../../data/cloud-pricing/types'
 import { getCatalog } from '../../data/cloud-pricing/index'
@@ -92,9 +95,9 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
   if (isLoading) {
     return (
       <div className="p-3 space-y-3">
-        <GlassSkeleton variant="card" />
-        <GlassSkeleton variant="card" />
-        <GlassSkeleton variant="card" />
+        <Skeleton variant="card" />
+        <Skeleton variant="card" />
+        <Skeleton variant="card" />
       </div>
     )
   }
@@ -102,19 +105,19 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
   return (
     <div className="flex flex-col h-full">
       {/* Header with search */}
-      <div className="sticky top-0 z-10 bg-[var(--glass-bg)] p-3 border-b border-white/[0.06]">
-        <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--text-secondary)]/60">
+      <div className="sticky top-0 z-10 bg-[hsl(var(--card))] p-3 border-b border-white/[0.06]">
+        <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]/60">
           Service Catalog
-          <span className="ml-1 text-[var(--text-secondary)]/40">({totalServices})</span>
+          <span className="ml-1 text-[hsl(var(--muted-foreground))]/40">({totalServices})</span>
         </p>
 
         {/* Search input */}
         <div className="relative">
           <Search
             size={12}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]/40 z-10 pointer-events-none"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]/40 z-10 pointer-events-none"
           />
-          <GlassInput
+          <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -125,7 +128,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]/40 hover:text-[var(--text-primary)] transition-colors z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]/40 hover:text-[hsl(var(--foreground))] transition-colors z-10"
             >
               <X size={12} />
             </button>
@@ -137,7 +140,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
       <div className="flex-1 overflow-y-auto p-2">
         {filteredCategories.length === 0 ? (
           <div className="flex items-center justify-center py-8">
-            <p className="text-xs text-[var(--text-secondary)]/50 italic">
+            <p className="text-xs text-[hsl(var(--muted-foreground))]/50 italic">
               No services match &ldquo;{searchQuery}&rdquo;
             </p>
           </div>
@@ -150,7 +153,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
               ).length
 
               return (
-                <GlassCard key={category.id} className="p-0 overflow-hidden rounded-lg">
+                <Card key={category.id} className="p-0 overflow-hidden rounded-lg">
                   {/* Category header */}
                   <button
                     type="button"
@@ -161,22 +164,22 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                       {isOpen ? (
                         <ChevronDown
                           size={12}
-                          className="text-[var(--text-secondary)] shrink-0"
+                          className="text-[hsl(var(--muted-foreground))] shrink-0"
                         />
                       ) : (
                         <ChevronRight
                           size={12}
-                          className="text-[var(--text-secondary)] shrink-0"
+                          className="text-[hsl(var(--muted-foreground))] shrink-0"
                         />
                       )}
-                      <span className="text-xs font-medium text-[var(--text-primary)]">
+                      <span className="text-xs font-medium text-[hsl(var(--foreground))]">
                         {category.name}
                       </span>
                       {selectedCount > 0 && (
-                        <GlassBadge variant="accent">{selectedCount}</GlassBadge>
+                        <Badge variant="accent">{selectedCount}</Badge>
                       )}
                     </div>
-                    <span className="text-[10px] text-[var(--text-secondary)]/40">
+                    <span className="text-[10px] text-[hsl(var(--muted-foreground))]/40">
                       {category.services.length}
                     </span>
                   </button>
@@ -194,7 +197,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                             onClick={() => handleToggle(category.id, service.id)}
                             className={`flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors ${
                               selected
-                                ? 'border-l-2 border-l-[var(--color-accent)] bg-[var(--color-accent)]/5 hover:bg-[var(--color-accent)]/10'
+                                ? 'border-l-2 border-l-[var(--primary)] bg-[var(--primary)]/5 hover:bg-[var(--primary)]/10'
                                 : 'hover:bg-white/[0.03]'
                             }`}
                           >
@@ -202,7 +205,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                             <div
                               className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors ${
                                 selected
-                                  ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
+                                  ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
                                   : 'border-white/[0.12] bg-white/[0.04]'
                               }`}
                             >
@@ -224,13 +227,13 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                               <p
                                 className={`text-xs font-medium leading-tight ${
                                   selected
-                                    ? 'text-[var(--color-accent)]'
-                                    : 'text-[var(--text-primary)]'
+                                    ? 'text-[var(--primary)]'
+                                    : 'text-[hsl(var(--foreground))]'
                                 }`}
                               >
                                 {service.name}
                               </p>
-                              <p className="text-[10px] text-[var(--text-secondary)]/60 leading-snug mt-0.5 line-clamp-2">
+                              <p className="text-[10px] text-[hsl(var(--muted-foreground))]/60 leading-snug mt-0.5 line-clamp-2">
                                 {service.description}
                               </p>
                             </div>
@@ -239,7 +242,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
                       })}
                     </div>
                   )}
-                </GlassCard>
+                </Card>
               )
             })}
           </div>

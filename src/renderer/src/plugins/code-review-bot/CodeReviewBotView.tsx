@@ -10,7 +10,9 @@ import { ReviewPanel } from './ReviewPanel'
 import { ReviewHistory } from './ReviewHistory'
 import { SettingsPanel } from './SettingsPanel'
 import { GitPullRequest } from 'lucide-react'
-import { PluginHeader, GlassBadge, GlassSurface, GlassSelect, GlassButton } from '../../components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
 import { pageTransition } from '../../lib/motion'
 import type { PullRequest } from '../../types/bitbucket'
 import type { ReviewComment, ReviewHistoryEntry } from '../../types/review'
@@ -283,7 +285,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
     [selectPR]
   )
 
-  // Repo selector options for GlassSelect
+  // Repo selector options for Select
   const repoOptions = effectiveRepos.map((repo, i) => ({
     value: String(i),
     label: `${repo.workspace} / ${repo.repoSlug}`
@@ -302,8 +304,8 @@ export default function CodeReviewBotView(): React.JSX.Element {
 
   return (
     <div className="flex h-full flex-col">
-      {/* PluginHeader with gradient title and tabs */}
-      <PluginHeader
+      {/* Card with gradient title and tabs */}
+      <Card
         icon={GitPullRequest}
         title="Code Review"
         tabs={tabs}
@@ -314,13 +316,13 @@ export default function CodeReviewBotView(): React.JSX.Element {
 
       {/* Repo selector bar */}
       {effectiveRepos.length > 0 && (
-        <GlassSurface className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
+        <Card className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
           {effectiveRepos.length === 1 ? (
-            <GlassBadge variant="default">
+            <Badge variant="default">
               {workspace} / {repoSlug}
-            </GlassBadge>
+            </Badge>
           ) : (
-            <GlassSelect
+            <Select
               value={String(selectedRepoIndex)}
               onChange={(val) => handleRepoSwitch(Number(val))}
               options={repoOptions}
@@ -328,11 +330,11 @@ export default function CodeReviewBotView(): React.JSX.Element {
             />
           )}
           {effectiveRepos.length === 0 && (
-            <span className="text-xs text-text-secondary/60">
+            <span className="text-xs text-muted-foreground/60">
               No repos configured
             </span>
           )}
-        </GlassSurface>
+        </Card>
       )}
 
       {/* Main content area */}

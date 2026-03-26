@@ -1,7 +1,7 @@
 /**
  * AiAdvisor — AI chat panel for cloud infrastructure recommendations.
  *
- * Uses GlassChat for the chat interface. Streams AI responses and parses
+ * Uses ChatInterface for the chat interface. Streams AI responses and parses
  * structured suggestion blocks. When suggestions are detected, shows a
  * banner with Apply/Dismiss buttons.
  *
@@ -9,8 +9,14 @@
  */
 import React, { useState, useMemo } from 'react'
 import { Sparkles, MessageSquare, Square, X } from 'lucide-react'
-import { GlassChat, GlassCard, GlassButton, GlassBadge, EmptyState } from '@renderer/components/ui'
-import type { GlassChatMessage } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -66,10 +72,10 @@ export default function AiAdvisor(): React.JSX.Element {
     setActiveTab('estimator')
   }
 
-  // Map AI session data to GlassChat messages
-  const messages: GlassChatMessage[] = useMemo(() => {
+  // Map AI session data to ChatInterface messages
+  const messages: ChatInterfaceMessage[] = useMemo(() => {
     if (!aiSession) return []
-    const msgs: GlassChatMessage[] = []
+    const msgs: ChatInterfaceMessage[] = []
 
     // Question message
     msgs.push({
@@ -99,7 +105,7 @@ export default function AiAdvisor(): React.JSX.Element {
   if (!hasAgent && !aiSession) {
     return (
       <div className="flex flex-col h-full">
-        <EmptyState
+        <div
           icon={MessageSquare}
           title="Configure an AI agent"
           description="Set up an AI agent in Settings to get cloud cost advice and service recommendations"
@@ -115,33 +121,33 @@ export default function AiAdvisor(): React.JSX.Element {
       <div className="flex flex-col h-full">
         <div className="flex-1 flex flex-col items-center justify-center px-4">
           <div className="text-center mb-6">
-            <Sparkles size={32} className="mx-auto mb-2 text-[var(--text-secondary)]/30" />
-            <p className="text-sm text-[var(--text-secondary)]">Ask about cloud infrastructure</p>
-            <p className="mt-1 text-xs text-[var(--text-secondary)]/60">
+            <Sparkles size={32} className="mx-auto mb-2 text-[hsl(var(--muted-foreground))]/30" />
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">Ask about cloud infrastructure</p>
+            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]/60">
               AI will suggest services and configurations with estimated costs
             </p>
           </div>
 
           <div className="w-full max-w-lg space-y-2">
-            <p className="text-xs font-medium text-[var(--text-secondary)]/60 text-center mb-3">
+            <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]/60 text-center mb-3">
               Example prompts
             </p>
             {EXAMPLE_PROMPTS.map((prompt, i) => (
-              <GlassCard
+              <Card
                 key={i}
                 variant="interactive"
                 className="p-3 cursor-pointer"
                 onClick={() => handleExamplePrompt(prompt)}
               >
-                <p className="text-xs text-[var(--text-secondary)]">{prompt}</p>
-              </GlassCard>
+                <p className="text-xs text-[hsl(var(--muted-foreground))]">{prompt}</p>
+              </Card>
             ))}
           </div>
         </div>
 
         {/* Input area */}
         <div className="shrink-0 border-t border-white/[0.06] p-4">
-          <GlassChat
+          <ChatInterface
             messages={[]}
             onSend={handleSubmit}
             isStreaming={false}
@@ -153,12 +159,12 @@ export default function AiAdvisor(): React.JSX.Element {
     )
   }
 
-  // Active session — use GlassChat
+  // Active session — use ChatInterface
   return (
     <div className="flex flex-col h-full">
       {/* Chat area */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        <GlassChat
+        <ChatInterface
           messages={messages}
           onSend={handleSubmit}
           isStreaming={isStreaming}
@@ -175,62 +181,62 @@ export default function AiAdvisor(): React.JSX.Element {
       {/* Streaming controls */}
       {isStreaming && (
         <div className="shrink-0 border-t border-white/[0.06] px-4 py-2 flex justify-center">
-          <GlassButton variant="danger" size="sm" onClick={cancelAiChat}>
+          <Button variant="danger" size="sm" onClick={cancelAiChat}>
             <Square size={12} />
             Stop
-          </GlassButton>
+          </Button>
         </div>
       )}
 
       {/* Error state */}
       {aiSession.status === 'error' && aiSession.error && (
-        <GlassCard className="mx-4 mb-2 border-[var(--color-error)]/30 bg-[var(--color-error)]/5">
-          <p className="text-xs text-[var(--color-error)]">{aiSession.error}</p>
-        </GlassCard>
+        <Card className="mx-4 mb-2 border-[var(--destructive)]/30 bg-[var(--destructive)]/5">
+          <p className="text-xs text-[var(--destructive)]">{aiSession.error}</p>
+        </Card>
       )}
 
       {/* Suggestion banner */}
       {pendingSuggestions && aiSession.status === 'complete' && (
-        <GlassCard className="mx-4 mb-4 border-[var(--color-accent)]/30 bg-[var(--color-accent)]/5">
+        <Card className="mx-4 mb-4 border-[var(--primary)]/30 bg-[var(--primary)]/5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <Sparkles size={13} className="text-[var(--color-accent)]" />
-                <p className="text-xs font-semibold text-[var(--color-accent)]">
+                <Sparkles size={13} className="text-[var(--primary)]" />
+                <p className="text-xs font-semibold text-[var(--primary)]">
                   AI has suggested a configuration
                 </p>
               </div>
-              <p className="text-xs text-[var(--text-secondary)]">
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">
                 {pendingSuggestions.provider.toUpperCase()} &mdash;{' '}
                 {pendingSuggestions.services.length} service
                 {pendingSuggestions.services.length !== 1 ? 's' : ''} recommended
               </p>
               <div className="flex flex-wrap gap-1 mt-2">
                 {pendingSuggestions.services.map((svc, i) => (
-                  <GlassBadge key={i} variant="accent">
+                  <Badge key={i} variant="accent">
                     {svc.serviceId}
-                  </GlassBadge>
+                  </Badge>
                 ))}
               </div>
             </div>
             <button
               type="button"
               onClick={dismissSuggestions}
-              className="shrink-0 rounded p-0.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              className="shrink-0 rounded p-0.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
               title="Dismiss suggestions"
             >
               <X size={13} />
             </button>
           </div>
           <div className="mt-3 flex items-center gap-2">
-            <GlassButton variant="primary" size="sm" onClick={handleApply}>
+            <Button variant="primary" size="sm" onClick={handleApply}>
               Apply Suggestions
-            </GlassButton>
-            <GlassButton variant="default" size="sm" onClick={dismissSuggestions}>
+            </Button>
+            <Button variant="default" size="sm" onClick={dismissSuggestions}>
               Dismiss
-            </GlassButton>
+            </Button>
           </div>
-        </GlassCard>
+        </Card>
       )}
     </div>
   )

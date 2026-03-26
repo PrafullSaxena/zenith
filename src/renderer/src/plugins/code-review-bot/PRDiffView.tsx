@@ -4,7 +4,7 @@ import type { DiffFile, DiffChange } from '../../types/bitbucket'
 import type { ReviewComment } from '../../types/review'
 import { SEVERITY_CONFIG, KIND_CONFIG } from '../../types/review'
 import { highlightCode } from '../../lib/highlight'
-import { GlassCard, GlassSurface } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 
 const EXT_TO_LANG: Record<string, string> = {
   ts: 'typescript', tsx: 'typescript', js: 'javascript', jsx: 'javascript',
@@ -38,7 +38,7 @@ export function PRDiffView({
 
   if (!diffFiles || diffFiles.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-text-secondary">
+      <p className="py-8 text-center text-sm text-muted-foreground">
         No diff loaded. Select a pull request to view changes.
       </p>
     )
@@ -66,19 +66,19 @@ export function PRDiffView({
         const isCollapsed = collapsed[filePath] ?? false
 
         return (
-          <GlassCard key={filePath} className="overflow-hidden p-0">
+          <Card key={filePath} className="overflow-hidden p-0">
             {/* File header toolbar */}
-            <GlassSurface
+            <Card
               as="button"
               onClick={() => toggleFile(filePath)}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-surface-elevated rounded-none border-x-0 border-t-0"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-secondary rounded-none border-x-0 border-t-0"
             >
               {isCollapsed ? (
-                <ChevronRight size={14} className="shrink-0 text-text-secondary" />
+                <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
               ) : (
-                <ChevronDown size={14} className="shrink-0 text-text-secondary" />
+                <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
               )}
-              <span className="min-w-0 flex-1 truncate font-mono text-sm text-text-primary">
+              <span className="min-w-0 flex-1 truncate font-mono text-sm text-foreground">
                 {filePath}
               </span>
               <span className="shrink-0 text-xs text-diff-add-text">
@@ -87,7 +87,7 @@ export function PRDiffView({
               <span className="shrink-0 text-xs text-diff-del-text">
                 -{file.deletions}
               </span>
-            </GlassSurface>
+            </Card>
 
             {/* File diff content — preserved without modification */}
             {!isCollapsed && (
@@ -95,7 +95,7 @@ export function PRDiffView({
                 {file.chunks.map((chunk, chunkIdx) => (
                   <div key={chunkIdx}>
                     {/* Chunk header */}
-                    <div className="bg-surface px-3 py-1 font-mono text-xs text-text-secondary">
+                    <div className="bg-card px-3 py-1 font-mono text-xs text-muted-foreground">
                       {chunk.content}
                     </div>
 
@@ -120,7 +120,7 @@ export function PRDiffView({
                             }`}
                           >
                             {/* Line number */}
-                            <span className="inline-block w-12 shrink-0 select-none px-2 text-right text-xs leading-6 text-text-secondary">
+                            <span className="inline-block w-12 shrink-0 select-none px-2 text-right text-xs leading-6 text-muted-foreground">
                               {lineNum ?? ''}
                             </span>
                             {/* Change prefix */}
@@ -151,7 +151,7 @@ export function PRDiffView({
                             return (
                               <div
                                 key={commentIdx}
-                                className={`ml-12 mr-3 my-1 rounded-lg border-l-4 bg-surface-elevated p-2.5 ${sevConfig.border}`}
+                                className={`ml-12 mr-3 my-1 rounded-lg border-l-4 bg-secondary p-2.5 ${sevConfig.border}`}
                               >
                                 {/* Header row: severity + kind + title */}
                                 <div className="flex items-center gap-2 mb-1">
@@ -160,16 +160,16 @@ export function PRDiffView({
                                   >
                                     {sevConfig.emoji} {sevConfig.label}
                                   </span>
-                                  <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-surface text-text-secondary">
+                                  <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-card text-muted-foreground">
                                     {kindConfig.icon} {kindConfig.label}
                                   </span>
-                                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-primary">
+                                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                                     {comment.title}
                                   </span>
                                 </div>
 
                                 {/* Body */}
-                                <p className="text-sm text-text-primary leading-relaxed">
+                                <p className="text-sm text-foreground leading-relaxed">
                                   {comment.body}
                                 </p>
 
@@ -189,7 +189,7 @@ export function PRDiffView({
                                     <button
                                       type="button"
                                       onClick={() => onCommentClick(comment)}
-                                      className="text-xs font-medium text-accent hover:text-accent/80 transition-colors"
+                                      className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
                                     >
                                       Post to Bitbucket
                                     </button>
@@ -210,7 +210,7 @@ export function PRDiffView({
                 ))}
               </div>
             )}
-          </GlassCard>
+          </Card>
         )
       })}
     </div>

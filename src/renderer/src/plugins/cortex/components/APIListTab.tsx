@@ -9,7 +9,10 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import type { RouteInfo } from '../../../types/cortex'
 import ValidationPanel from './ValidationPanel'
 import { getMethodColor } from '../cortex-theme'
-import { GlassCard, ScrollContainer } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 type SortKey = 'path' | 'method' | 'handlerName' | 'controllerName'
 type SortDir = 'asc' | 'desc'
@@ -71,7 +74,7 @@ export default function APIListTab(): React.JSX.Element {
 
   if (routes.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 text-text-secondary">
+      <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
         <Route size={32} className="opacity-30" />
         <p className="text-sm">No API endpoints detected</p>
         <p className="max-w-xs text-center text-[10px]">
@@ -96,7 +99,7 @@ export default function APIListTab(): React.JSX.Element {
         {label}
         <ArrowUpDown
           size={10}
-          className={sortKey === field ? 'text-accent' : 'text-text-secondary/40'}
+          className={sortKey === field ? 'text-primary' : 'text-muted-foreground/40'}
         />
       </span>
     </th>
@@ -107,8 +110,8 @@ export default function APIListTab(): React.JSX.Element {
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-xs font-semibold text-text-primary">API Endpoints</h3>
-          <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
+          <h3 className="text-xs font-semibold text-foreground">API Endpoints</h3>
+          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
             {routes.length} endpoints
           </span>
         </div>
@@ -178,14 +181,14 @@ export default function APIListTab(): React.JSX.Element {
         <div className="relative">
           <Search
             size={12}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <input
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter endpoints..."
-            className="w-56 rounded-lg border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl py-1.5 pl-7 pr-3 text-[11px] text-text-primary placeholder:text-text-secondary/50 focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+            className="w-56 rounded-lg border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl py-1.5 pl-7 pr-3 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
           />
         </div>
         </div>
@@ -202,10 +205,10 @@ export default function APIListTab(): React.JSX.Element {
       )}
 
       {/* Table */}
-      <GlassCard className="flex-1 min-h-0 overflow-hidden flex flex-col !p-0">
-        <ScrollContainer className="flex-1 min-h-0 overflow-auto">
+      <Card className="flex-1 min-h-0 overflow-hidden flex flex-col !p-0">
+        <div className="flex-1 min-h-0 overflow-auto">
         <table className="w-full text-xs">
-          <thead className="sticky top-0 bg-surface-elevated text-[10px] uppercase tracking-wider text-text-secondary z-10">
+          <thead className="sticky top-0 bg-secondary text-[10px] uppercase tracking-wider text-muted-foreground z-10">
             <tr>
               <SortHeader label="Method" field="method" />
               <SortHeader label="Path" field="path" />
@@ -234,29 +237,29 @@ export default function APIListTab(): React.JSX.Element {
                     )
                   })()}
                 </td>
-                <td className="px-3 py-2 font-mono text-xs text-text-primary">
+                <td className="px-3 py-2 font-mono text-xs text-foreground">
                   {route.fullPath}
                 </td>
-                <td className="px-3 py-2 text-text-secondary">{route.handlerName}</td>
-                <td className="px-3 py-2 text-text-secondary">{route.controllerName}</td>
+                <td className="px-3 py-2 text-muted-foreground">{route.handlerName}</td>
+                <td className="px-3 py-2 text-muted-foreground">{route.controllerName}</td>
                 <td className="px-3 py-2">
                   <button
                     type="button"
                     onClick={() => handleFileClick(route)}
-                    className="truncate text-accent hover:underline"
+                    className="truncate text-primary hover:underline"
                     title={route.filePath}
                   >
                     {route.filePath.split('/').slice(-2).join('/')}
                   </button>
                 </td>
-                <td className="px-3 py-2 text-text-secondary">{route.line}</td>
+                <td className="px-3 py-2 text-muted-foreground">{route.line}</td>
               </tr>
             ))}
             {filteredRoutes.length === 0 && (
               <tr>
                 <td
                   colSpan={6}
-                  className="px-3 py-8 text-center text-text-secondary"
+                  className="px-3 py-8 text-center text-muted-foreground"
                 >
                   No endpoints match your filter
                 </td>
@@ -264,8 +267,8 @@ export default function APIListTab(): React.JSX.Element {
             )}
           </tbody>
         </table>
-        </ScrollContainer>
-      </GlassCard>
+        </div>
+      </Card>
 
       {/* Validation results */}
       <div className="flex-shrink-0 max-h-[40%] overflow-auto">

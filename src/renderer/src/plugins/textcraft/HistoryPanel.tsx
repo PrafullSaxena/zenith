@@ -2,14 +2,17 @@
  * HistoryPanel -- Shows all saved TextCraft refinements.
  *
  * Displayed as a separate tab in the TextCraft view.
- * Each entry shows truncated input, format, tones, and date inside GlassCards
- * with stagger entrance animation. Loading shows GlassSkeleton, empty shows EmptyState.
+ * Each entry shows truncated input, format, tones, and date inside Cards
+ * with stagger entrance animation. Loading shows Skeleton, empty shows div.
  */
 
 import { Eye, Clock, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
-import { GlassCard, GlassBadge, EmptyState, ScrollContainer } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import type { FormatOption } from '../../types/textcraft'
 
@@ -27,7 +30,7 @@ export default function HistoryPanel(): React.JSX.Element {
 
   if (history.length === 0) {
     return (
-      <EmptyState
+      <div
         icon={Clock}
         title="No history yet"
         description="Paste text to refine"
@@ -37,7 +40,7 @@ export default function HistoryPanel(): React.JSX.Element {
   }
 
   return (
-    <ScrollContainer className="h-full p-4 w-full">
+    <div className="h-full p-4 w-full">
       <motion.div
         variants={staggerContainer}
         initial="hidden"
@@ -46,25 +49,25 @@ export default function HistoryPanel(): React.JSX.Element {
       >
         {history.map((entry) => (
           <motion.div key={entry.id} variants={staggerItem}>
-            <GlassCard variant="interactive" className="cursor-pointer group">
+            <Card variant="interactive" className="cursor-pointer group">
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   {/* Input preview */}
-                  <p className="text-sm text-text-primary line-clamp-2">
+                  <p className="text-sm text-foreground line-clamp-2">
                     {entry.inputText.slice(0, 120)}{entry.inputText.length > 120 ? '...' : ''}
                   </p>
 
                   {/* Metadata row */}
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <GlassBadge variant="accent">
+                    <Badge variant="accent">
                       {FORMAT_LABELS[entry.options.format] || entry.options.format}
-                    </GlassBadge>
+                    </Badge>
                     {entry.options.tones.map((tone) => (
-                      <GlassBadge key={tone} variant="neutral">
+                      <Badge key={tone} variant="neutral">
                         {tone}
-                      </GlassBadge>
+                      </Badge>
                     ))}
-                    <span className="text-[10px] text-text-secondary/40 ml-auto">
+                    <span className="text-[10px] text-muted-foreground/40 ml-auto">
                       {new Date(entry.createdAt).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -76,7 +79,7 @@ export default function HistoryPanel(): React.JSX.Element {
 
                   {/* Output preview */}
                   {entry.outputText && (
-                    <p className="text-xs text-text-secondary/50 mt-1.5 line-clamp-1">
+                    <p className="text-xs text-muted-foreground/50 mt-1.5 line-clamp-1">
                       {entry.outputText.slice(0, 100)}{entry.outputText.length > 100 ? '...' : ''}
                     </p>
                   )}
@@ -90,7 +93,7 @@ export default function HistoryPanel(): React.JSX.Element {
                       e.stopPropagation()
                       useTextCraftStore.getState().loadFromHistory(entry)
                     }}
-                    className="p-1.5 rounded text-text-secondary/60 hover:text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 transition-colors"
+                    className="p-1.5 rounded text-muted-foreground/60 hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors"
                     title="Load this refinement"
                   >
                     <Eye size={14} />
@@ -101,17 +104,17 @@ export default function HistoryPanel(): React.JSX.Element {
                       e.stopPropagation()
                       useTextCraftStore.getState().deleteHistoryEntry(entry.id)
                     }}
-                    className="p-1.5 rounded text-text-secondary/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="p-1.5 rounded text-muted-foreground/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                     title="Delete this entry"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
               </div>
-            </GlassCard>
+            </Card>
           </motion.div>
         ))}
       </motion.div>
-    </ScrollContainer>
+    </div>
   )
 }

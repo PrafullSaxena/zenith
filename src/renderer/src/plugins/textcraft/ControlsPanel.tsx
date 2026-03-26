@@ -1,12 +1,15 @@
 /**
  * ControlsPanel -- Middle panel of the TextCraft three-panel layout.
  *
- * Provides tone selection (multi-select, 6 options), format selection via GlassSelect,
- * custom instructions textarea, and GlassButton Refine/Cancel action.
+ * Provides tone selection (multi-select, 6 options), format selection via Select,
+ * custom instructions textarea, and Button Refine/Cancel action.
  * Agent resolution follows the AiAdvisor.tsx pattern with fallback.
  */
 
-import { GlassCard, GlassSelect, GlassButton } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -78,19 +81,19 @@ export default function ControlsPanel(): React.JSX.Element {
   }
 
   return (
-    <GlassCard className="flex flex-col h-full gap-4 overflow-y-auto rounded-none border-x-0 border-t-0">
+    <Card className="flex flex-col h-full gap-4 overflow-y-auto rounded-none border-x-0 border-t-0">
       {/* Header */}
-      <div className="text-xs font-medium text-text-secondary uppercase tracking-wider px-1">
+      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
         Controls
       </div>
 
       {/* Section 1: Tone Selection (multi-select) */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Tone
           </h3>
-          <span className="text-[10px] text-text-secondary/60">
+          <span className="text-[10px] text-muted-foreground/60">
             {options.tones.length} selected
           </span>
         </div>
@@ -104,13 +107,13 @@ export default function ControlsPanel(): React.JSX.Element {
                 onClick={() => handleToggleTone(opt.value)}
                 className={`w-full rounded-lg py-2 px-3 text-left transition-colors ${
                   isActive
-                    ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] border border-[var(--color-accent)]/30'
-                    : 'bg-white/[0.04] text-text-secondary hover:text-text-primary hover:bg-white/[0.06] border border-transparent'
+                    ? 'bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/30'
+                    : 'bg-white/[0.04] text-muted-foreground hover:text-foreground hover:bg-white/[0.06] border border-transparent'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm">{opt.label}</span>
-                  <span className={`text-[10px] ${isActive ? 'text-[var(--color-accent)]/70' : 'text-text-secondary/40'}`}>
+                  <span className={`text-[10px] ${isActive ? 'text-[var(--primary)]/70' : 'text-muted-foreground/40'}`}>
                     {opt.description}
                   </span>
                 </div>
@@ -123,12 +126,12 @@ export default function ControlsPanel(): React.JSX.Element {
       {/* Divider */}
       <div className="border-t border-white/[0.06]" />
 
-      {/* Section 2: Format Selection via GlassSelect */}
+      {/* Section 2: Format Selection via Select */}
       <div>
-        <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
           Format
         </h3>
-        <GlassSelect
+        <Select
           options={FORMAT_OPTIONS}
           value={options.format}
           onChange={handleFormatChange}
@@ -141,7 +144,7 @@ export default function ControlsPanel(): React.JSX.Element {
 
       {/* Section 3: Custom Instructions */}
       <div>
-        <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
           Additional Instructions
         </h3>
         <textarea
@@ -151,7 +154,7 @@ export default function ControlsPanel(): React.JSX.Element {
           }
           placeholder="e.g., Make it shorter, emphasize security..."
           rows={3}
-          className="w-full resize-none rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] text-text-primary placeholder-text-secondary/50 text-sm leading-relaxed p-3 focus:outline-none focus:shadow-[var(--glass-glow)]"
+          className="w-full resize-none rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-foreground placeholder-text-secondary/50 text-sm leading-relaxed p-3 focus:outline-none focus:shadow-[hsl(var(--primary))]"
         />
       </div>
 
@@ -165,16 +168,16 @@ export default function ControlsPanel(): React.JSX.Element {
         )}
 
         {isStreaming ? (
-          <GlassButton
+          <Button
             variant="danger"
             size="lg"
             className="w-full"
             onClick={handleCancel}
           >
             Cancel
-          </GlassButton>
+          </Button>
         ) : (
-          <GlassButton
+          <Button
             variant="primary"
             size="lg"
             className="w-full"
@@ -182,9 +185,9 @@ export default function ControlsPanel(): React.JSX.Element {
             disabled={!canRefine}
           >
             Refine
-          </GlassButton>
+          </Button>
         )}
       </div>
-    </GlassCard>
+    </Card>
   )
 }

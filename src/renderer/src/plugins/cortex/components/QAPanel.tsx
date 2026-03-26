@@ -10,7 +10,10 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { useAgentStore } from '../../../stores/agent-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { QAMessage, RepoType } from '../../../types/cortex'
-import { GlassCard, GlassSurface, ScrollContainer } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 // ── Suggested questions by repo type ────────────────────────────────
 
@@ -275,12 +278,12 @@ Answer questions accurately. Reference specific files, functions, and line numbe
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <GlassSurface className="flex items-center justify-between px-4 py-2 rounded-none border-x-0 border-t-0">
+      <Card className="flex items-center justify-between px-4 py-2 rounded-none border-x-0 border-t-0">
         <div className="flex items-center gap-2">
-          <Search size={14} className="text-accent" />
-          <span className="text-xs font-medium text-text-primary">Codebase Q&A</span>
+          <Search size={14} className="text-primary" />
+          <span className="text-xs font-medium text-foreground">Codebase Q&A</span>
           {agent && (
-            <span className="text-[10px] text-text-secondary">
+            <span className="text-[10px] text-muted-foreground">
               Using: {agent.providerId}
             </span>
           )}
@@ -289,22 +292,22 @@ Answer questions accurately. Reference specific files, functions, and line numbe
           <button
             type="button"
             onClick={clearQA}
-            className="rounded p-1 text-text-secondary hover:bg-white/[0.06] hover:text-text-primary transition-colors"
+            className="rounded p-1 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-colors"
             title="Clear chat"
           >
             <Trash2 size={13} />
           </button>
         )}
-      </GlassSurface>
+      </Card>
 
       {/* Messages area */}
-      <ScrollContainer className="flex-1 px-4 py-3 space-y-3" showProgress={false}>
+      <div className="flex-1 px-4 py-3 space-y-3" showProgress={false}>
         {qaMessages.length === 0 ? (
           /* Empty state with suggested questions */
           <div className="flex h-full flex-col items-center justify-center gap-4">
             <div className="text-center">
-              <Search size={28} className="mx-auto mb-2 text-text-secondary/30" />
-              <p className="text-sm text-text-secondary">Ask anything about the codebase</p>
+              <Search size={28} className="mx-auto mb-2 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">Ask anything about the codebase</p>
             </div>
             {!hasAgent && (
               <p className="text-xs text-warning">
@@ -313,14 +316,14 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             )}
             <div className="flex flex-col gap-2">
               {suggestedQuestions.map((q) => (
-                <GlassCard
+                <Card
                   key={q}
                   variant="interactive"
-                  className="px-4 py-2.5 text-xs text-text-secondary hover:bg-white/[0.06] hover:text-text-primary transition-all text-left disabled:opacity-40 cursor-pointer"
+                  className="px-4 py-2.5 text-xs text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-all text-left disabled:opacity-40 cursor-pointer"
                   onClick={() => { if (!isQAStreaming && hasAgent) handleSend(q) }}
                 >
                   {q}
-                </GlassCard>
+                </Card>
               ))}
             </div>
           </div>
@@ -335,11 +338,11 @@ Answer questions accurately. Reference specific files, functions, and line numbe
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {msg.role === 'user' ? (
-                <div className="max-w-[85%] bg-accent/[0.08] border border-accent/[0.15] rounded-2xl px-4 py-3 border-l-[3px] border-l-accent/40">
+                <div className="max-w-[85%] bg-primary/[0.08] border border-primary/[0.15] rounded-2xl px-4 py-3 border-l-[3px] border-l-accent/40">
                   <p className="text-sm">{msg.content}</p>
                 </div>
               ) : (
-                <GlassCard className="max-w-[85%] px-4 py-3">
+                <Card className="max-w-[85%] px-4 py-3">
                   {msg.content ? (
                     <div>
                       <MarkdownRenderer text={msg.content} className="text-sm" />
@@ -352,7 +355,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
                               type="button"
                               onClick={() => handleSourceClick(src.path, src.line)}
                               title={`Open ${src.path}:${src.line}`}
-                              className="flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 text-[10px] text-accent/80 hover:bg-white/[0.08] hover:text-accent transition-all hover:-translate-y-0.5"
+                              className="flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 text-[10px] text-primary/80 hover:bg-white/[0.08] hover:text-primary transition-all hover:-translate-y-0.5"
                             >
                               <FileCode size={10} />
                               <span>{src.path}:{src.line}</span>
@@ -367,24 +370,24 @@ Answer questions accurately. Reference specific files, functions, and line numbe
                       {[0, 1, 2].map((i) => (
                         <div
                           key={i}
-                          className="h-1.5 w-1.5 rounded-full bg-accent/60"
+                          className="h-1.5 w-1.5 rounded-full bg-primary/60"
                           style={{ animation: `typing-dot 1.2s infinite ${i * 0.2}s` }}
                         />
                       ))}
                     </div>
                   )}
-                </GlassCard>
+                </Card>
               )}
             </motion.div>
           ))
         )}
         <div ref={messagesEndRef} />
-      </ScrollContainer>
+      </div>
 
       {/* Input area */}
-      <GlassSurface className="p-3 rounded-none border-x-0 border-b-0">
-        <div className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/[0.08] px-3 py-2 focus-within:border-accent/30">
-          <Search size={14} className="shrink-0 text-text-secondary/50" />
+      <Card className="p-3 rounded-none border-x-0 border-b-0">
+        <div className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/[0.08] px-3 py-2 focus-within:border-primary/30">
+          <Search size={14} className="shrink-0 text-muted-foreground/50" />
           <input
             type="text"
             value={input}
@@ -392,14 +395,14 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             onKeyDown={handleKeyDown}
             placeholder="Ask about the codebase..."
             disabled={isQAStreaming || !hasAgent}
-            className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-secondary/50 focus:outline-none disabled:opacity-50"
+            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none disabled:opacity-50"
           />
           <button
             type="button"
             onClick={() => handleSend(input)}
             disabled={!input.trim() || isQAStreaming || !hasAgent}
             title="Send message"
-            className="rounded-lg bg-accent/15 p-1.5 text-accent hover:bg-accent/25 active:scale-95 disabled:opacity-40 transition-all"
+            className="rounded-lg bg-primary/15 p-1.5 text-primary hover:bg-primary/25 active:scale-95 disabled:opacity-40 transition-all"
           >
             {isQAStreaming ? (
               <Loader2 size={14} className="animate-spin" />
@@ -408,7 +411,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             )}
           </button>
         </div>
-      </GlassSurface>
+      </Card>
     </div>
   )
 }

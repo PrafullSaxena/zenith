@@ -2,14 +2,14 @@
  * DbHistory — Unified history for all DbInspector features.
  * Shows last 10 results (Q&A, Optimizer, ER Diagram) with "Open" to restore.
  *
- * Migrated to Obsidian Glass design system with GlassCard, GlassBadge,
- * GlassSkeleton, EmptyState, and stagger entrance animation.
+ * Migrated to Obsidian Glass design system with Card, Badge,
+ * Skeleton, div, and stagger entrance animation.
  */
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Eye, MessageSquare, Zap, GitFork, Clock } from 'lucide-react'
 import type { DbHistoryEntry } from '../../types/database'
-import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, EmptyState, ScrollContainer } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 
 interface DbHistoryProps {
@@ -35,10 +35,10 @@ export default function DbHistory({
   if (isLoading) {
     return (
       <div className="p-4 space-y-3">
-        <GlassSkeleton variant="card" />
-        <GlassSkeleton variant="card" />
-        <GlassSkeleton variant="card" />
-        <GlassSkeleton variant="card" />
+        <Skeleton variant="card" />
+        <Skeleton variant="card" />
+        <Skeleton variant="card" />
+        <Skeleton variant="card" />
       </div>
     )
   }
@@ -46,7 +46,7 @@ export default function DbHistory({
   if (history.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <EmptyState
+        <div
           icon={Clock}
           title="No query history"
           description="Executed queries will appear here"
@@ -56,8 +56,8 @@ export default function DbHistory({
   }
 
   return (
-    <ScrollContainer className="h-full p-4">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+    <div className="h-full p-4">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
         Recent Results ({history.length})
       </p>
       <motion.div
@@ -72,16 +72,16 @@ export default function DbHistory({
 
           return (
             <motion.div key={entry.id} variants={staggerItem}>
-              <GlassCard variant="interactive" className="flex items-start gap-3 p-3">
+              <Card variant="interactive" className="flex items-start gap-3 p-3">
                 {/* Type badge */}
-                <GlassBadge variant={config.variant}>
+                <Badge variant={config.variant}>
                   <Icon size={10} />
                   {config.label}
-                </GlassBadge>
+                </Badge>
 
                 {/* Content */}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-[var(--text-primary)]">
+                  <p className="truncate text-sm text-[hsl(var(--foreground))]">
                     {entry.type === 'qa' && entry.question}
                     {entry.type === 'optimize' &&
                       (entry.originalQuery
@@ -91,26 +91,26 @@ export default function DbHistory({
                     {entry.type === 'er-diagram' &&
                       (entry.selectedTables?.join(', ') ?? 'Tables')}
                   </p>
-                  <p className="mt-0.5 text-[10px] text-[var(--text-secondary)]">
+                  <p className="mt-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">
                     {entry.connectionName} / {entry.schema} · {formatRelativeTime(entry.timestamp)}
                   </p>
                 </div>
 
                 {/* Open button */}
-                <GlassButton
+                <Button
                   variant="ghost"
                   size="sm"
                   onClick={(e) => { e.stopPropagation(); onOpen(entry) }}
                 >
                   <Eye size={13} />
                   Open
-                </GlassButton>
-              </GlassCard>
+                </Button>
+              </Card>
             </motion.div>
           )
         })}
       </motion.div>
-    </ScrollContainer>
+    </div>
   )
 }
 

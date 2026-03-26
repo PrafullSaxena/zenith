@@ -29,7 +29,7 @@ import type {
   RelationshipMode,
   ERInferenceStatus
 } from '../../types/database'
-import { GlassCard, GlassSurface, GlassButton, GlassSelect, EmptyState, Scene3DWrapper, AnimatedIcon } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import MermaidRenderer from './MermaidRenderer'
 
 // ── Lazy-load 3D schema orb ─────────────────────────────────────────────
@@ -185,16 +185,16 @@ export default function ERDiagram({
   return (
     <div className="flex h-full flex-col">
       {/* Table selector */}
-      <GlassSurface className="rounded-none border-x-0 border-t-0 p-4">
+      <Card className="rounded-none border-x-0 border-t-0 p-4">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Select Tables ({selectedTables.length}/{tables.length})
           </p>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => onSetTables(allSelected ? [] : tables.map((t) => t.name))}
-              className="text-[10px] text-accent hover:underline"
+              className="text-[10px] text-primary hover:underline"
             >
               {allSelected ? 'Deselect All' : 'Select All'}
             </button>
@@ -202,21 +202,21 @@ export default function ERDiagram({
         </div>
 
         {!hasConnection ? (
-          <p className="mt-2 text-xs text-text-secondary/50">Connect to a database first…</p>
+          <p className="mt-2 text-xs text-muted-foreground/50">Connect to a database first…</p>
         ) : tables.length === 0 ? (
-          <p className="mt-2 text-xs text-text-secondary/50">No tables in selected schema</p>
+          <p className="mt-2 text-xs text-muted-foreground/50">No tables in selected schema</p>
         ) : (
           <>
             {/* Fuzzy search */}
             {tables.length > 5 && (
               <div className="relative mt-2">
-                <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-text-secondary/50" />
+                <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
                 <input
                   type="text"
                   value={tableSearch}
                   onChange={(e) => setTableSearch(e.target.value)}
                   placeholder="Filter tables…"
-                  className="w-full rounded border border-border bg-surface pl-7 pr-2 py-1 text-[11px] text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none"
+                  className="w-full rounded border border-border bg-card pl-7 pr-2 py-1 text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:border-primary focus:outline-none"
                 />
               </div>
             )}
@@ -231,8 +231,8 @@ export default function ERDiagram({
                     onClick={() => onToggleTable(t.name)}
                     className={`rounded-full px-2 py-0.5 text-[11px] transition-colors ${
                       isSelected
-                        ? 'bg-accent/20 text-accent border border-accent/30'
-                        : 'bg-surface-elevated text-text-secondary border border-transparent hover:border-border'
+                        ? 'bg-primary/20 text-primary border border-primary/30'
+                        : 'bg-secondary text-muted-foreground border border-transparent hover:border-border'
                     }`}
                   >
                     {t.name}
@@ -246,7 +246,7 @@ export default function ERDiagram({
         {/* Relationship mode selector */}
         {hasConnection && tables.length > 0 && (
           <div className="mt-3 flex items-center gap-1.5">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-text-secondary mr-1">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mr-1">
               Relationships:
             </span>
             <div className="flex rounded-lg border border-border overflow-hidden">
@@ -265,10 +265,10 @@ export default function ERDiagram({
                       mode.id !== 'fk-only' ? 'border-l border-border' : ''
                     } ${
                       isActive
-                        ? 'bg-accent/15 text-accent'
+                        ? 'bg-primary/15 text-primary'
                         : isDisabled
-                          ? 'text-text-secondary/30 cursor-not-allowed'
-                          : 'text-text-secondary hover:text-text-primary'
+                          ? 'text-muted-foreground/30 cursor-not-allowed'
+                          : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <Icon size={11} />
@@ -281,7 +281,7 @@ export default function ERDiagram({
         )}
 
         <div className="mt-3 flex items-center gap-2">
-          <GlassButton
+          <Button
             variant="primary"
             size="sm"
             onClick={handleGenerate}
@@ -293,14 +293,14 @@ export default function ERDiagram({
               <GitFork size={12} />
             )}
             Generate ER Diagram
-          </GlassButton>
+          </Button>
           {(session || editedSyntax) && (
             <>
-              <GlassButton variant="ghost" size="sm" onClick={handleCopy}>
-                <AnimatedIcon icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={12} className={copied ? 'text-emerald-400' : undefined} />
+              <Button variant="ghost" size="sm" onClick={handleCopy}>
+                <span icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={12} className={copied ? 'text-emerald-400' : undefined} />
                 {copied ? 'Copied!' : 'Copy Mermaid'}
-              </GlassButton>
-              <GlassButton
+              </Button>
+              <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleExportPdf}
@@ -308,7 +308,7 @@ export default function ERDiagram({
               >
                 {isExporting ? <Loader2 size={12} className="animate-spin" /> : <FileDown size={12} />}
                 Export PDF
-              </GlassButton>
+              </Button>
 
               {/* ER / 3D toggle pill */}
               <div className="ml-auto flex items-center rounded-lg border border-white/[0.08] bg-white/[0.03] p-0.5">
@@ -316,7 +316,7 @@ export default function ERDiagram({
                   type="button"
                   onClick={() => setShow3D(false)}
                   className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
-                    !show3D ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary'
+                    !show3D ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="ER diagram view"
                 >
@@ -327,7 +327,7 @@ export default function ERDiagram({
                   type="button"
                   onClick={() => setShow3D(true)}
                   className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
-                    show3D ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary'
+                    show3D ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="3D schema orb view"
                 >
@@ -343,8 +343,8 @@ export default function ERDiagram({
                   onClick={() => setViewMode('visual')}
                   className={`flex items-center gap-1 px-2.5 py-1 text-[11px] ${
                     viewMode === 'visual'
-                      ? 'bg-accent/15 text-accent'
-                      : 'text-text-secondary hover:text-text-primary'
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Image size={11} />
@@ -355,8 +355,8 @@ export default function ERDiagram({
                   onClick={handleSwitchToCode}
                   className={`flex items-center gap-1 px-2.5 py-1 text-[11px] border-l border-border ${
                     viewMode === 'code'
-                      ? 'bg-accent/15 text-accent'
-                      : 'text-text-secondary hover:text-text-primary'
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Code2 size={11} />
@@ -369,7 +369,7 @@ export default function ERDiagram({
 
         {/* Inferred relationships badge */}
         {inferredCount > 0 && inferredSummary && (
-          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-accent/80">
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-primary/80">
             <Sparkles size={11} />
             <span>
               {inferredCount} inferred relationship{inferredCount !== 1 ? 's' : ''}
@@ -380,7 +380,7 @@ export default function ERDiagram({
 
         {/* AI inference streaming indicator */}
         {aiPending && (
-          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-text-secondary">
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Loader2 size={11} className="animate-spin" />
             <span>AI inference in progress… Convention results shown.</span>
           </div>
@@ -392,13 +392,13 @@ export default function ERDiagram({
             AI inference failed. Convention-based results still shown.
           </p>
         )}
-      </GlassSurface>
+      </Card>
 
       {/* Diagram render area */}
       <div className="flex-1 overflow-auto p-4">
         {!session && !editedSyntax && (
           <div className="flex h-full items-center justify-center">
-            <EmptyState
+            <div
               icon={Network}
               title="No ER diagram"
               description="Select tables and generate an ER diagram. Columns, primary keys, foreign keys, and relationships will be visualized. All three modes are generated at once."
@@ -411,9 +411,9 @@ export default function ERDiagram({
           <div className="h-full">
             <Scene3DWrapper
               fallback={
-                <GlassCard className="p-3" ref={diagramRef}>
+                <Card className="p-3" ref={diagramRef}>
                   <MermaidRenderer syntax={currentSyntax} className="h-full" interactive />
-                </GlassCard>
+                </Card>
               }
               loadingMessage="Loading 3D schema..."
             >
@@ -429,23 +429,23 @@ export default function ERDiagram({
 
         {/* Mermaid visual view */}
         {!show3D && (session || editedSyntax) && viewMode === 'visual' && (
-          <GlassCard className="p-3" ref={diagramRef}>
+          <Card className="p-3" ref={diagramRef}>
             {/* Legend when inferred relationships are present */}
             {inferredCount > 0 && (
-              <div className="mb-3 flex items-center gap-4 rounded-lg border border-[var(--glass-border)] bg-white/[0.02] px-3 py-1.5 text-[10px] text-[var(--text-secondary)]">
+              <div className="mb-3 flex items-center gap-4 rounded-lg border border-[hsl(var(--border))] bg-white/[0.02] px-3 py-1.5 text-[10px] text-[hsl(var(--muted-foreground))]">
                 <span className="font-medium uppercase tracking-wider">Legend:</span>
                 <span>
-                  <span className="font-semibold text-text-primary">fk_name</span> = FK constraint
+                  <span className="font-semibold text-foreground">fk_name</span> = FK constraint
                 </span>
                 <span>
-                  <span className="font-semibold text-accent">conv:</span> = Convention match
+                  <span className="font-semibold text-primary">conv:</span> = Convention match
                 </span>
                 <span>
-                  <span className="font-semibold text-accent">shared:</span> = Shared column
+                  <span className="font-semibold text-primary">shared:</span> = Shared column
                 </span>
                 {session?.inferredRelationships?.some((r) => r.source === 'ai') && (
                   <span>
-                    <span className="font-semibold text-accent">ai:</span> = AI inferred
+                    <span className="font-semibold text-primary">ai:</span> = AI inferred
                   </span>
                 )}
               </div>
@@ -455,27 +455,27 @@ export default function ERDiagram({
               className="h-full"
               interactive
             />
-          </GlassCard>
+          </Card>
         )}
 
         {!show3D && (session || editedSyntax) && viewMode === 'code' && (
-          <GlassSurface className="flex h-full flex-col gap-2 rounded-lg p-3">
+          <Card className="flex h-full flex-col gap-2 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-[var(--text-secondary)]">
+              <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
                 Mermaid Syntax (editable)
               </p>
-              <GlassButton variant="primary" size="sm" onClick={handleReRender}>
+              <Button variant="primary" size="sm" onClick={handleReRender}>
                 <RefreshCw size={11} />
                 Re-render
-              </GlassButton>
+              </Button>
             </div>
             <textarea
               value={editableCode}
               onChange={(e) => setEditableCode(e.target.value)}
-              className="flex-1 resize-none rounded-lg border border-[var(--glass-border)] bg-white/[0.03] px-3 py-2 font-mono text-[12px] leading-relaxed text-[var(--text-primary)] focus:border-[var(--color-accent)] focus:outline-none"
+              className="flex-1 resize-none rounded-lg border border-[hsl(var(--border))] bg-white/[0.03] px-3 py-2 font-mono text-[12px] leading-relaxed text-[hsl(var(--foreground))] focus:border-[var(--primary)] focus:outline-none"
               spellCheck={false}
             />
-          </GlassSurface>
+          </Card>
         )}
       </div>
     </div>

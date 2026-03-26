@@ -20,7 +20,10 @@ import { motion } from 'framer-motion'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { AnalysisResult, CodeEntity } from '../../../types/cortex'
 import { getKindColor } from '../cortex-theme'
-import { GlassSurface } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 const DIAGRAM_TABS = [
   { id: 'entities', label: 'Entity Graph', icon: Network },
@@ -320,7 +323,7 @@ export default function DiagramsTab(): React.JSX.Element {
 
   if (!analysisResult) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-text-secondary">
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         No analysis data available
       </div>
     )
@@ -329,7 +332,7 @@ export default function DiagramsTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <GlassSurface className="flex items-center justify-between px-4 py-2 rounded-none border-x-0 border-t-0">
+      <Card className="flex items-center justify-between px-4 py-2 rounded-none border-x-0 border-t-0">
         <div className="flex items-center gap-1">
           {DIAGRAM_TABS.map((tab) => {
             const Icon = tab.icon
@@ -340,13 +343,13 @@ export default function DiagramsTab(): React.JSX.Element {
                 type="button"
                 onClick={() => setActiveDiagramTab(tab.id)}
                 className={`relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
+                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.03]'
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="cortex-diagram-tab"
-                    className="absolute inset-0 rounded-lg bg-accent/12"
+                    className="absolute inset-0 rounded-lg bg-primary/12"
                     transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
                   />
                 )}
@@ -358,16 +361,16 @@ export default function DiagramsTab(): React.JSX.Element {
             )
           })}
         </div>
-        <span className="text-[10px] text-text-secondary">
+        <span className="text-[10px] text-muted-foreground">
           {diagramData.nodes.length} nodes / {diagramData.edges.length} edges
         </span>
-      </GlassSurface>
+      </Card>
 
       {/* Diagram */}
       <div className="flex-1 overflow-hidden relative">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.03)_0%,transparent_70%)]" />
         {diagramData.nodes.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-xs text-text-secondary">
+          <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
             No entities detected for diagram visualization
           </div>
         ) : (
@@ -383,7 +386,7 @@ export default function DiagramsTab(): React.JSX.Element {
             <Background gap={20} size={1} color="#1e293b" variant="dots" />
             <Controls
               showInteractive={false}
-              className="!bg-white/[0.03] !backdrop-blur-xl !border-white/[0.08] !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/[0.06] [&>button]:!text-text-secondary"
+              className="!bg-white/[0.03] !backdrop-blur-xl !border-white/[0.08] !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/[0.06] [&>button]:!text-muted-foreground"
             />
           </ReactFlow>
         )}

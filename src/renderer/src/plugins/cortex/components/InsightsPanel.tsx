@@ -15,7 +15,10 @@ import {
   Download
 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { GlassSurface, GlassSkeleton } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import OverviewTab from './OverviewTab'
 import APIListTab from './APIListTab'
 import FlowsTab from './FlowsTab'
@@ -37,7 +40,7 @@ const INSIGHT_TABS = [
 function TabFallback(): React.JSX.Element {
   return (
     <div className="p-4 space-y-3">
-      <GlassSkeleton variant="text" lines={4} />
+      <Skeleton variant="text" lines={4} />
     </div>
   )
 }
@@ -55,7 +58,7 @@ export default function InsightsPanel(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Sub-tab bar */}
-      <GlassSurface className="flex items-center justify-between px-6 py-2 rounded-none border-x-0 border-t-0">
+      <Card className="flex items-center justify-between px-6 py-2 rounded-none border-x-0 border-t-0">
         <div className="flex items-center gap-1">
           {INSIGHT_TABS.map((tab) => {
             const Icon = tab.icon
@@ -66,13 +69,13 @@ export default function InsightsPanel(): React.JSX.Element {
                 type="button"
                 onClick={() => setInsightsSubTab(tab.id)}
                 className={`relative flex items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-colors ${
-                  isActive ? 'text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
+                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.03]'
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="cortex-insight-tab"
-                    className="absolute inset-0 rounded-lg bg-accent/12"
+                    className="absolute inset-0 rounded-lg bg-primary/12"
                     transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
                   />
                 )}
@@ -90,14 +93,14 @@ export default function InsightsPanel(): React.JSX.Element {
           <button
             type="button"
             onClick={() => setShowExport(true)}
-            className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors"
+            className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
             title="Export documentation"
           >
             <Download size={12} />
             Export
           </button>
         )}
-      </GlassSurface>
+      </Card>
 
       {/* Content */}
       <div className="flex-1 overflow-hidden">

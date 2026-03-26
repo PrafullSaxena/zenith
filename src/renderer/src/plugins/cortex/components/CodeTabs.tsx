@@ -30,7 +30,7 @@ function getFileIconColor(name: string): string {
     case '.scss':
       return 'text-pink-400'
     default:
-      return 'text-text-secondary'
+      return 'text-muted-foreground'
   }
 }
 
@@ -75,8 +75,8 @@ export default function CodeTabs(): React.JSX.Element {
             onClick={() => handleTabClick(file.path)}
             className={`group flex shrink-0 items-center gap-1.5 px-3 py-2 text-[11px] transition-colors ${
               isActive
-                ? 'bg-surface-elevated border-b-2 border-b-accent text-text-primary'
-                : 'border-b-2 border-b-transparent text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
+                ? 'bg-secondary border-b-2 border-b-accent text-foreground'
+                : 'border-b-2 border-b-transparent text-muted-foreground hover:text-foreground hover:bg-white/[0.03]'
             }`}
           >
             <FileCode size={12} className={getFileIconColor(filename)} />
@@ -88,7 +88,7 @@ export default function CodeTabs(): React.JSX.Element {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleClose(e as unknown as React.MouseEvent, file.path)
               }}
-              className="ml-1 rounded p-0.5 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-surface-elevated"
+              className="ml-1 rounded p-0.5 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-secondary"
             >
               <X size={10} />
             </span>

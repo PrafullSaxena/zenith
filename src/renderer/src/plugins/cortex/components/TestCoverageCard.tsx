@@ -7,7 +7,10 @@ import { motion } from 'framer-motion'
 import { ChevronDown, ChevronUp, TestTube } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { TestStats } from '../../../types/cortex'
-import { GlassCard } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 interface TestCoverageCardProps {
   stats: TestStats
@@ -41,11 +44,11 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
   const visibleUncovered = filesUncovered.slice(0, 10)
 
   return (
-    <GlassCard className="p-4">
+    <Card className="p-4">
       {/* Header */}
       <div className="mb-4 flex items-center gap-2">
-        <TestTube size={14} className="text-text-secondary" />
-        <span className="text-xs font-semibold text-text-primary">Test Coverage</span>
+        <TestTube size={14} className="text-muted-foreground" />
+        <span className="text-xs font-semibold text-foreground">Test Coverage</span>
       </div>
 
       <div className="flex items-start gap-6">
@@ -85,7 +88,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
           {/* Centered percentage label (counter-rotate to fix -rotate-90 parent) */}
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             <span className={`text-xl font-bold leading-none ${textColor}`}>{pct}%</span>
-            <span className="mt-0.5 text-[9px] text-text-secondary">files</span>
+            <span className="mt-0.5 text-[9px] text-muted-foreground">files</span>
           </div>
         </div>
 
@@ -93,8 +96,8 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           {/* Test count */}
           <div>
-            <p className="text-2xl font-bold text-text-primary">{testCount.toLocaleString()}</p>
-            <p className="text-[10px] uppercase tracking-wide text-text-secondary">Test Cases</p>
+            <p className="text-2xl font-bold text-foreground">{testCount.toLocaleString()}</p>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Test Cases</p>
           </div>
 
           {/* Framework badges */}
@@ -103,7 +106,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
               {frameworks.map((fw) => (
                 <span
                   key={fw}
-                  className="rounded-full bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 text-[10px] font-medium text-text-secondary"
+                  className="rounded-full bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
                 >
                   {fw}
                 </span>
@@ -120,13 +123,13 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
             className="flex w-full items-center justify-between text-left"
             onClick={() => setUncoveredExpanded((v) => !v)}
           >
-            <span className="text-[10px] uppercase tracking-wide text-text-secondary">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
               Files without tests ({filesUncovered.length})
             </span>
             {uncoveredExpanded ? (
-              <ChevronUp size={12} className="text-text-secondary" />
+              <ChevronUp size={12} className="text-muted-foreground" />
             ) : (
-              <ChevronDown size={12} className="text-text-secondary" />
+              <ChevronDown size={12} className="text-muted-foreground" />
             )}
           </button>
 
@@ -141,7 +144,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
               {visibleUncovered.map((filePath) => (
                 <li key={filePath}>
                   <button
-                    className="w-full truncate rounded px-1 py-0.5 text-left text-[11px] text-text-secondary transition-colors hover:bg-white/[0.03] hover:text-text-primary"
+                    className="w-full truncate rounded px-1 py-0.5 text-left text-[11px] text-muted-foreground transition-colors hover:bg-white/[0.03] hover:text-foreground"
                     onClick={() => navigateToFile(filePath)}
                     title={filePath}
                   >
@@ -150,7 +153,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
                 </li>
               ))}
               {filesUncovered.length > 10 && (
-                <li className="px-1 py-0.5 text-[10px] text-text-secondary/60">
+                <li className="px-1 py-0.5 text-[10px] text-muted-foreground/60">
                   +{filesUncovered.length - 10} more
                 </li>
               )}
@@ -158,6 +161,6 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
           )}
         </div>
       )}
-    </GlassCard>
+    </Card>
   )
 }

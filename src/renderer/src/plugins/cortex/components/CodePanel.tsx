@@ -69,7 +69,7 @@ export default function CodePanel(): React.JSX.Element {
         aria-orientation="vertical"
         tabIndex={0}
         onMouseDown={onMouseDown}
-        className="flex w-2 cursor-col-resize items-center justify-center hover:bg-accent/10 transition-colors"
+        className="flex w-2 cursor-col-resize items-center justify-center hover:bg-primary/10 transition-colors"
       >
         <div className="flex flex-col gap-1">
           <div className="h-1 w-1 rounded-full bg-text-secondary/30" />
@@ -88,7 +88,7 @@ export default function CodePanel(): React.JSX.Element {
             </div>
           </div>
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-text-secondary">
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
             <FileCode size={32} className="opacity-30" />
             <p className="text-sm">Select a file from the tree to view its contents</p>
           </div>

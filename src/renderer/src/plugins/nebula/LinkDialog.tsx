@@ -7,14 +7,16 @@
  *  - Closes on Escape key or click outside
  *  - Pre-fills URL when editing an existing link
  *
- * Migrated to Obsidian Glass design system with GlassInput, GlassButton,
- * and GlassSurface styling.
+ * Migrated to Obsidian Glass design system with Input, Button,
+ * and Card styling.
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
 import { Link, X } from 'lucide-react'
-import { GlassInput, GlassButton } from '../../components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
 
 interface LinkDialogProps {
   editor: Editor
@@ -110,25 +112,25 @@ export default function LinkDialog({
   return (
     <div
       ref={dialogRef}
-      className="fixed z-50 w-72 rounded-xl bg-surface-elevated/80 backdrop-blur-xl border border-white/[0.08] p-3 shadow-xl"
+      className="fixed z-50 w-72 rounded-xl bg-secondary/80 backdrop-blur-xl border border-white/[0.08] p-3 shadow-xl"
       style={{
         left: Math.max(8, adjustedX),
         top: Math.max(8, adjustedY)
       }}
     >
       <div className="mb-2 flex items-center gap-2">
-        <Link size={14} className="text-accent" />
-        <span className="text-xs font-medium text-text-primary">Insert Link</span>
+        <Link size={14} className="text-primary" />
+        <span className="text-xs font-medium text-foreground">Insert Link</span>
         <button
           type="button"
           onClick={onClose}
-          className="ml-auto text-text-secondary hover:text-text-primary transition-colors"
+          className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
         >
           <X size={12} />
         </button>
       </div>
 
-      <GlassInput
+      <Input
         ref={inputRef}
         value={url}
         onChange={(e) => setUrl(e.target.value)}
@@ -138,23 +140,23 @@ export default function LinkDialog({
       />
 
       <div className="flex items-center gap-2">
-        <GlassButton
+        <Button
           variant="primary"
           size="sm"
           onClick={handleApply}
           disabled={!url.trim()}
         >
           Apply
-        </GlassButton>
+        </Button>
         {hasExistingLink && (
-          <GlassButton
+          <Button
             variant="ghost"
             size="sm"
             onClick={handleRemove}
             className="text-red-400 hover:bg-red-400/10"
           >
             Remove
-          </GlassButton>
+          </Button>
         )}
       </div>
     </div>

@@ -72,8 +72,8 @@ export default function DonutChart({ segments, size = 120, strokeWidth = 14, cla
       </svg>
       {/* Center label */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-bold text-text-primary">{segments.length}</span>
-        <span className="text-[8px] uppercase tracking-wide text-text-secondary">langs</span>
+        <span className="text-lg font-bold text-foreground">{segments.length}</span>
+        <span className="text-[8px] uppercase tracking-wide text-muted-foreground">langs</span>
       </div>
     </div>
   )

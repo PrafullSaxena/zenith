@@ -34,7 +34,7 @@ import { useNebulaStore } from '../../stores/nebula-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { tiptapToMarkdown, tiptapToPlainText } from './tiptap-to-markdown'
 import { renderAllMermaidBlocks } from '../../lib/mermaid-to-png'
-import { GlassSurface, AnimatedIcon } from '../../components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
 import FloatingToolbar from './FloatingToolbar'
 import LinkDialog from './LinkDialog'
 import TableControls from './TableControls'
@@ -263,7 +263,7 @@ export default function NoteEditor({
         openOnClick: false,
         autolink: true,
         defaultProtocol: 'https',
-        HTMLAttributes: { class: 'text-accent underline cursor-pointer' }
+        HTMLAttributes: { class: 'text-primary underline cursor-pointer' }
       }),
       Image.configure({
         allowBase64: true,
@@ -509,7 +509,7 @@ export default function NoteEditor({
   })()
 
   return (
-    <GlassSurface className="flex flex-1 flex-col overflow-hidden rounded-none border-x-0 border-t-0 p-0">
+    <Card className="flex flex-1 flex-col overflow-hidden rounded-none border-x-0 border-t-0 p-0">
       {/* Title area with auto-save dot */}
       <div className="px-4 pt-4 pb-0">
         <div className="flex items-center gap-2">
@@ -519,33 +519,33 @@ export default function NoteEditor({
             onChange={(e) => onTitleChange(e.target.value)}
             onKeyDown={handleTitleKeyDown}
             placeholder="Untitled"
-            className="flex-1 border-none bg-transparent text-2xl font-bold text-text-primary outline-none placeholder:text-text-secondary/40"
+            className="flex-1 border-none bg-transparent text-2xl font-bold text-foreground outline-none placeholder:text-muted-foreground/40"
           />
           <div className="flex items-center gap-2">
             {/* Raw Copy */}
             <button
               type="button"
               onClick={() => void handleCopyRaw()}
-              className={`p-1 rounded transition-colors ${copiedMode === 'raw' ? 'text-green-400' : 'text-text-secondary/40 hover:text-text-secondary'}`}
+              className={`p-1 rounded transition-colors ${copiedMode === 'raw' ? 'text-green-400' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title="Copy as plain text"
             >
-              <AnimatedIcon icon={copiedMode === 'raw' ? Check : ClipboardCopy} iconKey={copiedMode === 'raw' ? 'check' : 'clipboard'} size={13} className={copiedMode === 'raw' ? 'text-green-400' : undefined} />
+              <span icon={copiedMode === 'raw' ? Check : ClipboardCopy} iconKey={copiedMode === 'raw' ? 'check' : 'clipboard'} size={13} className={copiedMode === 'raw' ? 'text-green-400' : undefined} />
             </button>
             {/* Copy Markdown */}
             <button
               type="button"
               onClick={() => void handleCopyMarkdown()}
-              className={`p-1 rounded transition-colors ${copiedMode === 'markdown' ? 'text-green-400' : 'text-text-secondary/40 hover:text-text-secondary'}`}
+              className={`p-1 rounded transition-colors ${copiedMode === 'markdown' ? 'text-green-400' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title="Copy as markdown"
             >
-              <AnimatedIcon icon={copiedMode === 'markdown' ? Check : FileText} iconKey={copiedMode === 'markdown' ? 'check' : 'filetext'} size={13} className={copiedMode === 'markdown' ? 'text-green-400' : undefined} />
+              <span icon={copiedMode === 'markdown' ? Check : FileText} iconKey={copiedMode === 'markdown' ? 'check' : 'filetext'} size={13} className={copiedMode === 'markdown' ? 'text-green-400' : undefined} />
             </button>
             {/* Export PDF */}
             <button
               type="button"
               onClick={() => void handleExportPdf()}
               disabled={isExportingPdf}
-              className="p-1 rounded transition-colors text-text-secondary/40 hover:text-text-secondary disabled:opacity-50"
+              className="p-1 rounded transition-colors text-muted-foreground/40 hover:text-muted-foreground disabled:opacity-50"
               title="Export as PDF"
             >
               {isExportingPdf ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
@@ -556,16 +556,16 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={() => useSettingsStore.getState().setSetting('plugins.nebula.showMermaidPreview', !mermaidPreviewEnabled)}
-              className={`p-1 rounded transition-colors ${mermaidPreviewEnabled ? 'text-accent bg-accent/10' : 'text-text-secondary/40 hover:text-text-secondary'}`}
+              className={`p-1 rounded transition-colors ${mermaidPreviewEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title={mermaidPreviewEnabled ? 'Show mermaid code' : 'Show mermaid diagrams'}
             >
-              <AnimatedIcon icon={mermaidPreviewEnabled ? Eye : EyeOff} iconKey={mermaidPreviewEnabled ? 'eye' : 'eyeoff'} size={13} />
+              <span icon={mermaidPreviewEnabled ? Eye : EyeOff} iconKey={mermaidPreviewEnabled ? 'eye' : 'eyeoff'} size={13} />
             </button>
             {/* Line numbers toggle */}
             <button
               type="button"
               onClick={() => useSettingsStore.getState().setSetting('plugins.nebula.showLineNumbers', !lineNumbersEnabled)}
-              className={`p-1 rounded transition-colors ${lineNumbersEnabled ? 'text-accent bg-accent/10' : 'text-text-secondary/40 hover:text-text-secondary'}`}
+              className={`p-1 rounded transition-colors ${lineNumbersEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title={lineNumbersEnabled ? 'Hide line numbers' : 'Show line numbers'}
             >
               <Hash size={13} />
@@ -585,7 +585,7 @@ export default function NoteEditor({
             />
             {/* Summarizing indicator */}
             {isSummarizing && (
-              <div className="flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] text-accent">
+              <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
                 <Sparkles size={10} className="animate-pulse" />
                 AI
               </div>
@@ -594,7 +594,7 @@ export default function NoteEditor({
         </div>
 
         {/* Metadata line */}
-        <div className="mt-1 flex items-center gap-3 text-xs text-text-secondary/60">
+        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground/60">
           <span>{relativeTime(updatedAt)}</span>
           <span>{wordCount} {wordCount === 1 ? 'word' : 'words'}</span>
         </div>
@@ -604,13 +604,13 @@ export default function NoteEditor({
           {tags.map((tag) => (
             <span
               key={tag.id}
-              className="flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent"
+              className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary"
             >
               {tag.label}
               <button
                 type="button"
                 onClick={() => handleRemoveTag(tag.id)}
-                className="text-accent/50 hover:text-accent"
+                className="text-primary/50 hover:text-primary"
               >
                 <X size={10} />
               </button>
@@ -631,13 +631,13 @@ export default function NoteEditor({
                 }
               }}
               placeholder="Add tag..."
-              className="w-20 rounded-full border border-border/50 bg-transparent px-2 py-0.5 text-xs text-text-primary outline-none placeholder:text-text-secondary/40 focus:border-accent"
+              className="w-20 rounded-full border border-border/50 bg-transparent px-2 py-0.5 text-xs text-foreground outline-none placeholder:text-muted-foreground/40 focus:border-primary"
             />
           ) : (
             <button
               type="button"
               onClick={() => setShowTagInput(true)}
-              className="flex items-center gap-0.5 rounded-full border border-dashed border-border/50 px-1.5 py-0.5 text-[10px] text-text-secondary/50 transition-colors hover:border-accent/40 hover:text-accent/60"
+              className="flex items-center gap-0.5 rounded-full border border-dashed border-border/50 px-1.5 py-0.5 text-[10px] text-muted-foreground/50 transition-colors hover:border-primary/40 hover:text-primary/60"
             >
               <Plus size={10} />
             </button>
@@ -651,7 +651,7 @@ export default function NoteEditor({
           <button
             type="button"
             onClick={handleInsertTable}
-            className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-text-secondary/40 transition-colors hover:bg-surface-elevated/50 hover:text-text-secondary"
+            className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-muted-foreground/40 transition-colors hover:bg-secondary/50 hover:text-muted-foreground"
             title="Insert table"
           >
             <TableIcon size={10} />
@@ -691,7 +691,7 @@ export default function NoteEditor({
           position={linkPosition}
         />
       )}
-    </GlassSurface>
+    </Card>
   )
 }
 

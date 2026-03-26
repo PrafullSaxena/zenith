@@ -40,7 +40,7 @@ function getFileIconColor(name: string): string {
     case '.scss':
       return 'text-pink-400'
     default:
-      return 'text-text-secondary'
+      return 'text-muted-foreground'
   }
 }
 
@@ -175,8 +175,8 @@ function FileTreeNode({
         onClick={handleClick}
         className={`flex w-full items-center gap-1.5 py-0.5 text-xs transition-colors ${
           isSelected
-            ? 'border-l-[3px] border-accent bg-accent/[0.06] text-accent'
-            : 'text-text-secondary hover:bg-white/[0.03] hover:text-text-primary'
+            ? 'border-l-[3px] border-primary bg-primary/[0.06] text-primary'
+            : 'text-muted-foreground hover:bg-white/[0.03] hover:text-foreground'
         }`}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
@@ -263,8 +263,8 @@ function VirtualRow({ index, style, data }: ListChildComponentProps<VirtualRowDa
         onClick={handleClick}
         className={`flex w-full items-center gap-1.5 py-0.5 text-xs transition-colors ${
           isSelected
-            ? 'border-l-[3px] border-accent bg-accent/[0.06] text-accent'
-            : 'text-text-secondary hover:bg-white/[0.03] hover:text-text-primary'
+            ? 'border-l-[3px] border-primary bg-primary/[0.06] text-primary'
+            : 'text-muted-foreground hover:bg-white/[0.03] hover:text-foreground'
         }`}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
@@ -407,14 +407,14 @@ export default function FileTree(): React.JSX.Element {
   return (
     <div className="flex h-full min-w-0 flex-col overflow-x-auto" ref={containerRef}>
       {/* Search input */}
-      <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-elevated px-2 py-1.5 mx-2 mt-2 mb-1">
-        <Search size={12} className="shrink-0 text-text-secondary/50" />
+      <div className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-2 py-1.5 mx-2 mt-2 mb-1">
+        <Search size={12} className="shrink-0 text-muted-foreground/50" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Filter files..."
-          className="flex-1 bg-transparent text-xs text-text-primary placeholder:text-text-secondary/50 focus:outline-none"
+          className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
         />
       </div>
 
@@ -436,7 +436,7 @@ export default function FileTree(): React.JSX.Element {
             <FileTreeNode key={node.path} node={node} depth={0} filterTerm={filterTerm} />
           ))}
           {fileTree.length === 0 && (
-            <div className="px-4 py-8 text-center text-xs text-text-secondary/50">
+            <div className="px-4 py-8 text-center text-xs text-muted-foreground/50">
               No files found
             </div>
           )}

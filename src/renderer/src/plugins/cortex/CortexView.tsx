@@ -3,7 +3,7 @@
  * Default-exported for React.lazy() in registry.ts.
  *
  * Layout:
- *  - PluginHeader: Brain icon + gradient title + tab bar
+ *  - Card: Brain icon + gradient title + tab bar
  *  - Tab content (full remaining height)
  */
 import { useEffect } from 'react'
@@ -14,7 +14,10 @@ import RepoManager from './components/RepoManager'
 import InsightsPanel from './components/InsightsPanel'
 import CodePanel from './components/CodePanel'
 import QAPanel from './components/QAPanel'
-import { PluginHeader, EmptyState } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { pageTransition } from '@renderer/lib/motion'
 
 type CortexTab = 'insights' | 'code' | 'qa' | 'repos'
@@ -68,8 +71,8 @@ export default function CortexView(): React.JSX.Element {
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-background">
-      {/* PluginHeader with Brain icon, gradient title, and tab bar */}
-      <PluginHeader
+      {/* Card with Brain icon, gradient title, and tab bar */}
+      <Card
         icon={Brain}
         title="Cortex"
         tabs={TABS}
@@ -78,9 +81,9 @@ export default function CortexView(): React.JSX.Element {
         statusIndicator={
           activeRepo ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-text-secondary">{activeRepo.name}</span>
-              <span className="flex items-center gap-1.5 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
-                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+              <span className="text-xs text-muted-foreground">{activeRepo.name}</span>
+              <span className="flex items-center gap-1.5 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
                 {activeRepo.branch}
               </span>
             </div>
@@ -90,7 +93,7 @@ export default function CortexView(): React.JSX.Element {
 
       {/* No-agent banner */}
       {!getCortexAgent() && (
-        <div className="mx-4 mt-2 rounded-lg bg-accent/10 px-3 py-2 text-[11px] text-accent">
+        <div className="mx-4 mt-2 rounded-lg bg-primary/10 px-3 py-2 text-[11px] text-primary">
           Configure an AI Agent in Settings to unlock AI-powered insights
         </div>
       )}
@@ -110,7 +113,7 @@ export default function CortexView(): React.JSX.Element {
             {activeTab === 'insights' && analysisResult ? (
               <InsightsPanel />
             ) : activeTab === 'insights' && !analysisResult ? (
-              <EmptyState
+              <div
                 icon={LayoutDashboard}
                 title="No insights yet"
                 description="Analyze a repository to see insights"
@@ -121,7 +124,7 @@ export default function CortexView(): React.JSX.Element {
             {activeTab === 'code' && analysisResult ? (
               <CodePanel />
             ) : activeTab === 'code' && !analysisResult ? (
-              <EmptyState
+              <div
                 icon={Code2}
                 title="No code to browse"
                 description="Analyze a repository first to browse code"
@@ -132,7 +135,7 @@ export default function CortexView(): React.JSX.Element {
             {activeTab === 'qa' && analysisResult ? (
               <QAPanel />
             ) : activeTab === 'qa' && !analysisResult ? (
-              <EmptyState
+              <div
                 icon={MessageSquare}
                 title="No codebase loaded"
                 description="Analyze a repository first to ask questions"
@@ -146,14 +149,14 @@ export default function CortexView(): React.JSX.Element {
 
       {/* Status bar */}
       {activeRepo && analysisResult && (
-        <div className="flex items-center justify-between border-t border-border/40 bg-surface-elevated/30 backdrop-blur-sm px-4 py-1 text-[10px] text-text-secondary">
+        <div className="flex items-center justify-between border-t border-border/40 bg-secondary/30 backdrop-blur-sm px-4 py-1 text-[10px] text-muted-foreground">
           <div className="flex items-center gap-3">
             <span>{activeRepo.name}</span>
-            <span className="text-text-secondary/50">/</span>
+            <span className="text-muted-foreground/50">/</span>
             <span>{activeRepo.branch}</span>
             {activeRepo.commitSha && (
               <>
-                <span className="text-text-secondary/50">/</span>
+                <span className="text-muted-foreground/50">/</span>
                 <span className="font-mono">{activeRepo.commitSha.slice(0, 7)}</span>
               </>
             )}

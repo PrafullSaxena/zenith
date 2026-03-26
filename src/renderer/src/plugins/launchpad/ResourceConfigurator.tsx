@@ -1,23 +1,26 @@
 /**
  * ResourceConfigurator — Per-service dynamic configuration forms.
  *
- * Renders a configuration card for each selected service using GlassCard sections.
+ * Renders a configuration card for each selected service using Card sections.
  * Form fields are driven by the service's configSchema:
- *  - 'select': GlassSelect dropdown with options (instance types, regions, etc.)
- *  - 'number': GlassInput number field with min/max bounds
+ *  - 'select': Select dropdown with options (instance types, regions, etc.)
+ *  - 'number': Input number field with min/max bounds
  *
  * Reads selected services from the store; writes config changes back via updateServiceConfig.
  */
 import { useState, useCallback, useEffect } from 'react'
 import { Settings2 } from 'lucide-react'
-import { GlassCard, GlassInput, GlassSelect, EmptyState } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { getCatalog } from '../../data/cloud-pricing/index'
 import type { ResourceConfig, ConfigField, SelectOption } from '../../types/launchpad'
 
 /**
  * NumberInput — controlled number field with local string state.
- * Uses GlassInput for glass styling.
+ * Uses Input for glass styling.
  * Allows natural typing (clearing, decimal entry) while syncing
  * the parsed numeric value to the store on change.
  */
@@ -73,7 +76,7 @@ function NumberInput({
   }, [localValue, min, max, onChange])
 
   return (
-    <GlassInput
+    <Input
       type="number"
       value={localValue}
       min={min}
@@ -92,7 +95,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
 
   if (selectedServices.length === 0) {
     return (
-      <EmptyState
+      <div
         icon={Settings2}
         title="No services selected"
         description="Select services from the catalog on the left to configure their resources"
@@ -123,7 +126,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
 
   return (
     <div className="p-4">
-      <div className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider pb-3">
+      <div className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wider pb-3">
         Resource Configuration
       </div>
 
@@ -133,11 +136,11 @@ export default function ResourceConfigurator(): React.JSX.Element {
           if (!service) return null
 
           return (
-            <GlassCard key={sel.serviceId}>
+            <Card key={sel.serviceId}>
               {/* Card header */}
-              <p className="mb-3 text-sm font-semibold text-[var(--text-primary)] border-b border-white/[0.06] pb-2">
+              <p className="mb-3 text-sm font-semibold text-[hsl(var(--foreground))] border-b border-white/[0.06] pb-2">
                 {service.name}
-                <span className="ml-2 text-xs font-normal text-[var(--text-secondary)]/50">
+                <span className="ml-2 text-xs font-normal text-[hsl(var(--muted-foreground))]/50">
                   {service.description}
                 </span>
               </p>
@@ -158,11 +161,11 @@ export default function ResourceConfigurator(): React.JSX.Element {
                     return (
                       <div key={key} className="flex flex-col gap-1">
                         {field.label && (
-                          <label className="text-xs font-medium text-[var(--text-secondary)]">
+                          <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
                             {field.label}
                           </label>
                         )}
-                        <GlassSelect
+                        <Select
                           options={field.options.map((opt: SelectOption) => ({
                             value: opt.value,
                             label: opt.label
@@ -210,7 +213,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
                   return null
                 })}
               </div>
-            </GlassCard>
+            </Card>
           )
         })}
       </div>

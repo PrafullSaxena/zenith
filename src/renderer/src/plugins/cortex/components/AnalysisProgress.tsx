@@ -4,7 +4,10 @@
  */
 import { motion } from 'framer-motion'
 import type { AnalysisProgress as AnalysisProgressType } from '../../../types/cortex'
-import { GlassCard } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 interface Props {
   progress: AnalysisProgressType
@@ -21,7 +24,7 @@ const PHASE_LABELS: Record<AnalysisProgressType['phase'], string> = {
 
 const PHASE_BAR_COLORS: Record<AnalysisProgressType['phase'], string> = {
   cloning: 'bg-blue-400',
-  scanning: 'bg-accent',
+  scanning: 'bg-primary',
   parsing: 'bg-warning',
   indexing: 'bg-cyan-400',
   documenting: 'bg-purple-400',
@@ -30,15 +33,15 @@ const PHASE_BAR_COLORS: Record<AnalysisProgressType['phase'], string> = {
 
 export default function AnalysisProgress({ progress }: Props): React.JSX.Element {
   const label = PHASE_LABELS[progress.phase] ?? progress.phase
-  const barColor = PHASE_BAR_COLORS[progress.phase] ?? 'bg-accent'
+  const barColor = PHASE_BAR_COLORS[progress.phase] ?? 'bg-primary'
 
   return (
-    <GlassCard className="flex flex-col gap-1.5 rounded-xl p-2.5">
+    <Card className="flex flex-col gap-1.5 rounded-xl p-2.5">
       <div className="flex items-center justify-between text-[10px]">
-        <span className="font-medium text-text-primary">{label}</span>
-        <span className="text-text-secondary">{Math.round(progress.progress)}%</span>
+        <span className="font-medium text-foreground">{label}</span>
+        <span className="text-muted-foreground">{Math.round(progress.progress)}%</span>
       </div>
-      <div className="h-1.5 rounded-full bg-surface">
+      <div className="h-1.5 rounded-full bg-card">
         <motion.div
           className={`h-full rounded-full ${barColor}`}
           animate={{ width: `${progress.progress}%` }}
@@ -46,8 +49,8 @@ export default function AnalysisProgress({ progress }: Props): React.JSX.Element
         />
       </div>
       {progress.detail && (
-        <span className="text-[10px] text-text-secondary">{progress.detail}</span>
+        <span className="text-[10px] text-muted-foreground">{progress.detail}</span>
       )}
-    </GlassCard>
+    </Card>
   )
 }

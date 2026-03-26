@@ -29,7 +29,9 @@ import { useAgentStore } from '../../stores/agent-store'
 import { useActivityStore } from '../../stores/activity-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import type { DbInspectorTab, DbHistoryEntry } from '../../types/database'
-import { PluginHeader, GlassSurface, GlassBadge } from '../../components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
 import { pageTransition } from '../../lib/motion'
 import ConnectionManager from './ConnectionManager'
 import SchemaExplorer from './SchemaExplorer'
@@ -278,9 +280,9 @@ export default function DbInspectorView(): React.JSX.Element {
     ? connectionStatuses[activeConnectionId]?.connected ?? false
     : false
 
-  // -- Connection status badge for PluginHeader
+  // -- Connection status badge for Card
   const connectionBadge = activeConnection ? (
-    <GlassBadge variant={isConnected ? 'success' : 'error'} className={
+    <Badge variant={isConnected ? 'success' : 'error'} className={
       connectionStatuses[activeConnectionId ?? ''] !== undefined &&
       !connectionStatuses[activeConnectionId ?? '']?.connected &&
       !connectionStatuses[activeConnectionId ?? '']?.error
@@ -290,13 +292,13 @@ export default function DbInspectorView(): React.JSX.Element {
       {activeConnection.name}
       {activeDatabase ? ` / ${activeDatabase}` : ''}
       {activeSchema ? ` / ${activeSchema}` : ''}
-    </GlassBadge>
+    </Badge>
   ) : undefined
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-      {/* Header with PluginHeader */}
-      <PluginHeader
+      {/* Header with Card */}
+      <Card
         icon={Database}
         title="DB Inspector"
         tabs={TABS}
@@ -309,11 +311,11 @@ export default function DbInspectorView(): React.JSX.Element {
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel -- Connections (sticky) + Schema Explorer (scrollable) + collapse toggle */}
         <div
-          className="relative flex shrink-0 flex-col border-r border-[var(--glass-border)] transition-all duration-200"
+          className="relative flex shrink-0 flex-col border-r border-[hsl(var(--border))] transition-all duration-200"
           style={{ width: isLeftPanelCollapsed ? 0 : 256, overflow: isLeftPanelCollapsed ? 'hidden' : 'visible' }}
         >
-          <GlassSurface className="flex h-full flex-col rounded-none border-0" style={{ width: 256 }}>
-            <div className="shrink-0 border-b border-[var(--glass-border)] p-3">
+          <Card className="flex h-full flex-col rounded-none border-0" style={{ width: 256 }}>
+            <div className="shrink-0 border-b border-[hsl(var(--border))] p-3">
               <ConnectionManager
                 connections={connections}
                 connectionStatuses={connectionStatuses}
@@ -348,7 +350,7 @@ export default function DbInspectorView(): React.JSX.Element {
                 />
               </div>
             )}
-          </GlassSurface>
+          </Card>
         </div>
 
         {/* Collapse/expand toggle button */}
@@ -356,7 +358,7 @@ export default function DbInspectorView(): React.JSX.Element {
           type="button"
           onClick={() => setIsLeftPanelCollapsed((v) => !v)}
           title={isLeftPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
-          className="relative z-10 flex h-10 w-4 shrink-0 items-center justify-center self-start mt-2 rounded-r border border-l-0 border-[var(--glass-border)] bg-white/[0.03] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/[0.06] transition-colors"
+          className="relative z-10 flex h-10 w-4 shrink-0 items-center justify-center self-start mt-2 rounded-r border border-l-0 border-[hsl(var(--border))] bg-white/[0.03] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-white/[0.06] transition-colors"
         >
           {isLeftPanelCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>

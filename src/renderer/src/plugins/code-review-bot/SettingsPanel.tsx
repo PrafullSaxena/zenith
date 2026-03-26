@@ -1,4 +1,5 @@
-import { GlassBadge, GlassButton } from '../../components/ui'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
 
 interface SettingsPanelProps {
   isConnected: boolean
@@ -10,7 +11,7 @@ interface SettingsPanelProps {
 
 /**
  * Inline settings panel for quick Bitbucket connection management.
- * Shows connection status via GlassBadge, connect/disconnect GlassButtons,
+ * Shows connection status via Badge, connect/disconnect Buttons,
  * and error messages.
  */
 export function SettingsPanel({
@@ -23,7 +24,7 @@ export function SettingsPanel({
   return (
     <div className="flex items-center gap-3">
       {/* Connection status indicator */}
-      <GlassBadge variant={isConnected ? 'success' : connectionError ? 'error' : 'default'}>
+      <Badge variant={isConnected ? 'success' : connectionError ? 'error' : 'default'}>
         <span
           className={`inline-block h-2 w-2 rounded-full mr-1.5 ${
             isConnected
@@ -34,19 +35,19 @@ export function SettingsPanel({
           }`}
         />
         {isConnected ? 'Connected' : 'Not connected'}
-      </GlassBadge>
+      </Badge>
 
       {/* Connect / Disconnect button */}
       {isConnecting ? (
-        <span className="text-xs text-text-secondary">Connecting...</span>
+        <span className="text-xs text-muted-foreground">Connecting...</span>
       ) : isConnected ? (
-        <GlassButton variant="ghost" size="sm" onClick={onDisconnect}>
+        <Button variant="ghost" size="sm" onClick={onDisconnect}>
           Disconnect
-        </GlassButton>
+        </Button>
       ) : (
-        <GlassButton variant="primary" size="sm" onClick={onConnect}>
+        <Button variant="primary" size="sm" onClick={onConnect}>
           Connect to Bitbucket
-        </GlassButton>
+        </Button>
       )}
 
       {/* Error message */}
@@ -58,7 +59,7 @@ export function SettingsPanel({
 
       {/* Hint text -- only show when no error */}
       {!connectionError && !isConnected && (
-        <span className="hidden text-[11px] text-text-secondary lg:inline">
+        <span className="hidden text-[11px] text-muted-foreground lg:inline">
           Configure OAuth credentials in Settings &gt; CodeReviewBot
         </span>
       )}

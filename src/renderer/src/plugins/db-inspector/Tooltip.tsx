@@ -26,13 +26,13 @@ export default function Tooltip({ content, shortcut, children, position = 'botto
       {children}
       {visible && (
         <div
-          className={`absolute left-1/2 -translate-x-1/2 z-50 px-2 py-1 rounded text-[10px] font-medium bg-surface-hover text-text-primary border border-border shadow-lg whitespace-nowrap pointer-events-none animate-tooltip-fade-in ${
+          className={`absolute left-1/2 -translate-x-1/2 z-50 px-2 py-1 rounded text-[10px] font-medium bg-card-hover text-foreground border border-border shadow-lg whitespace-nowrap pointer-events-none animate-tooltip-fade-in ${
             position === 'bottom' ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
           }`}
         >
           <span>{content}</span>
           {shortcut && (
-            <span className="ml-1.5 text-text-secondary/70">{shortcut}</span>
+            <span className="ml-1.5 text-muted-foreground/70">{shortcut}</span>
           )}
         </div>
       )}

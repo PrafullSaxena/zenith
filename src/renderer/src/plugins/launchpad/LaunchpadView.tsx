@@ -2,7 +2,7 @@
  * LaunchpadView — Main view for the Launchpad cloud cost estimator plugin.
  *
  * Layout:
- *  - Header: PluginHeader with Rocket icon, gradient title, and GlassTab bar
+ *  - Header: Card with Rocket icon, gradient title, and GlassTab bar
  *  - Estimator tab: ProviderSelector (no provider) or 3-col layout (provider set)
  *    - Left: ServiceCatalog with fuzzy search (narrow sidebar, scrollable)
  *    - Center: ResourceConfigurator (main content, scrollable)
@@ -16,7 +16,10 @@
 import { useEffect } from 'react'
 import { Rocket, Calculator, MessageSquare, Clock, GitCompare } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { PluginHeader } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { pageTransition } from '@renderer/lib/motion'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { LaunchpadTab, CloudProvider } from '../../types/launchpad'
@@ -55,8 +58,8 @@ export default function LaunchpadView(): React.JSX.Element {
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-      {/* PluginHeader with gradient title and GlassTab bar */}
-      <PluginHeader
+      {/* Card with gradient title and GlassTab bar */}
+      <Card
         icon={Rocket}
         title="Launchpad"
         tabs={TABS}
@@ -65,13 +68,13 @@ export default function LaunchpadView(): React.JSX.Element {
         statusIndicator={
           provider ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[var(--text-secondary)] bg-white/[0.04] border border-white/[0.06] rounded-md px-2 py-0.5">
+              <span className="text-xs text-[hsl(var(--muted-foreground))] bg-white/[0.04] border border-white/[0.06] rounded-md px-2 py-0.5">
                 {PROVIDER_INFO[provider].displayName}
               </span>
               <button
                 type="button"
                 onClick={clearEstimation}
-                className="text-xs text-[var(--text-secondary)] hover:text-[var(--color-accent)] transition-colors underline underline-offset-2"
+                className="text-xs text-[hsl(var(--muted-foreground))] hover:text-[var(--primary)] transition-colors underline underline-offset-2"
               >
                 Change Provider
               </button>

@@ -9,7 +9,10 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import FlowDiagram from './FlowDiagram'
 import { buildAPIFlowNodes, buildComponentTreeNodes, buildPipelineNodes } from './flow-utils'
 import ValidationPanel from './ValidationPanel'
-import { GlassSurface } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 type FlowType = 'api' | 'components' | 'pipeline'
 
@@ -102,11 +105,11 @@ export default function FlowsTab(): React.JSX.Element {
   // Empty states
   if (!analysisResult) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-text-secondary">
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         <div className="text-center">
           <GitBranch size={32} className="mx-auto mb-2 opacity-40" />
           <p>No code entities detected for flow visualization</p>
-          <p className="mt-1 text-xs text-text-secondary/60">Analyze a repository first</p>
+          <p className="mt-1 text-xs text-muted-foreground/60">Analyze a repository first</p>
         </div>
       </div>
     )
@@ -120,11 +123,11 @@ export default function FlowsTab(): React.JSX.Element {
           flowType={flowType}
           onSelect={setFlowType}
         />
-        <div className="flex flex-1 items-center justify-center text-sm text-text-secondary">
+        <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
           <div className="text-center">
             <Route size={32} className="mx-auto mb-2 opacity-40" />
             <p>No API endpoints found</p>
-            <p className="mt-1 text-xs text-text-secondary/60">
+            <p className="mt-1 text-xs text-muted-foreground/60">
               Supported frameworks: Spring Boot, Express, NestJS, Flask, FastAPI, Django
             </p>
           </div>
@@ -141,11 +144,11 @@ export default function FlowsTab(): React.JSX.Element {
           flowType={flowType}
           onSelect={setFlowType}
         />
-        <div className="flex flex-1 items-center justify-center text-sm text-text-secondary">
+        <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
           <div className="text-center">
             <Component size={32} className="mx-auto mb-2 opacity-40" />
             <p>No React components detected</p>
-            <p className="mt-1 text-xs text-text-secondary/60">
+            <p className="mt-1 text-xs text-muted-foreground/60">
               Looking for App.tsx/App.jsx entry point.
             </p>
           </div>
@@ -157,7 +160,7 @@ export default function FlowsTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Top bar: flow type selector + endpoint filter */}
-      <GlassSurface className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
+      <Card className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
         <FlowTypeSelector
           availableTypes={availableTypes}
           flowType={flowType}
@@ -220,7 +223,7 @@ export default function FlowsTab(): React.JSX.Element {
             <select
               value={selectedEndpoint}
               onChange={(e) => setSelectedEndpoint(e.target.value)}
-              className="appearance-none rounded-lg border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-3 py-1 pr-7 text-[11px] text-text-primary outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/20"
+              className="appearance-none rounded-lg border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-3 py-1 pr-7 text-[11px] text-foreground outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20"
             >
               <option value="__all__">All endpoints ({endpoints.length})</option>
               {endpoints.map((ep) => (
@@ -231,11 +234,11 @@ export default function FlowsTab(): React.JSX.Element {
             </select>
             <ChevronDown
               size={12}
-              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary"
+              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
           </div>
         )}
-      </GlassSurface>
+      </Card>
 
       {/* Flow diagram */}
       <div className="flex-1 overflow-hidden">
@@ -247,12 +250,12 @@ export default function FlowsTab(): React.JSX.Element {
             onNodeClick={handleNodeClick}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-text-secondary">
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             <div className="text-center">
               <GitBranch size={32} className="mx-auto mb-2 opacity-40" />
               <p>No flow data available for this selection</p>
               {flowType === 'api' && analysisResult.routes.length > 0 && (
-                <p className="mt-1 text-xs text-text-secondary/60">
+                <p className="mt-1 text-xs text-muted-foreground/60">
                   Routes detected but handler entities could not be resolved — check parser output
                 </p>
               )}
@@ -289,13 +292,13 @@ function FlowTypeSelector({
             type="button"
             onClick={() => onSelect(t.id)}
             className={`relative flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
-              isActive ? 'text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-white/[0.03]'
+              isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.03]'
             }`}
           >
             {isActive && (
               <motion.div
                 layoutId="cortex-flow-tab"
-                className="absolute inset-0 rounded-lg bg-accent/12"
+                className="absolute inset-0 rounded-lg bg-primary/12"
                 transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
               />
             )}

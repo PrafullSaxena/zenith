@@ -198,7 +198,7 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-accent/50 !border-border !w-2 !h-2"
+        className="!bg-primary/50 !border-border !w-2 !h-2"
       />
 
       <motion.div
@@ -213,24 +213,24 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
         {/* Header */}
         <div className="flex items-center gap-1.5">
           <Icon size={12} className={`shrink-0 ${textColor}`} />
-          <span className="flex-1 truncate text-[11px] font-semibold text-text-primary">
+          <span className="flex-1 truncate text-[11px] font-semibold text-foreground">
             {data.label}
           </span>
-          <span className={`shrink-0 rounded-full bg-surface px-1.5 py-0.5 text-[8px] font-mono ${textColor}`}>
+          <span className={`shrink-0 rounded-full bg-card px-1.5 py-0.5 text-[8px] font-mono ${textColor}`}>
             {data.type}
           </span>
-          <ChevronRight size={10} className="shrink-0 text-text-secondary/50" />
+          <ChevronRight size={10} className="shrink-0 text-muted-foreground/50" />
         </div>
 
         {/* Summary */}
         {data.summary && (
-          <p className="mt-1 line-clamp-2 text-[10px] text-text-secondary">
+          <p className="mt-1 line-clamp-2 text-[10px] text-muted-foreground">
             {data.summary}
           </p>
         )}
 
         {/* File path */}
-        <p className="mt-0.5 truncate text-[9px] font-mono text-text-secondary/60">
+        <p className="mt-0.5 truncate text-[9px] font-mono text-muted-foreground/60">
           {fileLabel}
         </p>
       </motion.div>
@@ -238,7 +238,7 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-accent/50 !border-border !w-2 !h-2"
+        className="!bg-primary/50 !border-border !w-2 !h-2"
       />
 
       {/* Tooltip */}
@@ -252,14 +252,14 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
             <span className={`text-xs font-semibold ${textColor}`}>
               {data.label}
             </span>
-            <span className="ml-auto rounded bg-surface px-1.5 py-0.5 text-[9px] font-mono text-text-secondary">
+            <span className="ml-auto rounded bg-card px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">
               {data.type}
             </span>
           </div>
           {data.summary && (
-            <p className="text-[10px] text-text-secondary mb-1">{data.summary}</p>
+            <p className="text-[10px] text-muted-foreground mb-1">{data.summary}</p>
           )}
-          <p className="text-[9px] font-mono text-text-secondary/70">
+          <p className="text-[9px] font-mono text-muted-foreground/70">
             {data.filePath}:{data.line}
           </p>
         </div>

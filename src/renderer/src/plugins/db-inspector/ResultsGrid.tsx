@@ -1,7 +1,7 @@
 import { useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Download, Copy, Check, AlertCircle, Table2 } from 'lucide-react'
-import { GlassCard, GlassSkeleton, GlassButton, GlassSurface, EmptyState, AnimatedIcon } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import CellModal from './CellModal'
 
 // -- Types
@@ -89,7 +89,7 @@ function CellValue({
   if (value === null || value === undefined) {
     return (
       <span
-        className="italic text-[var(--text-secondary)]/50 text-xs cursor-pointer"
+        className="italic text-[hsl(var(--muted-foreground))]/50 text-xs cursor-pointer"
         onClick={handleClick}
       >
         NULL
@@ -119,7 +119,7 @@ function CellValue({
     return (
       <span className="relative group inline-block max-w-full">
         <span
-          className={`text-xs cursor-pointer hover:bg-[var(--color-accent)]/10 rounded px-0.5 truncate inline-block max-w-full ${
+          className={`text-xs cursor-pointer hover:bg-[var(--primary)]/10 rounded px-0.5 truncate inline-block max-w-full ${
             flashCopy ? 'bg-green-400/20' : ''
           }`}
           onClick={handleClick}
@@ -130,9 +130,9 @@ function CellValue({
           {displayStr}
         </span>
         {showTooltip && (
-          <div className="absolute z-10 bottom-full left-0 mb-1 max-w-xs bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg shadow-lg p-2 text-xs text-[var(--text-primary)] whitespace-pre-wrap break-words pointer-events-none backdrop-blur-md">
+          <div className="absolute z-10 bottom-full left-0 mb-1 max-w-xs bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg shadow-lg p-2 text-xs text-[hsl(var(--foreground))] whitespace-pre-wrap break-words pointer-events-none backdrop-blur-md">
             {tooltipStr}
-            {str.length > 200 && <span className="text-[var(--text-secondary)]">...</span>}
+            {str.length > 200 && <span className="text-[hsl(var(--muted-foreground))]">...</span>}
           </div>
         )}
       </span>
@@ -143,7 +143,7 @@ function CellValue({
 
   return (
     <span
-      className={`text-xs cursor-pointer hover:bg-[var(--color-accent)]/10 rounded px-0.5 inline-block max-w-full truncate ${
+      className={`text-xs cursor-pointer hover:bg-[var(--primary)]/10 rounded px-0.5 inline-block max-w-full truncate ${
         flashCopy ? 'bg-green-400/20' : ''
       } ${isNumber ? 'font-mono' : ''}`}
       onClick={handleClick}
@@ -371,7 +371,7 @@ export default function ResultsGrid({
   if (isLoading && rows.length === 0) {
     return (
       <div className="p-4">
-        <GlassSkeleton variant="table" />
+        <Skeleton variant="table" />
       </div>
     )
   }
@@ -379,7 +379,7 @@ export default function ResultsGrid({
   if (rows.length === 0 && !isLoading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <EmptyState
+        <div
           icon={Table2}
           title="No results"
           description="Run a query to see results"
@@ -393,30 +393,30 @@ export default function ResultsGrid({
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Toolbar */}
-      <GlassSurface className="flex items-center gap-2 px-3 py-1.5 rounded-none border-x-0 border-t-0 flex-shrink-0">
-        <span className="text-xs text-[var(--text-secondary)] mr-auto">
+      <Card className="flex items-center gap-2 px-3 py-1.5 rounded-none border-x-0 border-t-0 flex-shrink-0">
+        <span className="text-xs text-[hsl(var(--muted-foreground))] mr-auto">
           {hasMore
             ? `Showing ${rows.length}+ rows`
             : `Showing ${rows.length} row${rows.length === 1 ? '' : 's'}`}
         </span>
-        <GlassButton
+        <Button
           variant="ghost"
           size="sm"
           onClick={handleCopyAllTsv}
           className={copiedTsv ? 'text-green-400' : ''}
         >
-          <AnimatedIcon icon={copiedTsv ? Check : Copy} iconKey={copiedTsv ? 'check' : 'copy'} size={12} className={copiedTsv ? 'text-emerald-400' : undefined} />
+          <span icon={copiedTsv ? Check : Copy} iconKey={copiedTsv ? 'check' : 'copy'} size={12} className={copiedTsv ? 'text-emerald-400' : undefined} />
           {copiedTsv ? 'Copied!' : 'Copy TSV'}
-        </GlassButton>
-        <GlassButton variant="ghost" size="sm" onClick={handleExportCsv}>
+        </Button>
+        <Button variant="ghost" size="sm" onClick={handleExportCsv}>
           <Download className="w-3 h-3" />
           CSV
-        </GlassButton>
-        <GlassButton variant="ghost" size="sm" onClick={handleExportJson}>
+        </Button>
+        <Button variant="ghost" size="sm" onClick={handleExportJson}>
           <Download className="w-3 h-3" />
           JSON
-        </GlassButton>
-      </GlassSurface>
+        </Button>
+      </Card>
 
       {/* Table */}
       <div
@@ -434,7 +434,7 @@ export default function ResultsGrid({
               {/* Row number column */}
               <th
                 style={{ width: ROW_NUM_WIDTH, minWidth: ROW_NUM_WIDTH, maxWidth: ROW_NUM_WIDTH }}
-                className="sticky left-0 z-20 border-b border-r border-[var(--glass-border)] px-2 py-1.5 text-left font-medium text-[var(--text-secondary)] bg-white/[0.03] select-none"
+                className="sticky left-0 z-20 border-b border-r border-[hsl(var(--border))] px-2 py-1.5 text-left font-medium text-[hsl(var(--muted-foreground))] bg-white/[0.03] select-none"
               >
                 #
               </th>
@@ -445,22 +445,22 @@ export default function ResultsGrid({
                   <th
                     key={field.name}
                     style={{ width, minWidth: width, maxWidth: width }}
-                    className="relative border-b border-r border-[var(--glass-border)] px-2 py-1.5 text-left font-medium text-[var(--text-secondary)] select-none"
+                    className="relative border-b border-r border-[hsl(var(--border))] px-2 py-1.5 text-left font-medium text-[hsl(var(--muted-foreground))] select-none"
                   >
                     <button
-                      className="flex items-center gap-1 hover:text-[var(--text-primary)] transition-colors truncate max-w-full"
+                      className="flex items-center gap-1 hover:text-[hsl(var(--foreground))] transition-colors truncate max-w-full"
                       onClick={() => handleSortColumn(field.name)}
                     >
                       <span className="truncate">{field.name}</span>
                       {isSorted && (
-                        <span className="text-[var(--color-accent)] flex-shrink-0">
+                        <span className="text-[var(--primary)] flex-shrink-0">
                           {sortDirection === 'asc' ? ' \u2191' : ' \u2193'}
                         </span>
                       )}
                     </button>
                     {/* Resize handle */}
                     <div
-                      className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-[var(--color-accent)]/50 transition-colors"
+                      className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-[var(--primary)]/50 transition-colors"
                       onMouseDown={(e) => handleResizeStart(e, field.name)}
                     />
                   </th>
@@ -497,7 +497,7 @@ export default function ResultsGrid({
                   {/* Row number cell */}
                   <td
                     style={{ width: ROW_NUM_WIDTH, minWidth: ROW_NUM_WIDTH, maxWidth: ROW_NUM_WIDTH }}
-                    className="sticky left-0 z-[5] border-b border-r border-white/[0.04] px-2 py-0 h-8 text-right text-[var(--text-secondary)]/50 bg-white/[0.02] font-mono text-[10px]"
+                    className="sticky left-0 z-[5] border-b border-r border-white/[0.04] px-2 py-0 h-8 text-right text-[hsl(var(--muted-foreground))]/50 bg-white/[0.02] font-mono text-[10px]"
                   >
                     {virtualRow.index + 1}
                   </td>
@@ -530,13 +530,13 @@ export default function ResultsGrid({
         {/* Load-more spinner at bottom */}
         {isLoading && rows.length > 0 && (
           <div className="flex items-center justify-center py-3">
-            <GlassSkeleton variant="text" lines={2} />
+            <Skeleton variant="text" lines={2} />
           </div>
         )}
 
         {/* End-of-results hint */}
         {!hasMore && rows.length > 0 && (
-          <div className="text-center py-2 text-[var(--text-secondary)]/40 text-xs">
+          <div className="text-center py-2 text-[hsl(var(--muted-foreground))]/40 text-xs">
             -- End of results --
           </div>
         )}
@@ -545,18 +545,18 @@ export default function ResultsGrid({
       {/* Context menu */}
       {contextMenu && (
         <div
-          className="fixed z-50 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg shadow-lg py-1 min-w-36 backdrop-blur-md"
+          className="fixed z-50 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg shadow-lg py-1 min-w-36 backdrop-blur-md"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] text-[var(--text-primary)] transition-colors"
+            className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] text-[hsl(var(--foreground))] transition-colors"
             onClick={() => handleCopyRowJson(contextMenu.row)}
           >
             Copy Row as JSON
           </button>
           <button
-            className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] text-[var(--text-primary)] transition-colors"
+            className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] text-[hsl(var(--foreground))] transition-colors"
             onClick={() => handleCopyRowTsv(contextMenu.row)}
           >
             Copy Row as TSV

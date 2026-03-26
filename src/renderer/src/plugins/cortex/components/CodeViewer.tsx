@@ -144,7 +144,7 @@ export default function CodeViewer(): React.JSX.Element {
   // No file selected — placeholder
   if (!fileContent) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 text-text-secondary">
+      <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
         <FileCode size={32} className="opacity-30" />
         <p className="text-sm">Select a file to view</p>
       </div>
@@ -157,9 +157,9 @@ export default function CodeViewer(): React.JSX.Element {
       <div ref={containerRef} className="flex-1 overflow-hidden" />
 
       {/* Status bar */}
-      <div className="flex items-center justify-between border-t border-border bg-surface px-4 py-1 text-[10px] text-text-secondary">
+      <div className="flex items-center justify-between border-t border-border bg-card px-4 py-1 text-[10px] text-muted-foreground">
         <span>{fileContent.lineCount} lines</span>
-        <span className="rounded bg-surface-elevated px-1.5 py-0.5 font-medium uppercase">
+        <span className="rounded bg-secondary px-1.5 py-0.5 font-medium uppercase">
           {language}
         </span>
       </div>

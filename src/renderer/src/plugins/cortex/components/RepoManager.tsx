@@ -10,7 +10,10 @@ import { useCortexStore } from '../../../stores/cortex-store'
 import RepoCard from './RepoCard'
 import AddRepoDialog from './AddRepoDialog'
 import { staggerContainer } from '@renderer/lib/motion'
-import { ScrollContainer } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 export default function RepoManager(): React.JSX.Element {
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -80,15 +83,15 @@ export default function RepoManager(): React.JSX.Element {
   )
 
   return (
-    <ScrollContainer className="h-full">
+    <div className="h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4">
-        <h2 className="text-sm font-semibold text-text-primary">Repositories</h2>
+        <h2 className="text-sm font-semibold text-foreground">Repositories</h2>
         <button
           type="button"
           onClick={() => setShowAddDialog(true)}
           title="Add a new repository"
-          className="flex items-center gap-1.5 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25"
+          className="flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/25"
         >
           <Plus size={14} />
           Add Repository
@@ -117,10 +120,10 @@ export default function RepoManager(): React.JSX.Element {
         </motion.div>
       ) : (
         <div className="flex flex-col items-center justify-center gap-4 pt-24">
-          <FolderGit2 size={48} className="text-text-secondary opacity-20" />
+          <FolderGit2 size={48} className="text-muted-foreground opacity-20" />
           <div className="text-center">
-            <p className="text-sm text-text-primary">No repositories yet</p>
-            <p className="mt-1 text-xs text-text-secondary">
+            <p className="text-sm text-foreground">No repositories yet</p>
+            <p className="mt-1 text-xs text-muted-foreground">
               Add your first repository to get started
             </p>
           </div>
@@ -128,7 +131,7 @@ export default function RepoManager(): React.JSX.Element {
             type="button"
             onClick={() => setShowAddDialog(true)}
             title="Add a new repository"
-            className="mt-2 flex items-center gap-1.5 rounded-lg bg-accent/15 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/25"
+            className="mt-2 flex items-center gap-1.5 rounded-lg bg-primary/15 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/25"
           >
             <Plus size={16} />
             Add Repository
@@ -138,6 +141,6 @@ export default function RepoManager(): React.JSX.Element {
 
       {/* Add repo dialog */}
       <AddRepoDialog open={showAddDialog} onClose={() => setShowAddDialog(false)} />
-    </ScrollContainer>
+    </div>
   )
 }

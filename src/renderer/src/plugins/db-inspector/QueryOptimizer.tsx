@@ -33,7 +33,7 @@ import type {
   OptimizerTile
 } from '../../types/database'
 import { useDbStore } from '../../stores/db-store'
-import { GlassCard, GlassBadge, GlassSkeleton, GlassButton, GlassSurface, EmptyState, AnimatedIcon } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import MermaidRenderer from './MermaidRenderer'
 import { highlightCode } from '../../lib/highlight'
@@ -223,7 +223,7 @@ export default function QueryOptimizer({
   return (
     <div className="flex h-full flex-col">
       {/* SQL input */}
-      <GlassSurface className="shrink-0 rounded-none border-x-0 border-t-0 p-4">
+      <Card className="shrink-0 rounded-none border-x-0 border-t-0 p-4">
         <textarea
           value={sql}
           onChange={(e) => setSql(e.target.value)}
@@ -237,16 +237,16 @@ export default function QueryOptimizer({
           }
           disabled={!canAnalyze}
           rows={4}
-          className="w-full resize-none rounded-lg border border-[var(--glass-border)] bg-white/[0.03] px-3 py-2 font-mono text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/60 focus:border-[var(--color-accent)] focus:outline-none disabled:opacity-50"
+          className="w-full resize-none rounded-lg border border-[hsl(var(--border))] bg-white/[0.03] px-3 py-2 font-mono text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/60 focus:border-[var(--primary)] focus:outline-none disabled:opacity-50"
         />
         <div className="mt-2 flex items-center gap-2">
           {isActive ? (
-            <GlassButton variant="danger" size="sm" onClick={onCancel}>
+            <Button variant="danger" size="sm" onClick={onCancel}>
               <Square size={12} />
               Cancel
-            </GlassButton>
+            </Button>
           ) : (
-            <GlassButton
+            <Button
               variant="primary"
               size="sm"
               onClick={handleAnalyze}
@@ -254,28 +254,28 @@ export default function QueryOptimizer({
             >
               <Zap size={12} />
               Analyze Query
-            </GlassButton>
+            </Button>
           )}
           {session?.status === 'analyzing' && (
-            <span className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
-              <Loader2 size={12} className="animate-spin text-[var(--color-accent)]" />
+            <span className="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+              <Loader2 size={12} className="animate-spin text-[var(--primary)]" />
               Running EXPLAIN ANALYZE...
             </span>
           )}
           {session?.status === 'streaming' && (
-            <span className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
-              <Loader2 size={12} className="animate-spin text-[var(--color-accent)]" />
+            <span className="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+              <Loader2 size={12} className="animate-spin text-[var(--primary)]" />
               AI analyzing...
             </span>
           )}
         </div>
-      </GlassSurface>
+      </Card>
 
       {/* Results area */}
       <div ref={streamRef} className="flex-1 overflow-auto p-4">
         {!session && tiles.length === 0 && (
           <div className="flex h-full items-center justify-center">
-            <EmptyState
+            <div
               icon={Zap}
               title="No query to optimize"
               description="Paste a SQL query and click Analyze. AI will run EXPLAIN ANALYZE, inspect indexes and statistics, then suggest optimizations."
@@ -285,22 +285,22 @@ export default function QueryOptimizer({
 
         {/* Active streaming session */}
         {session && session.status === 'streaming' && (
-          <GlassCard className="mb-4 overflow-hidden border-[var(--color-accent)]/30 bg-gradient-to-b from-[var(--color-accent)]/5 to-transparent p-0">
-            <div className="flex items-center gap-2 border-b border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 px-4 py-2">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-[var(--color-accent)]" />
-              <p className="text-xs font-medium text-[var(--color-accent)]">AI Analysis in progress</p>
+          <Card className="mb-4 overflow-hidden border-[var(--primary)]/30 bg-gradient-to-b from-[var(--primary)]/5 to-transparent p-0">
+            <div className="flex items-center gap-2 border-b border-[var(--primary)]/20 bg-[var(--primary)]/5 px-4 py-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-[var(--primary)]" />
+              <p className="text-xs font-medium text-[var(--primary)]">AI Analysis in progress</p>
             </div>
-            <pre className="max-h-64 overflow-auto px-4 py-3 font-mono text-[11px] leading-relaxed text-[var(--text-primary)]">
+            <pre className="max-h-64 overflow-auto px-4 py-3 font-mono text-[11px] leading-relaxed text-[hsl(var(--foreground))]">
               {session.rawText || 'Analyzing...'}
             </pre>
-          </GlassCard>
+          </Card>
         )}
 
         {/* Error state */}
         {session?.status === 'error' && session.error && (
-          <GlassCard className="mb-4 border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+          <Card className="mb-4 border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">
             {session.error}
-          </GlassCard>
+          </Card>
         )}
 
         {/* Completed tiles with stagger animation */}
@@ -389,7 +389,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
   ).length
 
   return (
-    <GlassCard className="overflow-hidden p-0">
+    <Card className="overflow-hidden p-0">
       {/* Tile header */}
       <div className="flex w-full items-center gap-3 bg-white/[0.02] px-4 py-3">
         {/* Clickable left region: expand/collapse */}
@@ -399,12 +399,12 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
           className="flex min-w-0 flex-1 items-center gap-3 text-left transition-colors"
         >
           {expanded ? (
-            <ChevronDown size={14} className="shrink-0 text-text-secondary" />
+            <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
           ) : (
-            <ChevronRight size={14} className="shrink-0 text-text-secondary" />
+            <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
           )}
-          <Zap size={13} className="shrink-0 text-accent" />
-          <p className="min-w-0 truncate font-mono text-[11px] text-text-primary">
+          <Zap size={13} className="shrink-0 text-primary" />
+          <p className="min-w-0 truncate font-mono text-[11px] text-foreground">
             {tile.originalQuery.slice(0, 100)}
             {tile.originalQuery.length > 100 ? '…' : ''}
           </p>
@@ -413,16 +413,16 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
         {/* Right region: badges + export actions */}
         <div className="flex shrink-0 items-center gap-2">
           {highCount > 0 && (
-            <GlassBadge variant="error">
+            <Badge variant="error">
               {highCount} critical
-            </GlassBadge>
+            </Badge>
           )}
           {sugCount > 0 && (
-            <GlassBadge variant="info">
+            <Badge variant="info">
               {sugCount} suggestion{sugCount !== 1 ? 's' : ''}
-            </GlassBadge>
+            </Badge>
           )}
-          <span className="flex items-center gap-1 text-[10px] text-text-secondary/70">
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
             <Clock size={9} />
             {timeLabel}
           </span>
@@ -435,7 +435,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
             type="button"
             onClick={() => void handleExportPDF()}
             disabled={isExporting}
-            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary disabled:opacity-50"
+            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
             title="Export as PDF (save to file)"
           >
             {isExporting ? <Loader2 size={11} className="animate-spin" /> : <FileDown size={11} />}
@@ -444,19 +444,19 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
           <button
             type="button"
             onClick={() => void handleCopyRaw()}
-            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             title="Copy plain text (no formatting)"
           >
-            <AnimatedIcon icon={copiedMode === 'raw' ? Check : AlignLeft} iconKey={copiedMode === 'raw' ? 'check' : 'alignleft'} size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} />
+            <span icon={copiedMode === 'raw' ? Check : AlignLeft} iconKey={copiedMode === 'raw' ? 'check' : 'alignleft'} size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} />
             {copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}
           </button>
           <button
             type="button"
             onClick={() => void handleCopyFormatted()}
-            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             title="Copy formatted markdown"
           >
-            <AnimatedIcon icon={copiedMode === 'formatted' ? Check : FileText} iconKey={copiedMode === 'formatted' ? 'check' : 'filetext'} size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} />
+            <span icon={copiedMode === 'formatted' ? Check : FileText} iconKey={copiedMode === 'formatted' ? 'check' : 'filetext'} size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} />
             {copiedMode === 'formatted' ? 'Copied!' : 'Formatted'}
           </button>
         </div>
@@ -467,11 +467,11 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
         <div>
           {/* Collapse/Expand All bar */}
           {allSectionIds.length > 1 && (
-            <div className="flex justify-end border-t border-border bg-surface px-3 py-1">
+            <div className="flex justify-end border-t border-border bg-card px-3 py-1">
               <button
                 type="button"
                 onClick={toggleAll}
-                className="flex items-center gap-1 text-[10px] text-text-secondary transition-colors hover:text-text-primary"
+                className="flex items-center gap-1 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
               >
                 <ChevronsUpDown size={10} />
                 {allExpanded ? 'Collapse All' : 'Expand All'}
@@ -489,7 +489,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
                 isExpanded={expandedSections.has('explain')}
                 onToggle={toggleSection}
               >
-                <pre className="max-h-48 overflow-auto rounded-lg bg-surface-elevated/50 p-3 font-mono text-[11px] leading-relaxed text-text-primary">
+                <pre className="max-h-48 overflow-auto rounded-lg bg-secondary/50 p-3 font-mono text-[11px] leading-relaxed text-foreground">
                   {session.explainOutput}
                 </pre>
               </Section>
@@ -508,7 +508,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
                   {session.insights.map((insight, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2.5 rounded-lg bg-surface-elevated/30 px-3 py-2 text-xs text-text-primary"
+                      className="flex items-start gap-2.5 rounded-lg bg-secondary/30 px-3 py-2 text-xs text-foreground"
                     >
                       <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-400/60" />
                       <span className="leading-relaxed">{renderInline(insight)}</span>
@@ -527,7 +527,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
                 isExpanded={expandedSections.has('flow')}
                 onToggle={toggleSection}
               >
-                <div className="overflow-auto rounded-lg bg-surface-elevated/30 p-3">
+                <div className="overflow-auto rounded-lg bg-secondary/30 p-3">
                   <MermaidRenderer syntax={session.mermaidDiagram} />
                 </div>
               </Section>
@@ -546,7 +546,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
                   {session.tradeoffs.map((tradeoff, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2.5 rounded-lg bg-orange-500/5 border border-orange-500/10 px-3 py-2 text-xs text-text-primary"
+                      className="flex items-start gap-2.5 rounded-lg bg-orange-500/5 border border-orange-500/10 px-3 py-2 text-xs text-foreground"
                     >
                       <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400/60" />
                       <span className="leading-relaxed">{renderInline(tradeoff)}</span>
@@ -561,7 +561,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
               <Section
                 id="suggestions"
                 label={`Suggestions (${session.suggestions.length})`}
-                icon={<ListChecks size={12} className="text-accent" />}
+                icon={<ListChecks size={12} className="text-primary" />}
                 isExpanded={expandedSections.has('suggestions')}
                 onToggle={toggleSection}
               >
@@ -583,10 +583,10 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
             {/* Summary */}
             {session.summary && (
               <div className="bg-gradient-to-r from-accent/5 to-transparent px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Summary
                 </p>
-                <p className="mt-1.5 text-xs leading-relaxed text-text-primary">
+                <p className="mt-1.5 text-xs leading-relaxed text-foreground">
                   {renderInline(session.summary)}
                 </p>
               </div>
@@ -594,7 +594,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
           </div>
         </div>
       )}
-    </GlassCard>
+    </Card>
   )
 }
 
@@ -620,7 +620,7 @@ function Section({
       <button
         type="button"
         onClick={() => onToggle(id)}
-        className="flex w-full items-center gap-2 px-4 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-elevated/50"
+        className="flex w-full items-center gap-2 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/50"
       >
         {isExpanded ? (
           <ChevronDown size={11} className="shrink-0" />
@@ -659,46 +659,46 @@ function SuggestionCard({
   const badgeVariant = suggestion.severity === 'high' ? 'error' as const : suggestion.severity === 'medium' ? 'warning' as const : 'info' as const
 
   return (
-    <GlassCard
+    <Card
       className={`overflow-hidden p-0 border-l-2 ${config.border}`}
     >
       <div className="px-3 py-2.5">
         {/* Header row */}
         <div className="flex items-center gap-2">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/[0.04] text-[10px] font-bold text-[var(--text-secondary)]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/[0.04] text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
             {index}
           </span>
-          <GlassBadge variant={badgeVariant}>
+          <Badge variant={badgeVariant}>
             <Icon size={9} />
             {config.label}
-          </GlassBadge>
-          <span className="rounded bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-[var(--text-secondary)]">
+          </Badge>
+          <span className="rounded bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">
             {TYPE_LABELS[suggestion.type] ?? suggestion.type}
           </span>
         </div>
 
         {/* Title + explanation */}
-        <p className="mt-2 text-[13px] font-medium text-text-primary">
+        <p className="mt-2 text-[13px] font-medium text-foreground">
           {renderInline(suggestion.title)}
         </p>
-        <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           {renderInline(suggestion.explanation)}
         </p>
       </div>
 
       {/* Suggested SQL */}
       {suggestion.suggestedSQL && (
-        <div className="border-t border-border bg-surface/50 px-3 py-2">
+        <div className="border-t border-border bg-card/50 px-3 py-2">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-text-secondary/60">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Suggested Fix
             </span>
             <button
               type="button"
               onClick={handleCopySql}
-              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-text-secondary transition-colors hover:text-text-primary"
+              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
             >
-              <AnimatedIcon icon={sqlCopied ? Check : Copy} iconKey={sqlCopied ? 'check' : 'copy'} size={9} className={sqlCopied ? 'text-success' : undefined} />
+              <span icon={sqlCopied ? Check : Copy} iconKey={sqlCopied ? 'check' : 'copy'} size={9} className={sqlCopied ? 'text-success' : undefined} />
               {sqlCopied ? 'Copied!' : 'Copy'}
             </button>
           </div>
@@ -710,7 +710,7 @@ function SuggestionCard({
           </pre>
         </div>
       )}
-    </GlassCard>
+    </Card>
   )
 }
 
@@ -730,18 +730,18 @@ function OptimizedQueryBlock({
   }, [query])
 
   return (
-    <GlassCard className="overflow-hidden border-[var(--color-accent)]/25 bg-gradient-to-b from-[var(--color-accent)]/5 to-transparent p-0">
-      <div className="flex items-center justify-between border-b border-[var(--color-accent)]/15 px-3 py-2">
+    <Card className="overflow-hidden border-[var(--primary)]/25 bg-gradient-to-b from-[var(--primary)]/5 to-transparent p-0">
+      <div className="flex items-center justify-between border-b border-[var(--primary)]/15 px-3 py-2">
         <div className="flex items-center gap-2">
-          <Zap size={11} className="text-[var(--color-accent)]" />
-          <p className="text-xs font-semibold text-[var(--color-accent)]">Optimized Query</p>
+          <Zap size={11} className="text-[var(--primary)]" />
+          <p className="text-xs font-semibold text-[var(--primary)]">Optimized Query</p>
         </div>
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--color-accent)]/10 hover:text-[var(--text-primary)]"
+          className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[var(--primary)]/10 hover:text-[hsl(var(--foreground))]"
         >
-          <AnimatedIcon icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={10} className={copied ? 'text-emerald-400' : undefined} />
+          <span icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={10} className={copied ? 'text-emerald-400' : undefined} />
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
@@ -751,6 +751,6 @@ function OptimizedQueryBlock({
           dangerouslySetInnerHTML={{ __html: highlightCode(query, 'sql') }}
         />
       </pre>
-    </GlassCard>
+    </Card>
   )
 }

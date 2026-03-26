@@ -170,16 +170,16 @@ export default function TranscriptionBlock({
   if (segments.length === 0) return <></>
 
   return (
-    <div className="mx-4 mb-4 rounded-lg border border-border bg-surface-elevated/50">
+    <div className="mx-4 mb-4 rounded-lg border border-border bg-secondary/50">
       {/* Header */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-secondary transition-colors hover:text-text-primary"
+        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         <span>Transcription</span>
-        <span className="text-text-secondary/50">({segments.length} segments)</span>
+        <span className="text-muted-foreground/50">({segments.length} segments)</span>
 
         {/* Play button */}
         {(audioPath || noteId) && (
@@ -189,7 +189,7 @@ export default function TranscriptionBlock({
               e.stopPropagation()
               handlePlayAudio()
             }}
-            className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-accent/10 text-accent transition-colors hover:bg-accent/20"
+            className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
             title={isPlaying ? 'Pause audio' : 'Play audio'}
           >
             {isPlaying ? <Pause size={10} /> : <Play size={10} />}
@@ -224,7 +224,7 @@ export default function TranscriptionBlock({
                         onChange={(e) => setEditValue(e.target.value)}
                         onBlur={handleFinishEdit}
                         onKeyDown={handleEditKeyDown}
-                        className="w-20 shrink-0 rounded-full border border-accent px-2 py-0.5 text-xs font-medium outline-none bg-transparent"
+                        className="w-20 shrink-0 rounded-full border border-primary px-2 py-0.5 text-xs font-medium outline-none bg-transparent"
                         style={{ color: color.text }}
                       />
                     ) : (
@@ -243,7 +243,7 @@ export default function TranscriptionBlock({
                     )}
 
                     {/* Segment text */}
-                    <span className="text-text-primary/90 leading-relaxed">{seg.text}</span>
+                    <span className="text-foreground/90 leading-relaxed">{seg.text}</span>
                   </div>
                 )
               })}

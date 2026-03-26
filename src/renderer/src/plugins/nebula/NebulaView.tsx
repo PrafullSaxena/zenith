@@ -2,7 +2,7 @@
  * NebulaView -- Main view for the Nebula notes & knowledge management plugin.
  *
  * Layout:
- *  - Header: PluginHeader with BookOpen icon, gradient title, GlassTab bar
+ *  - Header: Card with BookOpen icon, gradient title, GlassTab bar
  *  - Tab bar: Notes / Search / Knowledge
  *  - Notes tab: sidebar (NoteList) | content area (NoteEditor + DrawingCanvas)
  *  - Search tab: SearchView with FTS5 search + AI Q&A
@@ -29,7 +29,9 @@ import {
   Minimize2
 } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { PluginHeader, GlassButton, EmptyState } from '../../components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
 import { pageTransition } from '../../lib/motion'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
@@ -238,8 +240,8 @@ export default function NebulaView(): React.JSX.Element {
       {/* Toast notifications -- visible across all tabs */}
       <ToastContainer />
 
-      {/* Header with PluginHeader */}
-      <PluginHeader
+      {/* Header with Card */}
+      <Card
         icon={BookOpen}
         title="Nebula"
         tabs={TABS}
@@ -262,24 +264,24 @@ export default function NebulaView(): React.JSX.Element {
             <div className="flex h-full">
               {/* Sidebar */}
               {sidebarCollapsed ? (
-                <div className="flex w-10 shrink-0 flex-col items-center border-r border-border/50 bg-surface/50 pt-3">
+                <div className="flex w-10 shrink-0 flex-col items-center border-r border-border/50 bg-card/50 pt-3">
                   <button
                     type="button"
                     onClick={() => setSidebarCollapsed(false)}
-                    className="flex h-7 w-7 items-center justify-center rounded text-text-secondary transition-colors hover:bg-accent/15 hover:text-accent"
+                    className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/15 hover:text-primary"
                     title="Expand sidebar"
                   >
                     <PanelLeft size={16} />
                   </button>
                 </div>
               ) : (
-                <div className="flex w-64 shrink-0 flex-col border-r border-border/50 bg-surface/30">
+                <div className="flex w-64 shrink-0 flex-col border-r border-border/50 bg-card/30">
                   {/* Collapse button */}
                   <div className="flex justify-end px-1 pt-1">
                     <button
                       type="button"
                       onClick={() => setSidebarCollapsed(true)}
-                      className="flex h-6 w-6 items-center justify-center rounded text-text-secondary/40 transition-colors hover:bg-accent/10 hover:text-text-secondary"
+                      className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground/40 transition-colors hover:bg-primary/10 hover:text-muted-foreground"
                       title="Collapse sidebar"
                     >
                       <PanelLeftClose size={14} />
@@ -321,10 +323,10 @@ export default function NebulaView(): React.JSX.Element {
                     {drawingOpen && !drawingFullscreen && (
                       <div
                         onMouseDown={handleResizeStart}
-                        className="group flex w-1.5 shrink-0 cursor-col-resize items-center justify-center hover:bg-accent/20 transition-colors"
+                        className="group flex w-1.5 shrink-0 cursor-col-resize items-center justify-center hover:bg-primary/20 transition-colors"
                         title="Drag to resize"
                       >
-                        <div className="h-8 w-0.5 rounded-full bg-border group-hover:bg-accent transition-colors" />
+                        <div className="h-8 w-0.5 rounded-full bg-border group-hover:bg-primary transition-colors" />
                       </div>
                     )}
 
@@ -336,12 +338,12 @@ export default function NebulaView(): React.JSX.Element {
                       >
                         {/* Drawing panel header */}
                         <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-3 py-1.5">
-                          <span className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
+                          <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                             <Pencil size={12} />
                             Drawing
                           </span>
                           <div className="flex items-center gap-1">
-                            <GlassButton
+                            <Button
                               variant="ghost"
                               size="sm"
                               onClick={handleToggleFullscreen}
@@ -349,8 +351,8 @@ export default function NebulaView(): React.JSX.Element {
                               className="h-6 w-6 p-0"
                             >
                               {drawingFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-                            </GlassButton>
-                            <GlassButton
+                            </Button>
+                            <Button
                               variant="ghost"
                               size="sm"
                               onClick={handleCloseDrawing}
@@ -358,7 +360,7 @@ export default function NebulaView(): React.JSX.Element {
                               className="h-6 w-6 p-0"
                             >
                               <X size={13} />
-                            </GlassButton>
+                            </Button>
                           </div>
                         </div>
                         {/* Canvas */}
@@ -373,7 +375,7 @@ export default function NebulaView(): React.JSX.Element {
                     )}
                   </div>
                 ) : (
-                  <EmptyState
+                  <div
                     icon={FileText}
                     title="No note selected"
                     description="Select a note from the sidebar or create a new one"
@@ -386,7 +388,7 @@ export default function NebulaView(): React.JSX.Element {
                   <button
                     type="button"
                     onClick={handleToggleDrawing}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 rounded-l-lg border border-r-0 border-border/50 bg-surface-elevated/80 px-1.5 py-3 text-text-secondary transition-colors hover:bg-accent/10 hover:text-accent shadow-sm backdrop-blur-sm"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 rounded-l-lg border border-r-0 border-border/50 bg-secondary/80 px-1.5 py-3 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary shadow-sm backdrop-blur-sm"
                     title="Open drawing panel"
                   >
                     <Pencil size={14} />

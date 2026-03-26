@@ -106,8 +106,8 @@ function CtrlBtn({
       title={title}
       className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded transition-colors ${
         variant === 'danger'
-          ? 'text-text-secondary/50 hover:bg-red-400/10 hover:text-red-400'
-          : 'text-text-secondary/50 hover:bg-accent/10 hover:text-accent'
+          ? 'text-muted-foreground/50 hover:bg-red-400/10 hover:text-red-400'
+          : 'text-muted-foreground/50 hover:bg-primary/10 hover:text-primary'
       }`}
     >
       {icon}

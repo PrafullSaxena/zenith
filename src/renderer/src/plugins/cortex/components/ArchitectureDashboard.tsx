@@ -43,7 +43,10 @@ import {
 import '@xyflow/react/dist/style.css'
 import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { getKindColor, getMethodColor } from '../cortex-theme'
-import { GlassCard, GlassSkeleton } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useAgentStore } from '../../../stores/agent-store'
 import InsightCard from './InsightCard'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
@@ -170,13 +173,13 @@ function CodeStructureOverview({ analysisResult }: { analysisResult: AnalysisRes
       {/* Framework + Language badges */}
       <div className="flex flex-wrap items-center gap-2">
         {framework && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-[11px] font-semibold text-accent">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-[11px] font-semibold text-primary">
             <Cpu size={11} />
             {framework}
           </span>
         )}
         {language && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-[10px] font-medium text-text-secondary">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
             <FileCode size={10} />
             {language}
           </span>
@@ -187,29 +190,29 @@ function CodeStructureOverview({ analysisResult }: { analysisResult: AnalysisRes
       <div className="flex flex-wrap gap-4">
         <div className="flex items-center gap-1.5">
           <FileCode size={13} className="text-text-tertiary" />
-          <span className="text-xs text-text-secondary">
-            <span className="font-semibold text-text-primary">{stats.totalFiles.toLocaleString()}</span> files
+          <span className="text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.totalFiles.toLocaleString()}</span> files
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <Hash size={13} className="text-text-tertiary" />
-          <span className="text-xs text-text-secondary">
-            <span className="font-semibold text-text-primary">{stats.totalLines.toLocaleString()}</span> lines
+          <span className="text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.totalLines.toLocaleString()}</span> lines
           </span>
         </div>
         {stats.routeCount > 0 && (
           <div className="flex items-center gap-1.5">
             <Globe size={13} className="text-text-tertiary" />
-            <span className="text-xs text-text-secondary">
-              <span className="font-semibold text-text-primary">{stats.routeCount}</span> API endpoints
+            <span className="text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">{stats.routeCount}</span> API endpoints
             </span>
           </div>
         )}
         {stats.componentCount > 0 && (
           <div className="flex items-center gap-1.5">
             <Network size={13} className="text-text-tertiary" />
-            <span className="text-xs text-text-secondary">
-              <span className="font-semibold text-text-primary">{stats.componentCount}</span> components
+            <span className="text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">{stats.componentCount}</span> components
             </span>
           </div>
         )}
@@ -244,7 +247,7 @@ function CodeStructureOverview({ analysisResult }: { analysisResult: AnalysisRes
           {stats.languages.slice(0, 6).map((lang) => (
             <span
               key={lang.language}
-              className="inline-flex items-center gap-1.5 rounded-md bg-surface px-2.5 py-1 text-[10px] text-text-secondary"
+              className="inline-flex items-center gap-1.5 rounded-md bg-card px-2.5 py-1 text-[10px] text-muted-foreground"
             >
               {lang.language}
               <span className="text-text-tertiary">{lang.fileCount}f</span>
@@ -294,14 +297,14 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
       </div>
 
       {/* Route list */}
-      <GlassCard className="divide-y divide-white/[0.04]">
+      <Card className="divide-y divide-white/[0.04]">
         {topRoutes.map((route, i) => {
           const mc = getMethodColor(route.method)
           return (
             <button
               key={i}
               type="button"
-              className="group flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-elevated"
+              className="group flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-secondary"
               onClick={() => onNavigate(route.filePath, route.line)}
             >
               <span
@@ -310,7 +313,7 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
               >
                 {route.method}
               </span>
-              <span className="flex-1 truncate text-[11px] font-mono text-text-primary">
+              <span className="flex-1 truncate text-[11px] font-mono text-foreground">
                 {route.fullPath}
               </span>
               <span className="shrink-0 text-[10px] text-text-tertiary">
@@ -328,7 +331,7 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
             +{routes.length - 10} more endpoints
           </div>
         )}
-      </GlassCard>
+      </Card>
     </div>
   )
 }
@@ -350,23 +353,23 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
     <motion.div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" variants={staggerContainer} initial="hidden" animate="visible">
       <InsightCard title="Dependencies" icon={Package} delay={0.05}>
         {insights.dependencies.length === 0 ? (
-          <p className="text-xs text-text-secondary">No dependency data available</p>
+          <p className="text-xs text-muted-foreground">No dependency data available</p>
         ) : (
           <div className="space-y-3">
             {[...depsByCategory.entries()].map(([category, deps]) => (
               <div key={category}>
-                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
+                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {category}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {deps.map((dep) => (
                     <span
                       key={dep.name}
-                      className="inline-flex items-center gap-1 rounded-md bg-surface px-2 py-0.5 text-[10px] text-text-secondary"
+                      className="inline-flex items-center gap-1 rounded-md bg-card px-2 py-0.5 text-[10px] text-muted-foreground"
                     >
                       {dep.name}
                       {dep.version && (
-                        <span className="text-accent/70">{dep.version}</span>
+                        <span className="text-primary/70">{dep.version}</span>
                       )}
                     </span>
                   ))}
@@ -379,13 +382,13 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
 
       <InsightCard title="Security" icon={Shield} delay={0.1}>
         {insights.security.length === 0 ? (
-          <p className="text-xs text-text-secondary">No security patterns detected</p>
+          <p className="text-xs text-muted-foreground">No security patterns detected</p>
         ) : (
           <ul className="space-y-2">
             {insights.security.map((s, i) => (
               <li key={i} className="text-xs">
-                <span className="font-medium text-text-primary">{s.type}</span>
-                <p className="mt-0.5 text-[11px] text-text-secondary">{s.description}</p>
+                <span className="font-medium text-foreground">{s.type}</span>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{s.description}</p>
               </li>
             ))}
           </ul>
@@ -394,13 +397,13 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
 
       <InsightCard title="Design Patterns" icon={Layers} delay={0.15}>
         {insights.patterns.length === 0 ? (
-          <p className="text-xs text-text-secondary">No design patterns detected</p>
+          <p className="text-xs text-muted-foreground">No design patterns detected</p>
         ) : (
           <ul className="space-y-2">
             {insights.patterns.map((p, i) => (
               <li key={i} className="text-xs">
-                <span className="font-medium text-text-primary">{p.name}</span>
-                <p className="mt-0.5 text-[11px] text-text-secondary">{p.description}</p>
+                <span className="font-medium text-foreground">{p.name}</span>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{p.description}</p>
               </li>
             ))}
           </ul>
@@ -409,13 +412,13 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
 
       <InsightCard title="Configuration" icon={Settings} delay={0.2}>
         {insights.config.length === 0 ? (
-          <p className="text-xs text-text-secondary">No config sources detected</p>
+          <p className="text-xs text-muted-foreground">No config sources detected</p>
         ) : (
           <ul className="space-y-2">
             {insights.config.map((c, i) => (
               <li key={i} className="text-xs">
-                <span className="font-medium text-text-primary">{c.source}</span>
-                <p className="mt-0.5 text-[11px] text-text-secondary">{c.description}</p>
+                <span className="font-medium text-foreground">{c.source}</span>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{c.description}</p>
               </li>
             ))}
           </ul>
@@ -424,13 +427,13 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
 
       <InsightCard title="Async Patterns" icon={Zap} delay={0.25}>
         {insights.async.length === 0 ? (
-          <p className="text-xs text-text-secondary">No async patterns detected</p>
+          <p className="text-xs text-muted-foreground">No async patterns detected</p>
         ) : (
           <ul className="space-y-2">
             {insights.async.map((a, i) => (
               <li key={i} className="text-xs">
-                <span className="font-medium text-text-primary">{a.type}</span>
-                <p className="mt-0.5 text-[11px] text-text-secondary">{a.description}</p>
+                <span className="font-medium text-foreground">{a.type}</span>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{a.description}</p>
               </li>
             ))}
           </ul>
@@ -447,10 +450,10 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
                     ins.severity === 'strength' ? 'bg-green-400' : 'bg-amber-400'
                   }`}
                 />
-                <span className="font-medium text-text-primary">
+                <span className="font-medium text-foreground">
                   {ins.severity === 'strength' ? 'Strength' : 'Concern'}
                 </span>
-                <p className="mt-0.5 ml-3 text-[11px] text-text-secondary">{ins.description}</p>
+                <p className="mt-0.5 ml-3 text-[11px] text-muted-foreground">{ins.description}</p>
               </li>
             ))}
           </ul>
@@ -461,13 +464,13 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
         <InsightCard title="Testing" icon={TestTube2} delay={0.35}>
           <div className="space-y-2">
             <p className="text-xs">
-              <span className="font-medium text-text-primary">Framework:</span>{' '}
-              <span className="text-text-secondary">{insights.tests.framework}</span>
+              <span className="font-medium text-foreground">Framework:</span>{' '}
+              <span className="text-muted-foreground">{insights.tests.framework}</span>
             </p>
             {insights.tests.details.length > 0 && (
               <ul className="space-y-1">
                 {insights.tests.details.map((d, i) => (
-                  <li key={i} className="text-[11px] text-text-secondary">
+                  <li key={i} className="text-[11px] text-muted-foreground">
                     {d}
                   </li>
                 ))}
@@ -555,7 +558,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
   // No analysis data at all
   if (!analysisResult) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-text-secondary">
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         No analysis data available
       </div>
     )
@@ -573,7 +576,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
       >
-        <h3 className="mb-4 text-sm font-semibold text-text-primary">Code Structure Overview</h3>
+        <h3 className="mb-4 text-sm font-semibold text-foreground">Code Structure Overview</h3>
         <CodeStructureOverview analysisResult={analysisResult} />
       </motion.section>
 
@@ -584,13 +587,13 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05 }}
         >
-          <h3 className="mb-3 text-sm font-semibold text-text-primary">Entity Relationship Diagram</h3>
+          <h3 className="mb-3 text-sm font-semibold text-foreground">Entity Relationship Diagram</h3>
           <p className="mb-3 text-[11px] text-text-tertiary">
             Grouped by kind — controllers, services, repositories. Edges show call/injection relationships.
           </p>
-          <GlassCard className="h-72 overflow-hidden">
+          <Card className="h-72 overflow-hidden">
             {staticEntityGraph.nodes.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-xs text-text-secondary">
+              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
                 No entity data available
               </div>
             ) : (
@@ -605,17 +608,17 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                 <Background gap={20} size={1} color="#1e293b" />
                 <Controls
                   showInteractive={false}
-                  className="!bg-surface !border-border/60 !rounded-lg [&>button]:!bg-surface [&>button]:!border-border/40 [&>button]:!text-text-secondary"
+                  className="!bg-card !border-border/60 !rounded-lg [&>button]:!bg-card [&>button]:!border-border/40 [&>button]:!text-muted-foreground"
                 />
                 <MiniMap
                   nodeStrokeWidth={3}
                   pannable
                   zoomable
-                  className="!bg-surface !border-border/60 !rounded-lg"
+                  className="!bg-card !border-border/60 !rounded-lg"
                 />
               </ReactFlow>
             )}
-          </GlassCard>
+          </Card>
         </motion.section>
       )}
 
@@ -626,7 +629,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.1 }}
         >
-          <h3 className="mb-3 text-sm font-semibold text-text-primary">
+          <h3 className="mb-3 text-sm font-semibold text-foreground">
             API Endpoints
             <span className="ml-2 text-xs font-normal text-text-tertiary">
               {analysisResult.routes.length} total
@@ -644,10 +647,10 @@ export default function ArchitectureDashboard(): React.JSX.Element {
       >
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BookOpen size={14} className="text-accent/70" />
-            <h3 className="text-sm font-semibold text-text-primary">Design Document</h3>
+            <BookOpen size={14} className="text-primary/70" />
+            <h3 className="text-sm font-semibold text-foreground">Design Document</h3>
             {isHLDGenerating && (
-              <Loader2 size={12} className="animate-spin text-accent" />
+              <Loader2 size={12} className="animate-spin text-primary" />
             )}
           </div>
           {displayContent && (
@@ -655,7 +658,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
               type="button"
               onClick={() => generateHLD()}
               disabled={isHLDGenerating}
-              className="flex items-center gap-1 rounded-md bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent hover:bg-accent/25 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 rounded-md bg-primary/15 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/25 transition-colors disabled:opacity-50"
               title="Regenerate design document"
             >
               <RefreshCw size={11} />
@@ -664,35 +667,35 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           )}
         </div>
         {displayContent ? (
-          <GlassCard className="p-5">
+          <Card className="p-5">
             <MarkdownRenderer text={displayContent} />
-          </GlassCard>
+          </Card>
         ) : isHLDGenerating ? (
           <div className="p-4 space-y-3">
-            <p className="text-xs text-text-secondary">Generating design document...</p>
-            <GlassSkeleton variant="text" lines={4} />
+            <p className="text-xs text-muted-foreground">Generating design document...</p>
+            <Skeleton variant="text" lines={4} />
           </div>
         ) : (
-          <GlassCard className="p-5 text-center">
-            <BookOpen size={28} className="mx-auto mb-2 text-text-secondary/30" />
-            <p className="text-xs text-text-secondary">
+          <Card className="p-5 text-center">
+            <BookOpen size={28} className="mx-auto mb-2 text-muted-foreground/30" />
+            <p className="text-xs text-muted-foreground">
               Generate a High Level Design document with architecture diagrams and API flows.
             </p>
             {hasAgent ? (
               <button
                 type="button"
                 onClick={() => generateHLD()}
-                className="mt-3 rounded-lg bg-accent/15 px-4 py-2 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
+                className="mt-3 rounded-lg bg-primary/15 px-4 py-2 text-xs font-medium text-primary hover:bg-primary/25 transition-colors"
                 title="Generate design document using AI"
               >
                 Generate Design Document
               </button>
             ) : (
-              <p className="mt-2 text-[10px] text-text-secondary/60">
+              <p className="mt-2 text-[10px] text-muted-foreground/60">
                 Configure an AI agent in Settings to generate design documents
               </p>
             )}
-          </GlassCard>
+          </Card>
         )}
       </motion.section>
 
@@ -709,17 +712,17 @@ export default function ArchitectureDashboard(): React.JSX.Element {
           onClick={() => setAiSectionExpanded((v) => !v)}
           title="Toggle AI-powered insights section"
         >
-          <Brain size={15} className="text-accent/70" />
-          <h3 className="flex-1 text-sm font-semibold text-text-primary">AI-Powered Insights</h3>
+          <Brain size={15} className="text-primary/70" />
+          <h3 className="flex-1 text-sm font-semibold text-foreground">AI-Powered Insights</h3>
           {aiInsights && (
-            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
               Generated
             </span>
           )}
           {aiSectionExpanded ? (
-            <ChevronDown size={14} className="text-text-tertiary group-hover:text-text-secondary" />
+            <ChevronDown size={14} className="text-text-tertiary group-hover:text-muted-foreground" />
           ) : (
-            <ChevronRight size={14} className="text-text-tertiary group-hover:text-text-secondary" />
+            <ChevronRight size={14} className="text-text-tertiary group-hover:text-muted-foreground" />
           )}
         </button>
 
@@ -736,30 +739,30 @@ export default function ArchitectureDashboard(): React.JSX.Element {
               <div className="space-y-6">
                 {/* Generate / Refresh controls */}
                 {!aiInsights && !isGeneratingInsights && (
-                  <GlassCard className="p-5">
+                  <Card className="p-5">
                     {hasAgent ? (
                       <div className="flex flex-col items-start gap-3">
-                        <p className="text-xs text-text-secondary">
+                        <p className="text-xs text-muted-foreground">
                           Generate AI-powered architecture insights: design patterns, security analysis,
                           and dependency mapping.
                         </p>
                         <button
                           type="button"
                           onClick={handleGenerateInsights}
-                          className="rounded-lg bg-accent/15 px-4 py-2 text-xs font-medium text-accent hover:bg-accent/25 transition-colors"
+                          className="rounded-lg bg-primary/15 px-4 py-2 text-xs font-medium text-primary hover:bg-primary/25 transition-colors"
                           title="Generate architecture insights using AI"
                         >
                           Generate Architecture Insights
                         </button>
                       </div>
                     ) : (
-                      <p className="text-xs text-text-secondary">
+                      <p className="text-xs text-muted-foreground">
                         Configure an AI agent in{' '}
-                        <span className="font-medium text-text-primary">Settings</span>{' '}
+                        <span className="font-medium text-foreground">Settings</span>{' '}
                         to unlock deeper architecture insights, pattern detection, and security analysis.
                       </p>
                     )}
-                  </GlassCard>
+                  </Card>
                 )}
 
                 {/* Loading state */}
@@ -769,9 +772,9 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                       animate={{ rotate: 360 }}
                       transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                     >
-                      <Brain size={24} className="text-accent" />
+                      <Brain size={24} className="text-primary" />
                     </motion.div>
-                    <p className="text-xs text-text-secondary">Cortex is thinking...</p>
+                    <p className="text-xs text-muted-foreground">Cortex is thinking...</p>
                     <div className="mt-2 w-full max-w-lg space-y-2">
                       <div className="h-5 w-3/4 animate-pulse rounded bg-white/[0.04]" />
                       <div className="h-4 w-full animate-pulse rounded bg-white/[0.04]" />
@@ -782,7 +785,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
 
                 {/* Streaming indicator */}
                 {isGeneratingInsights && aiInsights && (
-                  <div className="flex items-center gap-2 rounded-lg bg-accent/10 px-3 py-2 text-xs text-accent">
+                  <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs text-primary">
                     <Loader2 size={13} className="animate-spin" />
                     Streaming insights — cards are populating progressively.
                   </div>
@@ -794,12 +797,12 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                     {/* Architecture overview from AI */}
                     <div>
                       <div className="mb-3 flex items-center gap-2">
-                        <h4 className="text-xs font-semibold text-text-primary">Architecture Overview</h4>
+                        <h4 className="text-xs font-semibold text-foreground">Architecture Overview</h4>
                         <button
                           type="button"
                           onClick={handleRefreshInsights}
                           disabled={isGeneratingInsights}
-                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors disabled:opacity-40"
+                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors disabled:opacity-40"
                           title="Refresh insights"
                         >
                           <RefreshCw size={10} className={isGeneratingInsights ? 'animate-spin' : ''} />
@@ -809,24 +812,24 @@ export default function ArchitectureDashboard(): React.JSX.Element {
 
                       <div className="mb-3 flex flex-wrap items-center gap-2">
                         {aiInsights.architecture.pattern && (
-                          <span className="inline-flex items-center rounded-full bg-accent/15 px-3 py-1 text-[11px] font-semibold text-accent">
+                          <span className="inline-flex items-center rounded-full bg-primary/15 px-3 py-1 text-[11px] font-semibold text-primary">
                             {aiInsights.architecture.pattern}
                           </span>
                         )}
                         {aiInsights.architecture.framework && (
-                          <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary">
+                          <span className="inline-flex items-center rounded-full bg-card px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                             {aiInsights.architecture.framework}
                           </span>
                         )}
                         {aiInsights.architecture.language && (
-                          <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary">
+                          <span className="inline-flex items-center rounded-full bg-card px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                             {aiInsights.architecture.language}
                           </span>
                         )}
                         {aiInsights.architecture.libs.map((lib) => (
                           <span
                             key={lib}
-                            className="inline-flex items-center rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-medium text-text-secondary"
+                            className="inline-flex items-center rounded-full bg-card px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground"
                           >
                             {lib}
                           </span>
@@ -834,7 +837,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                       </div>
 
                       {aiInsights.summary && (
-                        <p className="mb-3 max-w-3xl text-sm leading-relaxed text-text-secondary">
+                        <p className="mb-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
                           {aiInsights.summary}
                         </p>
                       )}
@@ -842,7 +845,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
 
                     {/* Insight Cards */}
                     <div>
-                      <h4 className="mb-3 text-xs font-semibold text-text-primary">Architecture Insights</h4>
+                      <h4 className="mb-3 text-xs font-semibold text-foreground">Architecture Insights</h4>
                       <InsightCardsGrid insights={aiInsights} />
                     </div>
                   </>

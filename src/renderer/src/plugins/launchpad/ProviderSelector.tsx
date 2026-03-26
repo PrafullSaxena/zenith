@@ -1,13 +1,16 @@
 /**
  * ProviderSelector — Cloud provider selection cards with brand-colored hover glow.
  *
- * Renders 3 clickable GlassCards for AWS, GCP, and Azure with stagger animation.
+ * Renders 3 clickable Cards for AWS, GCP, and Azure with stagger animation.
  * Each card has a brand-specific hover glow color.
  * Calls onSelect with the chosen CloudProvider when a card is clicked.
  */
 import { Cloud, Globe, Server, Rocket } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { GlassCard, EmptyState } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import type { CloudProvider } from '../../types/launchpad'
 import { PROVIDER_INFO } from '../../data/cloud-pricing/index'
@@ -56,7 +59,7 @@ const PROVIDER_CARDS: Array<{
 export default function ProviderSelector({ onSelect }: ProviderSelectorProps): React.JSX.Element {
   if (PROVIDER_CARDS.length === 0) {
     return (
-      <EmptyState
+      <div
         icon={Rocket}
         title="Select a Provider"
         description="Choose a cloud provider to start estimating"
@@ -67,10 +70,10 @@ export default function ProviderSelector({ onSelect }: ProviderSelectorProps): R
   return (
     <div className="flex flex-col items-center justify-center h-full px-8 py-12">
       <div className="mb-8 text-center">
-        <h2 className="text-2xl font-semibold text-[var(--text-primary)] mb-2">
+        <h2 className="text-2xl font-semibold text-[hsl(var(--foreground))] mb-2">
           Select Cloud Provider
         </h2>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
           Choose the cloud platform you want to estimate costs for
         </p>
       </div>
@@ -89,7 +92,7 @@ export default function ProviderSelector({ onSelect }: ProviderSelectorProps): R
 
           return (
             <motion.div key={card.id} variants={staggerItem}>
-              <GlassCard
+              <Card
                 variant="interactive"
                 className="cursor-pointer p-6 text-left h-full"
                 style={
@@ -108,15 +111,15 @@ export default function ProviderSelector({ onSelect }: ProviderSelectorProps): R
 
                   <div className="flex flex-col gap-1">
                     <span className={`text-sm font-bold ${accentText}`}>{info.shortName}</span>
-                    <span className="text-base font-semibold text-[var(--text-primary)]">
+                    <span className="text-base font-semibold text-[hsl(var(--foreground))]">
                       {info.displayName}
                     </span>
-                    <p className="text-xs text-[var(--text-secondary)] leading-relaxed mt-1">
+                    <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed mt-1">
                       {card.description}
                     </p>
                   </div>
                 </div>
-              </GlassCard>
+              </Card>
             </motion.div>
           )
         })}

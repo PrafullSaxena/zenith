@@ -5,7 +5,10 @@
 import { useState, useCallback } from 'react'
 import { FileText, FileDown, AlignLeft, Download, Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { GlassModal, GlassButton } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { analysisResultToMermaidBlocks } from './flow-utils'
 
 type ExportFormat = 'markdown' | 'pdf' | 'plaintext'
@@ -215,10 +218,10 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
   }, [format, selectedSections, hldContent, repoName, isExporting, onClose, analysisResult])
 
   return (
-    <GlassModal isOpen={true} onClose={onClose} title="Export Documentation" size="md">
+    <Dialog isOpen={true} onClose={onClose} title="Export Documentation" size="md">
       {/* Format selector */}
       <div className="mb-5">
-        <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+        <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           Format
         </p>
         <div className="flex gap-2">
@@ -232,8 +235,8 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
                 onClick={() => setFormat(opt.id)}
                 className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors ${
                   isActive
-                    ? 'border-accent/30 bg-accent/[0.08] text-accent'
-                    : 'border-white/[0.08] bg-white/[0.02] text-text-secondary hover:bg-white/[0.04]'
+                    ? 'border-primary/30 bg-primary/[0.08] text-primary'
+                    : 'border-white/[0.08] bg-white/[0.02] text-muted-foreground hover:bg-white/[0.04]'
                 }`}
               >
                 <Icon size={14} />
@@ -246,14 +249,14 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
 
       {/* Section checkboxes */}
       <div className="mb-5">
-        <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+        <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           Sections
         </p>
         <div className="grid grid-cols-2 gap-2">
           {availableSections.map((section) => (
             <label
               key={section.id}
-              className="flex items-center gap-2 text-sm text-text-primary cursor-pointer"
+              className="flex items-center gap-2 text-sm text-foreground cursor-pointer"
             >
               <input
                 type="checkbox"
@@ -276,10 +279,10 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
 
       {/* Action buttons */}
       <div className="flex justify-end gap-2">
-        <GlassButton variant="ghost" onClick={onClose}>
+        <Button variant="ghost" onClick={onClose}>
           Cancel
-        </GlassButton>
-        <GlassButton
+        </Button>
+        <Button
           variant="primary"
           onClick={handleExport}
           disabled={isExporting || selectedSections.size === 0}
@@ -295,8 +298,8 @@ export default function ExportDialog({ hldContent, onClose }: ExportDialogProps)
               Export
             </>
           )}
-        </GlassButton>
+        </Button>
       </div>
-    </GlassModal>
+    </Dialog>
   )
 }

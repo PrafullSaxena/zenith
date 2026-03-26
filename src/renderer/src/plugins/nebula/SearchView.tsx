@@ -11,15 +11,15 @@
  * AI Q&A follows the same streaming pattern as summarization:
  * startAnalysis + session-scoped IPC listeners.
  *
- * Migrated to Obsidian Glass design system with GlassInput, GlassCard,
- * GlassBadge, GlassSkeleton, EmptyState, and stagger animations.
+ * Migrated to Obsidian Glass design system with Input, Card,
+ * Badge, Skeleton, div, and stagger animations.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, MessageCircleQuestion, FileText, Loader2, X, ChevronDown } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { GlassCard, GlassInput, GlassBadge, GlassSkeleton, EmptyState, GlassButton } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import MarkdownRenderer from '../../components/MarkdownRenderer'
 
@@ -142,16 +142,16 @@ export default function SearchView(): React.JSX.Element {
         <button
           type="button"
           onClick={() => setSearchCollapsed(!searchCollapsed)}
-          className="mb-2 flex items-center gap-2 rounded-lg px-1 py-1 text-left transition-colors hover:bg-surface-elevated/50"
+          className="mb-2 flex items-center gap-2 rounded-lg px-1 py-1 text-left transition-colors hover:bg-secondary/50"
         >
-          <Search size={15} className="text-accent" />
-          <h3 className="text-sm font-medium text-text-primary">Search notes</h3>
+          <Search size={15} className="text-primary" />
+          <h3 className="text-sm font-medium text-foreground">Search notes</h3>
           {searchResults.length > 0 && searchQuery.trim() && (
-            <GlassBadge variant="accent">{searchResults.length}</GlassBadge>
+            <Badge variant="accent">{searchResults.length}</Badge>
           )}
           <ChevronDown
             size={14}
-            className={`ml-auto text-text-secondary/60 transition-transform duration-200 ${searchCollapsed ? '-rotate-90' : ''}`}
+            className={`ml-auto text-muted-foreground/60 transition-transform duration-200 ${searchCollapsed ? '-rotate-90' : ''}`}
           />
         </button>
 
@@ -160,9 +160,9 @@ export default function SearchView(): React.JSX.Element {
             <div className="relative mb-3">
               <Search
                 size={15}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
               />
-              <GlassInput
+              <Input
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search notes..."
@@ -174,19 +174,19 @@ export default function SearchView(): React.JSX.Element {
             <div className="flex-1 overflow-y-auto">
               {isSearching ? (
                 <div className="space-y-2">
-                  <GlassSkeleton variant="card" />
-                  <GlassSkeleton variant="card" />
-                  <GlassSkeleton variant="card" />
+                  <Skeleton variant="card" />
+                  <Skeleton variant="card" />
+                  <Skeleton variant="card" />
                 </div>
               ) : searchQuery.trim() && searchResults.length === 0 ? (
-                <EmptyState
+                <div
                   icon={Search}
                   title="No results found"
                   description="Try a different search term"
                   className="py-12"
                 />
               ) : !searchQuery.trim() ? (
-                <EmptyState
+                <div
                   icon={FileText}
                   title="Search your notes"
                   description="Find notes by keyword or phrase"
@@ -201,17 +201,17 @@ export default function SearchView(): React.JSX.Element {
                 >
                   {searchResults.map((result) => (
                     <motion.div key={result.id} variants={staggerItem}>
-                      <GlassCard
+                      <Card
                         variant="interactive"
                         className="cursor-pointer p-4"
                         onClick={() => handleResultClick(result.id)}
                       >
                         {/* Title with highlight */}
-                        <h4 className="text-sm font-medium text-text-primary">
+                        <h4 className="text-sm font-medium text-foreground">
                           {result.titleHighlight ? (
                             <span
                               dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.titleHighlight) }}
-                              className="[&>mark]:rounded [&>mark]:bg-accent/25 [&>mark]:px-0.5 [&>mark]:text-accent"
+                              className="[&>mark]:rounded [&>mark]:bg-primary/25 [&>mark]:px-0.5 [&>mark]:text-primary"
                             />
                           ) : (
                             result.title
@@ -220,11 +220,11 @@ export default function SearchView(): React.JSX.Element {
 
                         {/* Summary with highlight */}
                         {(result.summaryHighlight || result.summary) && (
-                          <div className="mt-1 line-clamp-2 text-xs text-text-secondary">
+                          <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                             {result.summaryHighlight ? (
                               <span
                                 dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.summaryHighlight) }}
-                                className="[&>mark]:rounded [&>mark]:bg-accent/25 [&>mark]:px-0.5 [&>mark]:text-accent"
+                                className="[&>mark]:rounded [&>mark]:bg-primary/25 [&>mark]:px-0.5 [&>mark]:text-primary"
                               />
                             ) : (
                               result.summary
@@ -234,11 +234,11 @@ export default function SearchView(): React.JSX.Element {
 
                         {/* Timestamp + relevance badge */}
                         <div className="mt-1.5 flex items-center gap-2">
-                          <span className="text-[10px] text-text-secondary/60">
+                          <span className="text-[10px] text-muted-foreground/60">
                             {relativeTime(result.updatedAt)}
                           </span>
                         </div>
-                      </GlassCard>
+                      </Card>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -253,16 +253,16 @@ export default function SearchView(): React.JSX.Element {
         <button
           type="button"
           onClick={() => setQaCollapsed(!qaCollapsed)}
-          className="mb-2 flex items-center gap-2 rounded-lg border-t border-border/50 px-1 pt-3 pb-1 text-left transition-colors hover:bg-surface-elevated/50"
+          className="mb-2 flex items-center gap-2 rounded-lg border-t border-border/50 px-1 pt-3 pb-1 text-left transition-colors hover:bg-secondary/50"
         >
-          <MessageCircleQuestion size={15} className="text-accent" />
-          <h3 className="text-sm font-medium text-text-primary">Ask your notes</h3>
+          <MessageCircleQuestion size={15} className="text-primary" />
+          <h3 className="text-sm font-medium text-foreground">Ask your notes</h3>
           {isStreaming && (
-            <Loader2 size={12} className="animate-spin text-accent" />
+            <Loader2 size={12} className="animate-spin text-primary" />
           )}
           <ChevronDown
             size={14}
-            className={`ml-auto text-text-secondary/60 transition-transform duration-200 ${qaCollapsed ? '-rotate-90' : ''}`}
+            className={`ml-auto text-muted-foreground/60 transition-transform duration-200 ${qaCollapsed ? '-rotate-90' : ''}`}
           />
         </button>
 
@@ -270,7 +270,7 @@ export default function SearchView(): React.JSX.Element {
           <div className="flex min-h-0 flex-1 flex-col">
             {/* Question input */}
             <div className="mb-3 flex gap-2">
-              <GlassInput
+              <Input
                 value={questionText}
                 onChange={(e) => setQuestionText(e.target.value)}
                 onKeyDown={handleQuestionKeyDown}
@@ -279,37 +279,37 @@ export default function SearchView(): React.JSX.Element {
                 className="flex-1"
               />
               {isStreaming ? (
-                <GlassButton
+                <Button
                   variant="ghost"
                   onClick={cancelQa}
                   className="border border-red-500/30 text-red-400 hover:bg-red-500/20"
                 >
                   <X size={13} />
                   Cancel
-                </GlassButton>
+                </Button>
               ) : (
-                <GlassButton
+                <Button
                   variant="primary"
                   onClick={handleAskQuestion}
                   disabled={!questionText.trim()}
                 >
                   <MessageCircleQuestion size={13} />
                   Ask
-                </GlassButton>
+                </Button>
               )}
             </div>
 
             {/* Response area */}
-            <GlassCard className="flex-1 overflow-y-auto p-4">
+            <Card className="flex-1 overflow-y-auto p-4">
               {isStreaming && !qaAnswer ? (
-                <div className="flex items-center gap-2 py-2 text-text-secondary">
-                  <Loader2 size={14} className="animate-spin text-accent" />
-                  <span className="text-sm text-text-secondary/80">Searching notes and generating answer...</span>
+                <div className="flex items-center gap-2 py-2 text-muted-foreground">
+                  <Loader2 size={14} className="animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground/80">Searching notes and generating answer...</span>
                 </div>
               ) : qaAnswer ? (
                 <div>
                   {isStreaming && (
-                    <div className="mb-2 flex items-center gap-1.5 text-[10px] text-accent">
+                    <div className="mb-2 flex items-center gap-1.5 text-[10px] text-primary">
                       <Loader2 size={10} className="animate-spin" />
                       Generating...
                     </div>
@@ -317,14 +317,14 @@ export default function SearchView(): React.JSX.Element {
                   <MarkdownRenderer text={qaAnswer} className="text-sm" />
                 </div>
               ) : (
-                <EmptyState
+                <div
                   icon={MessageCircleQuestion}
                   title="Ask your notes anything"
                   description="AI will search your knowledge base and provide an answer"
                   className="py-8"
                 />
               )}
-            </GlassCard>
+            </Card>
           </div>
         )}
       </div>

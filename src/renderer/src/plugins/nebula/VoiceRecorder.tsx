@@ -2,7 +2,7 @@
  * VoiceRecorder -- Floating Action Button (FAB) with animated expansion for voice recording.
  *
  * Features:
- *  - Round FAB in bottom-right corner with Mic icon (idle state) using GlassButton
+ *  - Round FAB in bottom-right corner with Mic icon (idle state) using Button
  *  - Expands into recording card with animated equalizer bars, timer, and stop button
  *  - Processing state with spinner while transcription runs in the background
  *  - Background transcription: user can continue editing while transcription processes
@@ -11,14 +11,16 @@
  * Uses framer-motion AnimatePresence for smooth FAB <-> card transitions.
  * Security: Audio buffer sent as number[] array across contextBridge (sandbox=true).
  *
- * Migrated to Obsidian Glass: idle FAB is circular GlassButton with accent glow on recording.
+ * Migrated to Obsidian Glass: idle FAB is circular Button with accent glow on recording.
  */
 
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { Mic, Square, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNebulaStore, getNebulaAgent } from '../../stores/nebula-store'
-import { GlassButton } from '../../components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
 import type { DiarizedTranscript } from '../../types/nebula'
 
 interface VoiceRecorderProps {
@@ -170,7 +172,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
   return (
     <div className="absolute bottom-6 right-6 z-40">
       <AnimatePresence mode="wait">
-        {/* Idle state: Round GlassButton FAB */}
+        {/* Idle state: Round Button FAB */}
         {voiceState === 'idle' && (
           <motion.div
             key="fab-idle"
@@ -179,14 +181,14 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
             exit={{ scale: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
-            <GlassButton
+            <Button
               variant="primary"
               onClick={startRecording}
               title="Start voice recording"
               className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
             >
               <Mic size={20} />
-            </GlassButton>
+            </Button>
           </motion.div>
         )}
 
@@ -194,7 +196,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
         {voiceState === 'recording' && (
           <motion.div
             key="fab-recording"
-            className="flex items-center gap-3 rounded-2xl bg-surface-elevated/80 backdrop-blur-xl border border-white/[0.08] px-4 shadow-[0_0_20px_rgba(var(--color-accent-rgb),0.4)]"
+            className="flex items-center gap-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-white/[0.08] px-4 shadow-[0_0_20px_rgba(var(--primary),0.4)]"
             initial={{ width: 48, height: 48, borderRadius: 24 }}
             animate={{ width: 280, height: 80, borderRadius: 16 }}
             exit={{ width: 48, height: 48, borderRadius: 24, opacity: 0 }}
@@ -205,7 +207,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="w-[3px] rounded-full bg-accent"
+                  className="w-[3px] rounded-full bg-primary"
                   style={{
                     animation: `equalizer-${i} ${0.4 + i * 0.1}s ease-in-out infinite`,
                     height: '8px'
@@ -215,7 +217,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
             </div>
 
             {/* Timer */}
-            <span className="text-sm font-medium tabular-nums text-text-primary min-w-[48px]">
+            <span className="text-sm font-medium tabular-nums text-foreground min-w-[48px]">
               {formatTime(elapsed)}
             </span>
 
@@ -238,14 +240,14 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
         {voiceState === 'processing' && (
           <motion.div
             key="fab-processing"
-            className="flex items-center gap-3 rounded-2xl bg-surface-elevated/80 backdrop-blur-xl border border-white/[0.08] px-4 shadow-xl"
+            className="flex items-center gap-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-white/[0.08] px-4 shadow-xl"
             initial={{ width: 280, height: 80, borderRadius: 16 }}
             animate={{ width: 220, height: 56, borderRadius: 16 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 250, damping: 25 }}
           >
-            <Loader2 size={16} className="animate-spin text-accent" />
-            <span className="text-xs text-text-secondary">Transcribing...</span>
+            <Loader2 size={16} className="animate-spin text-primary" />
+            <span className="text-xs text-muted-foreground">Transcribing...</span>
           </motion.div>
         )}
       </AnimatePresence>

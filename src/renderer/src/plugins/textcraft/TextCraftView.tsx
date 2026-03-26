@@ -2,7 +2,7 @@
  * TextCraftView -- Main view for the TextCraft AI text refinement plugin.
  *
  * Layout:
- *  - Header: PluginHeader with Wand2 icon, gradient title, and GlassTab bar (Refine / History)
+ *  - Header: Card with Wand2 icon, gradient title, and GlassTab bar (Refine / History)
  *  - Refine tab: Three-panel resizable layout: InputPanel (left), ControlsPanel (middle), OutputPanel (right)
  *  - History tab: Full-width HistoryPanel showing saved refinements
  *
@@ -13,15 +13,21 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Wand2, Clock } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { pageTransition } from '@renderer/lib/motion'
-import { PluginHeader, GlassResizeHandle } from '@renderer/components/ui'
-import type { PluginHeaderTab } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import InputPanel from './InputPanel'
 import ControlsPanel from './ControlsPanel'
 import OutputPanel from './OutputPanel'
 import HistoryPanel from './HistoryPanel'
 
-const tabs: PluginHeaderTab[] = [
+const tabs: CardTab[] = [
   { id: 'refine', label: 'Refine', icon: Wand2 },
   { id: 'history', label: 'History', icon: Clock }
 ]
@@ -67,7 +73,7 @@ export default function TextCraftView(): React.JSX.Element {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
       {/* Header + tab bar */}
-      <PluginHeader
+      <Card
         icon={Wand2}
         title="TextCraft"
         tabs={tabs}
@@ -92,14 +98,14 @@ export default function TextCraftView(): React.JSX.Element {
               <InputPanel />
             </div>
 
-            <GlassResizeHandle onResize={handleLeftResize} />
+            <div onResize={handleLeftResize} />
 
             {/* Middle: Controls */}
             <div className="flex-1 overflow-hidden">
               <ControlsPanel />
             </div>
 
-            <GlassResizeHandle onResize={handleRightResize} />
+            <div onResize={handleRightResize} />
 
             {/* Right: Output */}
             <div style={{ width: rightWidth + '%' }} className="shrink-0 overflow-hidden">

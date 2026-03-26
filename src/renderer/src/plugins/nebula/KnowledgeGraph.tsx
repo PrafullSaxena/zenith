@@ -13,7 +13,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import { RefreshCw, Share2, Box, Grid3X3 } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { GlassSurface, GlassButton, EmptyState, Scene3DWrapper } from '../../components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
 import type { GraphNode } from '../../types/nebula'
 
 // ---- Lazy-load 3D graph ────────────────────────────────────────────────
@@ -153,17 +153,17 @@ export default function KnowledgeGraph(): React.JSX.Element {
   // Empty state
   if (nodeCount === 0) {
     return (
-      <GlassSurface className="flex h-full flex-col rounded-none border-x-0 border-t-0 p-0">
+      <Card className="flex h-full flex-col rounded-none border-x-0 border-t-0 p-0">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
           <div className="flex items-center gap-2">
-            <Share2 size={15} className="text-accent" />
-            <h2 className="text-sm font-semibold text-text-primary">Knowledge Graph</h2>
+            <Share2 size={15} className="text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">Knowledge Graph</h2>
           </div>
         </div>
 
         {/* Empty state */}
-        <EmptyState
+        <div
           icon={Share2}
           title="No notes yet"
           description="Create notes in the Notes tab to see them visualized here. AI will extract topics and reveal connections between your ideas."
@@ -171,18 +171,18 @@ export default function KnowledgeGraph(): React.JSX.Element {
           onAction={() => loadGraphData()}
           className="flex-1"
         />
-      </GlassSurface>
+      </Card>
     )
   }
 
   return (
-    <GlassSurface className="flex h-full flex-col rounded-none border-x-0 border-t-0 p-0">
+    <Card className="flex h-full flex-col rounded-none border-x-0 border-t-0 p-0">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
         <div className="flex items-center gap-2">
-          <Share2 size={15} className="text-accent" />
-          <h2 className="text-sm font-semibold text-text-primary">Knowledge Graph</h2>
-          <span className="text-xs text-text-secondary">
+          <Share2 size={15} className="text-primary" />
+          <h2 className="text-sm font-semibold text-foreground">Knowledge Graph</h2>
+          <span className="text-xs text-muted-foreground">
             {nodeCount} {nodeCount === 1 ? 'note' : 'notes'} &middot; {linkCount}{' '}
             {linkCount === 1 ? 'connection' : 'connections'}
           </span>
@@ -193,7 +193,7 @@ export default function KnowledgeGraph(): React.JSX.Element {
             type="button"
             onClick={() => setUse3D(true)}
             className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
-              use3D ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary'
+              use3D ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
             }`}
             title="3D view"
           >
@@ -204,7 +204,7 @@ export default function KnowledgeGraph(): React.JSX.Element {
             type="button"
             onClick={() => setUse3D(false)}
             className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
-              !use3D ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary'
+              !use3D ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
             }`}
             title="2D view"
           >
@@ -213,7 +213,7 @@ export default function KnowledgeGraph(): React.JSX.Element {
           </button>
         </div>
 
-        <GlassButton
+        <Button
           variant="ghost"
           size="sm"
           onClick={() => loadGraphData()}
@@ -222,7 +222,7 @@ export default function KnowledgeGraph(): React.JSX.Element {
         >
           <RefreshCw size={12} />
           Refresh
-        </GlassButton>
+        </Button>
       </div>
 
       {/* Graph container */}
@@ -280,6 +280,6 @@ export default function KnowledgeGraph(): React.JSX.Element {
           />
         )}
       </div>
-    </GlassSurface>
+    </Card>
   )
 }

@@ -105,7 +105,7 @@ export default function FlowDiagram({
         <Background gap={20} size={1} color="#1e293b" variant={BackgroundVariant.Dots} />
         <Controls
           showInteractive={false}
-          className="!bg-white/[0.03] !backdrop-blur-xl !border-white/[0.08] !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/[0.06] [&>button]:!text-text-secondary"
+          className="!bg-white/[0.03] !backdrop-blur-xl !border-white/[0.08] !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/[0.06] [&>button]:!text-muted-foreground"
         />
         <MiniMap
           style={{ background: 'rgba(255,255,255,0.02)' }}

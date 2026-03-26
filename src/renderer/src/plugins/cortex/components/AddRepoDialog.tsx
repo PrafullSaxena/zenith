@@ -5,7 +5,10 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Loader2, FolderGit2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { GlassModal, GlassInput, GlassButton } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 interface Props {
   open: boolean
@@ -128,11 +131,11 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
   }
 
   return (
-    <GlassModal isOpen={open} onClose={onClose} title="Add Repository" size="md">
+    <Dialog isOpen={open} onClose={onClose} title="Add Repository" size="md">
       {/* Form */}
       <div className="flex flex-col gap-4">
         {/* Repository URL */}
-        <GlassInput
+        <Input
           label="Repository URL"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -142,13 +145,13 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
 
         {/* Branch */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[11px] font-medium text-text-secondary">Branch</label>
+          <label className="text-[11px] font-medium text-muted-foreground">Branch</label>
           <div className="relative">
             <select
               value={branch}
               onChange={(e) => setBranch(e.target.value)}
               disabled={branches.length === 0}
-              className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 text-xs text-text-primary focus:border-accent/40 focus:outline-none focus:ring-1 focus:ring-accent/20 disabled:opacity-50"
+              className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20 disabled:opacity-50"
             >
               {branches.length === 0 && (
                 <option value="">
@@ -164,14 +167,14 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
             {loadingBranches && (
               <Loader2
                 size={14}
-                className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-text-secondary"
+                className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
               />
             )}
           </div>
         </div>
 
         {/* Repository Name */}
-        <GlassInput
+        <Input
           label="Repository Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -186,18 +189,18 @@ export default function AddRepoDialog({ open, onClose }: Props): React.JSX.Eleme
 
       {/* Actions */}
       <div className="mt-6 flex items-center justify-end gap-3">
-        <GlassButton variant="ghost" onClick={onClose}>
+        <Button variant="ghost" onClick={onClose}>
           Cancel
-        </GlassButton>
-        <GlassButton
+        </Button>
+        <Button
           variant="primary"
           onClick={handleSubmit}
           disabled={!isValidRepoUrl(url) || !name || !branch || cloning}
         >
           {cloning && <Loader2 size={12} className="animate-spin" />}
           Add & Clone
-        </GlassButton>
+        </Button>
       </div>
-    </GlassModal>
+    </Dialog>
   )
 }

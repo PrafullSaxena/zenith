@@ -12,15 +12,15 @@
  *  - Pen icon indicator for notes with drawings
  *  - New Note button at top of list
  *
- * Migrated to Obsidian Glass design system with GlassCard, GlassBadge,
- * GlassSkeleton, EmptyState, and stagger animations.
+ * Migrated to Obsidian Glass design system with Card, Badge,
+ * Skeleton, div, and stagger animations.
  */
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Pin, Trash2, Pencil, Sparkles, FileText } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { GlassCard, GlassBadge, GlassButton, EmptyState, ScrollContainer } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import NoteContextMenu from './NoteContextMenu'
 import DeleteConfirmDialog from './DeleteConfirmDialog'
@@ -190,10 +190,10 @@ export default function NoteList(): React.JSX.Element {
     <div className="flex h-full flex-col">
       {/* Header with New Note button */}
       <div className="flex items-center justify-between border-b border-border/50 px-3 py-2.5">
-        <span className="text-xs font-semibold tracking-wide text-text-secondary uppercase">
+        <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           Notes
         </span>
-        <GlassButton
+        <Button
           variant="ghost"
           size="sm"
           onClick={() => {
@@ -206,13 +206,13 @@ export default function NoteList(): React.JSX.Element {
         >
           <Plus size={14} />
           <span className="text-[11px]">New Note</span>
-        </GlassButton>
+        </Button>
       </div>
 
       {/* Notes list */}
-      <ScrollContainer className="flex-1">
+      <div className="flex-1">
         {notes.length === 0 ? (
-          <EmptyState
+          <div
             icon={FileText}
             title="No notes yet"
             description="Create your first note"
@@ -231,7 +231,7 @@ export default function NoteList(): React.JSX.Element {
             {hasPinnedNotes && (
               <>
                 <div className="px-3 pt-2 pb-1">
-                  <span className="text-[10px] font-medium text-text-secondary/40 uppercase tracking-wider">
+                  <span className="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-wider">
                     Pinned
                   </span>
                 </div>
@@ -253,7 +253,7 @@ export default function NoteList(): React.JSX.Element {
             {/* Unpinned section */}
             {hasPinnedNotes && unpinnedNotes.length > 0 && (
               <div className="px-3 pt-2 pb-1">
-                <span className="text-[10px] font-medium text-text-secondary/40 uppercase tracking-wider">
+                <span className="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-wider">
                   Notes
                 </span>
               </div>
@@ -272,7 +272,7 @@ export default function NoteList(): React.JSX.Element {
             ))}
           </motion.div>
         )}
-      </ScrollContainer>
+      </div>
 
       {/* Context menu */}
       <NoteContextMenu
@@ -334,10 +334,10 @@ function NoteItem({
   const previewText = note.contentPreview || note.summary || ''
 
   return (
-    <GlassCard
+    <Card
       variant="interactive"
       className={`relative mx-2 mb-1 cursor-pointer p-3 ${
-        isActive ? 'border-l-2 border-accent' : ''
+        isActive ? 'border-l-2 border-primary' : ''
       }`}
       onClick={() => onSelect(note.id)}
       onContextMenu={(e: React.MouseEvent) => onContextMenu(e, note.id, note.pinned)}
@@ -347,19 +347,19 @@ function NoteItem({
         <div className="flex items-center gap-1.5">
           <span
             className={`truncate text-sm font-medium ${
-              isActive ? 'text-text-primary' : 'text-text-primary/80'
+              isActive ? 'text-foreground' : 'text-foreground/80'
             }`}
           >
             {note.title || 'Untitled'}
           </span>
           {note.summary && (
-            <Sparkles size={10} className="shrink-0 text-accent/60" title="AI summarized" />
+            <Sparkles size={10} className="shrink-0 text-primary/60" title="AI summarized" />
           )}
         </div>
 
         {/* Content preview (2 lines) */}
         {previewText && (
-          <p className="mt-0.5 line-clamp-2 text-xs text-text-secondary/60 leading-relaxed">
+          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground/60 leading-relaxed">
             {previewText}
           </p>
         )}
@@ -368,20 +368,20 @@ function NoteItem({
         {note.tags && note.tags.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
             {note.tags.map((tag) => (
-              <GlassBadge key={tag.id} variant="accent" className="text-[9px] px-1.5 py-0.5">
+              <Badge key={tag.id} variant="accent" className="text-[9px] px-1.5 py-0.5">
                 {tag.label}
-              </GlassBadge>
+              </Badge>
             ))}
           </div>
         )}
 
         {/* Timestamp + drawing indicator */}
         <div className="mt-1 flex items-center gap-1.5">
-          <span className="text-[10px] text-text-secondary/40">
+          <span className="text-[10px] text-muted-foreground/40">
             {relativeTime(note.updatedAt)}
           </span>
           {note.hasDrawing && (
-            <Pencil size={9} className="text-text-secondary/40" title="Has drawing" />
+            <Pencil size={9} className="text-muted-foreground/40" title="Has drawing" />
           )}
         </div>
       </div>
@@ -395,8 +395,8 @@ function NoteItem({
         }}
         className={`absolute right-2 top-2 shrink-0 rounded p-0.5 transition-all ${
           note.pinned
-            ? 'text-accent opacity-100'
-            : 'text-text-secondary opacity-0 hover:text-accent group-hover:opacity-100'
+            ? 'text-primary opacity-100'
+            : 'text-muted-foreground opacity-0 hover:text-primary group-hover:opacity-100'
         }`}
         title={note.pinned ? 'Unpin' : 'Pin'}
       >
@@ -410,11 +410,11 @@ function NoteItem({
           e.stopPropagation()
           onDeleteRequest(note.id, note.title)
         }}
-        className="absolute right-2 bottom-2 shrink-0 rounded p-0.5 text-text-secondary opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
+        className="absolute right-2 bottom-2 shrink-0 rounded p-0.5 text-muted-foreground opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
         title="Delete note"
       >
         <Trash2 size={12} />
       </button>
-    </GlassCard>
+    </Card>
   )
 }

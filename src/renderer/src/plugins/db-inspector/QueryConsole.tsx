@@ -9,7 +9,7 @@ import React, { useState, useRef, useCallback } from 'react'
 import { Plus, X, Terminal } from 'lucide-react'
 import { useDbStore } from '../../stores/db-store'
 import type { TableInfo } from '../../types/database'
-import { GlassCard, GlassSurface, EmptyState } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import QueryTab from './QueryTab'
 import type { EditorView } from '@codemirror/view'
 
@@ -84,7 +84,7 @@ export default function QueryConsole({
   if (!isConnected || !connectionId) {
     return (
       <div className="flex h-full items-center justify-center">
-        <EmptyState
+        <div
           icon={Terminal}
           title="No connection"
           description="Connect to a database to open the query console."
@@ -96,7 +96,7 @@ export default function QueryConsole({
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Tab bar with glass appearance */}
-      <GlassSurface className="flex shrink-0 items-center overflow-x-auto rounded-none border-x-0 border-t-0">
+      <Card className="flex shrink-0 items-center overflow-x-auto rounded-none border-x-0 border-t-0">
         {queryTabs.map((tab) => {
           const isActive = tab.id === activeQueryTabId
           return (
@@ -105,8 +105,8 @@ export default function QueryConsole({
               onClick={() => setActiveQueryTab(tab.id)}
               className={`group relative flex shrink-0 cursor-pointer items-center gap-1 px-3 py-2 text-xs font-medium transition-colors ${
                 isActive
-                  ? 'border-b-2 border-[var(--color-accent)] text-[var(--color-accent)] bg-white/[0.04]'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/[0.02]'
+                  ? 'border-b-2 border-[var(--primary)] text-[var(--primary)] bg-white/[0.04]'
+                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-white/[0.02]'
               }`}
             >
               {renamingTabId === tab.id ? (
@@ -117,7 +117,7 @@ export default function QueryConsole({
                   onBlur={commitRename}
                   onKeyDown={handleRenameKeyDown}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-24 bg-transparent outline-none border-b border-[var(--color-accent)] text-[var(--text-primary)]"
+                  className="w-24 bg-transparent outline-none border-b border-[var(--primary)] text-[hsl(var(--foreground))]"
                   autoFocus
                 />
               ) : (
@@ -130,7 +130,7 @@ export default function QueryConsole({
               )}
               {/* Running indicator */}
               {tab.lastResult?.status === 'running' && (
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)] animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--primary)] animate-pulse" />
               )}
               {/* Close button */}
               <button
@@ -148,12 +148,12 @@ export default function QueryConsole({
         <button
           type="button"
           onClick={addQueryTab}
-          className="flex shrink-0 items-center gap-1 px-2 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="flex shrink-0 items-center gap-1 px-2 py-2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
           title="Add query tab"
         >
           <Plus size={14} />
         </button>
-      </GlassSurface>
+      </Card>
 
       {/* Active tab content */}
       <div className="flex-1 overflow-hidden">
@@ -168,7 +168,7 @@ export default function QueryConsole({
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <EmptyState
+            <div
               icon={Terminal}
               title="No query tabs"
               description="Add a tab to start writing queries."

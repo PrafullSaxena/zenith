@@ -3,7 +3,10 @@
  */
 import { Check, X, AlertTriangle, Info } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { GlassSurface } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import type { ValidationCorrection } from '../../../types/cortex'
 
 const TYPE_LABELS: Record<ValidationCorrection['type'], { label: string; icon: typeof AlertTriangle; color: string }> = {
@@ -23,10 +26,10 @@ export default function ValidationPanel(): React.JSX.Element | null {
   if (validationResults.length === 0) return null
 
   return (
-    <GlassSurface className="border-t border-white/[0.06] rounded-none border-x-0 border-b-0">
+    <Card className="border-t border-white/[0.06] rounded-none border-x-0 border-b-0">
       <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
-          <h4 className="text-[11px] font-semibold text-text-primary">AI Validation Results</h4>
+          <h4 className="text-[11px] font-semibold text-foreground">AI Validation Results</h4>
           <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">
             {pending.length} pending
           </span>
@@ -39,7 +42,7 @@ export default function ValidationPanel(): React.JSX.Element | null {
                 updateValidationStatus(v.id, 'accepted')
               }
             }}
-            className="text-[10px] text-accent hover:underline"
+            className="text-[10px] text-primary hover:underline"
           >
             Apply All
           </button>
@@ -60,13 +63,13 @@ export default function ValidationPanel(): React.JSX.Element | null {
             >
               <Icon size={14} className={`mt-0.5 flex-shrink-0 ${typeInfo.color}`} />
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-medium text-text-primary">
+                <p className="text-[11px] font-medium text-foreground">
                   {typeInfo.label}
                 </p>
-                <p className="mt-0.5 text-[10px] text-text-secondary">
+                <p className="mt-0.5 text-[10px] text-muted-foreground">
                   {correction.description}
                 </p>
-                <p className="mt-0.5 text-[10px] italic text-text-secondary/70">
+                <p className="mt-0.5 text-[10px] italic text-muted-foreground/70">
                   {correction.reason}
                 </p>
               </div>
@@ -83,7 +86,7 @@ export default function ValidationPanel(): React.JSX.Element | null {
                   <button
                     type="button"
                     onClick={() => updateValidationStatus(correction.id, 'dismissed')}
-                    className="rounded p-1 text-text-secondary hover:bg-surface-elevated"
+                    className="rounded p-1 text-muted-foreground hover:bg-secondary"
                     title="Dismiss"
                   >
                     <X size={14} />
@@ -94,12 +97,12 @@ export default function ValidationPanel(): React.JSX.Element | null {
                 <span className="text-[10px] text-green-400">Applied</span>
               )}
               {correction.status === 'dismissed' && (
-                <span className="text-[10px] text-text-secondary">Dismissed</span>
+                <span className="text-[10px] text-muted-foreground">Dismissed</span>
               )}
             </div>
           )
         })}
       </div>
-    </GlassSurface>
+    </Card>
   )
 }

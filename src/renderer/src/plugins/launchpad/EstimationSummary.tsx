@@ -1,24 +1,24 @@
 /**
  * EstimationSummary — Real-time itemized cost breakdown with monthly/yearly toggle.
  *
- * Sticky GlassCard sidebar with AnimatedCounter for total cost.
- * Uses GlassBadge for service type labels and GlassButton for actions.
+ * Sticky Card sidebar with span for total cost.
+ * Uses Badge for service type labels and Button for actions.
  * Includes Save Estimation, Export PDF, and Clear All actions.
  */
 import React, { useState, useMemo } from 'react'
 import { DollarSign, Download, Trash2, Save } from 'lucide-react'
 import {
-  GlassCard,
-  GlassBadge,
-  GlassButton,
-  GlassInput,
-  EmptyState,
+  Card,
+  Badge,
+  Button,
+  Input,
+  div,
   Scene3DWrapper
 } from '@renderer/components/ui'
 
 // ---- Lazy-load 3D treemap ────────────────────────────────────────────────
 const CostTreemap3D = React.lazy(() => import('./CostTreemap3D'))
-import AnimatedCounter from '@renderer/components/ui/AnimatedCounter'
+import span from '@renderer/components/ui/span'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { getCatalog } from '../../data/cloud-pricing/index'
 import { calculateTotalCost } from '../../data/cloud-pricing/calculator'
@@ -51,7 +51,7 @@ function CostTreemapFallback({
 
         return (
           <div key={item.serviceId} className="flex items-center gap-2">
-            <span className="w-20 truncate text-[9px] text-[var(--text-secondary)]">
+            <span className="w-20 truncate text-[9px] text-[hsl(var(--muted-foreground))]">
               {item.serviceName}
             </span>
             <div className="flex-1 h-3 rounded-sm bg-white/[0.03] overflow-hidden">
@@ -60,7 +60,7 @@ function CostTreemapFallback({
                 style={{ width: `${pct}%`, backgroundColor: color, opacity: 0.7 }}
               />
             </div>
-            <span className="text-[9px] text-[var(--text-secondary)] w-14 text-right">
+            <span className="text-[9px] text-[hsl(var(--muted-foreground))] w-14 text-right">
               ${item.monthly.toFixed(2)}
             </span>
           </div>
@@ -120,8 +120,8 @@ export default function EstimationSummary(): React.JSX.Element {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
         <div className="flex items-center gap-2">
-          <DollarSign size={15} className="text-[var(--color-accent)]" />
-          <span className="text-sm font-semibold text-[var(--text-primary)]">Cost Estimation</span>
+          <DollarSign size={15} className="text-[var(--primary)]" />
+          <span className="text-sm font-semibold text-[hsl(var(--foreground))]">Cost Estimation</span>
         </div>
 
         {/* Monthly / Yearly toggle — glass segmented control */}
@@ -131,8 +131,8 @@ export default function EstimationSummary(): React.JSX.Element {
             onClick={() => setDisplayMode('monthly')}
             className={`px-2.5 py-1 transition-colors ${
               displayMode === 'monthly'
-                ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-[var(--primary)]/20 text-[var(--primary)]'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
           >
             Monthly
@@ -142,8 +142,8 @@ export default function EstimationSummary(): React.JSX.Element {
             onClick={() => setDisplayMode('yearly')}
             className={`px-2.5 py-1 transition-colors ${
               displayMode === 'yearly'
-                ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-[var(--primary)]/20 text-[var(--primary)]'
+                : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
           >
             Yearly
@@ -154,7 +154,7 @@ export default function EstimationSummary(): React.JSX.Element {
       {/* Line items */}
       <div className="flex-1 overflow-y-auto">
         {!result || selectedServices.length === 0 ? (
-          <EmptyState
+          <div
             icon={DollarSign}
             title="No services selected"
             description="Add services from the catalog to see cost estimates"
@@ -187,18 +187,18 @@ export default function EstimationSummary(): React.JSX.Element {
                     className="flex items-start justify-between rounded-md px-2 py-2 hover:bg-white/[0.03] transition-colors"
                   >
                     <div className="flex-1 min-w-0 pr-2">
-                      <p className="text-xs font-medium text-[var(--text-primary)] truncate">
+                      <p className="text-xs font-medium text-[hsl(var(--foreground))] truncate">
                         {item.serviceName}
                       </p>
                       {configSummary && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <GlassBadge variant="default" className="text-[10px]">
+                          <Badge variant="default" className="text-[10px]">
                             {configSummary}
-                          </GlassBadge>
+                          </Badge>
                         </div>
                       )}
                     </div>
-                    <span className="text-xs font-semibold text-[var(--text-primary)] shrink-0">
+                    <span className="text-xs font-semibold text-[hsl(var(--foreground))] shrink-0">
                       {formatCurrency(displayValue)}
                     </span>
                   </div>
@@ -212,7 +212,7 @@ export default function EstimationSummary(): React.JSX.Element {
       {/* 3D Cost Treemap */}
       {result && selectedServices.length > 0 && (
         <div className="border-t border-white/[0.06] px-4 pt-2 pb-1">
-          <p className="text-[10px] text-[var(--text-secondary)] mb-1">Cost Distribution</p>
+          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mb-1">Cost Distribution</p>
           <div className="h-[200px]">
             <Scene3DWrapper
               fallback={<CostTreemapFallback items={result.items} />}
@@ -234,20 +234,20 @@ export default function EstimationSummary(): React.JSX.Element {
         </div>
       )}
 
-      {/* Totals — sticky GlassCard */}
-      <GlassCard className="sticky bottom-0 rounded-none border-x-0 border-b-0 mx-0">
+      {/* Totals — sticky Card */}
+      <Card className="sticky bottom-0 rounded-none border-x-0 border-b-0 mx-0">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+          <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
             Grand Total
           </span>
           <div className="text-right">
-            <p className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-0.5">
+            <p className="text-lg font-bold text-[hsl(var(--foreground))] flex items-center gap-0.5">
               $
-              <AnimatedCounter
+              <span
                 value={Math.round(displayMode === 'monthly' ? totalMonthly : totalYearly)}
               />
             </p>
-            <p className="text-xs text-[var(--text-secondary)]/70">
+            <p className="text-xs text-[hsl(var(--muted-foreground))]/70">
               per {displayMode === 'monthly' ? 'month' : 'year'}
             </p>
           </div>
@@ -256,22 +256,22 @@ export default function EstimationSummary(): React.JSX.Element {
         {/* Secondary total */}
         {result && (
           <div className="mt-1.5 flex items-center justify-between">
-            <span className="text-xs text-[var(--text-secondary)]/60">
+            <span className="text-xs text-[hsl(var(--muted-foreground))]/60">
               {displayMode === 'monthly' ? 'Yearly estimate' : 'Monthly estimate'}
             </span>
-            <span className="text-xs text-[var(--text-secondary)]/60">
+            <span className="text-xs text-[hsl(var(--muted-foreground))]/60">
               {formatCurrency(displayMode === 'monthly' ? totalYearly : totalMonthly)}
             </span>
           </div>
         )}
-      </GlassCard>
+      </Card>
 
       {/* Save input (inline) */}
       {showSaveInput && (
         <div className="border-t border-white/[0.06] px-4 py-3 bg-white/[0.02]">
-          <p className="text-xs text-[var(--text-secondary)] mb-2">Name this estimation:</p>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-2">Name this estimation:</p>
           <div className="flex gap-2">
-            <GlassInput
+            <Input
               type="text"
               value={saveName}
               onChange={(e) => setSaveName(e.target.value)}
@@ -286,21 +286,21 @@ export default function EstimationSummary(): React.JSX.Element {
               autoFocus
               className="flex-1"
             />
-            <GlassButton
+            <Button
               variant="primary"
               size="sm"
               onClick={() => void handleSave()}
               disabled={isSaving || !saveName.trim()}
             >
               {isSaving ? 'Saving...' : 'Save'}
-            </GlassButton>
+            </Button>
           </div>
         </div>
       )}
 
       {/* Action buttons */}
       <div className="border-t border-white/[0.06] px-4 py-3 flex flex-col gap-2">
-        <GlassButton
+        <Button
           variant="primary"
           size="sm"
           onClick={() => setShowSaveInput((prev) => !prev)}
@@ -309,10 +309,10 @@ export default function EstimationSummary(): React.JSX.Element {
         >
           <Save size={13} />
           Save Estimation
-        </GlassButton>
+        </Button>
 
         <div className="flex gap-2">
-          <GlassButton
+          <Button
             variant="default"
             size="sm"
             onClick={() => void handleExport()}
@@ -321,16 +321,16 @@ export default function EstimationSummary(): React.JSX.Element {
           >
             <Download size={13} />
             {isExporting ? 'Exporting...' : 'Export PDF'}
-          </GlassButton>
+          </Button>
 
-          <GlassButton
+          <Button
             variant="danger"
             size="sm"
             onClick={clearEstimation}
           >
             <Trash2 size={13} />
             Clear
-          </GlassButton>
+          </Button>
         </div>
       </div>
     </div>

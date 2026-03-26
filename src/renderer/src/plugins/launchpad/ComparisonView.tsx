@@ -1,13 +1,16 @@
 /**
  * ComparisonView — Side-by-side multi-provider cost comparison.
  *
- * Uses GlassCard per provider column, GlassBadge for "Best Value" indicator,
+ * Uses Card per provider column, Badge for "Best Value" indicator,
  * and GlassTable for the comparison data.
  * Shows green/red cost highlights for cheapest/most expensive values.
  */
 import React from 'react'
 import { GitCompare, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { GlassCard, GlassBadge, EmptyState } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { CloudProvider, ServiceSelection } from '../../types/launchpad'
 import { getCatalog, PROVIDER_INFO } from '../../data/cloud-pricing/index'
@@ -97,7 +100,7 @@ export default function ComparisonView(): React.JSX.Element {
   // Empty state
   if (!provider || selectedServices.length === 0) {
     return (
-      <EmptyState
+      <div
         icon={GitCompare}
         title="Nothing to compare"
         description="Estimate costs for multiple providers to compare. Select a provider and add services in the Estimator tab."
@@ -157,12 +160,12 @@ export default function ComparisonView(): React.JSX.Element {
       {/* Header */}
       <div className="shrink-0 border-b border-white/[0.06] px-4 py-3">
         <div className="flex items-center gap-2 mb-1">
-          <GitCompare size={14} className="text-[var(--color-accent)]" />
-          <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+          <GitCompare size={14} className="text-[var(--primary)]" />
+          <h2 className="text-sm font-semibold text-[hsl(var(--foreground))]">
             Multi-Provider Comparison
           </h2>
         </div>
-        <p className="text-xs text-[var(--text-secondary)]">
+        <p className="text-xs text-[hsl(var(--muted-foreground))]">
           Based on your {PROVIDER_INFO[provider].displayName} configuration. Other providers use
           default settings.
         </p>
@@ -177,7 +180,7 @@ export default function ComparisonView(): React.JSX.Element {
             const isCurrentProvider = p === provider
 
             return (
-              <GlassCard
+              <Card
                 key={p}
                 className={`flex-1 min-w-0 ${isCheapest ? 'border-emerald-500/30' : ''}`}
               >
@@ -188,14 +191,14 @@ export default function ComparisonView(): React.JSX.Element {
                   </span>
                   <div className="flex items-center gap-1.5">
                     {isCurrentProvider && (
-                      <GlassBadge variant="accent" className="text-[9px]">
+                      <Badge variant="accent" className="text-[9px]">
                         current
-                      </GlassBadge>
+                      </Badge>
                     )}
                     {isCheapest && (
-                      <GlassBadge variant="success" className="text-[9px]">
+                      <Badge variant="success" className="text-[9px]">
                         Best Value
-                      </GlassBadge>
+                      </Badge>
                     )}
                   </div>
                 </div>
@@ -221,11 +224,11 @@ export default function ComparisonView(): React.JSX.Element {
                         key={row.serviceId}
                         className="flex items-center justify-between py-1.5 text-xs"
                       >
-                        <span className="text-[var(--text-secondary)] truncate pr-2">
+                        <span className="text-[hsl(var(--muted-foreground))] truncate pr-2">
                           {row.providerNames[p] || row.sourceName}
                         </span>
                         {cost === null ? (
-                          <span className="text-[var(--text-secondary)]/40 flex items-center gap-1 shrink-0">
+                          <span className="text-[hsl(var(--muted-foreground))]/40 flex items-center gap-1 shrink-0">
                             <AlertCircle size={10} />
                             N/A
                           </span>
@@ -236,7 +239,7 @@ export default function ComparisonView(): React.JSX.Element {
                                 ? 'text-emerald-400'
                                 : isMostExpensive
                                   ? 'text-red-400'
-                                  : 'text-[var(--text-primary)]'
+                                  : 'text-[hsl(var(--foreground))]'
                             }`}
                           >
                             {isCheapestRow && <CheckCircle2 size={10} />}
@@ -250,26 +253,26 @@ export default function ComparisonView(): React.JSX.Element {
 
                 {/* Total */}
                 <div className="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between">
-                  <span className="text-xs font-semibold text-[var(--text-primary)]">Total</span>
+                  <span className="text-xs font-semibold text-[hsl(var(--foreground))]">Total</span>
                   {total === null ? (
-                    <span className="text-xs text-[var(--text-secondary)]/40">N/A</span>
+                    <span className="text-xs text-[hsl(var(--muted-foreground))]/40">N/A</span>
                   ) : (
                     <span
                       className={`text-sm font-bold ${
-                        isCheapest ? 'text-emerald-400' : 'text-[var(--text-primary)]'
+                        isCheapest ? 'text-emerald-400' : 'text-[hsl(var(--foreground))]'
                       }`}
                     >
                       {formatCurrency(total)}/mo
                     </span>
                   )}
                 </div>
-              </GlassCard>
+              </Card>
             )
           })}
         </div>
 
         {/* Disclaimer */}
-        <p className="mt-3 text-[10px] text-[var(--text-secondary)]/50 text-center">
+        <p className="mt-3 text-[10px] text-[hsl(var(--muted-foreground))]/50 text-center">
           Comparison uses default configurations for non-selected providers. Actual costs may vary
           based on specific configurations, regions, and usage patterns.
         </p>

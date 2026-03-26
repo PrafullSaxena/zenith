@@ -13,7 +13,8 @@ import {
   Settings
 } from 'lucide-react'
 import type { DbConnection, ConnectionStatus } from '../../types/database'
-import { GlassSelect, GlassBadge, GlassButton } from '../../components/ui'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
 
 interface ConnectionManagerProps {
   connections: DbConnection[]
@@ -43,7 +44,7 @@ export default function ConnectionManager({
       !connectionStatuses[activeConnectionId]?.error
     : false
 
-  // Build options for GlassSelect
+  // Build options for Select
   const connectionOptions = connections.map((conn) => {
     const status = connectionStatuses[conn.id]
     const connected = status?.connected ?? false
@@ -57,13 +58,13 @@ export default function ConnectionManager({
     <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
           Connection
         </h3>
         <button
           type="button"
           onClick={onOpenSettings}
-          className="rounded p-1 text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--color-accent)]"
+          className="rounded p-1 text-[hsl(var(--muted-foreground))] hover:bg-white/[0.04] hover:text-[var(--primary)]"
           title="Manage connections in Settings"
         >
           <Settings size={14} />
@@ -73,13 +74,13 @@ export default function ConnectionManager({
       {/* Connection selector */}
       {connections.length === 0 ? (
         <div className="space-y-2">
-          <p className="py-2 text-center text-xs text-[var(--text-secondary)]/70">
+          <p className="py-2 text-center text-xs text-[hsl(var(--muted-foreground))]/70">
             No connections configured
           </p>
           <button
             type="button"
             onClick={onOpenSettings}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-[var(--glass-border)] px-3 py-2 text-xs text-[var(--text-secondary)] hover:border-[var(--color-accent)]/50 hover:text-[var(--color-accent)] transition"
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-[hsl(var(--border))] px-3 py-2 text-xs text-[hsl(var(--muted-foreground))] hover:border-[var(--primary)]/50 hover:text-[var(--primary)] transition"
           >
             <Settings size={12} />
             Add in Settings
@@ -87,8 +88,8 @@ export default function ConnectionManager({
         </div>
       ) : (
         <div className="space-y-2">
-          {/* Dropdown selector with GlassSelect */}
-          <GlassSelect
+          {/* Dropdown selector with Select */}
+          <Select
             value={activeConnectionId ?? ''}
             onChange={(val) => onSelectConnection(val || null)}
             options={[{ value: '', label: 'Select a connection...' }, ...connectionOptions]}
@@ -98,7 +99,7 @@ export default function ConnectionManager({
           {activeConnection && (
             <div className="space-y-2">
               {/* Connection info with status dot */}
-              <div className="rounded-lg border border-[var(--glass-border)] bg-white/[0.02] px-3 py-2">
+              <div className="rounded-lg border border-[hsl(var(--border))] bg-white/[0.02] px-3 py-2">
                 <div className="flex items-center gap-2">
                   <span
                     className={`h-2 w-2 shrink-0 rounded-full ${
@@ -108,14 +109,14 @@ export default function ConnectionManager({
                           ? 'bg-red-400'
                           : isConnecting
                             ? 'bg-yellow-400 animate-pulse'
-                            : 'bg-[var(--text-secondary)]/30'
+                            : 'bg-[hsl(var(--muted-foreground))]/30'
                     }`}
                   />
-                  <span className="text-xs font-medium text-[var(--text-primary)]">
+                  <span className="text-xs font-medium text-[hsl(var(--foreground))]">
                     {activeConnection.name}
                   </span>
                 </div>
-                <p className="mt-0.5 pl-4 text-[10px] text-[var(--text-secondary)]">
+                <p className="mt-0.5 pl-4 text-[10px] text-[hsl(var(--muted-foreground))]">
                   {activeConnection.host}:{activeConnection.port} · {activeConnection.username} · {activeConnection.readStrategy}
                 </p>
                 {activeStatus?.error && (
@@ -125,7 +126,7 @@ export default function ConnectionManager({
 
               {/* Connect / Disconnect button */}
               {isConnected ? (
-                <GlassButton
+                <Button
                   variant="danger"
                   size="sm"
                   className="w-full justify-center"
@@ -133,9 +134,9 @@ export default function ConnectionManager({
                 >
                   <Unplug size={12} />
                   Disconnect
-                </GlassButton>
+                </Button>
               ) : (
-                <GlassButton
+                <Button
                   variant="primary"
                   size="sm"
                   className="w-full justify-center"
@@ -148,7 +149,7 @@ export default function ConnectionManager({
                     <Plug size={12} />
                   )}
                   Connect
-                </GlassButton>
+                </Button>
               )}
             </div>
           )}

@@ -13,7 +13,10 @@ import { useCallback, useMemo, useState, lazy, Suspense } from 'react'
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/react'
 import { ChevronDown, Wand2, FileCode2, Copy, Check, Loader2 } from 'lucide-react'
-import { AnimatedIcon } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { LANGUAGES } from '../../lib/lowlight-setup'
 import { useSettingsStore } from '../../stores/settings-store'
 
@@ -198,7 +201,7 @@ export default function CodeBlockNodeView({
       {/* Header bar */}
       <div className="code-block-header" contentEditable={false}>
         <div className="flex items-center gap-2">
-          <FileCode2 size={12} className="text-accent/60" />
+          <FileCode2 size={12} className="text-primary/60" />
           <span className="code-block-filename">{filename}</span>
         </div>
 
@@ -223,7 +226,7 @@ export default function CodeBlockNodeView({
                     type="button"
                     onClick={() => handleLanguageChange(lang.value)}
                     className={`code-block-lang-option ${
-                      lang.value === language ? 'text-accent' : ''
+                      lang.value === language ? 'text-primary' : ''
                     }`}
                   >
                     {lang.label}
@@ -250,7 +253,7 @@ export default function CodeBlockNodeView({
             className="code-block-action-btn code-block-hover-action"
             title="Copy code"
           >
-            <AnimatedIcon icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={11} className={copied ? 'text-emerald-400' : undefined} />
+            <span icon={copied ? Check : Copy} iconKey={copied ? 'check' : 'copy'} size={11} className={copied ? 'text-emerald-400' : undefined} />
           </button>
         </div>
       </div>
@@ -259,7 +262,7 @@ export default function CodeBlockNodeView({
       {showDiagram && code.trim() ? (
         <div className="relative p-2" contentEditable={false}>
           <Suspense fallback={
-            <div className="flex items-center justify-center py-6 text-text-secondary/50">
+            <div className="flex items-center justify-center py-6 text-muted-foreground/50">
               <Loader2 size={16} className="animate-spin mr-2" />
               Rendering diagram...
             </div>

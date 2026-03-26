@@ -35,7 +35,7 @@ import {
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { useDbStore, buildCmSchema } from '../../stores/db-store'
 import type { QueryTab as QueryTabType, OutputMessage, InlineResult } from '../../types/database'
-import { GlassCard, GlassSurface, GlassButton } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import SqlEditor from './SqlEditor'
 import ResultsGrid from './ResultsGrid'
 import SavedQueriesPanel from './SavedQueriesPanel'
@@ -310,7 +310,7 @@ export default function QueryTab({
 
     if (isCancelled) {
       return (
-        <div className="flex items-center gap-2 p-3 text-text-secondary text-xs">
+        <div className="flex items-center gap-2 p-3 text-muted-foreground text-xs">
           <XCircle size={14} className="text-yellow-400" />
           <span>Query cancelled</span>
         </div>
@@ -320,7 +320,7 @@ export default function QueryTab({
     if (result.status === 'success') {
       // DML result (no rows returned)
       return (
-        <div className="flex items-center gap-2 p-3 text-text-secondary text-xs">
+        <div className="flex items-center gap-2 p-3 text-muted-foreground text-xs">
           <CheckCircle2 size={14} className="text-green-400" />
           <span>
             {result.affectedRows > 0
@@ -364,9 +364,9 @@ export default function QueryTab({
     }
 
     return (
-      <div className="flex shrink-0 items-center gap-3 border-t border-border bg-background px-3 py-1 text-xs text-text-secondary">
+      <div className="flex shrink-0 items-center gap-3 border-t border-border bg-background px-3 py-1 text-xs text-muted-foreground">
         {result.status === 'running' && (
-          <svg className="h-3 w-3 animate-spin text-accent" viewBox="0 0 24 24" fill="none">
+          <svg className="h-3 w-3 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
@@ -390,10 +390,10 @@ export default function QueryTab({
   return (
     <div ref={containerRef} className="flex h-full flex-col overflow-hidden">
       {/* Toolbar */}
-      <GlassSurface className="flex shrink-0 items-center gap-1 rounded-none border-x-0 border-t-0 px-2 py-1.5">
+      <Card className="flex shrink-0 items-center gap-1 rounded-none border-x-0 border-t-0 px-2 py-1.5">
         {/* Run current statement */}
         <Tooltip content="Run statement" shortcut="⌘↵">
-          <GlassButton
+          <Button
             variant="primary"
             size="sm"
             onClick={handleRunCurrent}
@@ -401,12 +401,12 @@ export default function QueryTab({
           >
             <Play size={11} />
             Run
-          </GlassButton>
+          </Button>
         </Tooltip>
 
         {/* Run all */}
         <Tooltip content="Run all" shortcut="⌘⇧↵">
-          <GlassButton
+          <Button
             variant="ghost"
             size="sm"
             onClick={handleExecuteAll}
@@ -414,20 +414,20 @@ export default function QueryTab({
           >
             <ChevronRight size={11} />
             All
-          </GlassButton>
+          </Button>
         </Tooltip>
 
         {/* Cancel (visible only when running) */}
         {isRunning && (
           <Tooltip content="Cancel query">
-            <GlassButton
+            <Button
               variant="danger"
               size="sm"
               onClick={handleCancel}
             >
               <Square size={11} />
               Cancel
-            </GlassButton>
+            </Button>
           </Tooltip>
         )}
 
@@ -441,7 +441,7 @@ export default function QueryTab({
             className={`flex items-center gap-1 rounded px-2 py-1 text-xs active:scale-95 transition-all ${
               tab.writeEnabled
                 ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30'
-                : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
             }`}
           >
             {tab.writeEnabled ? <Unlock size={11} /> : <Lock size={11} />}
@@ -454,7 +454,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={() => toggleOutputMode(tab.id)}
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:bg-surface-hover hover:text-text-primary active:scale-95 transition-all"
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
           >
             {tab.outputMode === 'split' ? <PanelBottom size={11} /> : <AlignLeft size={11} />}
             {tab.outputMode === 'split' ? 'Split' : 'Inline'}
@@ -466,7 +466,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={() => setShowOutput((v) => !v)}
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-all active:scale-95"
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-card-hover hover:text-foreground transition-all active:scale-95"
           >
             {showOutput ? <Eye size={11} /> : <EyeOff size={11} />}
           </button>
@@ -477,7 +477,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={handleFormat}
-            className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary active:scale-95 transition-all"
+            className="rounded p-1 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
           >
             <Code2 size={13} />
           </button>
@@ -488,7 +488,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={handleExplain}
-            className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary active:scale-95 transition-all"
+            className="rounded p-1 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
           >
             <Zap size={13} />
           </button>
@@ -501,8 +501,8 @@ export default function QueryTab({
             onClick={() => setShowVariables((v) => !v)}
             className={`rounded p-1 active:scale-95 transition-all ${
               showVariables
-                ? 'bg-accent/20 text-accent'
-                : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                ? 'bg-primary/20 text-primary'
+                : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
             }`}
           >
             <Braces size={13} />
@@ -518,8 +518,8 @@ export default function QueryTab({
             onClick={() => setShowSavedQueries((v) => !v)}
             className={`rounded p-1 active:scale-95 transition-all ${
               showSavedQueries
-                ? 'bg-accent/20 text-accent'
-                : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                ? 'bg-primary/20 text-primary'
+                : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
             }`}
           >
             <BookMarked size={13} />
@@ -536,20 +536,20 @@ export default function QueryTab({
               onKeyDown={handleSaveKeyDown}
               placeholder="Query name…"
               autoFocus
-              className="h-6 w-28 rounded border border-accent bg-transparent px-1.5 text-xs text-text-primary placeholder:text-text-secondary/50 focus:outline-none"
+              className="h-6 w-28 rounded border border-primary bg-transparent px-1.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
             />
-            <GlassButton
+            <Button
               variant="primary"
               size="sm"
               onClick={handleSaveQuery}
               disabled={!saveQueryName.trim()}
             >
               Save
-            </GlassButton>
+            </Button>
             <button
               type="button"
               onClick={() => { setShowSaveInput(false); setSaveQueryName('') }}
-              className="rounded p-1 text-text-secondary hover:text-text-primary transition-colors"
+              className="rounded p-1 text-muted-foreground hover:text-foreground transition-colors"
             >
               <XCircle size={12} />
             </button>
@@ -559,7 +559,7 @@ export default function QueryTab({
             <button
               type="button"
               onClick={() => setShowSaveInput(true)}
-              className="rounded p-1 text-text-secondary hover:bg-surface-hover hover:text-text-primary active:scale-95 transition-all"
+              className="rounded p-1 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
             >
               <Save size={13} />
             </button>
@@ -569,11 +569,11 @@ export default function QueryTab({
         <div className="flex-1" />
 
         {/* Connection status badge */}
-        <div className="flex items-center gap-1 text-xs text-text-secondary">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
           <span className="max-w-[120px] truncate">{schema ?? 'public'}</span>
         </div>
-      </GlassSurface>
+      </Card>
 
       {/* Saved queries panel (collapsible) */}
       {showSavedQueries && _connectionId && (
@@ -587,7 +587,7 @@ export default function QueryTab({
 
       {/* Variables panel (collapsible) */}
       {showVariables && (
-        <div className="shrink-0 flex items-center gap-2 px-2 py-1.5 border-b border-border bg-surface/30 flex-wrap animate-slide-down">
+        <div className="shrink-0 flex items-center gap-2 px-2 py-1.5 border-b border-border bg-card/30 flex-wrap animate-slide-down">
           {Object.entries(tab.variables || {}).map(([name, value]) => (
             <VariableChip
               key={name}
@@ -606,7 +606,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={handleAddVariable}
-            className="flex items-center gap-1 px-2 py-0.5 text-xs text-text-secondary hover:text-accent rounded border border-dashed border-border hover:border-accent/50 transition-colors"
+            className="flex items-center gap-1 px-2 py-0.5 text-xs text-muted-foreground hover:text-primary rounded border border-dashed border-border hover:border-primary/50 transition-colors"
           >
             <Plus size={10} /> Add
           </button>
@@ -618,7 +618,7 @@ export default function QueryTab({
         // ── Split mode: resizable editor top, results bottom ────────
         <PanelGroup orientation="vertical" className="flex-1">
           <Panel defaultSize={showOutput && hasResult ? 60 : 100} minSize={20}>
-            <GlassCard className="h-full overflow-hidden rounded-none border-x-0 border-t-0 p-0">
+            <Card className="h-full overflow-hidden rounded-none border-x-0 border-t-0 p-0">
               <SqlEditor
                 value={tab.sql}
                 onChange={(sql) => updateQueryTabSql(tab.id, sql)}
@@ -630,23 +630,23 @@ export default function QueryTab({
                 onEditorReady={handleEditorReady}
                 variables={tab.variables}
               />
-            </GlassCard>
+            </Card>
           </Panel>
           {showOutput && hasResult && (
             <>
-              <PanelResizeHandle className="h-1.5 bg-transparent hover:bg-accent/30 transition-colors cursor-row-resize flex items-center justify-center group">
-                <div className="w-8 h-0.5 rounded-full bg-border group-hover:bg-accent/50 transition-colors" />
+              <PanelResizeHandle className="h-1.5 bg-transparent hover:bg-primary/30 transition-colors cursor-row-resize flex items-center justify-center group">
+                <div className="w-8 h-0.5 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
               </PanelResizeHandle>
               <Panel defaultSize={40} minSize={15}>
                 <div className="h-full flex flex-col overflow-hidden border-t border-border animate-results-enter">
-                  <div className="flex items-center gap-0 border-b border-border bg-surface/50 shrink-0">
+                  <div className="flex items-center gap-0 border-b border-border bg-card/50 shrink-0">
                     <button
                       type="button"
                       onClick={() => setOutputTab('results')}
                       className={`px-3 py-1 text-xs font-medium transition-all duration-150 ${
                         outputTab === 'results'
-                          ? 'text-accent border-b-2 border-accent'
-                          : 'text-text-secondary hover:text-text-primary'
+                          ? 'text-primary border-b-2 border-primary'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       Results
@@ -656,13 +656,13 @@ export default function QueryTab({
                       onClick={() => setOutputTab('output')}
                       className={`px-3 py-1 text-xs font-medium transition-all duration-150 relative ${
                         outputTab === 'output'
-                          ? 'text-accent border-b-2 border-accent'
-                          : 'text-text-secondary hover:text-text-primary'
+                          ? 'text-primary border-b-2 border-primary'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       Output
                       {(tab.outputMessages || []).length > 0 && (
-                        <span className="ml-1 text-[9px] text-text-secondary">({(tab.outputMessages || []).length})</span>
+                        <span className="ml-1 text-[9px] text-muted-foreground">({(tab.outputMessages || []).length})</span>
                       )}
                     </button>
                   </div>
@@ -693,14 +693,14 @@ export default function QueryTab({
           {showOutput && hasInlineResults && (
             <div className="border-t border-border">
               {/* Results/Output tab headers */}
-              <div className="flex items-center gap-0 border-b border-border bg-surface/50 shrink-0">
+              <div className="flex items-center gap-0 border-b border-border bg-card/50 shrink-0">
                 <button
                   type="button"
                   onClick={() => setOutputTab('results')}
                   className={`px-3 py-1 text-xs font-medium transition-all duration-150 ${
                     outputTab === 'results'
-                      ? 'text-accent border-b-2 border-accent'
-                      : 'text-text-secondary hover:text-text-primary'
+                      ? 'text-primary border-b-2 border-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Results ({(tab.inlineResults || []).length})
@@ -710,20 +710,20 @@ export default function QueryTab({
                   onClick={() => setOutputTab('output')}
                   className={`px-3 py-1 text-xs font-medium transition-all duration-150 relative ${
                     outputTab === 'output'
-                      ? 'text-accent border-b-2 border-accent'
-                      : 'text-text-secondary hover:text-text-primary'
+                      ? 'text-primary border-b-2 border-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Output
                   {(tab.outputMessages || []).length > 0 && (
-                    <span className="ml-1 text-[9px] text-text-secondary">({(tab.outputMessages || []).length})</span>
+                    <span className="ml-1 text-[9px] text-muted-foreground">({(tab.outputMessages || []).length})</span>
                   )}
                 </button>
                 {outputTab === 'results' && (tab.inlineResults || []).length > 0 && (
                   <button
                     type="button"
                     onClick={() => clearInlineResults(tab.id)}
-                    className="ml-auto mr-2 text-[10px] text-text-secondary hover:text-red-400 transition-colors"
+                    className="ml-auto mr-2 text-[10px] text-muted-foreground hover:text-red-400 transition-colors"
                   >
                     Clear all
                   </button>
@@ -733,13 +733,13 @@ export default function QueryTab({
                 <div className="divide-y divide-border">
                   {(tab.inlineResults || []).map((ir, idx) => (
                     <div key={ir.id} className="animate-results-enter">
-                      <div className="flex items-center gap-2 px-3 py-1 bg-surface/30 text-xs text-text-secondary">
-                        <span className="font-mono text-accent">#{idx + 1}</span>
+                      <div className="flex items-center gap-2 px-3 py-1 bg-card/30 text-xs text-muted-foreground">
+                        <span className="font-mono text-primary">#{idx + 1}</span>
                         <span className="truncate flex-1 font-mono">{ir.sql.slice(0, 80)}{ir.sql.length > 80 ? '...' : ''}</span>
                         <button
                           type="button"
                           onClick={() => removeInlineResult(tab.id, ir.id)}
-                          className="text-text-secondary hover:text-red-400 p-0.5"
+                          className="text-muted-foreground hover:text-red-400 p-0.5"
                         >
                           <X size={10} />
                         </button>
@@ -809,7 +809,7 @@ function OutputConsoleMessage({ message }: { message: string }): React.JSX.Eleme
           onClick={() => setExpanded(true)}
         >
           {preview}
-          <span className="text-text-secondary/50 ml-1">...</span>
+          <span className="text-muted-foreground/50 ml-1">...</span>
         </span>
       )}
     </span>
@@ -827,7 +827,7 @@ function OutputConsole({ messages }: { messages: OutputMessage[] }): React.JSX.E
 
   if (messages.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-text-secondary text-xs">
+      <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
         No output yet
       </div>
     )
@@ -845,10 +845,10 @@ function OutputConsole({ messages }: { messages: OutputMessage[] }): React.JSX.E
                 ? 'text-green-400'
                 : msg.type === 'warning'
                   ? 'text-yellow-400'
-                  : 'text-text-secondary'
+                  : 'text-muted-foreground'
           }`}
         >
-          <span className="shrink-0 text-text-secondary/50">
+          <span className="shrink-0 text-muted-foreground/50">
             {new Date(msg.timestamp).toLocaleTimeString()}
           </span>
           <OutputConsoleMessage message={msg.message} />
@@ -889,17 +889,17 @@ function VariableChip({
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/30 text-xs">
-        <span className="text-accent/50">{'{{'}</span>
+      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/30 text-xs">
+        <span className="text-primary/50">{'{{'}</span>
         <input
           autoFocus
           value={editName}
           onChange={(e) => setEditName(e.target.value)}
-          className="w-16 bg-transparent outline-none text-accent font-medium border-b border-accent/30"
+          className="w-16 bg-transparent outline-none text-primary font-medium border-b border-primary/30"
           placeholder="name"
         />
-        <span className="text-accent/50">{'}}'}</span>
-        <span className="text-text-secondary">=</span>
+        <span className="text-primary/50">{'}}'}</span>
+        <span className="text-muted-foreground">=</span>
         <input
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
@@ -907,13 +907,13 @@ function VariableChip({
             if (e.key === 'Enter') handleSave()
             if (e.key === 'Escape') setEditing(false)
           }}
-          className="w-24 bg-transparent outline-none text-text-primary border-b border-accent/30"
+          className="w-24 bg-transparent outline-none text-foreground border-b border-primary/30"
           placeholder="value"
         />
         <button
           type="button"
           onClick={onRemove}
-          className="text-text-secondary hover:text-red-400 ml-1"
+          className="text-muted-foreground hover:text-red-400 ml-1"
         >
           <X size={10} />
         </button>
@@ -925,11 +925,11 @@ function VariableChip({
     <button
       type="button"
       onClick={() => { setEditName(name); setEditValue(value); setEditing(true) }}
-      className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-xs hover:border-accent/40 transition-colors"
+      className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-xs hover:border-primary/40 transition-colors"
     >
-      <span className="text-accent font-medium">{`{{${name}}}`}</span>
-      <span className="text-text-secondary">=</span>
-      <span className="text-text-primary">{value || '...'}</span>
+      <span className="text-primary font-medium">{`{{${name}}}`}</span>
+      <span className="text-muted-foreground">=</span>
+      <span className="text-foreground">{value || '...'}</span>
     </button>
   )
 }

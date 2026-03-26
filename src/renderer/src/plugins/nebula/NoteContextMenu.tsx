@@ -76,29 +76,29 @@ export default function NoteContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[160px] rounded-xl bg-surface-elevated/80 backdrop-blur-xl border border-white/[0.08] shadow-lg py-1"
+      className="fixed z-50 min-w-[160px] rounded-xl bg-secondary/80 backdrop-blur-xl border border-white/[0.08] shadow-lg py-1"
       style={{ left: x, top: y }}
     >
       <button
         type="button"
-        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-text-primary cursor-pointer"
+        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-foreground cursor-pointer"
         onClick={() => {
           onPin()
           onClose()
         }}
       >
-        <Pin size={14} className={isPinned ? 'text-accent' : 'text-text-secondary'} />
+        <Pin size={14} className={isPinned ? 'text-primary' : 'text-muted-foreground'} />
         {isPinned ? 'Unpin' : 'Pin'}
       </button>
       <button
         type="button"
-        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-text-primary cursor-pointer"
+        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-foreground cursor-pointer"
         onClick={() => {
           onDuplicate()
           onClose()
         }}
       >
-        <Copy size={14} className="text-text-secondary" />
+        <Copy size={14} className="text-muted-foreground" />
         Duplicate
       </button>
       <div className="my-1 border-t border-white/[0.06]" />

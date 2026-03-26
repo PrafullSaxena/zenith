@@ -4,11 +4,11 @@ import { Activity } from 'lucide-react'
 import { useActivityStore } from '../../stores/activity-store'
 import { ActivityFeed } from '../dashboard/ActivityFeed'
 import { PLUGINS } from '../../plugins/registry'
-import { GlassSurface, GlassSelect, GlassButton, EmptyState, GlassSkeleton } from '../ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import type { ActivityStatus } from '../../types/activity'
 
-/** Map plugin list to GlassSelect options format */
+/** Map plugin list to Select options format */
 const PLUGIN_OPTIONS = [
   { value: 'all', label: 'All Plugins' },
   ...PLUGINS.map((p) => ({ value: p.id, label: p.name }))
@@ -62,51 +62,51 @@ export default function ActivityLog(): React.JSX.Element {
       {/* Header */}
       <motion.div variants={staggerItem} className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-text-primary">Activity Log</h1>
-          <span className="rounded-full bg-surface-elevated px-2.5 py-0.5 text-xs font-medium text-text-secondary">
+          <h1 className="text-lg font-semibold text-foreground">Activity Log</h1>
+          <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
             {filteredEntries.length}
           </span>
         </div>
-        <GlassButton
+        <Button
           variant="ghost"
           size="sm"
           onClick={() => clearEntries()}
         >
           Clear All
-        </GlassButton>
+        </Button>
       </motion.div>
 
       {/* Filter bar */}
       <motion.div variants={staggerItem}>
-        <GlassSurface className="flex items-center gap-3">
-          <GlassSelect
+        <Card className="flex items-center gap-3">
+          <Select
             options={PLUGIN_OPTIONS}
             value={pluginFilter}
             onChange={setPluginFilter}
             placeholder="All Plugins"
             className="w-48"
           />
-          <GlassSelect
+          <Select
             options={STATUS_OPTIONS}
             value={statusFilter}
             onChange={(val) => setStatusFilter(val as ActivityStatus | 'all')}
             placeholder="All Statuses"
             className="w-40"
           />
-        </GlassSurface>
+        </Card>
       </motion.div>
 
       {/* Activity list */}
       <motion.div variants={staggerItem}>
         {isLoading ? (
           <div className="space-y-3 py-4">
-            <GlassSkeleton variant="card" className="h-14" />
-            <GlassSkeleton variant="card" className="h-14" />
-            <GlassSkeleton variant="card" className="h-14" />
-            <GlassSkeleton variant="card" className="h-14" />
+            <Skeleton variant="card" className="h-14" />
+            <Skeleton variant="card" className="h-14" />
+            <Skeleton variant="card" className="h-14" />
+            <Skeleton variant="card" className="h-14" />
           </div>
         ) : filteredEntries.length === 0 ? (
-          <EmptyState
+          <div
             icon={Activity}
             title="No activities found"
             description="Try adjusting your filters to see more results"

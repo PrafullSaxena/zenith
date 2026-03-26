@@ -17,7 +17,10 @@ import type { Repository } from '../../../types/cortex'
 import { useCortexStore } from '../../../stores/cortex-store'
 import AnalysisProgress from './AnalysisProgress'
 import { REPO_TYPE_GRADIENTS } from '../cortex-theme'
-import { GlassCard } from '@renderer/components/ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 interface Props {
   repo: Repository
@@ -74,11 +77,11 @@ export default function RepoCard({
   const [isFetching, setIsFetching] = useState(false)
 
   return (
-    <GlassCard
+    <Card
       variant="interactive"
       onClick={onSelect}
       className={`relative cursor-pointer overflow-hidden p-4 transition-colors ${STATUS_BORDER[repo.status]} ${
-        isActive ? 'ring-1 ring-accent/40' : ''
+        isActive ? 'ring-1 ring-primary/40' : ''
       }`}
     >
       {/* Gradient top accent */}
@@ -86,16 +89,16 @@ export default function RepoCard({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <FolderGit2 size={16} className="text-accent" />
-          <span className="text-sm font-semibold text-text-primary">{repo.name}</span>
+          <FolderGit2 size={16} className="text-primary" />
+          <span className="text-sm font-semibold text-foreground">{repo.name}</span>
         </div>
-        <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
+        <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
           {repo.branch}
         </span>
       </div>
 
       {/* URL */}
-      <p className="mt-1 truncate text-[10px] text-text-secondary">{repo.url}</p>
+      <p className="mt-1 truncate text-[10px] text-muted-foreground">{repo.url}</p>
 
       {/* Type badge + Last analyzed */}
       <div className="mt-3 flex items-center justify-between">
@@ -103,11 +106,11 @@ export default function RepoCard({
           <span
             className={`inline-block h-2 w-2 rounded-full ${REPO_TYPE_COLORS[repo.repoType] ?? REPO_TYPE_COLORS.unknown}`}
           />
-          <span className="text-[10px] capitalize text-text-secondary">
+          <span className="text-[10px] capitalize text-muted-foreground">
             {repo.repoType === 'data-engineering' ? 'Data Engineering' : repo.repoType}
           </span>
         </div>
-        <span className="text-[10px] text-text-secondary">
+        <span className="text-[10px] text-muted-foreground">
           {formatRelativeTime(repo.lastAnalyzed)}
         </span>
       </div>
@@ -160,7 +163,7 @@ export default function RepoCard({
                 onAnalyze()
               }}
               title="Run static analysis on this repository"
-              className="flex items-center gap-1 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25"
+              className="flex items-center gap-1 rounded-lg bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/25"
             >
               <Play size={12} />
               Analyze
@@ -181,7 +184,7 @@ export default function RepoCard({
                   }
                 }}
                 title="Fetch latest changes from remote and re-run static analysis"
-                className="flex items-center gap-1 rounded-lg bg-accent/15 px-2.5 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/25 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-lg bg-primary/15 px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/25 disabled:opacity-50"
               >
                 {isFetching ? <Loader2 size={12} className="animate-spin" /> : <GitPullRequest size={12} />}
                 Fetch Changes
@@ -208,12 +211,12 @@ export default function RepoCard({
               onRemove()
             }}
             title="Remove repository"
-            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-text-secondary transition-colors hover:bg-error/10 hover:text-error"
+            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-error/10 hover:text-error"
           >
             <Trash2 size={12} />
           </button>
         </div>
       )}
-    </GlassCard>
+    </Card>
   )
 }
