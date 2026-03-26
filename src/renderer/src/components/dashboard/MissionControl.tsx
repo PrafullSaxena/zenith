@@ -146,7 +146,7 @@ export default function MissionControl(): React.JSX.Element {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="space-y-4 pb-4"
+      className="space-y-4 p-4"
     >
       {/* ── Hero Header ─────────────────────────────────────────────── */}
       <motion.div variants={staggerItem}>

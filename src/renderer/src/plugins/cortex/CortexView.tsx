@@ -69,7 +69,7 @@ export default function CortexView(): React.JSX.Element {
   }, [activeRepo?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-background">
+    <div className="flex h-full flex-col bg-background">
       {/* Card with Brain icon, gradient title, and tab bar */}
       <PageHeader
         icon={Brain}

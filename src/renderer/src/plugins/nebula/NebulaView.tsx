@@ -239,7 +239,7 @@ export default function NebulaView(): React.JSX.Element {
   )
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-gradient-to-br from-surface-elevated/40 via-background to-surface-elevated/20">
+    <div className="flex h-full flex-col bg-gradient-to-br from-surface-elevated/40 via-background to-surface-elevated/20">
       {/* Toast notifications -- visible across all tabs */}
       <ToastContainer />
 

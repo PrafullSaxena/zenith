@@ -99,7 +99,7 @@ export default function TextCraftView(): React.JSX.Element {
   )
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-full flex-col">
       {/* Header + tab bar */}
       <PageHeader
         icon={Wand2}
@@ -122,7 +122,7 @@ export default function TextCraftView(): React.JSX.Element {
             ref={containerRef}
           >
             {/* Left: Input */}
-            <div style={{ width: leftWidth + '%' }} className="shrink-0 overflow-hidden">
+            <div style={{ width: leftWidth + '%' }} className="shrink-0 overflow-auto p-4">
               <InputPanel />
             </div>
 
@@ -132,7 +132,7 @@ export default function TextCraftView(): React.JSX.Element {
             />
 
             {/* Middle: Controls */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-auto p-4">
               <ControlsPanel />
             </div>
 
@@ -142,7 +142,7 @@ export default function TextCraftView(): React.JSX.Element {
             />
 
             {/* Right: Output */}
-            <div style={{ width: rightWidth + '%' }} className="shrink-0 overflow-hidden">
+            <div style={{ width: rightWidth + '%' }} className="shrink-0 overflow-auto p-4">
               <OutputPanel />
             </div>
           </motion.div>

@@ -32,7 +32,7 @@ export function AppLayout(): React.JSX.Element {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="flex h-full flex-col"
+                className="flex min-h-0 flex-1 flex-col"
               >
                 <Outlet />
               </motion.div>

@@ -57,7 +57,7 @@ export default function LaunchpadView(): React.JSX.Element {
   }
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-full flex-col">
       {/* Card with gradient title and GlassTab bar */}
       <PageHeader
         icon={Rocket}
@@ -100,13 +100,13 @@ export default function LaunchpadView(): React.JSX.Element {
                 <ProviderSelector onSelect={handleProviderSelect} />
               ) : (
                 <div className="flex h-full overflow-hidden">
-                  <div className="w-64 shrink-0 overflow-y-auto border-r border-white/[0.06]">
+                  <div className="w-64 shrink-0 overflow-y-auto border-r border-white/[0.06] p-4">
                     <ServiceCatalog provider={provider} />
                   </div>
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto p-4">
                     <ResourceConfigurator />
                   </div>
-                  <div className="w-72 shrink-0 overflow-y-auto border-l border-white/[0.06]">
+                  <div className="w-72 shrink-0 overflow-y-auto border-l border-white/[0.06] p-4">
                     <EstimationSummary />
                   </div>
                 </div>

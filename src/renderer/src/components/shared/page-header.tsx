@@ -1,10 +1,9 @@
 /**
  * PageHeader -- Shared header component for plugin views.
- * Renders an icon, title, tab bar, and optional status indicator.
- * Replaces the legacy GlassPageHeader / GlassCard header pattern.
+ * Renders a compact titlebar-style bar with icon, title, tab bar, and optional status indicator.
+ * Sticky at top with a subtle blur backdrop so content scrolls beneath it.
  */
 import type { LucideIcon } from 'lucide-react'
-import { Card } from '@renderer/components/ui/card'
 import { cn } from '@renderer/lib/utils'
 
 interface Tab {
@@ -33,12 +32,17 @@ export function PageHeader({
   className
 }: PageHeaderProps) {
   return (
-    <Card className={cn('flex items-center gap-4 px-5 py-3 shrink-0', className)}>
-      <Icon size={22} className="text-primary shrink-0" />
-      <h1 className="text-base font-semibold text-foreground whitespace-nowrap">{title}</h1>
+    <div
+      className={cn(
+        'sticky top-0 z-10 flex items-center gap-3 px-4 h-10 border-b border-border bg-background/80 backdrop-blur-sm shrink-0',
+        className
+      )}
+    >
+      <Icon size={18} className="text-primary shrink-0" />
+      <h1 className="text-sm font-semibold text-foreground whitespace-nowrap">{title}</h1>
 
       {tabs && tabs.length > 0 && (
-        <div className="flex items-center gap-1 ml-4">
+        <div className="flex items-center gap-1 ml-3">
           {tabs.map((tab) => {
             const isActive = tab.id === activeTab
             const TabIcon = tab.icon
@@ -48,13 +52,13 @@ export function PageHeader({
                 type="button"
                 onClick={() => onTabChange?.(tab.id)}
                 className={cn(
-                  'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                  'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
                   isActive
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 )}
               >
-                {TabIcon && <TabIcon size={14} />}
+                {TabIcon && <TabIcon size={13} />}
                 {tab.label}
               </button>
             )
@@ -65,6 +69,6 @@ export function PageHeader({
       {statusIndicator && (
         <div className="ml-auto shrink-0">{statusIndicator}</div>
       )}
-    </Card>
+    </div>
   )
 }

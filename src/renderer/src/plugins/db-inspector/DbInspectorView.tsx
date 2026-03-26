@@ -296,7 +296,7 @@ export default function DbInspectorView(): React.JSX.Element {
   ) : undefined
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-full flex-col">
       {/* Header with Card */}
       <PageHeader
         icon={Database}
