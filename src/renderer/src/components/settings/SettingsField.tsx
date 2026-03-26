@@ -1,7 +1,18 @@
 import { useState } from 'react'
 import { Eye, EyeOff, FolderOpen, X } from 'lucide-react'
 import type { SettingsField as SettingsFieldType } from '../../types/plugin'
-import { GlassInput, GlassSelect, GlassButton } from '@renderer/components/ui'
+import { Input } from '@renderer/components/ui/input'
+import { Label } from '@renderer/components/ui/label'
+import { Button } from '@renderer/components/ui/button'
+import { Switch } from '@renderer/components/ui/switch'
+import { Textarea } from '@renderer/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@renderer/components/ui/select'
 import { RepoListEditor } from './RepoListEditor'
 import type { RepoEntry } from './RepoListEditor'
 import { ConnectionListEditor } from './ConnectionListEditor'
@@ -21,30 +32,28 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
     switch (field.type) {
       case 'text':
         return (
-          <GlassInput
+          <Input
             type="text"
             value={(value as string) ?? ''}
             placeholder={field.placeholder}
             onChange={(e) => onChange(e.target.value)}
-            error={!!error}
-            errorMessage={error ?? undefined}
+            className={error ? 'border-destructive' : ''}
           />
         )
 
       case 'password':
         return (
           <div className="relative">
-            <GlassInput
+            <Input
               type={showPassword ? 'text' : 'password'}
-              className="pr-10"
+              className={`pr-10 ${error ? 'border-destructive' : ''}`}
               value={(value as string) ?? ''}
               placeholder={field.placeholder}
               onChange={(e) => onChange(e.target.value)}
-              error={!!error}
             />
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
             >
@@ -55,51 +64,47 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
 
       case 'number':
         return (
-          <GlassInput
+          <Input
             type="number"
             value={(value as number) ?? ''}
             placeholder={field.placeholder}
             onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
-            error={!!error}
+            className={error ? 'border-destructive' : ''}
           />
         )
 
       case 'boolean':
         return (
-          <button
-            type="button"
-            role="switch"
-            aria-checked={!!value}
-            className={`relative inline-flex h-5 w-10 items-center rounded-full transition ${
-              value ? 'bg-accent' : 'bg-surface-elevated border border-border'
-            }`}
-            onClick={() => onChange(!value)}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-text-primary transition ${
-                value ? 'translate-x-5' : 'translate-x-0.5'
-              }`}
-            />
-          </button>
+          <Switch
+            checked={!!value}
+            onCheckedChange={(checked) => onChange(checked)}
+          />
         )
 
       case 'select':
         return (
-          <GlassSelect
-            options={field.options?.map((opt) => ({ value: opt.value, label: opt.label })) ?? []}
-            value={(value as string) ?? ''}
-            onChange={(val) => onChange(val)}
-          />
+          <Select value={(value as string) ?? ''} onValueChange={(val) => onChange(val)}>
+            <SelectTrigger>
+              <SelectValue placeholder={field.placeholder ?? 'Select...'} />
+            </SelectTrigger>
+            <SelectContent>
+              {(field.options ?? []).map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )
 
       case 'textarea':
         return (
-          <textarea
-            className="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 transition-colors duration-[var(--duration-fast)] focus:outline-none focus:shadow-[var(--glass-glow)] min-h-[120px] resize-y font-mono text-xs"
+          <Textarea
             value={(value as string) ?? ''}
             placeholder={field.placeholder}
             onChange={(e) => onChange(e.target.value)}
             rows={8}
+            className="min-h-[120px] resize-y font-mono text-xs"
           />
         )
 
@@ -122,14 +127,14 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
       case 'directory':
         return (
           <div className="flex items-center gap-2">
-            <GlassInput
+            <Input
               type="text"
               className="flex-1"
               value={(value as string) ?? ''}
               placeholder={field.placeholder ?? 'Default (OS Downloads folder)'}
               readOnly
             />
-            <GlassButton
+            <Button
               variant="ghost"
               size="sm"
               onClick={async () => {
@@ -139,26 +144,26 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
                 }
               }}
             >
-              <FolderOpen size={14} />
+              <FolderOpen size={14} className="mr-1" />
               Browse
-            </GlassButton>
+            </Button>
             {value && (
-              <GlassButton
+              <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onChange('')}
                 title="Reset to default"
-                className="text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
                 <X size={14} />
-              </GlassButton>
+              </Button>
             )}
           </div>
         )
 
       default:
         return (
-          <GlassInput
+          <Input
             type="text"
             value={String(value ?? '')}
             onChange={(e) => onChange(e.target.value)}
@@ -168,17 +173,17 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
   }
 
   return (
-    <div className="-mx-2 mb-4 rounded-lg px-2 py-1.5 transition-colors hover:bg-[var(--glass-bg)]">
+    <div className="-mx-2 mb-4 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/30">
       {/* Label -- skip for boolean (toggle has its own inline label) */}
       {field.type !== 'boolean' ? (
-        <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">
+        <Label className="mb-1.5 block text-sm font-medium">
           {field.label}
-          {field.required && <span className="ml-0.5 text-red-400">*</span>}
-        </label>
+          {field.required && <span className="ml-0.5 text-destructive">*</span>}
+        </Label>
       ) : (
         <div className="flex items-center gap-3">
           {renderInput()}
-          <label className="text-sm font-medium text-[var(--text-primary)]">{field.label}</label>
+          <Label className="text-sm font-medium">{field.label}</Label>
         </div>
       )}
 
@@ -187,12 +192,12 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
 
       {/* Description */}
       {field.description && (
-        <p className="mt-1 text-xs text-[var(--text-secondary)]">{field.description}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{field.description}</p>
       )}
 
       {/* Error */}
       {error && (
-        <p className="mt-1 text-xs text-[var(--color-error)]">{error}</p>
+        <p className="mt-1 text-xs text-destructive">{error}</p>
       )}
     </div>
   )

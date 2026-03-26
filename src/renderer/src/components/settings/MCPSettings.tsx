@@ -4,9 +4,22 @@
  * Persists to 'mcp.servers' in settings store.
  */
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Trash2, Server, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Trash2, Server, ChevronDown } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
-import { GlassSkeleton } from '../ui'
+import { Card, CardContent } from '@renderer/components/ui/card'
+import { Button } from '@renderer/components/ui/button'
+import { Input } from '@renderer/components/ui/input'
+import { Label } from '@renderer/components/ui/label'
+import { Switch } from '@renderer/components/ui/switch'
+import { Badge } from '@renderer/components/ui/badge'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@renderer/components/ui/select'
 import type { MCPServerConfig, MCPTransport } from '../../types/mcp'
 
 const MCP_STORAGE_KEY = 'mcp.servers'
@@ -81,16 +94,16 @@ export function MCPSettings(): React.JSX.Element {
   if (isLoading) {
     return (
       <div className="p-4 space-y-3">
-        <GlassSkeleton variant="card" />
-        <GlassSkeleton variant="card" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
       </div>
     )
   }
 
   return (
     <div className="stagger-children">
-      <h2 className="mb-1 text-lg font-semibold text-text-primary">MCP Servers</h2>
-      <p className="mb-6 text-xs text-text-secondary">
+      <h2 className="mb-1 text-lg font-semibold text-foreground">MCP Servers</h2>
+      <p className="mb-6 text-xs text-muted-foreground">
         Configure Model Context Protocol servers for enhanced AI capabilities and tool
         orchestration.
       </p>
@@ -98,9 +111,9 @@ export function MCPSettings(): React.JSX.Element {
       {/* Server list */}
       {servers.length === 0 && !showAddForm && (
         <div className="mb-4 rounded-lg border border-dashed border-border/50 px-4 py-8 text-center">
-          <Server size={24} className="mx-auto mb-2 text-text-secondary/30" />
-          <p className="text-sm text-text-secondary">No MCP servers configured</p>
-          <p className="mt-1 text-xs text-text-secondary">
+          <Server size={24} className="mx-auto mb-2 text-muted-foreground/30" />
+          <p className="text-sm text-muted-foreground">No MCP servers configured</p>
+          <p className="mt-1 text-xs text-muted-foreground">
             Add a server to extend AI capabilities with custom tools and data sources.
           </p>
         </div>
@@ -111,26 +124,26 @@ export function MCPSettings(): React.JSX.Element {
           {servers.map((server) => (
             <div
               key={server.id}
-              className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-elevated/30"
+              className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/30"
             >
               <Server
                 size={14}
-                className={server.enabled ? 'text-accent' : 'text-text-secondary/40'}
+                className={server.enabled ? 'text-primary' : 'text-muted-foreground/40'}
               />
               <div className="min-w-0 flex-1">
                 <p
                   className={`text-sm font-medium ${
-                    server.enabled ? 'text-text-primary' : 'text-text-secondary/60'
+                    server.enabled ? 'text-foreground' : 'text-muted-foreground/60'
                   }`}
                 >
                   {server.name}
                 </p>
-                <p className="truncate text-[11px] text-text-secondary/60">
+                <p className="truncate text-[11px] text-muted-foreground/60">
                   {server.command}
                   {server.description ? ` — ${server.description}` : ''}
                 </p>
               </div>
-              <span className="shrink-0 rounded-md bg-surface-elevated px-1.5 py-0.5 text-[10px] text-text-secondary">
+              <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
                 {server.transport.toUpperCase()}
               </span>
               {/* Enable/Disable toggle */}
@@ -138,7 +151,7 @@ export function MCPSettings(): React.JSX.Element {
                 type="button"
                 onClick={() => handleToggle(server.id)}
                 className={`relative h-5 w-10 shrink-0 rounded-full transition-colors ${
-                  server.enabled ? 'bg-accent' : 'bg-surface-elevated border border-border'
+                  server.enabled ? 'bg-primary' : 'bg-secondary border border-border'
                 }`}
               >
                 <span
@@ -150,7 +163,7 @@ export function MCPSettings(): React.JSX.Element {
               <button
                 type="button"
                 onClick={() => handleRemove(server.id)}
-                className="shrink-0 rounded-lg p-1 text-text-secondary transition-colors hover:bg-red-500/10 hover:text-red-400"
+                className="shrink-0 rounded-lg p-1 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
                 title="Remove server"
               >
                 <Trash2 size={13} />
@@ -165,17 +178,17 @@ export function MCPSettings(): React.JSX.Element {
         <button
           type="button"
           onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-text-secondary transition-colors hover:border-accent/30 hover:text-accent"
+          className="flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary"
         >
           <Plus size={13} />
           Add MCP Server
         </button>
       ) : (
-        <div className="rounded-xl border border-border/50 bg-surface-elevated/30 p-4">
+        <div className="rounded-xl border border-border/50 bg-secondary/30 p-4">
           <button
             type="button"
             onClick={() => setShowAddForm(false)}
-            className="mb-3 flex items-center gap-1 text-xs text-text-secondary hover:text-text-primary"
+            className="mb-3 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
           >
             <ChevronDown size={11} />
             Add MCP Server
@@ -183,7 +196,7 @@ export function MCPSettings(): React.JSX.Element {
 
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-text-secondary">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
                 Name <span className="text-red-400">*</span>
               </label>
               <input
@@ -191,12 +204,12 @@ export function MCPSettings(): React.JSX.Element {
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
                 placeholder="My MCP Server"
-                className="w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
+                className="w-full rounded-lg border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-accent/30"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-text-secondary">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
                 Command / URL <span className="text-red-400">*</span>
               </label>
               <input
@@ -204,12 +217,12 @@ export function MCPSettings(): React.JSX.Element {
                 value={formCommand}
                 onChange={(e) => setFormCommand(e.target.value)}
                 placeholder="npx @modelcontextprotocol/server-name"
-                className="w-full rounded-lg border border-border bg-surface px-3 py-1.5 font-mono text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none"
+                className="w-full rounded-lg border border-border bg-card px-3 py-1.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/40 focus:border-primary focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-text-secondary">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
                 Description
               </label>
               <input
@@ -217,18 +230,18 @@ export function MCPSettings(): React.JSX.Element {
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 placeholder="What this server provides…"
-                className="w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
+                className="w-full rounded-lg border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-accent/30"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-text-secondary">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
                 Transport
               </label>
               <select
                 value={formTransport}
                 onChange={(e) => setFormTransport(e.target.value as MCPTransport)}
-                className="rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
+                className="rounded-lg border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-accent/30"
               >
                 <option value="stdio">stdio (local process)</option>
                 <option value="sse">SSE (remote URL)</option>
@@ -240,7 +253,7 @@ export function MCPSettings(): React.JSX.Element {
                 type="button"
                 onClick={handleAdd}
                 disabled={!formName.trim() || !formCommand.trim()}
-                className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent/90 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary/90 disabled:opacity-50"
               >
                 <Plus size={12} />
                 Add Server
@@ -248,7 +261,7 @@ export function MCPSettings(): React.JSX.Element {
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="rounded-lg px-3 py-1.5 text-xs text-text-secondary transition-colors hover:text-text-primary"
+                className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
                 Cancel
               </button>
@@ -258,9 +271,9 @@ export function MCPSettings(): React.JSX.Element {
       )}
 
       {/* Info box */}
-      <div className="mt-6 rounded-lg border border-border bg-surface-elevated/30 px-4 py-3">
-        <p className="text-[11px] font-medium text-text-secondary">About MCP</p>
-        <p className="mt-1 text-[11px] leading-relaxed text-text-secondary/60">
+      <div className="mt-6 rounded-lg border border-border bg-secondary/30 px-4 py-3">
+        <p className="text-[11px] font-medium text-muted-foreground">About MCP</p>
+        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground/60">
           The Model Context Protocol (MCP) allows AI agents to access external tools, data
           sources, and APIs. Servers can be local processes (stdio) or remote services
           (SSE). Configured servers will be available to AI agents during analysis.

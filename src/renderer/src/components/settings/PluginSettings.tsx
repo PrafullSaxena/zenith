@@ -45,7 +45,7 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
   if (!plugin) {
     return (
       <div className="flex items-center justify-center py-12">
-        <span className="text-sm text-text-secondary">Plugin not found</span>
+        <span className="text-sm text-muted-foreground">Plugin not found</span>
       </div>
     )
   }
@@ -53,7 +53,7 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <span className="text-sm text-text-secondary">Loading settings...</span>
+        <span className="text-sm text-muted-foreground">Loading settings...</span>
       </div>
     )
   }
@@ -61,16 +61,16 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
   if (plugin.settingsSchema.length === 0) {
     return (
       <div>
-        <h2 className="mb-6 text-lg font-semibold text-text-primary">{plugin.name}</h2>
-        <p className="text-sm text-text-secondary">No settings available for this plugin.</p>
+        <h2 className="mb-6 text-lg font-semibold text-foreground">{plugin.name}</h2>
+        <p className="text-sm text-muted-foreground">No settings available for this plugin.</p>
       </div>
     )
   }
 
   return (
     <div>
-      <h2 className="mb-2 text-lg font-semibold text-text-primary">{plugin.name}</h2>
-      <p className="mb-6 text-xs text-text-secondary">{plugin.description}</p>
+      <h2 className="mb-2 text-lg font-semibold text-foreground">{plugin.name}</h2>
+      <p className="mb-6 text-xs text-muted-foreground">{plugin.description}</p>
 
       {plugin.settingsSchema.map((field) => (
         <SettingsField
@@ -84,11 +84,11 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
 
       {/* Default AI Agent dropdown */}
       <div className="mt-6 border-t border-border pt-5">
-        <label className="mb-1.5 block text-sm font-medium text-text-primary">
+        <label className="mb-1.5 block text-sm font-medium text-foreground">
           Default AI Agent
         </label>
         <select
-          className="w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition appearance-none"
+          className="w-full rounded-lg border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition appearance-none"
           value={
             (getSetting(`plugins.${pluginId}.defaultAgent`) as string) ?? ''
           }
@@ -105,7 +105,7 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
             )
           )}
         </select>
-        <p className="mt-1 text-xs text-text-secondary">
+        <p className="mt-1 text-xs text-muted-foreground">
           Select the AI provider to use with this plugin
         </p>
       </div>

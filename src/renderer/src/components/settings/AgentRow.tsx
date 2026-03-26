@@ -59,12 +59,12 @@ export function AgentRow({
   }
 
   return (
-    <tr className="border-b border-border transition-colors hover:bg-surface-elevated/30">
+    <tr className="border-b border-border transition-colors hover:bg-secondary/30">
       {/* Provider name + type badge */}
       <td className="py-3 pr-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-text-primary">{provider.name}</span>
-          <span className="rounded-md bg-surface-elevated px-1.5 py-0.5 text-[10px] text-text-secondary">
+          <span className="text-sm font-medium text-foreground">{provider.name}</span>
+          <span className="rounded-md bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
             {typeLabels[provider.type] ?? provider.type}
           </span>
         </div>
@@ -74,7 +74,7 @@ export function AgentRow({
       <td className="py-3 pr-4">
         <div className="flex items-center gap-2">
           <span className={`inline-block h-2.5 w-2.5 rounded-full ${status.dotClass}`} />
-          <span className="text-sm text-text-secondary">{status.label}</span>
+          <span className="text-sm text-muted-foreground">{status.label}</span>
         </div>
       </td>
 
@@ -90,12 +90,12 @@ export function AgentRow({
                   onChange={(e) => setApiKeyInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Enter API key"
-                  className="w-48 rounded-lg border border-border/50 bg-surface px-2 py-1 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
+                  className="w-48 rounded-lg border border-border/50 bg-card px-2 py-1 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
                   autoFocus
                 />
                 <button
                   onClick={handleSaveKey}
-                  className="rounded-lg bg-accent px-2.5 py-1 text-xs font-medium text-background transition hover:bg-accent/90"
+                  className="rounded-lg bg-primary px-2.5 py-1 text-xs font-medium text-background transition hover:bg-primary/90"
                 >
                   Save
                 </button>
@@ -104,7 +104,7 @@ export function AgentRow({
                     setIsEditingKey(false)
                     setApiKeyInput('')
                   }}
-                  className="px-2 py-1 text-xs text-text-secondary transition hover:text-text-primary"
+                  className="px-2 py-1 text-xs text-muted-foreground transition hover:text-foreground"
                 >
                   Cancel
                 </button>
@@ -112,13 +112,13 @@ export function AgentRow({
             ) : (
               <>
                 {provider.hasApiKey ? (
-                  <span className="text-sm text-text-secondary">*** Set</span>
+                  <span className="text-sm text-muted-foreground">*** Set</span>
                 ) : (
-                  <span className="text-sm text-text-secondary/50">Not set</span>
+                  <span className="text-sm text-muted-foreground/50">Not set</span>
                 )}
                 <button
                   onClick={() => setIsEditingKey(true)}
-                  className="rounded-lg border border-border px-2.5 py-1 text-xs text-text-secondary transition hover:border-accent hover:text-accent"
+                  className="rounded-lg border border-border px-2.5 py-1 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
                 >
                   {provider.hasApiKey ? 'Update' : 'Set'}
                 </button>
@@ -126,7 +126,7 @@ export function AgentRow({
             )}
           </div>
         ) : (
-          <span className="text-sm text-text-secondary/50">&mdash;</span>
+          <span className="text-sm text-muted-foreground/50">&mdash;</span>
         )}
       </td>
 
@@ -136,7 +136,7 @@ export function AgentRow({
           <button
             onClick={onTestConnection}
             disabled={isTesting}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1 text-xs text-text-secondary transition hover:border-accent hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1 text-xs text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isTesting && <Loader2 size={12} className="animate-spin" />}
             Test
@@ -144,7 +144,7 @@ export function AgentRow({
           {provider.isCustom && onRemove && (
             <button
               onClick={onRemove}
-              className="rounded-lg px-2 py-1 text-xs text-text-secondary transition hover:text-red-400 hover:bg-red-500/10"
+              className="rounded-lg px-2 py-1 text-xs text-muted-foreground transition hover:text-red-400 hover:bg-red-500/10"
             >
               Remove
             </button>

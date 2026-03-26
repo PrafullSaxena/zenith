@@ -3,7 +3,8 @@ import { useAgentStore } from '../../stores/agent-store'
 import { AgentRow } from './AgentRow'
 import { AddCustomAgentForm } from './AddCustomAgentForm'
 import { Plus } from 'lucide-react'
-import { GlassSkeleton } from '../ui'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { Button } from '@renderer/components/ui/button'
 
 /**
  * Central AI agent configuration table view.
@@ -23,18 +24,18 @@ export function AIAgentsSettings(): React.JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-4 py-4">
-        <GlassSkeleton variant="text" className="h-6 w-32" />
-        <GlassSkeleton variant="card" className="h-16" />
-        <GlassSkeleton variant="card" className="h-16" />
-        <GlassSkeleton variant="card" className="h-16" />
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-16 w-full rounded-xl" />
+        <Skeleton className="h-16 w-full rounded-xl" />
+        <Skeleton className="h-16 w-full rounded-xl" />
       </div>
     )
   }
 
   return (
     <div className="stagger-children">
-      <h2 className="mb-1 text-lg font-semibold text-text-primary">AI Agents</h2>
-      <p className="mb-6 text-xs text-text-secondary">
+      <h2 className="mb-1 text-lg font-semibold text-foreground">AI Agents</h2>
+      <p className="mb-6 text-xs text-muted-foreground">
         Configure AI providers for your plugins
       </p>
 
@@ -43,16 +44,16 @@ export function AIAgentsSettings(): React.JSX.Element {
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-border">
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
+              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Provider
               </th>
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
+              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Status
               </th>
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
+              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 API Key
               </th>
-              <th className="pb-2 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
+              <th className="pb-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Actions
               </th>
             </tr>
@@ -75,13 +76,15 @@ export function AIAgentsSettings(): React.JSX.Element {
       {showAddForm ? (
         <AddCustomAgentForm onClose={() => setShowAddForm(false)} />
       ) : (
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => setShowAddForm(true)}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
+          className="mt-4"
         >
-          <Plus size={14} />
+          <Plus size={14} className="mr-1.5" />
           Add Custom Provider
-        </button>
+        </Button>
       )}
     </div>
   )

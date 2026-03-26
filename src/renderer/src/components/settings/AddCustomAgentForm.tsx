@@ -59,11 +59,11 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
   }
 
   const inputClass =
-    'w-full rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition'
+    'w-full rounded-lg border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition'
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 rounded-xl border border-border/50 bg-surface-elevated/30 p-4">
-      <h3 className="mb-3 text-sm font-semibold text-text-primary">Add Custom Provider</h3>
+    <form onSubmit={handleSubmit} className="mt-4 rounded-xl border border-border/50 bg-secondary/30 p-4">
+      <h3 className="mb-3 text-sm font-semibold text-foreground">Add Custom Provider</h3>
 
       {/* Provider type toggle */}
       <div className="mb-3 flex gap-2">
@@ -72,8 +72,8 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
           onClick={() => setProviderType('cli')}
           className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
             providerType === 'cli'
-              ? 'bg-accent text-background'
-              : 'border border-border/50 text-text-secondary hover:border-accent hover:text-accent'
+              ? 'bg-primary text-background'
+              : 'border border-border/50 text-muted-foreground hover:border-primary hover:text-primary'
           }`}
         >
           CLI Agent
@@ -83,8 +83,8 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
           onClick={() => setProviderType('custom')}
           className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
             providerType === 'custom'
-              ? 'bg-accent text-background'
-              : 'border border-border/50 text-text-secondary hover:border-accent hover:text-accent'
+              ? 'bg-primary text-background'
+              : 'border border-border/50 text-muted-foreground hover:border-primary hover:text-primary'
           }`}
         >
           API Provider
@@ -94,7 +94,7 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
       <div className="grid grid-cols-2 gap-3">
         {/* Name */}
         <div>
-          <label className="mb-1 block text-xs font-medium text-text-secondary">
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">
             Name <span className="text-red-400">*</span>
           </label>
           <input
@@ -110,7 +110,7 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
         {providerType === 'cli' ? (
           /* CLI Command */
           <div>
-            <label className="mb-1 block text-xs font-medium text-text-secondary">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               Command <span className="text-red-400">*</span>
             </label>
             <input
@@ -125,7 +125,7 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
         ) : (
           /* Base URL */
           <div>
-            <label className="mb-1 block text-xs font-medium text-text-secondary">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               Base URL <span className="text-red-400">*</span>
             </label>
             <input
@@ -142,7 +142,7 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
         {/* API Key — only for API providers */}
         {providerType !== 'cli' && (
           <div>
-            <label className="mb-1 block text-xs font-medium text-text-secondary">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               API Key
             </label>
             <input
@@ -157,7 +157,7 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
 
         {/* Model */}
         <div>
-          <label className="mb-1 block text-xs font-medium text-text-secondary">
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">
             Model
           </label>
           <input
@@ -173,14 +173,14 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
       <div className="mt-4 flex items-center gap-2">
         <button
           type="submit"
-          className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-background transition hover:bg-accent/90"
+          className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-background transition hover:bg-primary/90"
         >
           Add Provider
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="px-3 py-1.5 text-sm text-text-secondary transition hover:text-text-primary"
+          className="px-3 py-1.5 text-sm text-muted-foreground transition hover:text-foreground"
         >
           Cancel
         </button>

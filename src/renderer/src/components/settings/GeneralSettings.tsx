@@ -3,7 +3,10 @@ import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { PLUGINS } from '../../plugins/registry'
-import { GlassCard, GlassBadge, GlassSkeleton } from '@renderer/components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { Badge } from '@renderer/components/ui/badge'
+import { Skeleton } from '@renderer/components/ui/skeleton'
+import { cn } from '@renderer/lib/utils'
 import { getClassicThemes, getNewThemes } from '@renderer/lib/theme-metadata'
 import type { ThemeMeta } from '@renderer/lib/theme-metadata'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
@@ -33,51 +36,55 @@ function ThemeCard({
   onSelect: () => void
 }): React.JSX.Element {
   return (
-    <GlassCard
-      variant={isActive ? 'selected' : 'interactive'}
-      onClick={onSelect}
-      className={`relative cursor-pointer ${isActive ? 'border-accent shadow-[0_0_8px_var(--color-accent-glow)]' : ''}`}
-    >
-      <span className="text-sm font-medium text-text-primary">{theme.label}</span>
-      <div className="mt-2 flex gap-1.5">
-        {Object.values(theme.colors).map((color, i) => (
-          <span
-            key={i}
-            className="h-3 w-3 rounded-full border border-border/20"
-            style={{ backgroundColor: color || 'var(--surface-elevated)' }}
-          />
-        ))}
-      </div>
-
-      {/* Mini glass preview strip */}
-      <div
-        className="mt-2 h-5 w-20 rounded-sm overflow-hidden relative"
-        style={{ backgroundColor: theme.colors.bg }}
-      >
-        <div
-          className="absolute inset-0.5 rounded-sm border"
-          style={{
-            backgroundColor: 'rgba(255,255,255,0.03)',
-            borderColor: 'rgba(255,255,255,0.08)'
-          }}
-        />
-        <div
-          className="absolute bottom-0 left-1 right-1 h-px"
-          style={{ backgroundColor: theme.colors.accent }}
-        />
-      </div>
-
-      {/* Active check icon OR NEW badge for new collection themes */}
-      {isActive ? (
-        <Check size={14} className="absolute top-2 right-2 text-accent" />
-      ) : (
-        theme.section === 'new' && (
-          <GlassBadge variant="accent" className="absolute top-2 right-2 text-[10px]">
-            NEW
-          </GlassBadge>
-        )
+    <Card
+      className={cn(
+        'relative cursor-pointer rounded-[22px] transition-all duration-200 hover:-translate-y-0.5',
+        isActive && 'border-primary shadow-[0_0_8px_hsl(var(--primary)/0.3)]'
       )}
-    </GlassCard>
+      onClick={onSelect}
+    >
+      <CardContent className="p-4">
+        <span className="text-sm font-medium text-foreground">{theme.label}</span>
+        <div className="mt-2 flex gap-1.5">
+          {Object.values(theme.colors).map((color, i) => (
+            <span
+              key={i}
+              className="h-3 w-3 rounded-full border border-border/20"
+              style={{ backgroundColor: color || 'hsl(var(--card))' }}
+            />
+          ))}
+        </div>
+
+        {/* Mini preview strip */}
+        <div
+          className="mt-2 h-5 w-20 rounded-sm overflow-hidden relative"
+          style={{ backgroundColor: theme.colors.bg }}
+        >
+          <div
+            className="absolute inset-0.5 rounded-sm border"
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.03)',
+              borderColor: 'rgba(255,255,255,0.08)'
+            }}
+          />
+          <div
+            className="absolute bottom-0 left-1 right-1 h-px"
+            style={{ backgroundColor: theme.colors.accent }}
+          />
+        </div>
+
+        {/* Active check icon OR NEW badge for new collection themes */}
+        {isActive ? (
+          <Check size={14} className="absolute top-2 right-2 text-primary" />
+        ) : (
+          theme.section === 'new' && (
+            <Badge variant="default" className="absolute top-2 right-2 text-[10px]">
+              NEW
+            </Badge>
+          )
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
@@ -99,8 +106,10 @@ export function GeneralSettings(): React.JSX.Element {
   if (isLoading) {
     return (
       <div className="p-4 space-y-3">
-        <GlassSkeleton variant="card" />
-        <GlassSkeleton variant="text" lines={3} />
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-4 w-2/3" />
       </div>
     )
   }
@@ -185,35 +194,22 @@ export function GeneralSettings(): React.JSX.Element {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-1 text-lg font-semibold text-[var(--text-primary)]">General</h2>
-        <p className="text-xs text-[var(--text-secondary)]">Application-wide preferences and defaults.</p>
+        <h2 className="mb-1 text-lg font-semibold text-foreground">General</h2>
+        <p className="text-xs text-muted-foreground">Application-wide preferences and defaults.</p>
       </div>
 
       {/* ── Theme Selector Grid (visual centerpiece) ── */}
-      <GlassCard className="p-6 border-[var(--color-accent)]/10 shadow-[0_0_24px_-6px_var(--color-accent-glow)]">
-        <h3 className="mb-1 text-lg font-semibold text-[var(--text-primary)]">Theme</h3>
-        <p className="mb-5 text-xs text-[var(--text-secondary)]">Color theme for the application</p>
-
-        <div className="space-y-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-3">Classic Themes</p>
-            <motion.div className="grid grid-cols-3 gap-3" variants={staggerContainer} initial="hidden" animate="visible">
-              {classicThemes.map((theme) => (
-                <motion.div key={theme.value} variants={staggerItem}>
-                  <ThemeCard
-                    theme={theme}
-                    isActive={currentTheme === theme.value}
-                    onSelect={() => { triggerThemeCrossfade(); setSetting('general.theme', theme.value); }}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-          {newThemes.length > 0 && (
+      <Card className="rounded-[22px] border-primary/10 shadow-[0_0_24px_-6px_hsl(var(--primary)/0.15)]">
+        <CardHeader>
+          <CardTitle className="text-lg">Theme</CardTitle>
+          <p className="text-xs text-muted-foreground">Color theme for the application</p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-3">New Collection</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Classic Themes</p>
               <motion.div className="grid grid-cols-3 gap-3" variants={staggerContainer} initial="hidden" animate="visible">
-                {newThemes.map((theme) => (
+                {classicThemes.map((theme) => (
                   <motion.div key={theme.value} variants={staggerItem}>
                     <ThemeCard
                       theme={theme}
@@ -224,57 +220,83 @@ export function GeneralSettings(): React.JSX.Element {
                 ))}
               </motion.div>
             </div>
-          )}
-        </div>
-      </GlassCard>
+            {newThemes.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">New Collection</p>
+                <motion.div className="grid grid-cols-3 gap-3" variants={staggerContainer} initial="hidden" animate="visible">
+                  {newThemes.map((theme) => (
+                    <motion.div key={theme.value} variants={staggerItem}>
+                      <ThemeCard
+                        theme={theme}
+                        isActive={currentTheme === theme.value}
+                        onSelect={() => { triggerThemeCrossfade(); setSetting('general.theme', theme.value); }}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── Appearance ── */}
-      <GlassCard className="p-6">
-        <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Appearance</h3>
-        <div className="space-y-1">
-          <SettingsField
-            field={hljsThemeField}
-            value={getSetting('general.hljsTheme')}
-            onChange={(value) => setSetting('general.hljsTheme', value)}
-          />
-        </div>
-      </GlassCard>
+      <Card className="rounded-[22px]">
+        <CardHeader>
+          <CardTitle className="text-lg">Appearance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1">
+            <SettingsField
+              field={hljsThemeField}
+              value={getSetting('general.hljsTheme')}
+              onChange={(value) => setSetting('general.hljsTheme', value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── Behavior ── */}
-      <GlassCard className="p-6">
-        <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Behavior</h3>
-        <div className="space-y-1">
-          <SettingsField
-            field={defaultViewField}
-            value={getSetting('general.defaultView')}
-            onChange={(value) => setSetting('general.defaultView', value)}
-          />
-
-          <SettingsField
-            field={showWelcomeField}
-            value={getSetting('general.showWelcomeOnStart')}
-            onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
-          />
-        </div>
-      </GlassCard>
+      <Card className="rounded-[22px]">
+        <CardHeader>
+          <CardTitle className="text-lg">Behavior</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1">
+            <SettingsField
+              field={defaultViewField}
+              value={getSetting('general.defaultView')}
+              onChange={(value) => setSetting('general.defaultView', value)}
+            />
+            <SettingsField
+              field={showWelcomeField}
+              value={getSetting('general.showWelcomeOnStart')}
+              onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── Export ── */}
-      <GlassCard className="p-6">
-        <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Export</h3>
-        <div className="space-y-1">
-          <SettingsField
-            field={pdfStyleField}
-            value={getSetting('general.pdfStyle')}
-            onChange={(value) => setSetting('general.pdfStyle', value)}
-          />
-
-          <SettingsField
-            field={workingDirectoryField}
-            value={getSetting('general.workingDirectory')}
-            onChange={(value) => setSetting('general.workingDirectory', value)}
-          />
-        </div>
-      </GlassCard>
+      <Card className="rounded-[22px]">
+        <CardHeader>
+          <CardTitle className="text-lg">Export</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1">
+            <SettingsField
+              field={pdfStyleField}
+              value={getSetting('general.pdfStyle')}
+              onChange={(value) => setSetting('general.pdfStyle', value)}
+            />
+            <SettingsField
+              field={workingDirectoryField}
+              value={getSetting('general.workingDirectory')}
+              onChange={(value) => setSetting('general.workingDirectory', value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
