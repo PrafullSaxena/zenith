@@ -27,21 +27,25 @@
   font-display: swap;
 }
 
-/* -- shadcn HSL Token System (zenith-violet theme) ----------------------- */
-:root, [data-theme="zenith-violet"] {
-  /* Base surfaces — slightly lighter than OLED black for depth */
+/* =========================================================================
+   Zenith Violet Theme — CSS Custom Properties
+   ========================================================================= */
+:root {
+  color-scheme: dark;
+
+  /* Base surfaces */
   --background: 240 10% 5.5%;
   --foreground: 0 0% 95%;
   --card: 240 6% 10%;
   --card-foreground: 0 0% 95%;
-  --popover: 240 6% 10%;
+  --popover: 240 6% 12%;
   --popover-foreground: 0 0% 95%;
 
-  /* Accent */
+  /* Accent — Violet */
   --primary: 263 70% 58%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary surfaces — more visible */
+  /* Secondary surfaces */
   --secondary: 240 4% 18%;
   --secondary-foreground: 0 0% 85%;
   --muted: 240 4% 18%;
@@ -57,25 +61,22 @@
   --warning: 38 92% 50%;
   --info: 217 91% 60%;
 
-  /* Chrome — more visible borders */
-  --border: 240 4% 20%;
-  --input: 240 4% 20%;
+  /* Chrome */
+  --border: 240 4% 22%;
+  --input: 240 4% 22%;
   --ring: 263 70% 58%;
 
   /* Radius */
   --radius: 1rem;
-  --radius-lg: 1.75rem;
-  --radius-sm: 0.5rem;
-  --radius-pill: 9999px;
 
-  /* Sidebar (shadcn sidebar component tokens) */
+  /* Sidebar */
   --sidebar: 240 6% 10%;
   --sidebar-foreground: 0 0% 95%;
   --sidebar-primary: 263 70% 58%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 240 4% 18%;
   --sidebar-accent-foreground: 0 0% 85%;
-  --sidebar-border: 240 4% 20%;
+  --sidebar-border: 240 4% 22%;
   --sidebar-ring: 263 70% 58%;
 
   /* Chart colors */
@@ -86,51 +87,80 @@
   --chart-5: 0 63% 51%;
 }
 
-@layer base {
-  * {
-    border-color: hsl(var(--border));
-  }
-}
-
+/* =========================================================================
+   Tailwind v4 Theme Registration
+   Maps CSS custom properties to Tailwind utility classes.
+   This is what makes bg-card, text-primary, border-border etc work.
+   ========================================================================= */
 @theme {
-  /* Legacy OKLCh tokens -- used by Glass components, remove in Phase 5 */
-  --color-background: oklch(10% 0 0);
-  --color-surface: oklch(14% 0 0);
-  --color-surface-elevated: oklch(18% 0 0);
-  --color-border: oklch(20% 0 0);
-  --color-accent: oklch(72% 0.15 195); /* Neon cyan ~#00d4d4 */
-  --color-accent-glow: oklch(72% 0.15 195 / 0.2);
-  --color-text-primary: oklch(90% 0 0);
-  --color-text-secondary: oklch(55% 0 0);
-
-  /* Semantic status colors */
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.2 25);
-  --color-error-muted: oklch(65% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.15 250);
-  --color-info-muted: oklch(70% 0.15 250 / 0.15);
-
-  /* Code diff colors */
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-
+  /* Fonts */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-  --radius: 1rem;
 
-  /* Glass design tokens — two-tier blur strategy:
-     Blur tier (backdrop-blur with --glass-blur): GlassCard, GlassModal, GlassToast
-     Translucent tier (--glass-bg only, no blur): GlassSurface, GlassInput, GlassSelect, GlassButton, GlassBadge, GlassTab
-     Nested surfaces always use translucent tier regardless of parent. */
-  --glass-bg: oklch(100% 0 0 / 0.06);
-  --glass-border: oklch(100% 0 0 / 0.10);
-  --glass-blur: 24px;
-  --glass-glow: 0 0 0 2px oklch(72% 0.15 195 / 0.2);
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.75rem;
+  --radius-pill: 9999px;
+
+  /* ── Colors ── */
+  /* Surfaces */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  /* Primary */
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  /* Secondary */
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  /* Muted */
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  /* Accent */
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  /* Status */
+  --color-destructive: hsl(var(--destructive));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-info: hsl(var(--info));
+
+  /* Chrome */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Sidebar */
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Charts */
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  /* Code diff colors */
+  --color-diff-add: hsl(142 71% 45% / 0.12);
+  --color-diff-del: hsl(0 63% 51% / 0.12);
+  --color-diff-add-text: hsl(142 71% 55%);
+  --color-diff-del-text: hsl(0 63% 65%);
 
   /* Timing tokens */
   --duration-instant: 100ms;
@@ -145,448 +175,22 @@
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Theme: Portfolio (amber accent on slate-navy) ─────────────── */
-[data-theme="portfolio"] {
-  --color-background: oklch(15% 0.03 260);
-  --color-surface: oklch(20% 0.03 255);
-  --color-surface-elevated: oklch(28% 0.03 255);
-  --color-border: oklch(38% 0.02 250);
-  --color-accent: oklch(77% 0.17 75);
-  --color-accent-glow: oklch(77% 0.17 75 / 0.2);
-  --color-text-primary: oklch(96% 0.005 240);
-  --color-text-secondary: oklch(70% 0.02 245);
-  --color-success: oklch(72% 0.18 145);
-  --color-success-muted: oklch(72% 0.18 145 / 0.15);
-  --color-error: oklch(63% 0.24 25);
-  --color-error-muted: oklch(63% 0.24 25 / 0.15);
-  --color-warning: oklch(77% 0.17 75);
-  --color-warning-muted: oklch(77% 0.17 75 / 0.15);
-  --color-info: oklch(60% 0.19 260);
-  --color-info-muted: oklch(60% 0.19 260 / 0.15);
-  --color-diff-add: oklch(72% 0.18 145 / 0.12);
-  --color-diff-del: oklch(63% 0.24 25 / 0.12);
-  --color-diff-add-text: oklch(80% 0.18 150);
-  --color-diff-del-text: oklch(68% 0.19 20);
-  --glass-glow: 0 0 0 2px oklch(77% 0.17 75 / 0.2);
-}
+/* =========================================================================
+   Base Layer — Global resets and defaults
+   ========================================================================= */
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
 
-/* ── Theme: Nord Aurora (frost blue on polar night) ────────────── */
-[data-theme="nord"] {
-  --color-background: oklch(16% 0.02 240);
-  --color-surface: oklch(20% 0.02 240);
-  --color-surface-elevated: oklch(24% 0.02 240);
-  --color-border: oklch(30% 0.02 240);
-  --color-accent: oklch(72% 0.12 220);
-  --color-accent-glow: oklch(72% 0.12 220 / 0.2);
-  --color-text-primary: oklch(92% 0.01 230);
-  --color-text-secondary: oklch(58% 0.02 230);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.18 25);
-  --color-error-muted: oklch(65% 0.18 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.12 220);
-  --color-info-muted: oklch(70% 0.12 220 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.18 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(72% 0.12 220 / 0.2);
-}
-
-/* ── Theme: Rosé Pine (dusty rose on warm dark) ────────────────── */
-[data-theme="rose-pine"] {
-  --color-background: oklch(14% 0.02 280);
-  --color-surface: oklch(18% 0.02 280);
-  --color-surface-elevated: oklch(22% 0.02 280);
-  --color-border: oklch(28% 0.03 280);
-  --color-accent: oklch(68% 0.14 350);
-  --color-accent-glow: oklch(68% 0.14 350 / 0.2);
-  --color-text-primary: oklch(88% 0.02 280);
-  --color-text-secondary: oklch(55% 0.03 280);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.18 25);
-  --color-error-muted: oklch(65% 0.18 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.14 250);
-  --color-info-muted: oklch(70% 0.14 250 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.18 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(68% 0.14 350 / 0.2);
-}
-
-/* ── Theme: Dracula (purple on cool charcoal) ──────────────────── */
-[data-theme="dracula"] {
-  --color-background: oklch(16% 0.02 270);
-  --color-surface: oklch(20% 0.02 270);
-  --color-surface-elevated: oklch(24% 0.02 270);
-  --color-border: oklch(30% 0.02 270);
-  --color-accent: oklch(65% 0.18 290);
-  --color-accent-glow: oklch(65% 0.18 290 / 0.2);
-  --color-text-primary: oklch(92% 0.01 270);
-  --color-text-secondary: oklch(58% 0.03 270);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(68% 0.2 0);
-  --color-error-muted: oklch(68% 0.2 0 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(65% 0.18 290);
-  --color-info-muted: oklch(65% 0.18 290 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(68% 0.2 0 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(65% 0.18 290 / 0.2);
-}
-
-/* ── Theme: Gruvbox (warm orange on earthy brown) ──────────────── */
-[data-theme="gruvbox"] {
-  --color-background: oklch(15% 0.02 60);
-  --color-surface: oklch(19% 0.02 60);
-  --color-surface-elevated: oklch(23% 0.02 60);
-  --color-border: oklch(30% 0.03 60);
-  --color-accent: oklch(72% 0.16 60);
-  --color-accent-glow: oklch(72% 0.16 60 / 0.2);
-  --color-text-primary: oklch(88% 0.03 80);
-  --color-text-secondary: oklch(55% 0.04 70);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.2 25);
-  --color-error-muted: oklch(65% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.12 220);
-  --color-info-muted: oklch(70% 0.12 220 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(72% 0.16 60 / 0.2);
-}
-
-/* ── Theme: Tokyo Night (indigo on deep navy) ──────────────────── */
-[data-theme="tokyo-night"] {
-  --color-background: oklch(13% 0.03 260);
-  --color-surface: oklch(17% 0.03 260);
-  --color-surface-elevated: oklch(21% 0.03 260);
-  --color-border: oklch(27% 0.03 260);
-  --color-accent: oklch(68% 0.16 265);
-  --color-accent-glow: oklch(68% 0.16 265 / 0.2);
-  --color-text-primary: oklch(90% 0.01 260);
-  --color-text-secondary: oklch(55% 0.03 260);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(68% 0.2 15);
-  --color-error-muted: oklch(68% 0.2 15 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(68% 0.16 265);
-  --color-info-muted: oklch(68% 0.16 265 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(68% 0.2 15 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(68% 0.16 265 / 0.2);
-}
-
-/* ── Theme: Synthwave '84 (hot pink on deep purple) ────────────── */
-[data-theme="synthwave"] {
-  --color-background: oklch(12% 0.04 300);
-  --color-surface: oklch(16% 0.04 300);
-  --color-surface-elevated: oklch(20% 0.04 300);
-  --color-border: oklch(26% 0.04 300);
-  --color-accent: oklch(68% 0.22 340);
-  --color-accent-glow: oklch(68% 0.22 340 / 0.25);
-  --color-text-primary: oklch(90% 0.02 300);
-  --color-text-secondary: oklch(55% 0.04 300);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(68% 0.22 340);
-  --color-error-muted: oklch(68% 0.22 340 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(65% 0.16 280);
-  --color-info-muted: oklch(65% 0.16 280 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(68% 0.22 340 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 350);
-  --glass-glow: 0 0 0 2px oklch(68% 0.22 340 / 0.2);
-}
-
-/* ── Theme: Catppuccin Mocha (lavender on warm charcoal) ───────── */
-[data-theme="catppuccin"] {
-  --color-background: oklch(15% 0.01 260);
-  --color-surface: oklch(19% 0.01 260);
-  --color-surface-elevated: oklch(23% 0.01 260);
-  --color-border: oklch(28% 0.02 260);
-  --color-accent: oklch(72% 0.12 280);
-  --color-accent-glow: oklch(72% 0.12 280 / 0.2);
-  --color-text-primary: oklch(90% 0.01 270);
-  --color-text-secondary: oklch(58% 0.02 260);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.18 20);
-  --color-error-muted: oklch(65% 0.18 20 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(72% 0.12 280);
-  --color-info-muted: oklch(72% 0.12 280 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.18 20 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(72% 0.12 280 / 0.2);
-}
-
-/* ── Theme: Emerald Matrix (green on true dark) ────────────────── */
-[data-theme="emerald"] {
-  --color-background: oklch(10% 0.01 155);
-  --color-surface: oklch(14% 0.01 155);
-  --color-surface-elevated: oklch(18% 0.01 155);
-  --color-border: oklch(22% 0.02 155);
-  --color-accent: oklch(72% 0.18 155);
-  --color-accent-glow: oklch(72% 0.18 155 / 0.2);
-  --color-text-primary: oklch(90% 0.01 155);
-  --color-text-secondary: oklch(52% 0.02 155);
-  --color-success: oklch(72% 0.18 155);
-  --color-success-muted: oklch(72% 0.18 155 / 0.15);
-  --color-error: oklch(65% 0.2 25);
-  --color-error-muted: oklch(65% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.15 195);
-  --color-info-muted: oklch(70% 0.15 195 / 0.15);
-  --color-diff-add: oklch(72% 0.18 155 / 0.12);
-  --color-diff-del: oklch(65% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(72% 0.18 155 / 0.2);
-}
-
-/* ── Theme: Solarized Dark (teal on blue-green) ────────────────── */
-[data-theme="solarized"] {
-  --color-background: oklch(15% 0.03 210);
-  --color-surface: oklch(19% 0.03 210);
-  --color-surface-elevated: oklch(23% 0.03 210);
-  --color-border: oklch(30% 0.03 210);
-  --color-accent: oklch(65% 0.12 205);
-  --color-accent-glow: oklch(65% 0.12 205 / 0.2);
-  --color-text-primary: oklch(85% 0.02 80);
-  --color-text-secondary: oklch(55% 0.03 200);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(60% 0.2 25);
-  --color-error-muted: oklch(60% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(65% 0.12 205);
-  --color-info-muted: oklch(65% 0.12 205 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(60% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(65% 0.12 205 / 0.2);
-}
-
-/* ── Theme: Crimson Night (red on warm dark) ───────────────────── */
-[data-theme="crimson"] {
-  --color-background: oklch(11% 0.01 15);
-  --color-surface: oklch(15% 0.01 15);
-  --color-surface-elevated: oklch(19% 0.01 15);
-  --color-border: oklch(24% 0.02 15);
-  --color-accent: oklch(62% 0.2 25);
-  --color-accent-glow: oklch(62% 0.2 25 / 0.2);
-  --color-text-primary: oklch(90% 0.01 30);
-  --color-text-secondary: oklch(55% 0.02 20);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(62% 0.2 25);
-  --color-error-muted: oklch(62% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.15 250);
-  --color-info-muted: oklch(70% 0.15 250 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(62% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(62% 0.2 25 / 0.2);
-}
-
-/* ── NEW COLLECTION ──────────────────────────────────────────────── */
-
-/* ── Theme: Midnight Bloom (orchid-magenta on deep violet) ───────── */
-[data-theme="midnight-bloom"] {
-  --color-background: oklch(12% 0.02 300);
-  --color-surface: oklch(16% 0.02 298);
-  --color-surface-elevated: oklch(20% 0.025 296);
-  --color-border: oklch(26% 0.03 295);
-  --color-accent: oklch(68% 0.18 330);
-  --color-accent-glow: oklch(68% 0.18 330 / 0.2);
-  --color-text-primary: oklch(92% 0.01 300);
-  --color-text-secondary: oklch(58% 0.02 300);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.2 25);
-  --color-error-muted: oklch(65% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.15 250);
-  --color-info-muted: oklch(70% 0.15 250 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(68% 0.18 330 / 0.2);
-}
-
-/* ── Theme: Copper Forge (burnished copper on warm charcoal) ─────── */
-[data-theme="copper-forge"] {
-  --color-background: oklch(12% 0.015 55);
-  --color-surface: oklch(16% 0.015 55);
-  --color-surface-elevated: oklch(20% 0.02 55);
-  --color-border: oklch(26% 0.02 55);
-  --color-accent: oklch(70% 0.14 62);
-  --color-accent-glow: oklch(70% 0.14 62 / 0.2);
-  --color-text-primary: oklch(92% 0.005 60);
-  --color-text-secondary: oklch(58% 0.01 55);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.2 25);
-  --color-error-muted: oklch(65% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.15 250);
-  --color-info-muted: oklch(70% 0.15 250 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(70% 0.14 62 / 0.2);
-}
-
-/* ── Theme: Ocean Depth (aquamarine on abyssal navy) ─────────────── */
-[data-theme="ocean-depth"] {
-  --color-background: oklch(11% 0.02 245);
-  --color-surface: oklch(15% 0.02 245);
-  --color-surface-elevated: oklch(19% 0.02 245);
-  --color-border: oklch(25% 0.02 240);
-  --color-accent: oklch(72% 0.12 190);
-  --color-accent-glow: oklch(72% 0.12 190 / 0.2);
-  --color-text-primary: oklch(92% 0.005 220);
-  --color-text-secondary: oklch(58% 0.015 230);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.2 25);
-  --color-error-muted: oklch(65% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.15 250);
-  --color-info-muted: oklch(70% 0.15 250 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(72% 0.12 190 / 0.2);
-}
-
-/* ── Theme: Nebula Dust (stellar pink-coral on deep space purple) ── */
-[data-theme="nebula-dust"] {
-  --color-background: oklch(12% 0.02 295);
-  --color-surface: oklch(16% 0.02 295);
-  --color-surface-elevated: oklch(20% 0.02 295);
-  --color-border: oklch(26% 0.025 290);
-  --color-accent: oklch(70% 0.16 20);
-  --color-accent-glow: oklch(70% 0.16 20 / 0.2);
-  --color-text-primary: oklch(92% 0.005 300);
-  --color-text-secondary: oklch(58% 0.015 295);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.2 25);
-  --color-error-muted: oklch(65% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.15 250);
-  --color-info-muted: oklch(70% 0.15 250 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(70% 0.16 20 / 0.2);
-}
-
-/* ── Theme: Obsidian (pure monochrome editorial) ─────────────────── */
-[data-theme="obsidian"] {
-  --color-background: oklch(10% 0 0);
-  --color-surface: oklch(14% 0 0);
-  --color-surface-elevated: oklch(18% 0 0);
-  --color-border: oklch(24% 0 0);
-  --color-accent: oklch(65% 0 0);
-  --color-accent-glow: oklch(65% 0 0 / 0.2);
-  --color-text-primary: oklch(92% 0 0);
-  --color-text-secondary: oklch(55% 0 0);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.2 25);
-  --color-error-muted: oklch(65% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.15 250);
-  --color-info-muted: oklch(70% 0.15 250 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(65% 0 0 / 0.2);
-}
-
-/* ── Theme: Jade Temple (jade-emerald on dark forest green) ──────── */
-[data-theme="jade-temple"] {
-  --color-background: oklch(12% 0.015 160);
-  --color-surface: oklch(16% 0.015 160);
-  --color-surface-elevated: oklch(20% 0.018 158);
-  --color-border: oklch(26% 0.02 158);
-  --color-accent: oklch(65% 0.10 160);
-  --color-accent-glow: oklch(65% 0.10 160 / 0.2);
-  --color-text-primary: oklch(92% 0.005 160);
-  --color-text-secondary: oklch(58% 0.01 158);
-  --color-success: oklch(72% 0.17 142);
-  --color-success-muted: oklch(72% 0.17 142 / 0.15);
-  --color-error: oklch(65% 0.2 25);
-  --color-error-muted: oklch(65% 0.2 25 / 0.15);
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-muted: oklch(75% 0.15 85 / 0.15);
-  --color-info: oklch(70% 0.15 250);
-  --color-info-muted: oklch(70% 0.15 250 / 0.15);
-  --color-diff-add: oklch(72% 0.17 142 / 0.12);
-  --color-diff-del: oklch(65% 0.2 25 / 0.12);
-  --color-diff-add-text: oklch(78% 0.15 142);
-  --color-diff-del-text: oklch(75% 0.18 25);
-  --glass-glow: 0 0 0 2px oklch(65% 0.10 160 / 0.2);
-}
-
-/* Force dark mode unconditionally — no class toggling */
-:root {
-  color-scheme: dark;
-}
-
-html,
-body {
-  background:
-    radial-gradient(circle at top, hsl(var(--primary) / 0.20), transparent 26%),
-    radial-gradient(ellipse at 80% 60%, hsl(30 40% 12% / 0.06), transparent 50%),
-    hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: var(--font-sans);
-  min-height: 100vh;
-  backdrop-filter: blur(1px);
+  body {
+    background:
+      radial-gradient(circle at 50% 0%, hsl(var(--primary) / 0.15), transparent 30%),
+      radial-gradient(ellipse at 80% 60%, hsl(30 40% 12% / 0.05), transparent 50%),
+      hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+  }
 }
 
 * {
@@ -606,758 +210,42 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface);
+  background: hsl(var(--background));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: hsl(var(--border));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
+  background: hsl(var(--muted-foreground) / 0.4);
 }
 
-/* Window drag region utilities */
-.drag-region {
-  -webkit-app-region: drag;
-}
-
-.no-drag {
-  -webkit-app-region: no-drag;
-}
-
-/* ── Dashboard entrance animation ──────────────────────────────── */
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.4s ease-out both;
-}
-
-/* Stagger children using nth-child delay */
-.stagger-children > * {
-  animation: fade-in-up 0.35s ease-out both;
-}
-.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
-.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
-.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
-.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
-.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
-.stagger-children > *:nth-child(8) { animation-delay: 420ms; }
-.stagger-children > *:nth-child(9) { animation-delay: 480ms; }
-.stagger-children > *:nth-child(10) { animation-delay: 540ms; }
-
-/* ── Route entrance animation ─────────────────────────────────── */
-@keyframes page-enter {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-page-enter {
-  animation: page-enter 0.3s ease-out both;
-}
-
-/* ── Tab content fade ─────────────────────────────────────────── */
-@keyframes tab-enter {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-tab-enter {
-  animation: tab-enter 0.2s ease-out both;
-}
-
-/* ── Hover lift — reusable for cards ───────────────────────────── */
-.hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.hover-lift:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px oklch(0% 0 0 / 0.3);
-}
-
-/* ── Focus ring utility ────────────────────────────────────────── */
-.focus-ring:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-/* -- Status dot pulse animation ---------------------------------------- */
-@keyframes status-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.animate-status-pulse {
-  animation: status-pulse 2s ease-in-out infinite;
-}
-
-/* ── Query Console Animations ───────────────────────────── */
-
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slide-down {
-  from { opacity: 0; transform: translateY(-6px); max-height: 0; }
-  to { opacity: 1; transform: translateY(0); max-height: 200px; }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 50%, 90% { transform: translateX(-2px); }
-  30%, 70% { transform: translateX(2px); }
-}
-
-@keyframes tooltip-fade-in {
-  from { opacity: 0; transform: translate(-50%, 2px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
-}
-
-@keyframes results-enter {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes flash-green {
-  0% { background-color: oklch(0.7 0.15 145 / 0.3); }
-  100% { background-color: transparent; }
-}
-
-.animate-slide-up { animation: slide-up 0.25s ease-out; }
-.animate-slide-down { animation: slide-down 0.2s ease-out; }
-.animate-shake { animation: shake 0.4s ease-in-out; }
-.animate-tooltip-fade-in { animation: tooltip-fade-in 0.15s ease-out; }
-.animate-results-enter { animation: results-enter 0.2s ease-out; }
-.animate-flash-green { animation: flash-green 0.5s ease-out; }
-
-/* ── Nebula Tiptap editor styles ────────────────────────────────── */
-.nebula-editor .tiptap {
-  outline: none;
-  color: var(--color-text-primary);
-  line-height: 1.7;
-  font-size: 0.9rem;
-  min-height: 200px;
-}
-
-.nebula-editor .tiptap p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  float: left;
-  color: var(--color-text-secondary);
-  opacity: 0.5;
-  pointer-events: none;
-  height: 0;
-}
-
-.nebula-editor .tiptap h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 1rem 0 0.5rem;
-  line-height: 1.3;
-}
-
-.nebula-editor .tiptap h2 {
-  font-size: 1.35rem;
-  font-weight: 600;
-  margin: 0.75rem 0 0.4rem;
-  line-height: 1.35;
-}
-
-.nebula-editor .tiptap h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0.5rem 0 0.3rem;
-  line-height: 1.4;
-}
-
-.nebula-editor .tiptap strong {
-  font-weight: 700;
-}
-
-.nebula-editor .tiptap em {
-  font-style: italic;
-}
-
-/* Force list styles — Tailwind preflight strips them with `list-style: none` */
-.nebula-editor .tiptap ul,
-.nebula-editor .tiptap .ProseMirror ul {
-  list-style: disc outside !important;
-  padding-left: 1.75rem !important;
-  margin: 0.25rem 0;
-}
-
-.nebula-editor .tiptap ol,
-.nebula-editor .tiptap .ProseMirror ol {
-  list-style: decimal outside !important;
-  padding-left: 1.75rem !important;
-  margin: 0.25rem 0;
-}
-
-.nebula-editor .tiptap li {
-  margin: 0.1rem 0;
-  display: list-item !important;
-}
-
-/* Nested list indentation */
-.nebula-editor .tiptap li > ul,
-.nebula-editor .tiptap li > ol {
-  padding-left: 1.5rem !important;
-  margin: 0.1rem 0;
-}
-
-/* Alternating bullet styles for nested unordered lists */
-.nebula-editor .tiptap ul ul { list-style-type: circle !important; }
-.nebula-editor .tiptap ul ul ul { list-style-type: square !important; }
-.nebula-editor .tiptap ul ul ul ul { list-style-type: disc !important; }
-
-/* ── Code block NodeView styles ──────────────────────────────────────── */
-
-/* Wrapper for the entire code block NodeView */
-.nebula-code-block {
-  position: relative;
-  margin: 0.75rem 0;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  overflow: hidden;
-  animation: code-block-enter 0.3s ease-out;
-}
-
-/* Left accent bar */
-.nebula-code-block::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--color-accent);
-  opacity: 0.4;
-  transition: opacity 0.2s;
-  border-radius: 8px 0 0 8px;
-  z-index: 1;
-}
-
-.nebula-code-block:hover::before {
-  opacity: 0.8;
-}
-
-/* Header bar with filename, language selector, and action buttons */
-.code-block-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface-elevated);
-  opacity: 0.85;
-  user-select: none;
-}
-
-.nebula-code-block:hover .code-block-header {
-  opacity: 1;
-}
-
-/* Filename display */
-.code-block-filename {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--color-text-secondary);
-  opacity: 0.7;
-  letter-spacing: 0.02em;
-}
-
-/* Action buttons (language selector, format, copy, diagram toggle) */
-.code-block-action-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.6rem;
-  font-family: var(--font-mono);
-  color: var(--color-text-secondary);
-  opacity: 0.7;
-  transition: all 0.15s ease;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-}
-
-.code-block-action-btn:hover {
-  opacity: 1;
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-}
-
-/* Buttons only visible on hover */
-.code-block-hover-action {
-  opacity: 0;
-}
-
-.nebula-code-block:hover .code-block-hover-action {
-  opacity: 0.7;
-}
-
-.nebula-code-block:hover .code-block-hover-action:hover {
-  opacity: 1;
-}
-
-/* Language picker dropdown */
-.code-block-lang-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 50;
-  max-height: 240px;
-  overflow-y: auto;
-  min-width: 120px;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-surface-elevated);
-  box-shadow: 0 8px 24px oklch(0 0 0 / 0.3);
-  padding: 0.25rem;
-  margin-top: 0.25rem;
-}
-
-.code-block-lang-option {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.3rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.65rem;
-  color: var(--color-text-secondary);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.code-block-lang-option:hover {
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-}
-
-/* Code content area (pre + code) */
-.code-block-pre {
-  margin: 0;
-  padding: 0.75rem 1rem 0.75rem 1.25rem;
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  line-height: 1.6;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-}
-
-.code-block-pre code {
-  background: none;
-  padding: 0;
-  border-radius: 0;
-  font-family: inherit;
-  font-size: inherit;
-}
-
-/* Entrance animation */
-@keyframes code-block-enter {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Fallback for any bare pre tags (e.g. from paste or non-NodeView context) */
-.nebula-editor .tiptap pre:not(.code-block-pre) {
-  position: relative;
-  margin: 0.75rem 0;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  padding: 0.75rem 1rem 0.75rem 1.25rem;
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  line-height: 1.6;
-}
-
-/* ── Inline code (not in code blocks) ────────────────────────────────── */
-
-.nebula-editor .tiptap code {
-  background: var(--color-surface-elevated);
-  border-radius: 3px;
-  padding: 0.15rem 0.35rem;
-  font-family: var(--font-mono);
-  font-size: 0.85em;
-}
-
-.nebula-editor .tiptap blockquote {
-  border-left: 3px solid var(--color-accent);
-  padding-left: 1rem;
-  margin: 0.5rem 0;
-  color: var(--color-text-secondary);
-}
-
-.nebula-editor .tiptap hr {
-  border: none;
-  border-top: 1px solid var(--color-border);
-  margin: 1rem 0;
-}
-
-/* ── Nebula editor: link styles ────────────────────────────────────── */
-.nebula-editor .tiptap a {
-  color: var(--color-accent);
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-/* ── Nebula editor: image styles ───────────────────────────────────── */
-.nebula-editor .tiptap img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 6px;
-  margin: 0.5rem 0;
-}
-
-.nebula-editor .tiptap img.ProseMirror-selectednode {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-/* ── Nebula editor: table styles ───────────────────────────────────── */
-.nebula-editor table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1rem 0;
-}
-
-.nebula-editor th,
-.nebula-editor td {
-  border: 1px solid oklch(0.3 0 0);
-  padding: 0.5rem 0.75rem;
-  min-width: 100px;
-  vertical-align: top;
-  position: relative;
-}
-
-.nebula-editor th {
-  background: oklch(0.2 0 0);
-  font-weight: 600;
-}
-
-.nebula-editor .column-resize-handle {
-  position: absolute;
-  right: -2px;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: oklch(0.65 0.15 185);
-  cursor: col-resize;
-}
-
-.nebula-editor .selectedCell::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: oklch(0.65 0.15 185 / 0.1);
-  pointer-events: none;
-}
-
-.nebula-editor .tableWrapper {
-  overflow-x: auto;
-  margin: 1rem 0;
-}
-
-/* ── Nebula editor: line numbers ─────────────────────────────────── */
-.nebula-line-numbers .ProseMirror {
-  counter-reset: editor-line;
-  position: relative;
-  padding-left: 0.9rem;
-}
-
-/* Gutter border — subtle vertical line separating numbers from content */
-.nebula-line-numbers .ProseMirror::after {
-  content: '';
-  position: absolute;
-  left: 0.7rem;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--color-border);
-  opacity: 0.2;
-  pointer-events: none;
-}
-
-/* Count top-level blocks (exclude ol/ul containers — they aren't lines) */
-.nebula-line-numbers .ProseMirror > p,
-.nebula-line-numbers .ProseMirror > h1,
-.nebula-line-numbers .ProseMirror > h2,
-.nebula-line-numbers .ProseMirror > h3,
-.nebula-line-numbers .ProseMirror > h4,
-.nebula-line-numbers .ProseMirror > h5,
-.nebula-line-numbers .ProseMirror > h6,
-.nebula-line-numbers .ProseMirror > blockquote,
-.nebula-line-numbers .ProseMirror > hr,
-.nebula-line-numbers .ProseMirror > .tableWrapper {
-  counter-increment: editor-line;
-}
-
-/* Count list items at every nesting depth */
-.nebula-line-numbers .ProseMirror li {
-  counter-increment: editor-line;
-}
-
-/* Hide line numbers on deeply nested list items (3+ levels) — too cluttered */
-.nebula-line-numbers .ProseMirror li li li::before {
-  content: none;
-}
-
-/* Count code block NodeView wrappers and bare pre tags */
-.nebula-line-numbers .ProseMirror > pre,
-.nebula-line-numbers .ProseMirror > [data-node-view-wrapper] {
-  counter-increment: editor-line;
-}
-
-/* Line number display — elements WITHOUT position: relative
-   ::before floats up to .ProseMirror as containing block */
-.nebula-line-numbers .ProseMirror > p::before,
-.nebula-line-numbers .ProseMirror > h1::before,
-.nebula-line-numbers .ProseMirror > h2::before,
-.nebula-line-numbers .ProseMirror > h3::before,
-.nebula-line-numbers .ProseMirror > h4::before,
-.nebula-line-numbers .ProseMirror > h5::before,
-.nebula-line-numbers .ProseMirror > h6::before,
-.nebula-line-numbers .ProseMirror > blockquote::before,
-.nebula-line-numbers .ProseMirror > hr::before,
-.nebula-line-numbers .ProseMirror > .tableWrapper::before,
-.nebula-line-numbers .ProseMirror li::before {
-  content: counter(editor-line);
-  position: absolute;
-  left: 0;
-  width: 0.55rem;
-  text-align: right;
-  color: var(--color-text-secondary);
-  opacity: 0.2;
-  font-size: 0.5rem;
-  font-family: var(--font-mono);
-  line-height: inherit;
-  user-select: none;
-  pointer-events: none;
-}
-
-/* pre/nodeview has position: relative — its ::before is relative to itself,
-   so offset left to reach the gutter */
-.nebula-line-numbers .ProseMirror > pre::before {
-  content: counter(editor-line);
-  position: absolute;
-  left: -0.9rem;
-  width: 0.55rem;
-  text-align: right;
-  top: 0.75rem;
-  color: var(--color-text-secondary);
-  opacity: 0.2;
-  font-size: 0.5rem;
-  font-family: var(--font-mono);
-  user-select: none;
-  pointer-events: none;
-}
-
-/* Don't show line numbers for empty placeholder paragraph */
-.nebula-line-numbers .ProseMirror > p.is-editor-empty:first-child::before {
-  content: none;
-}
-
-/* ── Equalizer animation keyframes (for voice recording FAB) ──────── */
-@keyframes equalizer-1 { 0%, 100% { height: 4px; } 50% { height: 16px; } }
-@keyframes equalizer-2 { 0%, 100% { height: 8px; } 50% { height: 20px; } }
-@keyframes equalizer-3 { 0%, 100% { height: 6px; } 50% { height: 14px; } }
-@keyframes equalizer-4 { 0%, 100% { height: 10px; } 50% { height: 18px; } }
-
-/* Cortex UI/UX revamp — new keyframes */
-
-@property --angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@keyframes border-rotate {
-  from { --angle: 0deg; }
-  to { --angle: 360deg; }
-}
-
-@keyframes typing-dot {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-  30% { transform: translateY(-4px); opacity: 1; }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes toast-progress {
-  from { width: 100%; }
-  to { width: 0%; }
-}
-
-@keyframes donut-fill {
-  from { stroke-dashoffset: var(--circumference); }
-  to { stroke-dashoffset: var(--target-offset); }
-}
-
-@keyframes ring-progress {
-  from { stroke-dashoffset: var(--ring-circumference); }
-  to { stroke-dashoffset: var(--ring-target); }
-}
-
-/* ── tldraw canvas overrides ─────────────────────────────────────── */
-
-/* tldraw fills its parent, which must have explicit dimensions.
-   Use the recommended tldraw__editor wrapper class for proper sizing. */
-.tldraw__editor {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-/* Force dark theme colors on tldraw.
-   tldraw icons use background-color: currentColor with CSS masks.
-   currentColor inherits from --tl-color-text which defaults to black
-   (light mode) if .tl-theme__dark is not applied before first paint.
-   These variables ensure icons are visible on our dark background. */
-.tldraw__editor .tl-container {
-  --tl-color-text: hsl(210, 17%, 98%);
-  --tl-color-text-0: hsl(0, 9%, 94%);
-  --tl-color-text-1: hsl(0, 0%, 85%);
-  --tl-color-text-3: hsl(204, 4%, 75%);
-  --tl-color-background: hsl(240, 5%, 6.5%);
-}
-
-/* ── Typography Scale ──────────────────────────────────────────── */
-
-@utility text-hero {
-  font-size: 2.5rem;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-}
-
-@utility text-h1 {
-  font-size: 1.875rem;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-@utility text-h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-}
-
-@utility text-h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-}
-
-@utility text-body {
-  font-size: 0.875rem;
-  font-weight: 400;
-  line-height: 1.6;
-  letter-spacing: 0;
-}
-
-@utility text-small {
-  font-size: 0.8125rem;
-  font-weight: 400;
-  line-height: 1.5;
-  letter-spacing: 0.01em;
-}
-
-@utility text-caption {
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.4;
-  letter-spacing: 0.02em;
-}
-
-@utility text-mono {
-  font-size: 0.8125rem;
-  font-weight: 400;
-  line-height: 1.6;
-  letter-spacing: 0.02em;
-  font-family: var(--font-mono);
-}
-
-/* ── Theme crossfade transition ──────────────────────────────── */
-/* Applied briefly via JS class toggle on theme switch to avoid
-   transitions on initial page load. Targets key color properties
-   on html, body, and root for a smooth ~300ms color morph. */
-.theme-transitioning,
-.theme-transitioning *,
-.theme-transitioning *::before,
-.theme-transitioning *::after {
-  transition:
-    background-color 300ms var(--ease-smooth, ease),
-    color 300ms var(--ease-smooth, ease),
-    border-color 300ms var(--ease-smooth, ease),
-    box-shadow 300ms var(--ease-smooth, ease) !important;
-}
-
-/* ── Global focus-visible ring ──────────────────────────────── */
-/* Baseline visible focus indicator for keyboard navigation.
-   Components with their own focus-visible:ring-* classes
-   override this via specificity. */
+/* Focus visible for accessibility */
 :focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
 }
 
-/* ── Reduced motion ─────────────────────────────────────────── */
-/* Nuclear option: disables ALL CSS animations and transitions
-   when the user prefers reduced motion. Framer Motion already
-   respects its own useReducedMotion, but this catches plain CSS
-   transitions on all components. */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Electron window drag region */
+.drag-region {
+  -webkit-app-region: drag;
+}
+.drag-region .no-drag,
+.drag-region button,
+.drag-region a,
+.drag-region input,
+.drag-region select {
+  -webkit-app-region: no-drag;
 }
