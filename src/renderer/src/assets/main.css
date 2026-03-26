@@ -27,8 +27,73 @@
   font-display: swap;
 }
 
+/* -- shadcn HSL Token System (zenith-violet theme) ----------------------- */
+:root, [data-theme="zenith-violet"] {
+  /* Base surfaces */
+  --background: 240 10% 4%;
+  --foreground: 0 0% 95%;
+  --card: 240 6% 8%;
+  --card-foreground: 0 0% 95%;
+  --popover: 240 6% 8%;
+  --popover-foreground: 0 0% 95%;
+
+  /* Accent */
+  --primary: 263 70% 58%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary surfaces */
+  --secondary: 240 4% 16%;
+  --secondary-foreground: 0 0% 85%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 5% 65%;
+
+  /* Accent alias */
+  --accent: 263 70% 58%;
+  --accent-foreground: 0 0% 100%;
+
+  /* Status colors */
+  --destructive: 0 63% 51%;
+  --success: 142 71% 45%;
+  --warning: 38 92% 50%;
+  --info: 217 91% 60%;
+
+  /* Chrome */
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 263 70% 58%;
+
+  /* Radius */
+  --radius: 1rem;
+  --radius-lg: 1.75rem;
+  --radius-sm: 0.5rem;
+  --radius-pill: 9999px;
+
+  /* Sidebar (shadcn sidebar component tokens) */
+  --sidebar: 240 6% 8%;
+  --sidebar-foreground: 0 0% 95%;
+  --sidebar-primary: 263 70% 58%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 4% 16%;
+  --sidebar-accent-foreground: 0 0% 85%;
+  --sidebar-border: 240 4% 16%;
+  --sidebar-ring: 263 70% 58%;
+
+  /* Chart colors */
+  --chart-1: 263 70% 58%;
+  --chart-2: 142 71% 45%;
+  --chart-3: 217 91% 60%;
+  --chart-4: 38 92% 50%;
+  --chart-5: 0 63% 51%;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+}
+
 @theme {
-  /* Dark-only palette — no dark: prefix needed; apply class="dark" to html unconditionally */
+  /* Legacy OKLCh tokens -- used by Glass components, remove in Phase 5 */
   --color-background: oklch(10% 0 0);
   --color-surface: oklch(14% 0 0);
   --color-surface-elevated: oklch(18% 0 0);
@@ -56,7 +121,7 @@
 
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-  --radius: 0.5rem;
+  --radius: 1rem;
 
   /* Glass design tokens — two-tier blur strategy:
      Blur tier (backdrop-blur with --glass-blur): GlassCard, GlassModal, GlassToast
@@ -514,8 +579,10 @@
 
 html,
 body {
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
+  background: radial-gradient(circle at top, hsl(var(--primary) / 0.16), transparent 26%), hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  min-height: 100vh;
 }
 
 * {
