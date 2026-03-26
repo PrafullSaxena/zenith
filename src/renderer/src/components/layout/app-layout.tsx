@@ -24,7 +24,7 @@ export function AppLayout(): React.JSX.Element {
           <div className="drag-region h-8 w-full flex-shrink-0" />
 
           {/* Main content — fills remaining height, route transitions via AnimatePresence */}
-          <main className="min-h-0 flex-1 overflow-y-auto p-4">
+          <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-4">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
@@ -32,7 +32,7 @@ export function AppLayout(): React.JSX.Element {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="h-full"
+                className="flex h-full flex-col"
               >
                 <Outlet />
               </motion.div>
