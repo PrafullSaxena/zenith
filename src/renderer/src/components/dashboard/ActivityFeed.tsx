@@ -52,12 +52,15 @@ interface ActivityFeedProps {
   entries: ActivityEntry[]
   showViewAll?: boolean
   onViewAll?: () => void
+  /** When true, removes the max-height cap so the feed fills its parent. */
+  fullHeight?: boolean
 }
 
 export function ActivityFeed({
   entries,
   showViewAll,
-  onViewAll
+  onViewAll,
+  fullHeight
 }: ActivityFeedProps): React.JSX.Element {
   const isMounted = useRef(false)
 
@@ -81,7 +84,7 @@ export function ActivityFeed({
 
   return (
     <div className="overflow-hidden rounded-xl">
-      <ScrollArea className="max-h-[340px]">
+      <ScrollArea className={fullHeight ? '' : 'max-h-[340px]'}>
         <motion.div
           variants={staggerContainer}
           initial={shouldAnimate ? 'hidden' : false}

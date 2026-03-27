@@ -130,7 +130,7 @@ function CodeFenceBlock({
               type="button"
               onClick={() => onRunQuery(trimmedCode)}
               disabled={execState?.isLoading}
-              className="flex items-center gap-1 rounded bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent transition-colors hover:bg-accent/25 disabled:opacity-50"
+              className="flex items-center gap-1 rounded-lg bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent transition-colors hover:bg-accent/25 disabled:opacity-50"
             >
               {execState?.isLoading ? (
                 <>
@@ -448,7 +448,7 @@ export function renderInline(text: string): React.ReactNode {
       parts.push(
         <code
           key={`c-${match.index}`}
-          className="rounded bg-surface px-1.5 py-0.5 font-mono text-[12px] text-accent"
+          className="rounded-lg bg-surface px-1.5 py-0.5 font-mono text-[12px] text-accent"
         >
           {match[4]}
         </code>

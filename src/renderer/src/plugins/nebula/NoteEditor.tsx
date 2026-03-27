@@ -526,7 +526,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={() => void handleCopyRaw()}
-              className={`p-1 rounded transition-colors ${copiedMode === 'raw' ? 'text-green-400' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
+              className={`p-1 rounded-lg transition-colors ${copiedMode === 'raw' ? 'text-green-400' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title="Copy as plain text"
             >
               {copiedMode === 'raw' ? <Check size={13} className={copiedMode === 'raw' ? 'text-green-400' : undefined} /> : <ClipboardCopy size={13} className={copiedMode === 'raw' ? 'text-green-400' : undefined} />}
@@ -535,7 +535,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={() => void handleCopyMarkdown()}
-              className={`p-1 rounded transition-colors ${copiedMode === 'markdown' ? 'text-green-400' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
+              className={`p-1 rounded-lg transition-colors ${copiedMode === 'markdown' ? 'text-green-400' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title="Copy as markdown"
             >
               {copiedMode === 'markdown' ? <Check size={13} className={copiedMode === 'markdown' ? 'text-green-400' : undefined} /> : <FileText size={13} className={copiedMode === 'markdown' ? 'text-green-400' : undefined} />}
@@ -545,7 +545,7 @@ export default function NoteEditor({
               type="button"
               onClick={() => void handleExportPdf()}
               disabled={isExportingPdf}
-              className="p-1 rounded transition-colors text-muted-foreground/40 hover:text-muted-foreground disabled:opacity-50"
+              className="p-1 rounded-lg transition-colors text-muted-foreground/40 hover:text-muted-foreground disabled:opacity-50"
               title="Export as PDF"
             >
               {isExportingPdf ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
@@ -556,7 +556,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={() => useSettingsStore.getState().setSetting('plugins.nebula.showMermaidPreview', !mermaidPreviewEnabled)}
-              className={`p-1 rounded transition-colors ${mermaidPreviewEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
+              className={`p-1 rounded-lg transition-colors ${mermaidPreviewEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title={mermaidPreviewEnabled ? 'Show mermaid code' : 'Show mermaid diagrams'}
             >
               {mermaidPreviewEnabled ? <Eye size={13} /> : <EyeOff size={13} />}
@@ -565,7 +565,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={() => useSettingsStore.getState().setSetting('plugins.nebula.showLineNumbers', !lineNumbersEnabled)}
-              className={`p-1 rounded transition-colors ${lineNumbersEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
+              className={`p-1 rounded-lg transition-colors ${lineNumbersEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title={lineNumbersEnabled ? 'Hide line numbers' : 'Show line numbers'}
             >
               <Hash size={13} />
@@ -651,7 +651,7 @@ export default function NoteEditor({
           <button
             type="button"
             onClick={handleInsertTable}
-            className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-muted-foreground/40 transition-colors hover:bg-secondary/50 hover:text-muted-foreground"
+            className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] text-muted-foreground/40 transition-colors hover:bg-secondary/50 hover:text-muted-foreground"
             title="Insert table"
           >
             <TableIcon size={10} />

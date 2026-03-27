@@ -193,7 +193,7 @@ export function ReviewPanel({
               Retry Review
             </Button>
           </div>
-          <pre className="flex-1 overflow-auto rounded-md bg-card p-4 text-xs text-muted-foreground font-mono whitespace-pre-wrap">
+          <pre className="flex-1 overflow-auto rounded-xl bg-card p-4 text-xs text-muted-foreground font-mono whitespace-pre-wrap">
             {session.rawText}
           </pre>
         </div>
@@ -388,7 +388,7 @@ function FindingCard({
         </Badge>
 
         {/* Kind tag */}
-        <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-secondary text-muted-foreground">
+        <span className="inline-flex shrink-0 items-center rounded-lg px-1.5 py-0.5 text-[10px] font-medium bg-secondary text-muted-foreground">
           {kindConfig.icon} {kindConfig.label}
         </span>
 
@@ -427,7 +427,7 @@ function FindingCard({
           {isEditing ? (
             <div className="flex items-start gap-1">
               <textarea
-                className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-y"
+                className="flex-1 rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-y"
                 value={editText}
                 onChange={(e) => onEditTextChange(e.target.value)}
                 rows={3}
@@ -436,7 +436,7 @@ function FindingCard({
               <button
                 type="button"
                 onClick={onSaveEdit}
-                className="rounded p-1 text-green-400 hover:bg-green-500/10"
+                className="rounded-lg p-1 text-green-400 hover:bg-green-500/10"
                 title="Save"
               >
                 <Check size={14} />
@@ -444,7 +444,7 @@ function FindingCard({
               <button
                 type="button"
                 onClick={onCancelEdit}
-                className="rounded p-1 text-muted-foreground hover:bg-secondary"
+                className="rounded-lg p-1 text-muted-foreground hover:bg-secondary"
                 title="Cancel"
               >
                 <X size={14} />
@@ -459,7 +459,7 @@ function FindingCard({
                 <button
                   type="button"
                   onClick={onStartEdit}
-                  className="shrink-0 rounded p-0.5 text-muted-foreground/0 transition group-hover:text-muted-foreground hover:!text-foreground"
+                  className="shrink-0 rounded-lg p-0.5 text-muted-foreground/0 transition group-hover:text-muted-foreground hover:!text-foreground"
                   title="Edit"
                 >
                   <Pencil size={12} />
@@ -470,7 +470,7 @@ function FindingCard({
 
           {/* Suggested fix */}
           {comment.suggestedFix && (
-            <div className="mt-2 rounded-md bg-green-500/5 border border-green-500/10 px-2.5 py-1.5">
+            <div className="mt-2 rounded-lg bg-green-500/5 border border-green-500/10 px-2.5 py-1.5">
               <p className="text-[11px] font-semibold text-green-400 uppercase tracking-wide mb-0.5">
                 Suggested Fix
               </p>

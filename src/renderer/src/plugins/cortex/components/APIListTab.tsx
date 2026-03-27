@@ -107,7 +107,7 @@ export default function APIListTab(): React.JSX.Element {
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-semibold text-foreground">API Endpoints</h3>
-          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+          <span className="rounded-lg bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
             {routes.length} endpoints
           </span>
         </div>
@@ -192,7 +192,7 @@ export default function APIListTab(): React.JSX.Element {
 
       {/* Hint when few routes detected */}
       {routes.length > 0 && routes.length <= 15 && !validationDone && !isValidating && (
-        <div className="mb-3 flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] text-amber-400">
+        <div className="mb-3 flex items-center gap-2 rounded-xl bg-amber-500/10 px-3 py-2 text-[11px] text-amber-400">
           <ShieldCheck size={14} className="flex-shrink-0" />
           <span>
             Static analysis found {routes.length} endpoints. Click <strong>Validate</strong> to use AI to discover additional routes the parser may have missed.
@@ -225,7 +225,7 @@ export default function APIListTab(): React.JSX.Element {
                     const mc = getMethodColor(route.method)
                     return (
                       <span
-                        className="inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                        className="inline-block rounded-lg px-1.5 py-0.5 text-[10px] font-semibold"
                         style={{ background: mc.bg, color: mc.text, border: `1px solid ${mc.border}` }}
                       >
                         {route.method}

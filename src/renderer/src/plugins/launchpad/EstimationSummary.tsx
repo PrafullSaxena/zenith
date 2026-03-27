@@ -48,9 +48,9 @@ function CostTreemapFallback({
             <span className="w-20 truncate text-[9px] text-[hsl(var(--muted-foreground))]">
               {item.serviceName}
             </span>
-            <div className="flex-1 h-3 rounded-sm bg-white/[0.03] overflow-hidden">
+            <div className="flex-1 h-3 rounded-full bg-white/[0.03] overflow-hidden">
               <div
-                className="h-full rounded-sm"
+                className="h-full rounded-full"
                 style={{ width: `${pct}%`, backgroundColor: color, opacity: 0.7 }}
               />
             </div>

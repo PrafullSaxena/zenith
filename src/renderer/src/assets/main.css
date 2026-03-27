@@ -442,6 +442,13 @@
   padding-left: 2.5rem;
 }
 
+/* Lists already have their own padding-left via the editor styles.
+   Override so they don't stick out past the line-number gutter. */
+.nebula-line-numbers .tiptap > ul,
+.nebula-line-numbers .tiptap > ol {
+  padding-left: 4rem; /* 2.5rem gutter + 1.5rem list indent */
+}
+
 .nebula-line-numbers .tiptap > *::before {
   content: counter(tiptap-line);
   position: absolute;

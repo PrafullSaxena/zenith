@@ -138,7 +138,7 @@ function ToolbarBtn({
       type="button"
       onClick={onClick}
       title={title}
-      className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
+      className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
         isActive
           ? 'bg-primary/20 text-primary'
           : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'

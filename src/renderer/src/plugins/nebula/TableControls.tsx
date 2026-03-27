@@ -104,7 +104,7 @@ function CtrlBtn({
       type="button"
       onClick={onClick}
       title={title}
-      className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded transition-colors ${
+      className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${
         variant === 'destructive'
           ? 'text-muted-foreground/50 hover:bg-red-400/10 hover:text-red-400'
           : 'text-muted-foreground/50 hover:bg-primary/10 hover:text-primary'

@@ -394,7 +394,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
               const color = PROVIDER_COLORS[pi % PROVIDER_COLORS.length]
               return (
                 <div key={pid} className="flex items-center gap-2">
-                  <span className="h-2 w-2 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[11px] font-medium leading-tight text-foreground">
                       {providerMap[pid]}

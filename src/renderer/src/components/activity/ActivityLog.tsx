@@ -61,7 +61,7 @@ export default function ActivityLog(): React.JSX.Element {
       variants={staggerContainer}
       initial={shouldAnimate ? 'hidden' : false}
       animate="visible"
-      className="flex h-full flex-col gap-4 p-4"
+      className="flex h-full flex-col gap-3"
     >
       {/* Header */}
       <motion.div variants={staggerItem} className="shrink-0 flex items-center justify-between">
@@ -116,7 +116,7 @@ export default function ActivityLog(): React.JSX.Element {
             description="Try adjusting your filters to see more results"
           />
         ) : (
-          <ActivityFeed entries={filteredEntries} />
+          <ActivityFeed entries={filteredEntries} fullHeight />
         )}
       </motion.div>
     </motion.div>

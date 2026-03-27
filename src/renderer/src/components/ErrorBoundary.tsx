@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (this.state.hasError) {
       return (
         <div className="flex h-full items-center justify-center bg-surface">
-          <div className="max-w-md rounded border border-border bg-surface-elevated p-8 text-center">
+          <div className="max-w-md rounded-2xl border border-border bg-surface-elevated p-8 text-center">
             <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-accent" />
             <h2 className="mb-2 text-lg font-semibold text-text-primary">
               Something went wrong
@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </p>
             <button
               onClick={() => this.setState({ hasError: false, error: null })}
-              className="rounded bg-accent px-4 py-2 text-sm font-medium text-background transition hover:opacity-90"
+              className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-background transition hover:opacity-90"
             >
               Try Again
             </button>

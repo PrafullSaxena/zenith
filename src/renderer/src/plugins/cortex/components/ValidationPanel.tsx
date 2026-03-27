@@ -27,7 +27,7 @@ export default function ValidationPanel(): React.JSX.Element | null {
       <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
           <h4 className="text-[11px] font-semibold text-foreground">AI Validation Results</h4>
-          <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">
+          <span className="rounded-lg bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">
             {pending.length} pending
           </span>
         </div>
@@ -75,7 +75,7 @@ export default function ValidationPanel(): React.JSX.Element | null {
                   <button
                     type="button"
                     onClick={() => updateValidationStatus(correction.id, 'accepted')}
-                    className="rounded p-1 text-green-400 hover:bg-green-500/10"
+                    className="rounded-lg p-1 text-green-400 hover:bg-green-500/10"
                     title="Accept"
                   >
                     <Check size={14} />
@@ -83,7 +83,7 @@ export default function ValidationPanel(): React.JSX.Element | null {
                   <button
                     type="button"
                     onClick={() => updateValidationStatus(correction.id, 'dismissed')}
-                    className="rounded p-1 text-muted-foreground hover:bg-secondary"
+                    className="rounded-lg p-1 text-muted-foreground hover:bg-secondary"
                     title="Dismiss"
                   >
                     <X size={14} />

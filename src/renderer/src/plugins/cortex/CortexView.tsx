@@ -81,7 +81,7 @@ export default function CortexView(): React.JSX.Element {
           activeRepo ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{activeRepo.name}</span>
-              <span className="flex items-center gap-1.5 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+              <span className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                 <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
                 {activeRepo.branch}
               </span>
@@ -92,7 +92,7 @@ export default function CortexView(): React.JSX.Element {
 
       {/* No-agent banner */}
       {!getCortexAgent() && (
-        <div className="mx-4 mt-2 rounded-lg bg-primary/10 px-3 py-2 text-[11px] text-primary">
+        <div className="mx-4 mt-2 rounded-xl bg-primary/10 px-3 py-2 text-[11px] text-primary">
           Configure an AI Agent in Settings to unlock AI-powered insights
         </div>
       )}

@@ -71,13 +71,13 @@ export function PRList({
 
         {/* Error state */}
         {!isLoading && error && (
-          <div className="mx-2 my-4 rounded-md bg-red-500/10 px-3 py-3 text-center">
+          <div className="mx-2 my-4 rounded-xl bg-red-500/10 px-3 py-3 text-center">
             <AlertTriangle size={16} className="mx-auto mb-1.5 text-red-400" />
             <p className="text-xs text-red-400">{error}</p>
             <button
               type="button"
               onClick={onRefresh}
-              className="mt-2 rounded bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400 transition hover:bg-red-500/20"
+              className="mt-2 rounded-lg bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400 transition hover:bg-red-500/20"
             >
               Retry
             </button>
@@ -171,7 +171,7 @@ export function PRList({
             type="button"
             disabled={page <= 1 || isLoading}
             onClick={() => onPageChange(page - 1)}
-            className="rounded p-1 text-muted-foreground transition hover:bg-secondary hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+            className="rounded-lg p-1 text-muted-foreground transition hover:bg-secondary hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ChevronLeft size={16} />
           </button>
@@ -182,7 +182,7 @@ export function PRList({
             type="button"
             disabled={page >= totalPages || isLoading}
             onClick={() => onPageChange(page + 1)}
-            className="rounded p-1 text-muted-foreground transition hover:bg-secondary hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+            className="rounded-lg p-1 text-muted-foreground transition hover:bg-secondary hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ChevronRight size={16} />
           </button>

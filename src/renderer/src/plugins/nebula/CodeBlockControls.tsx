@@ -203,7 +203,7 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
         <button
           type="button"
           onClick={() => setShowLangPicker(!showLangPicker)}
-          className="flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+          className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
           title="Change language"
         >
           {langLabel}
@@ -211,13 +211,13 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
         </button>
 
         {showLangPicker && (
-          <div className="absolute top-full right-0 z-50 mt-1 max-h-60 w-36 overflow-y-auto rounded-md border border-border bg-secondary p-1 shadow-lg">
+          <div className="absolute top-full right-0 z-50 mt-1 max-h-60 w-36 overflow-y-auto rounded-xl border border-border bg-secondary p-1 shadow-lg">
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.value}
                 type="button"
                 onClick={() => handleLanguageChange(lang.value)}
-                className={`block w-full rounded px-2 py-1 text-left font-mono text-[10px] transition-colors hover:bg-primary/10 hover:text-foreground ${
+                className={`block w-full rounded-lg px-2 py-1 text-left font-mono text-[10px] transition-colors hover:bg-primary/10 hover:text-foreground ${
                   lang.value === codeBlockInfo.language
                     ? 'text-primary'
                     : 'text-muted-foreground'
@@ -234,7 +234,7 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
       <button
         type="button"
         onClick={handleFormat}
-        className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+        className="flex h-5 w-5 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
         title="Auto-format code"
       >
         <Wand2 size={11} />
@@ -244,7 +244,7 @@ export default function CodeBlockControls({ editor }: CodeBlockControlsProps): R
       <button
         type="button"
         onClick={handleCopy}
-        className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+        className="flex h-5 w-5 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
         title="Copy code"
       >
         {copied ? <Check size={11} className={copied ? 'text-emerald-400' : undefined} /> : <Copy size={11} className={copied ? 'text-emerald-400' : undefined} />}

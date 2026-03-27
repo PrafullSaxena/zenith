@@ -153,7 +153,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
               ).length
 
               return (
-                <Card key={category.id} className="p-0 overflow-hidden rounded-lg">
+                <Card key={category.id} className="p-0 overflow-hidden rounded-xl">
                   {/* Category header */}
                   <button
                     type="button"
