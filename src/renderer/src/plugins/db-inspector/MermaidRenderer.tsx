@@ -213,7 +213,7 @@ export default function MermaidRenderer({
     <button
       type="button"
       onClick={handleCopyCode}
-      className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-md
+      className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-lg
         text-[10px] font-medium bg-card/80 backdrop-blur-sm border border-border/50
         text-muted-foreground hover:text-foreground hover:bg-secondary
         opacity-0 group-hover:opacity-100 transition-opacity"
@@ -253,7 +253,7 @@ export default function MermaidRenderer({
         <button
           type="button"
           onClick={handleCopyCode}
-          className="absolute left-3 top-3 z-10 flex items-center gap-1 px-2 py-1 rounded-md
+          className="absolute left-3 top-3 z-10 flex items-center gap-1 px-2 py-1 rounded-lg
             text-[10px] font-medium bg-card/80 backdrop-blur-sm border border-border/50
             text-muted-foreground hover:text-foreground hover:bg-secondary
             opacity-0 group-hover:opacity-100 transition-opacity"

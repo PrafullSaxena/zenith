@@ -149,7 +149,7 @@ function TreeNodeItem({
     <div
       onClick={handleClick}
       className={cn(
-        'flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors text-sm',
+        'flex items-center gap-1.5 py-1.5 px-2 rounded-lg cursor-pointer transition-colors text-sm',
         isSelected ? 'bg-primary/18 text-foreground' : 'hover:bg-secondary/50 text-muted-foreground hover:text-foreground'
       )}
       style={{ paddingLeft: depth * 16 + 8 }}

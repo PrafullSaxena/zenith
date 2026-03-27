@@ -40,8 +40,8 @@ function clamp(value: number, min: number, max: number): number {
 
 export default function TextCraftView(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState('refine')
-  const [leftWidth, setLeftWidth] = useState(33)
-  const [rightWidth, setRightWidth] = useState(33)
+  const [leftWidth, setLeftWidth] = useState(36)
+  const [rightWidth, setRightWidth] = useState(38)
   const containerRef = useRef<HTMLDivElement>(null)
   const containerWidthRef = useRef(800)
 
@@ -128,7 +128,7 @@ export default function TextCraftView(): React.JSX.Element {
 
             <div
               onMouseDown={makeResizeHandler(handleLeftResize)}
-              className="w-1 shrink-0 cursor-col-resize bg-border hover:bg-primary/50 active:bg-primary/70 transition-colors"
+              className="w-px shrink-0 cursor-col-resize bg-border/50 hover:bg-primary/40 active:bg-primary/60 transition-colors"
             />
 
             {/* Middle: Controls */}
@@ -138,7 +138,7 @@ export default function TextCraftView(): React.JSX.Element {
 
             <div
               onMouseDown={makeResizeHandler(handleRightResize)}
-              className="w-1 shrink-0 cursor-col-resize bg-border hover:bg-primary/50 active:bg-primary/70 transition-colors"
+              className="w-px shrink-0 cursor-col-resize bg-border/50 hover:bg-primary/40 active:bg-primary/60 transition-colors"
             />
 
             {/* Right: Output */}

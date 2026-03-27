@@ -99,18 +99,18 @@ export function PRList({
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="space-y-1.5"
+            className="space-y-1.5 mr-2"
           >
             {(pullRequests ?? []).map((pr) => {
               const isSelected = pr.id === selectedPrId
               return (
                 <motion.div key={pr.id} variants={staggerItem}>
                   <Card
-                    className={`cursor-pointer p-4 ${isSelected ? 'border-l-2 border-l-accent' : ''}`}
+                    className={`cursor-pointer p-4  ${isSelected ? 'border-l-2 border-l-accent' : ''}`}
                     onClick={() => onSelect(pr)}
                   >
                     {/* Top row: PR title + link icon (left), file count badge (right) */}
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-2 ">
                       <div className="flex min-w-0 items-center gap-1.5">
                         <p className="min-w-0 truncate font-medium text-foreground">{pr.title}</p>
                         <span

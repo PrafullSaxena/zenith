@@ -146,8 +146,10 @@ export default function MissionControl(): React.JSX.Element {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="space-y-4 p-4"
+      className="space-y-4 p-4 pt-0"
     >
+      {/* Drag region for macOS title bar dragging */}
+      <div className="drag-region h-3 w-full" />
       {/* ── Hero Header ─────────────────────────────────────────────── */}
       <motion.div variants={staggerItem}>
         <Card className="relative overflow-hidden rounded-[28px] backdrop-blur-sm bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.08),transparent_60%)]">

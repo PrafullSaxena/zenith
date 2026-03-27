@@ -137,7 +137,7 @@ export default function QueryConsole({
               <button
                 type="button"
                 onClick={(e) => handleCloseTab(e, tab.id)}
-                className="ml-0.5 rounded p-0.5 opacity-0 group-hover:opacity-100 hover:bg-white/[0.06] transition-opacity"
+                className="ml-0.5 rounded-lg p-0.5 opacity-0 group-hover:opacity-100 hover:bg-white/[0.06] transition-opacity"
               >
                 <X size={10} />
               </button>

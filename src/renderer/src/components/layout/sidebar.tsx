@@ -242,36 +242,36 @@ export function Sidebar(): React.JSX.Element {
         animate={{ width: isCollapsed ? 56 : 240 }}
         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
       >
-        {/* Drag region for macOS traffic lights — includes toggle button beside the lights */}
-        <div className="drag-region flex h-10 w-full flex-shrink-0 items-center">
-          {/* macOS traffic lights occupy ~70px on the left; place toggle right after them */}
-          <div className={cn('flex items-center', isCollapsed ? 'pl-1.5 pt-0.5' : 'pl-[70px]')}>
-            <button
-              onClick={toggleCollapsed}
-              className={cn(
-                'no-drag flex items-center justify-center rounded-lg',
-                'h-7 w-7 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors'
-              )}
-              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <PanelLeft size={16} />
-            </button>
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex items-center gap-2 ml-2 overflow-hidden"
-                >
-                  <div className="flex items-center justify-center h-5 w-5 rounded-md bg-primary text-primary-foreground text-[10px] font-bold">
-                    Z
-                  </div>
-                  <span className="text-xs font-semibold text-foreground whitespace-nowrap">Zenith</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        {/* Drag region for macOS traffic lights */}
+        <div className="drag-region h-[52px] w-full flex-shrink-0" />
+
+        {/* Toggle + branding — sits below the traffic light area */}
+        <div className={cn('flex items-center flex-shrink-0 pb-1', isCollapsed ? 'justify-center px-1' : 'px-3')}>
+          <button
+            onClick={toggleCollapsed}
+            className={cn(
+              'no-drag flex items-center justify-center rounded-lg',
+              'h-8 w-8 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors'
+            )}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <PanelLeft size={16} />
+          </button>
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2 ml-2 overflow-hidden"
+              >
+                <div className="flex items-center justify-center h-5 w-5 rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
+                  Z
+                </div>
+                <span className="text-xs font-semibold text-foreground whitespace-nowrap">Zenith</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Navigation icons — LayoutGroup enables layoutId sliding between all icons */}

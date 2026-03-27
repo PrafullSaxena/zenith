@@ -52,65 +52,67 @@ export function ReviewHistory({
     >
       {history.map((entry) => (
         <motion.div key={entry.id} variants={staggerItem}>
-          <Card className="flex items-center gap-3">
-            {/* PR title with external link */}
-            <div className="min-w-0 flex-1">
-              <button
-                type="button"
-                onClick={() => window.api?.app?.openExternal?.(entry.prUrl)}
-                className="group flex items-center gap-1 text-left"
+          <Card className="p-3">
+            {/* Top row: PR title + status */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={() => window.api?.app?.openExternal?.(entry.prUrl)}
+                  className="group flex items-center gap-1 text-left"
+                >
+                  <span className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    {entry.prTitle}
+                  </span>
+                  <ExternalLink
+                    size={12}
+                    className="shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  />
+                </button>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {entry.workspace}/{entry.repoSlug}
+                </p>
+              </div>
+
+              <Badge
+                variant={
+                  entry.status === 'success'
+                    ? 'success'
+                    : entry.status === 'partial'
+                      ? 'warning'
+                      : 'destructive'
+                }
               >
-                <span className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                  {entry.prTitle}
-                </span>
-                <ExternalLink
-                  size={12}
-                  className="shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                />
-              </button>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {entry.workspace}/{entry.repoSlug}
-              </p>
+                {entry.status}
+              </Badge>
             </div>
 
-            {/* Comment counts */}
-            <span className="shrink-0 text-xs text-muted-foreground">
-              {entry.commentCount} comments, {entry.postedCount} posted
-            </span>
+            {/* Bottom row: counts, timestamp, open button */}
+            <div className="mt-2 flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">
+                {entry.commentCount} comments, {entry.postedCount} posted
+              </span>
 
-            {/* Status badge */}
-            <Badge
-              variant={
-                entry.status === 'success'
-                  ? 'success'
-                  : entry.status === 'partial'
-                    ? 'warning'
-                    : 'destructive'
-              }
-            >
-              {entry.status}
-            </Badge>
+              <span className="text-xs text-muted-foreground">
+                {formatRelativeTime(entry.timestamp)}
+              </span>
 
-            {/* Relative timestamp */}
-            <span className="shrink-0 text-xs text-muted-foreground">
-              {formatRelativeTime(entry.timestamp)}
-            </span>
-
-            {/* Open review button */}
-            {onOpen && entry.commentCount > 0 && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onOpen(entry)
-                }}
-                className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
-                title="Open review comments"
-              >
-                <Eye size={13} className="inline mr-1" />
-                Open
-              </button>
-            )}
+              {/* Open review button */}
+              {onOpen && entry.commentCount > 0 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onOpen(entry)
+                  }}
+                  className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
+                  title="Open review comments"
+                >
+                  <Eye size={13} className="inline mr-1" />
+                  Open
+                </button>
+              )}
+            </div>
           </Card>
         </motion.div>
       ))}

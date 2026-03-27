@@ -63,6 +63,9 @@ export default function ActivityLog(): React.JSX.Element {
       animate="visible"
       className="flex h-full flex-col gap-3"
     >
+      {/* Drag region for macOS title bar dragging */}
+      <div className="drag-region h-3 w-full shrink-0" />
+
       {/* Header */}
       <motion.div variants={staggerItem} className="shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-3">

@@ -132,7 +132,7 @@ export function MCPSettings(): React.JSX.Element {
                   {server.description ? ` — ${server.description}` : ''}
                 </p>
               </div>
-              <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
+              <span className="shrink-0 rounded-lg bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
                 {server.transport.toUpperCase()}
               </span>
               {/* Enable/Disable toggle */}

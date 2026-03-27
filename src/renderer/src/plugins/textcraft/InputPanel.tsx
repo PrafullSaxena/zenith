@@ -15,9 +15,9 @@ export default function InputPanel(): React.JSX.Element {
   const charCount = inputText.length
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden rounded-none border-x-0 border-t-0 p-4">
+    <Card className="flex flex-col h-full overflow-hidden border-x-0 border-t-0 p-3">
       {/* Header */}
-      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1 pb-2">
+      <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1 pb-1.5">
         Input
       </div>
 

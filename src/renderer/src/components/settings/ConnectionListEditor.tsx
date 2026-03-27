@@ -328,7 +328,7 @@ export function ConnectionListEditor({
           {/* Test result */}
           {testResult && (
             <div
-              className={`flex items-center gap-2 rounded-md px-3 py-2 text-xs ${
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs ${
                 testResult.success
                   ? 'bg-green-500/10 text-green-400'
                   : 'bg-red-500/10 text-red-400'

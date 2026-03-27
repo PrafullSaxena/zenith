@@ -224,7 +224,7 @@ function CodeStructureOverview({ analysisResult }: { analysisResult: AnalysisRes
             return (
               <span
                 key={ec.kind}
-                className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-medium"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-medium"
                 style={{ background: colors.bg, color: colors.text }}
               >
                 <span
@@ -245,7 +245,7 @@ function CodeStructureOverview({ analysisResult }: { analysisResult: AnalysisRes
           {stats.languages.slice(0, 6).map((lang) => (
             <span
               key={lang.language}
-              className="inline-flex items-center gap-1.5 rounded-md bg-card px-2.5 py-1 text-[10px] text-muted-foreground"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-card px-2.5 py-1 text-[10px] text-muted-foreground"
             >
               {lang.language}
               <span className="text-text-tertiary">{lang.fileCount}f</span>
@@ -284,7 +284,7 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
           return (
             <span
               key={method}
-              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-semibold"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-semibold"
               style={{ background: mc.bg, color: mc.text }}
             >
               {method}
@@ -363,7 +363,7 @@ function InsightCardsGrid({ insights }: { insights: ToonInsights }): React.JSX.E
                   {deps.map((dep) => (
                     <span
                       key={dep.name}
-                      className="inline-flex items-center gap-1 rounded-md bg-card px-2 py-0.5 text-[10px] text-muted-foreground"
+                      className="inline-flex items-center gap-1 rounded-lg bg-card px-2 py-0.5 text-[10px] text-muted-foreground"
                     >
                       {dep.name}
                       {dep.version && (
@@ -656,7 +656,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
               type="button"
               onClick={() => generateHLD()}
               disabled={isHLDGenerating}
-              className="flex items-center gap-1 rounded-md bg-primary/15 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/25 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 rounded-lg bg-primary/15 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/25 transition-colors disabled:opacity-50"
               title="Regenerate design document"
             >
               <RefreshCw size={11} />
@@ -800,7 +800,7 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                           type="button"
                           onClick={handleRefreshInsights}
                           disabled={isGeneratingInsights}
-                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors disabled:opacity-40"
+                          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors disabled:opacity-40"
                           title="Refresh insights"
                         >
                           <RefreshCw size={10} className={isGeneratingInsights ? 'animate-spin' : ''} />

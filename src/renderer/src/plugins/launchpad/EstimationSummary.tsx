@@ -178,7 +178,7 @@ export default function EstimationSummary(): React.JSX.Element {
                 return (
                   <div
                     key={item.serviceId}
-                    className="flex items-start justify-between rounded-md px-2 py-2 hover:bg-white/[0.03] transition-colors"
+                    className="flex items-start justify-between rounded-lg px-2 py-2 hover:bg-white/[0.03] transition-colors"
                   >
                     <div className="flex-1 min-w-0 pr-2">
                       <p className="text-xs font-medium text-[hsl(var(--foreground))] truncate">

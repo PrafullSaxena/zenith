@@ -80,7 +80,7 @@ export default function SchemaExplorer({
   const schemaOptions = schemas.map((s) => ({ value: s, label: s }))
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 ">
       {/* Database selector */}
       <div>
         <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">

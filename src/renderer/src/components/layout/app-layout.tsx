@@ -20,11 +20,8 @@ export function AppLayout(): React.JSX.Element {
 
         {/* Content area */}
         <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Drag region for custom titlebar — transparent, just for dragging */}
-          <div className="drag-region h-10 w-full flex-shrink-0" />
-
           {/* Main content — fills remaining height, route transitions via AnimatePresence */}
-          <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+          <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 pt-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}

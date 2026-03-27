@@ -394,7 +394,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
   return (
     <Card className="overflow-hidden p-0">
       {/* Tile header */}
-      <div className="flex w-full items-center gap-3 bg-white/[0.02] px-4 py-3">
+      <div className="flex w-full items-center gap-3 bg-gradient-to-r from-primary/[0.04] to-transparent px-4 py-3">
         {/* Clickable left region: expand/collapse */}
         <button
           type="button"
@@ -438,7 +438,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
             type="button"
             onClick={() => void handleExportPDF()}
             disabled={isExporting}
-            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+            className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
             title="Export as PDF (save to file)"
           >
             {isExporting ? <Loader2 size={11} className="animate-spin" /> : <FileDown size={11} />}
@@ -447,7 +447,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
           <button
             type="button"
             onClick={() => void handleCopyRaw()}
-            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             title="Copy plain text (no formatting)"
           >
             {copiedMode === 'raw' ? <Check size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} /> : <AlignLeft size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} />}
@@ -456,7 +456,7 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
           <button
             type="button"
             onClick={() => void handleCopyFormatted()}
-            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             title="Copy formatted markdown"
           >
             {copiedMode === 'formatted' ? <Check size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} /> : <FileText size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} />}
@@ -675,7 +675,7 @@ function SuggestionCard({
             <Icon size={9} />
             {config.label}
           </Badge>
-          <span className="rounded bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">
+          <span className="rounded-lg bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">
             {TYPE_LABELS[suggestion.type] ?? suggestion.type}
           </span>
         </div>
@@ -699,7 +699,7 @@ function SuggestionCard({
             <button
               type="button"
               onClick={handleCopySql}
-              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
             >
               {sqlCopied ? <Check size={9} className={sqlCopied ? 'text-success' : undefined} /> : <Copy size={9} className={sqlCopied ? 'text-success' : undefined} />}
               {sqlCopied ? 'Copied!' : 'Copy'}
@@ -742,7 +742,7 @@ function OptimizedQueryBlock({
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[var(--primary)]/10 hover:text-[hsl(var(--foreground))]"
+          className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[var(--primary)]/10 hover:text-[hsl(var(--foreground))]"
         >
           {copied ? <Check size={10} className={copied ? 'text-emerald-400' : undefined} /> : <Copy size={10} className={copied ? 'text-emerald-400' : undefined} />}
           {copied ? 'Copied!' : 'Copy'}

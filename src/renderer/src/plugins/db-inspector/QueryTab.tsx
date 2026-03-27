@@ -299,7 +299,7 @@ export default function QueryTab({
     if (isError) {
       return (
         <div className="p-3">
-          <div className="flex items-start gap-2 rounded-md bg-red-500/10 border border-red-500/20 p-3 animate-shake">
+          <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 animate-shake">
             <AlertCircle size={14} className="shrink-0 mt-0.5 text-red-400" />
             <pre className="text-xs text-red-300 whitespace-pre-wrap font-mono">
               {result.error ?? 'Unknown error'}
@@ -391,16 +391,16 @@ export default function QueryTab({
   return (
     <div ref={containerRef} className="flex h-full flex-col overflow-hidden">
       {/* Toolbar */}
-      <Card className="flex shrink-0 items-center gap-1 rounded-none border-x-0 border-t-0 px-2 py-1.5">
+      <Card className="flex shrink-0 items-center gap-0.5 rounded-none border-x-0 border-t-0 px-2 py-1">
         {/* Run current statement */}
         <Tooltip content="Run statement" shortcut="⌘↵">
           <Button
             variant="default"
-            size="sm"
+            size="xs"
             onClick={handleRunCurrent}
             disabled={isRunning}
           >
-            <Play size={11} />
+            <Play size={10} />
             Run
           </Button>
         </Tooltip>
@@ -409,11 +409,11 @@ export default function QueryTab({
         <Tooltip content="Run all" shortcut="⌘⇧↵">
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={handleExecuteAll}
             disabled={isRunning}
           >
-            <ChevronRight size={11} />
+            <ChevronRight size={10} />
             All
           </Button>
         </Tooltip>
@@ -423,10 +423,10 @@ export default function QueryTab({
           <Tooltip content="Cancel query">
             <Button
               variant="destructive"
-              size="sm"
+              size="xs"
               onClick={handleCancel}
             >
-              <Square size={11} />
+              <Square size={10} />
               Cancel
             </Button>
           </Tooltip>
@@ -439,7 +439,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={() => toggleWriteMode(tab.id)}
-            className={`flex items-center gap-1 rounded px-2 py-1 text-xs active:scale-95 transition-all ${
+            className={`flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] active:scale-95 transition-all ${
               tab.writeEnabled
                 ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30'
                 : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
@@ -455,7 +455,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={() => toggleOutputMode(tab.id)}
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
+            className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
           >
             {tab.outputMode === 'split' ? <PanelBottom size={11} /> : <AlignLeft size={11} />}
             {tab.outputMode === 'split' ? 'Split' : 'Inline'}
@@ -478,7 +478,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={handleFormat}
-            className="rounded p-1 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
+            className="rounded-lg p-0.5 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
           >
             <Code2 size={13} />
           </button>
@@ -489,7 +489,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={handleExplain}
-            className="rounded p-1 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
+            className="rounded-lg p-0.5 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
           >
             <Zap size={13} />
           </button>
@@ -500,7 +500,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={() => setShowVariables((v) => !v)}
-            className={`rounded p-1 active:scale-95 transition-all ${
+            className={`rounded-lg p-0.5 active:scale-95 transition-all ${
               showVariables
                 ? 'bg-primary/20 text-primary'
                 : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
@@ -517,7 +517,7 @@ export default function QueryTab({
           <button
             type="button"
             onClick={() => setShowSavedQueries((v) => !v)}
-            className={`rounded p-1 active:scale-95 transition-all ${
+            className={`rounded-lg p-0.5 active:scale-95 transition-all ${
               showSavedQueries
                 ? 'bg-primary/20 text-primary'
                 : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
@@ -560,7 +560,7 @@ export default function QueryTab({
             <button
               type="button"
               onClick={() => setShowSaveInput(true)}
-              className="rounded p-1 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
+              className="rounded-lg p-0.5 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
             >
               <Save size={13} />
             </button>

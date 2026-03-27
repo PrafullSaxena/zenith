@@ -320,7 +320,8 @@ export default function CodeReviewBotView(): React.JSX.Element {
 
       {/* Repo selector bar */}
       {effectiveRepos.length > 0 && (
-        <Card className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
+        // <Card className="mx-3 flex items-center gap-3 px-2 py-2 p-2 my-2 shrink-0 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50">
+        <Card className="mx-3 py-2 bg-transparent border-b border-l-0 border-r-0 border-t-0 rounded-none">
           {effectiveRepos.length === 1 ? (
             <Badge variant="default">
               {workspace} / {repoSlug}
@@ -330,7 +331,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
               value={String(selectedRepoIndex)}
               onChange={(val) => handleRepoSwitch(Number(val))}
               options={repoOptions}
-              className="w-64"
+              className="w-auto"
             />
           )}
           {effectiveRepos.length === 0 && (
@@ -352,9 +353,9 @@ export default function CodeReviewBotView(): React.JSX.Element {
           className="flex-1"
         />
       ) : (
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden ">
         {/* Left panel: PR list */}
-        <div className="w-1/3 overflow-y-auto border-r border-border p-4">
+        <div className="overflow-y-auto border-r border-border p-4 w-md">
           <PRList
             pullRequests={pullRequests}
             isLoading={isLoadingPRs}
@@ -371,7 +372,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
         </div>
 
         {/* Right panel: tabbed content with page transitions */}
-        <div className="flex w-2/3 flex-col overflow-hidden">
+        <div className="flex flex-1 flex-col overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

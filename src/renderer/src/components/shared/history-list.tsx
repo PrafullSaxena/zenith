@@ -100,7 +100,7 @@ export function HistoryList({
   }, [entries, filterValues, filters])
 
   return (
-    <div className={cn('flex flex-col gap-3', className)}>
+    <div className={cn('flex flex-col gap-3 border-4 border-amber-300', className)}>
       {/* Filters */}
       {filters && filters.length > 0 && (
         <div className="flex gap-2 flex-wrap">
@@ -130,7 +130,7 @@ export function HistoryList({
 
       {/* Entry list */}
       {filteredEntries.length === 0 ? (
-        <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+        <div className="flex items-center justify-center py-12 text-muted-foreground text-sm border-4 border-amber-300">
           {emptyMessage}
         </div>
       ) : (
@@ -142,7 +142,7 @@ export function HistoryList({
               }
 
               return (
-                <Card key={entry.id} className="rounded-xl">
+                <Card key={entry.id} className="rounded-xl ">
                   <CardContent className="p-4">
                     {/* Top row: title + badge + timestamp */}
                     <div className="flex items-start justify-between gap-2">

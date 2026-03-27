@@ -64,7 +64,7 @@ export function AgentRow({
       <td className="py-3 pr-4">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-foreground">{provider.name}</span>
-          <span className="rounded-md bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
+          <span className="rounded-lg bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
             {typeLabels[provider.type] ?? provider.type}
           </span>
         </div>

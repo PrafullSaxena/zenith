@@ -68,7 +68,7 @@ export default function LaunchpadView(): React.JSX.Element {
         statusIndicator={
           provider ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[hsl(var(--muted-foreground))] bg-white/[0.04] border border-white/[0.06] rounded-md px-2 py-0.5">
+              <span className="text-xs text-[hsl(var(--muted-foreground))] bg-white/[0.04] border border-white/[0.06] rounded-lg px-2 py-0.5">
                 {PROVIDER_INFO[provider].displayName}
               </span>
               <button

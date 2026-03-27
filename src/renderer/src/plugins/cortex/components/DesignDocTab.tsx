@@ -86,7 +86,7 @@ export default function DesignDocTab(): React.JSX.Element {
           type="button"
           onClick={() => generateHLD()}
           disabled={isHLDGenerating}
-          className="flex items-center gap-1 rounded-md bg-primary/15 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/25 transition-colors disabled:opacity-50"
+          className="flex items-center gap-1 rounded-lg bg-primary/15 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/25 transition-colors disabled:opacity-50"
         >
           <RefreshCw size={11} />
           Regenerate

@@ -80,9 +80,9 @@ export default function ControlsPanel(): React.JSX.Element {
   }
 
   return (
-    <Card className="flex flex-col h-full gap-4 overflow-y-auto rounded-none border-x-0 border-t-0 p-4">
+    <Card className="flex flex-col h-full gap-2.5 overflow-y-auto border-x-0 border-t-0 p-3">
       {/* Header */}
-      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
+      <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1">
         Controls
       </div>
 
@@ -96,7 +96,7 @@ export default function ControlsPanel(): React.JSX.Element {
             {options.tones.length} selected
           </span>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {TONE_OPTIONS.map((opt) => {
             const isActive = options.tones.includes(opt.value)
             return (
@@ -104,14 +104,14 @@ export default function ControlsPanel(): React.JSX.Element {
                 key={opt.value}
                 type="button"
                 onClick={() => handleToggleTone(opt.value)}
-                className={`w-full rounded-lg py-2 px-3 text-left transition-colors ${
+                className={`w-full rounded-lg py-1.5 px-2.5 text-left transition-colors ${
                   isActive
                     ? 'bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/30'
                     : 'bg-white/[0.04] text-muted-foreground hover:text-foreground hover:bg-white/[0.06] border border-transparent'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">{opt.label}</span>
+                  <span className="text-xs">{opt.label}</span>
                   <span className={`text-[10px] ${isActive ? 'text-[var(--primary)]/70' : 'text-muted-foreground/40'}`}>
                     {opt.description}
                   </span>
@@ -123,7 +123,7 @@ export default function ControlsPanel(): React.JSX.Element {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/[0.06]" />
+      <div className="border-t border-white/[0.04]" />
 
       {/* Section 2: Format Selection via Select */}
       <div>
@@ -139,7 +139,7 @@ export default function ControlsPanel(): React.JSX.Element {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/[0.06]" />
+      <div className="border-t border-white/[0.04]" />
 
       {/* Section 3: Custom Instructions */}
       <div>
@@ -153,12 +153,12 @@ export default function ControlsPanel(): React.JSX.Element {
           }
           placeholder="e.g., Make it shorter, emphasize security..."
           rows={3}
-          className="w-full resize-none rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-foreground placeholder-text-secondary/50 text-sm leading-relaxed p-3 focus:outline-none focus:shadow-[hsl(var(--primary))]"
+          className="w-full resize-none rounded-xl h-48 bg-white/[0.03] border border-[hsl(var(--border))] text-foreground placeholder:text-muted-foreground/50 text-sm leading-relaxed p-3 focus:outline-none focus:border-[hsl(var(--border))]"
         />
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/[0.06]" />
+      <div className="border-t border-white/[0.04]" />
 
       {/* Section 4: Action Button */}
       <div>

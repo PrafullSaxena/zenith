@@ -245,7 +245,7 @@ export default function OutputPanel(): React.JSX.Element {
   const showActions = (isComplete || hasOutput) && !isStreaming
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden rounded-none border-x-0 border-t-0 p-4">
+    <Card className="flex flex-col h-full overflow-hidden border-x-0 border-t-0 p-4">
       {/* Header */}
       <div className="flex items-center justify-between pb-2">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
@@ -260,7 +260,7 @@ export default function OutputPanel(): React.JSX.Element {
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
                   title={allCollapsed ? 'Expand all sections' : 'Collapse all sections'}
                 >
                   <ChevronsUpDown size={13} />
@@ -273,7 +273,7 @@ export default function OutputPanel(): React.JSX.Element {
             <button
               type="button"
               onClick={() => void handleCopyRaw()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
               title="Copy plain text"
             >
               {copiedMode === 'raw' ? <Check size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} /> : <AlignLeft size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} />}
@@ -283,7 +283,7 @@ export default function OutputPanel(): React.JSX.Element {
             <button
               type="button"
               onClick={() => void handleCopyFormatted()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
               title="Copy markdown source"
             >
               {copiedMode === 'formatted' ? <Check size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} /> : <FileText size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} />}
@@ -296,7 +296,7 @@ export default function OutputPanel(): React.JSX.Element {
               type="button"
               onClick={() => void handleExportPDF()}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
               title="Export as PDF"
             >
               {isExporting ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
@@ -308,7 +308,7 @@ export default function OutputPanel(): React.JSX.Element {
             <button
               type="button"
               onClick={() => void handleSaveAsNote()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
               title="Save as Nebula note"
             >
               {savedAsNote ? <Check size={13} className={savedAsNote ? 'text-success' : undefined} /> : <BookOpen size={13} className={savedAsNote ? 'text-success' : undefined} />}
@@ -376,7 +376,7 @@ export default function OutputPanel(): React.JSX.Element {
                     <button
                       type="button"
                       onClick={() => toggleSection(idx)}
-                      className={`flex w-full items-center gap-2 rounded-md py-1.5 px-1 -ml-1 text-left transition-colors hover:bg-white/[0.04] ${headingClass} text-foreground`}
+                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-1 -ml-1 text-left transition-colors hover:bg-white/[0.04] ${headingClass} text-foreground`}
                     >
                       {isCollapsed ? (
                         <ChevronRight size={14} className="shrink-0 text-muted-foreground" />

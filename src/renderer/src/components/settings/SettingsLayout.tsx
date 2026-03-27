@@ -29,11 +29,13 @@ export function SettingsLayout(): React.JSX.Element {
   ]
 
   return (
-    <div className="flex h-full -m-4">
+    <div className="flex flex-col h-full -m-4">
+      {/* Drag region for macOS title bar dragging */}
+      <div className="drag-region h-3 w-full shrink-0" />
       <Tabs
         defaultValue={initialTab ?? 'general'}
         orientation="vertical"
-        className="flex h-full w-full"
+        className="flex flex-1 min-h-0 w-full"
       >
         {/* Left sidebar — vertical tabs */}
         <div className="w-48 flex-shrink-0 overflow-y-auto border-r border-border/50 py-4 px-2">

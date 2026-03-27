@@ -135,7 +135,9 @@ export default function AboutView(): React.JSX.Element {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 p-6">
+    <div className="mx-auto max-w-3xl space-y-8 p-6 pt-0">
+      {/* Drag region for macOS title bar dragging */}
+      <div className="drag-region h-3 w-full" />
       {/* ── App Header ── */}
       <Card className="text-center p-6">
         <img

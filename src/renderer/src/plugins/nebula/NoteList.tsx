@@ -213,7 +213,7 @@ export default function NoteList(): React.JSX.Element {
       </div>
 
       {/* Notes list */}
-      <div className="flex-1">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {notes.length === 0 ? (
           <EmptyState
             icon={FileText}
@@ -338,7 +338,7 @@ function NoteItem({
 
   return (
     <Card
-      className={`relative mx-2 mb-1 cursor-pointer p-3 ${
+      className={`group relative mx-2 mb-1 cursor-pointer p-3 ${
         isActive ? 'border-l-2 border-primary' : ''
       }`}
       onClick={() => onSelect(note.id)}
@@ -395,7 +395,7 @@ function NoteItem({
           e.stopPropagation()
           onTogglePin(note.id)
         }}
-        className={`absolute right-2 top-2 shrink-0 rounded p-0.5 transition-all ${
+        className={`absolute right-2 top-2 shrink-0 rounded-lg p-0.5 transition-all ${
           note.pinned
             ? 'text-primary opacity-100'
             : 'text-muted-foreground opacity-0 hover:text-primary group-hover:opacity-100'
@@ -412,7 +412,7 @@ function NoteItem({
           e.stopPropagation()
           onDeleteRequest(note.id, note.title)
         }}
-        className="absolute right-2 bottom-2 shrink-0 rounded p-0.5 text-muted-foreground opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
+        className="absolute right-2 bottom-2 shrink-0 rounded-lg p-0.5 text-muted-foreground opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
         title="Delete note"
       >
         <Trash2 size={12} />

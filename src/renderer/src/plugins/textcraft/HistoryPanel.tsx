@@ -39,25 +39,28 @@ export default function HistoryPanel(): React.JSX.Element {
   }
 
   return (
-    <div className="h-full p-4 w-full">
+    <div className="h-full overflow-y-auto p-3 w-full">
       <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="space-y-2"
+        className="space-y-1"
       >
         {history.map((entry) => (
           <motion.div key={entry.id} variants={staggerItem}>
-            <Card className="cursor-pointer group">
+            <div
+              className="group cursor-pointer rounded-xl border border-border/50 bg-card/60 px-3 py-2.5 transition-colors hover:bg-card"
+              onClick={() => useTextCraftStore.getState().loadFromHistory(entry)}
+            >
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   {/* Input preview */}
-                  <p className="text-sm text-foreground line-clamp-2">
+                  <p className="text-sm text-foreground line-clamp-1">
                     {entry.inputText.slice(0, 120)}{entry.inputText.length > 120 ? '...' : ''}
                   </p>
 
                   {/* Metadata row */}
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                     <Badge variant="default">
                       {FORMAT_LABELS[entry.options.format] || entry.options.format}
                     </Badge>
@@ -66,51 +69,40 @@ export default function HistoryPanel(): React.JSX.Element {
                         {tone}
                       </Badge>
                     ))}
-                    <span className="text-[10px] text-muted-foreground/40 ml-auto">
-                      {new Date(entry.createdAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
                   </div>
 
                   {/* Output preview */}
                   {entry.outputText && (
-                    <p className="text-xs text-muted-foreground/50 mt-1.5 line-clamp-1">
+                    <p className="text-xs text-muted-foreground/50 mt-1 line-clamp-1">
                       {entry.outputText.slice(0, 100)}{entry.outputText.length > 100 ? '...' : ''}
                     </p>
                   )}
                 </div>
 
-                {/* Actions */}
-                <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      useTextCraftStore.getState().loadFromHistory(entry)
-                    }}
-                    className="p-1.5 rounded text-muted-foreground/60 hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors"
-                    title="Load this refinement"
-                  >
-                    <Eye size={14} />
-                  </button>
+                {/* Right: timestamp + actions */}
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span className="text-[10px] text-muted-foreground/40">
+                    {new Date(entry.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation()
                       useTextCraftStore.getState().deleteHistoryEntry(entry.id)
                     }}
-                    className="p-1.5 rounded text-muted-foreground/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="p-1 rounded-lg text-muted-foreground/40 opacity-0 group-hover:opacity-100 hover:text-red-400 hover:bg-red-500/10 transition-all"
                     title="Delete this entry"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={12} />
                   </button>
                 </div>
               </div>
-            </Card>
+            </div>
           </motion.div>
         ))}
       </motion.div>
