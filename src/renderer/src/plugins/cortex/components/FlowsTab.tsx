@@ -9,7 +9,6 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import FlowDiagram from './FlowDiagram'
 import { buildAPIFlowNodes, buildComponentTreeNodes, buildPipelineNodes } from './flow-utils'
 import ValidationPanel from './ValidationPanel'
-import { Card } from '@renderer/components/ui/card'
 
 type FlowType = 'api' | 'components' | 'pipeline'
 
@@ -157,7 +156,7 @@ export default function FlowsTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Top bar: flow type selector + endpoint filter */}
-      <Card className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
+      <div className="flex items-center gap-3 bg-black/20 backdrop-blur-md border-b border-white/5 px-4 py-2">
         <FlowTypeSelector
           availableTypes={availableTypes}
           flowType={flowType}
@@ -220,7 +219,7 @@ export default function FlowsTab(): React.JSX.Element {
             <select
               value={selectedEndpoint}
               onChange={(e) => setSelectedEndpoint(e.target.value)}
-              className="appearance-none rounded-lg border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-3 py-1 pr-7 text-[11px] text-foreground outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20"
+              className="appearance-none rounded-lg border border-white/8 bg-white/3 backdrop-blur-xl px-3 py-1 pr-7 text-[11px] text-foreground outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20"
             >
               <option value="__all__">All endpoints ({endpoints.length})</option>
               {endpoints.map((ep) => (
@@ -235,7 +234,7 @@ export default function FlowsTab(): React.JSX.Element {
             />
           </div>
         )}
-      </Card>
+      </div>
 
       {/* Flow diagram */}
       <div className="flex-1 overflow-hidden">
@@ -289,7 +288,7 @@ function FlowTypeSelector({
             type="button"
             onClick={() => onSelect(t.id)}
             className={`relative flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
-              isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.03]'
+              isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
             }`}
           >
             {isActive && (

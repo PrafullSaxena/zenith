@@ -1,19 +1,16 @@
 /**
  * CodePanel — Main layout for the Code tab.
  * Horizontal split: FileTree (left sidebar) | CodeTabs + CodeViewer (right).
- * Custom drag-to-resize handle (plain flexbox — no react-resizable-panels).
+ * Uses react-resizable-panels v4 for proper resize handling.
  */
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { FileCode } from 'lucide-react'
+import { useCallback, useMemo } from 'react'
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
+import { FileCode, GripVertical } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import { FileTree, type FileTreeNode } from '@renderer/components/shared/file-tree'
 import type { FileNode } from '../../../types/cortex'
 import CodeTabs from './CodeTabs'
 import CodeViewer from './CodeViewer'
-
-const MIN_WIDTH = 160
-const MAX_WIDTH = 480
-const DEFAULT_WIDTH = 260
 
 // ---------------------------------------------------------------------------
 // Helpers: convert Cortex FileNode[] -> shared FileTreeNode[]
@@ -51,6 +48,20 @@ function collectDefaultExpanded(nodes: FileNode[], depth: number): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// Stitch-styled resize handle
+// ---------------------------------------------------------------------------
+
+function ResizeHandle(): React.JSX.Element {
+  return (
+    <PanelResizeHandle className="group relative flex w-2 items-center justify-center transition-colors hover:bg-primary/10 data-[resize-handle-active]:bg-primary/15">
+      <div className="flex flex-col gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-data-[resize-handle-active]:opacity-100">
+        <GripVertical size={10} className="text-muted-foreground" />
+      </div>
+    </PanelResizeHandle>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // CodePanel
 // ---------------------------------------------------------------------------
 
@@ -61,11 +72,6 @@ export default function CodePanel(): React.JSX.Element {
   const setFileContent = useCortexStore((s) => s.setFileContent)
   const repos = useCortexStore((s) => s.repos)
   const activeRepoId = useCortexStore((s) => s.activeRepoId)
-
-  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH)
-  const isDragging = useRef(false)
-  const startX = useRef(0)
-  const startWidth = useRef(DEFAULT_WIDTH)
 
   const fileTree = analysisResult?.fileTree ?? []
 
@@ -87,75 +93,27 @@ export default function CodePanel(): React.JSX.Element {
     [openFile, setFileContent, repos, activeRepoId]
   )
 
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault()
-      isDragging.current = true
-      startX.current = e.clientX
-      startWidth.current = sidebarWidth
-      document.body.style.cursor = 'col-resize'
-      document.body.style.userSelect = 'none'
-    },
-    [sidebarWidth]
-  )
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent): void => {
-      if (!isDragging.current) return
-      const delta = e.clientX - startX.current
-      const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth.current + delta))
-      setSidebarWidth(newWidth)
-    }
-
-    const onMouseUp = (): void => {
-      if (!isDragging.current) return
-      isDragging.current = false
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-    return () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-  }, [])
-
   return (
-    <div className="flex h-full">
+    <PanelGroup orientation="horizontal" className="h-full">
       {/* Left panel: File Tree */}
-      <div
-        className="h-full shrink-0 overflow-x-auto border-r border-white/[0.06] bg-white/[0.02]"
-        style={{ width: sidebarWidth }}
-      >
-        <FileTree
-          nodes={treeNodes}
-          onSelect={handleSelect}
-          selectedPath={activeFilePath ?? undefined}
-          searchable
-          defaultExpanded={defaultExpanded}
-          className="h-full pt-2"
-        />
-      </div>
+      <Panel defaultSize="20%" minSize="12%" maxSize="35%">
+        <div className="h-full overflow-x-auto border-r border-white/6 bg-white/2">
+          <FileTree
+            nodes={treeNodes}
+            onSelect={handleSelect}
+            selectedPath={activeFilePath ?? undefined}
+            searchable
+            defaultExpanded={defaultExpanded}
+            className="h-full pt-2"
+          />
+        </div>
+      </Panel>
 
       {/* Resize handle */}
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        tabIndex={0}
-        onMouseDown={onMouseDown}
-        className="flex w-2 cursor-col-resize items-center justify-center hover:bg-primary/10 transition-colors"
-      >
-        <div className="flex flex-col gap-1">
-          <div className="h-1 w-1 rounded-full bg-text-secondary/30" />
-          <div className="h-1 w-1 rounded-full bg-text-secondary/30" />
-          <div className="h-1 w-1 rounded-full bg-text-secondary/30" />
-        </div>
-      </div>
+      <ResizeHandle />
 
       {/* Right panel: Code Tabs + Code Viewer */}
-      <div className="h-full min-w-0 flex-1">
+      <Panel defaultSize="80%">
         {activeFilePath ? (
           <div className="flex h-full flex-col">
             <CodeTabs />
@@ -169,7 +127,7 @@ export default function CodePanel(): React.JSX.Element {
             <p className="text-sm">Select a file from the tree to view its contents</p>
           </div>
         )}
-      </div>
-    </div>
+      </Panel>
+    </PanelGroup>
   )
 }

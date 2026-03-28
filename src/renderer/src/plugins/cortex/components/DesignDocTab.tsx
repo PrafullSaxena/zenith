@@ -6,7 +6,6 @@
 import { motion } from 'framer-motion'
 import { BookOpen, RefreshCw, Loader2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
-import { Card } from '@renderer/components/ui/card'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 
@@ -37,7 +36,7 @@ export default function DesignDocTab(): React.JSX.Element {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className="p-8 text-center">
+          <div className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md p-8 text-center">
             <BookOpen size={36} className="mx-auto mb-3 text-muted-foreground/30" />
             <h3 className="text-sm font-semibold text-foreground">Design Document</h3>
             <p className="mt-1 max-w-xs text-xs text-muted-foreground">
@@ -51,7 +50,7 @@ export default function DesignDocTab(): React.JSX.Element {
             >
               Generate Design Document
             </button>
-          </Card>
+          </div>
         </motion.div>
       </div>
     )
@@ -74,7 +73,7 @@ export default function DesignDocTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <Card className="flex items-center justify-between px-6 py-2 rounded-none border-x-0 border-t-0">
+      <div className="flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/5 px-6 py-2">
         <div className="flex items-center gap-2">
           <BookOpen size={14} className="text-primary" />
           <span className="text-xs font-medium text-foreground">High Level Design</span>
@@ -91,7 +90,7 @@ export default function DesignDocTab(): React.JSX.Element {
           <RefreshCw size={11} />
           Regenerate
         </button>
-      </Card>
+      </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">

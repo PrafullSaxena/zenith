@@ -2,6 +2,7 @@
  * RepoCard -- Individual repository card with status indicator and actions.
  */
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   FolderGit2,
   Trash2,
@@ -9,7 +10,6 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
-  
   GitPullRequest,
   Sparkles
 } from 'lucide-react'
@@ -17,7 +17,6 @@ import type { Repository } from '../../../types/cortex'
 import { useCortexStore } from '../../../stores/cortex-store'
 import AnalysisProgress from './AnalysisProgress'
 import { REPO_TYPE_GRADIENTS } from '../cortex-theme'
-import { Card } from '@renderer/components/ui/card'
 
 interface Props {
   repo: Repository
@@ -30,10 +29,11 @@ interface Props {
 
 const STATUS_BORDER: Record<Repository['status'], string> = {
   idle: '',
-  cloning: '!border-blue-500/30',
-  analyzing: '!border-warning/30',
-  ready: '!border-success/30',
-  error: '!border-error/30'
+  'needs-clone': '',
+  cloning: 'border-blue-500/30',
+  analyzing: 'border-warning/30',
+  ready: 'border-success/30',
+  error: 'border-error/30'
 }
 
 const REPO_TYPE_COLORS: Record<string, string> = {
@@ -74,14 +74,17 @@ export default function RepoCard({
   const [isFetching, setIsFetching] = useState(false)
 
   return (
-    <Card
+    <motion.div
       onClick={onSelect}
-      className={`relative cursor-pointer overflow-hidden p-4 transition-colors ${STATUS_BORDER[repo.status]} ${
-        isActive ? 'ring-1 ring-primary/40' : ''
+      whileHover={{ y: -3, scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      className={`relative cursor-pointer overflow-hidden rounded-xl border bg-black/20 p-4 backdrop-blur-md transition-shadow hover:shadow-[0_0_20px_rgba(var(--primary-rgb,99,102,241),0.06)] ${STATUS_BORDER[repo.status] || 'border-white/5'} ${
+        isActive ? 'ring-1 ring-primary/20 bg-primary/5' : ''
       }`}
     >
       {/* Gradient top accent */}
-      <div className={`absolute inset-x-0 top-0 h-[3px] rounded-t-2xl bg-gradient-to-r ${REPO_TYPE_GRADIENTS[repo.repoType] ?? REPO_TYPE_GRADIENTS.unknown}`} />
+      <div className={`absolute inset-x-0 top-0 h-[3px] rounded-t-xl bg-linear-to-r ${REPO_TYPE_GRADIENTS[repo.repoType] ?? REPO_TYPE_GRADIENTS.unknown}`} />
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
@@ -112,34 +115,60 @@ export default function RepoCard({
       </div>
 
       {/* Status indicators */}
-      {repo.status === 'cloning' && (
-        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-blue-400">
-          <Loader2 size={12} className="animate-spin" />
-          <span>Cloning repository...</span>
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {repo.status === 'cloning' && (
+          <motion.div
+            key="cloning"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-3 flex items-center gap-1.5 text-[10px] text-blue-400"
+          >
+            <Loader2 size={12} className="animate-spin" />
+            <span>Cloning repository...</span>
+          </motion.div>
+        )}
 
-      {repo.status === 'ready' && !isRunningFullAI && (
-        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-success">
-          <CheckCircle size={12} />
-          <span>Analysis ready</span>
-        </div>
-      )}
+        {repo.status === 'ready' && !isRunningFullAI && (
+          <motion.div
+            key="ready"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-3 flex items-center gap-1.5 text-[10px] text-success"
+          >
+            <CheckCircle size={12} />
+            <span>Analysis ready</span>
+          </motion.div>
+        )}
 
-      {/* Full AI Analysis progress indicator — persists across tab switches */}
-      {isRunningFullAI && isActive && (
-        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-purple-400">
-          <Loader2 size={12} className="animate-spin" />
-          <span>{fullAIAnalysisPhase ?? 'Running AI analysis...'}</span>
-        </div>
-      )}
+        {/* Full AI Analysis progress indicator — persists across tab switches */}
+        {isRunningFullAI && isActive && (
+          <motion.div
+            key="ai-analyzing"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-3 flex items-center gap-1.5 text-[10px] text-purple-400"
+          >
+            <Loader2 size={12} className="animate-spin" />
+            <span>{fullAIAnalysisPhase ?? 'Running AI analysis...'}</span>
+          </motion.div>
+        )}
 
-      {repo.status === 'error' && (
-        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-error">
-          <AlertCircle size={12} />
-          <span className="truncate">{repo.error ?? 'An error occurred'}</span>
-        </div>
-      )}
+        {repo.status === 'error' && (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-3 flex items-center gap-1.5 text-[10px] text-error"
+          >
+            <AlertCircle size={12} />
+            <span className="truncate">{repo.error ?? 'An error occurred'}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Analysis progress */}
       {isThisAnalyzing && progress && (
@@ -152,8 +181,9 @@ export default function RepoCard({
       {!isThisAnalyzing && repo.status !== 'cloning' && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {repo.status !== 'ready' && (
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.95 }}
               onClick={(e) => {
                 e.stopPropagation()
                 onAnalyze()
@@ -163,12 +193,13 @@ export default function RepoCard({
             >
               <Play size={12} />
               Analyze
-            </button>
+            </motion.button>
           )}
           {repo.status === 'ready' && (
             <>
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.95 }}
                 disabled={isFetching}
                 onClick={async (e) => {
                   e.stopPropagation()
@@ -184,9 +215,10 @@ export default function RepoCard({
               >
                 {isFetching ? <Loader2 size={12} className="animate-spin" /> : <GitPullRequest size={12} />}
                 Fetch Changes
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.95 }}
                 disabled={isRunningFullAI}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -197,11 +229,12 @@ export default function RepoCard({
               >
                 {isRunningFullAI ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
                 Run AI Analysis
-              </button>
+              </motion.button>
             </>
           )}
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.9 }}
             onClick={(e) => {
               e.stopPropagation()
               onRemove()
@@ -210,9 +243,9 @@ export default function RepoCard({
             className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-error/10 hover:text-error"
           >
             <Trash2 size={12} />
-          </button>
+          </motion.button>
         </div>
       )}
-    </Card>
+    </motion.div>
   )
 }

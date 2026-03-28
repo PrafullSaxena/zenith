@@ -10,7 +10,6 @@ import { useCortexStore, getCortexAgent } from '../../../stores/cortex-store'
 import { useAgentStore } from '../../../stores/agent-store'
 import MarkdownRenderer from '../../../components/MarkdownRenderer'
 import type { QAMessage, RepoType } from '../../../types/cortex'
-import { Card } from '@renderer/components/ui/card'
 
 // ── Suggested questions by repo type ────────────────────────────────
 
@@ -275,7 +274,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <Card className="flex items-center justify-between px-4 py-2 rounded-none border-x-0 border-t-0">
+      <div className="flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/5 px-4 py-2">
         <div className="flex items-center gap-2">
           <Search size={14} className="text-primary" />
           <span className="text-xs font-medium text-foreground">Codebase Q&A</span>
@@ -289,13 +288,13 @@ Answer questions accurately. Reference specific files, functions, and line numbe
           <button
             type="button"
             onClick={clearQA}
-            className="rounded p-1 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-colors"
+            className="rounded p-1 text-muted-foreground hover:bg-white/6 hover:text-foreground transition-colors"
             title="Clear chat"
           >
             <Trash2 size={13} />
           </button>
         )}
-      </Card>
+      </div>
 
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
@@ -313,14 +312,17 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             )}
             <div className="flex flex-col gap-2">
               {suggestedQuestions.map((q) => (
-                <Card
+                <motion.button
                   key={q}
-                  interactive
-                  className="px-4 py-2.5 text-xs text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-all text-left disabled:opacity-40 cursor-pointer"
-                  onClick={() => { if (!isQAStreaming && hasAgent) handleSend(q) }}
+                  type="button"
+                  whileHover={{ y: -2, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={isQAStreaming || !hasAgent}
+                  onClick={() => handleSend(q)}
+                  className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md px-4 py-2.5 text-xs text-muted-foreground hover:bg-white/6 hover:text-foreground transition-all text-left disabled:opacity-40 cursor-pointer"
                 >
                   {q}
-                </Card>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -335,11 +337,11 @@ Answer questions accurately. Reference specific files, functions, and line numbe
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {msg.role === 'user' ? (
-                <div className="max-w-[85%] bg-primary/[0.08] border border-primary/[0.15] rounded-2xl px-4 py-3 border-l-[3px] border-l-accent/40">
+                <div className="max-w-[85%] bg-primary/8 border border-primary/15 rounded-2xl px-4 py-3 border-l-[3px] border-l-accent/40">
                   <p className="text-sm">{msg.content}</p>
                 </div>
               ) : (
-                <Card className="max-w-[85%] px-4 py-3">
+                <div className="max-w-[85%] rounded-xl border border-white/5 bg-black/20 backdrop-blur-md px-4 py-3">
                   {msg.content ? (
                     <div>
                       <MarkdownRenderer text={msg.content} className="text-sm" />
@@ -352,7 +354,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
                               type="button"
                               onClick={() => handleSourceClick(src.path, src.line)}
                               title={`Open ${src.path}:${src.line}`}
-                              className="flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 text-[10px] text-primary/80 hover:bg-white/[0.08] hover:text-primary transition-all hover:-translate-y-0.5"
+                              className="flex items-center gap-1 rounded-full bg-white/4 border border-white/8 px-2.5 py-1 text-[10px] text-primary/80 hover:bg-white/8 hover:text-primary transition-all hover:-translate-y-0.5"
                             >
                               <FileCode size={10} />
                               <span>{src.path}:{src.line}</span>
@@ -373,7 +375,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
                       ))}
                     </div>
                   )}
-                </Card>
+                </div>
               )}
             </motion.div>
           ))
@@ -382,8 +384,8 @@ Answer questions accurately. Reference specific files, functions, and line numbe
       </div>
 
       {/* Input area */}
-      <Card className="p-3 rounded-none border-x-0 border-b-0">
-        <div className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/[0.08] px-3 py-2 focus-within:border-primary/30">
+      <div className="border-t border-white/5 bg-black/20 backdrop-blur-md p-3">
+        <div className="flex items-center gap-2 rounded-xl bg-white/3 border border-white/8 px-3 py-2 focus-within:border-primary/30">
           <Search size={14} className="shrink-0 text-muted-foreground/50" />
           <input
             type="text"
@@ -408,7 +410,7 @@ Answer questions accurately. Reference specific files, functions, and line numbe
             )}
           </button>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }

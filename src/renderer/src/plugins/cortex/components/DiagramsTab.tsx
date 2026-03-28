@@ -21,7 +21,6 @@ import { motion } from 'framer-motion'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { AnalysisResult, CodeEntity } from '../../../types/cortex'
 import { getKindColor } from '../cortex-theme'
-import { Card } from '@renderer/components/ui/card'
 
 const DIAGRAM_TABS = [
   { id: 'entities', label: 'Entity Graph', icon: Network },
@@ -330,7 +329,7 @@ export default function DiagramsTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <Card className="flex items-center justify-between px-4 py-2 rounded-none border-x-0 border-t-0">
+      <div className="flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/5 px-4 py-2">
         <div className="flex items-center gap-1">
           {DIAGRAM_TABS.map((tab) => {
             const Icon = tab.icon
@@ -341,7 +340,7 @@ export default function DiagramsTab(): React.JSX.Element {
                 type="button"
                 onClick={() => setActiveDiagramTab(tab.id)}
                 className={`relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.03]'
+                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
                 }`}
               >
                 {isActive && (
@@ -362,7 +361,7 @@ export default function DiagramsTab(): React.JSX.Element {
         <span className="text-[10px] text-muted-foreground">
           {diagramData.nodes.length} nodes / {diagramData.edges.length} edges
         </span>
-      </Card>
+      </div>
 
       {/* Diagram */}
       <div className="flex-1 overflow-hidden relative">
@@ -384,7 +383,7 @@ export default function DiagramsTab(): React.JSX.Element {
             <Background gap={20} size={1} color="#1e293b" variant={BackgroundVariant.Dots} />
             <Controls
               showInteractive={false}
-              className="!bg-white/[0.03] !backdrop-blur-xl !border-white/[0.08] !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/[0.06] [&>button]:!text-muted-foreground"
+              className="!bg-white/3 !backdrop-blur-xl !border-white/8 !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/6 [&>button]:!text-muted-foreground"
             />
           </ReactFlow>
         )}

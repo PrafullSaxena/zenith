@@ -14,7 +14,6 @@ import RepoManager from './components/RepoManager'
 import InsightsPanel from './components/InsightsPanel'
 import CodePanel from './components/CodePanel'
 import QAPanel from './components/QAPanel'
-import { Card } from '@renderer/components/ui/card'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '@renderer/lib/motion'
@@ -69,7 +68,9 @@ export default function CortexView(): React.JSX.Element {
   }, [activeRepo?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background relative">
+      {/* Ambient top gradient glow */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--primary-rgb,99,102,241),0.04),transparent_60%)]" />
       {/* Card with Brain icon, gradient title, and tab bar */}
       <PageHeader
         icon={Brain}
@@ -92,9 +93,15 @@ export default function CortexView(): React.JSX.Element {
 
       {/* No-agent banner */}
       {!getCortexAgent() && (
-        <div className="mx-4 mt-2 rounded-xl bg-primary/10 px-3 py-2 text-[11px] text-primary">
-          Configure an AI Agent in Settings to unlock AI-powered insights
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative mx-4 mt-2 overflow-hidden rounded-xl border border-primary/20 bg-primary/8 px-3 py-2 text-[11px] text-primary backdrop-blur-md"
+        >
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
+          <span className="relative z-10">Configure an AI Agent in Settings to unlock AI-powered insights</span>
+        </motion.div>
       )}
 
       {/* Content */}
@@ -158,23 +165,27 @@ export default function CortexView(): React.JSX.Element {
         </AnimatePresence>
       </div>
 
-      {/* Status bar */}
+      {/* Glassmorphic status bar */}
       {activeRepo && analysisResult && (
-        <div className="flex items-center justify-between border-t border-border/40 bg-secondary/30 backdrop-blur-sm px-4 py-1 text-[10px] text-muted-foreground">
+        <div className="flex items-center justify-between border-t border-white/5 bg-black/30 backdrop-blur-xl px-4 py-1.5 text-[10px] text-muted-foreground">
           <div className="flex items-center gap-3">
-            <span>{activeRepo.name}</span>
-            <span className="text-muted-foreground/50">/</span>
+            <span className="font-medium text-foreground/80">{activeRepo.name}</span>
+            <span className="text-muted-foreground/30">/</span>
             <span>{activeRepo.branch}</span>
             {activeRepo.commitSha && (
               <>
-                <span className="text-muted-foreground/50">/</span>
-                <span className="font-mono">{activeRepo.commitSha.slice(0, 7)}</span>
+                <span className="text-muted-foreground/30">/</span>
+                <span className="font-mono text-primary/70">{activeRepo.commitSha.slice(0, 7)}</span>
               </>
             )}
           </div>
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+            <span className="flex items-center gap-1.5">
+              <motion.span
+                className="inline-block h-1.5 w-1.5 rounded-full bg-green-400"
+                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              />
               <span
                 className="inline-block h-1.5 w-1.5 rounded-full"
                 style={{ backgroundColor: getRepoTypeDotColor(analysisResult.repoType) }}

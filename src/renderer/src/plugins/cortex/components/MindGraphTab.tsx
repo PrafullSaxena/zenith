@@ -9,7 +9,6 @@ import { Search, X, Share2, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
 import { useCortexStore } from '../../../stores/cortex-store'
 import type { CodeEntity, CallEdge } from '../../../types/cortex'
 import { getKindColor } from '../cortex-theme'
-import { Card } from '@renderer/components/ui/card'
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -395,7 +394,7 @@ export default function MindGraphTab(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Glass toolbar */}
-      <Card className="flex items-center gap-3 px-4 py-2 rounded-none border-x-0 border-t-0">
+      <div className="flex items-center gap-3 bg-black/20 backdrop-blur-md border-b border-white/5 px-4 py-2">
         {/* Search with glass styling */}
         <div className="relative max-w-xs flex-1">
           <Search
@@ -411,7 +410,7 @@ export default function MindGraphTab(): React.JSX.Element {
               if (!e.target.value) setHighlightedNodes(new Set())
             }}
             placeholder="Search entities..."
-            className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] py-1.5 pl-7 pr-7 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none"
+            className="w-full rounded-lg border border-white/8 bg-white/3 py-1.5 pl-7 pr-7 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none"
           />
           {search && (
             <button
@@ -425,13 +424,13 @@ export default function MindGraphTab(): React.JSX.Element {
 
           {/* Glass search dropdown */}
           {search && searchResults.length > 0 && showDropdown && (
-            <div className="absolute left-0 top-full z-50 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-white/[0.08] bg-white/[0.03] shadow-xl backdrop-blur-2xl">
+            <div className="absolute left-0 top-full z-50 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-white/8 bg-white/3 shadow-xl backdrop-blur-2xl">
               {searchResults.slice(0, 15).map((node) => (
                 <button
                   key={node.id}
                   type="button"
                   onClick={() => handleSearchSelect(node)}
-                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-white/[0.05]"
+                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-white/5"
                 >
                   <span
                     className="inline-block h-2 w-2 rounded-full"
@@ -451,7 +450,7 @@ export default function MindGraphTab(): React.JSX.Element {
             type="checkbox"
             checked={showMethods}
             onChange={(e) => setShowMethods(e.target.checked)}
-            className="h-3 w-3 rounded border-white/[0.08]"
+            className="h-3 w-3 rounded border-white/8"
           />
           Methods
         </label>
@@ -461,7 +460,7 @@ export default function MindGraphTab(): React.JSX.Element {
             <button
               type="button"
               onClick={handleZoomIn}
-              className="rounded p-1 text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
+              className="rounded p-1 text-muted-foreground hover:bg-white/5 hover:text-foreground"
               title="Zoom in"
             >
               <ZoomIn size={14} />
@@ -469,7 +468,7 @@ export default function MindGraphTab(): React.JSX.Element {
             <button
               type="button"
               onClick={handleZoomOut}
-              className="rounded p-1 text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
+              className="rounded p-1 text-muted-foreground hover:bg-white/5 hover:text-foreground"
               title="Zoom out"
             >
               <ZoomOut size={14} />
@@ -477,7 +476,7 @@ export default function MindGraphTab(): React.JSX.Element {
             <button
               type="button"
               onClick={handleFitView}
-              className="rounded p-1 text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
+              className="rounded p-1 text-muted-foreground hover:bg-white/5 hover:text-foreground"
               title="Fit to view"
             >
               <Maximize2 size={14} />
@@ -488,7 +487,7 @@ export default function MindGraphTab(): React.JSX.Element {
         <span className="text-[10px] text-muted-foreground">
           {graphData.nodes.length} nodes / {graphData.links.length} edges
         </span>
-      </Card>
+      </div>
 
       {/* Graph canvas */}
       <div ref={containerRef} className="relative flex-1 overflow-hidden bg-background" style={{ overscrollBehavior: 'none', touchAction: 'none' }}>
@@ -498,7 +497,7 @@ export default function MindGraphTab(): React.JSX.Element {
         {fallback2D}
 
         {/* Glass legend overlay */}
-        <Card className="absolute bottom-3 left-3 flex flex-wrap gap-2 px-3 py-2">
+        <div className="absolute bottom-3 left-3 flex flex-wrap gap-2 rounded-xl border border-white/5 bg-black/30 backdrop-blur-xl px-3 py-2">
           {kindsInGraph.map((kind) => {
             const colors = getKindColor(kind)
             return (
@@ -511,11 +510,11 @@ export default function MindGraphTab(): React.JSX.Element {
               </span>
             )
           })}
-        </Card>
+        </div>
 
         {/* Hovered tooltip */}
         {hoveredNode && (
-          <Card className="absolute right-3 top-3 max-w-xs px-3 py-2 shadow-lg">
+          <div className="absolute right-3 top-3 max-w-xs rounded-xl border border-white/5 bg-black/30 backdrop-blur-xl px-3 py-2 shadow-lg">
             <div className="flex items-center gap-2">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-full"
@@ -531,7 +530,7 @@ export default function MindGraphTab(): React.JSX.Element {
               <p className="mt-1 text-[10px] text-muted-foreground/80">{hoveredNode.summary}</p>
             )}
             <p className="mt-1 text-[9px] text-primary">Click to open in code viewer</p>
-          </Card>
+          </div>
         )}
       </div>
     </div>
