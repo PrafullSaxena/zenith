@@ -59,6 +59,36 @@ Key recommendations:
 - **Pro** for complex planning and analysis
 - Large context is available but **search-first** still applies
 
+## react-resizable-panels v4 API rules:
+
+Imports: Use Group, Panel, Separator — NOT PanelGroup, PanelResizeHandle (those were v2/v3 names)
+
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
+
+Orientation, not direction: Use orientation="horizontal", never direction="horizontal"
+
+Sizes are pixels by default, not percentages: Always use string format for percentage-based sizing:
+
+// WRONG — these are 25 pixels, not 25%
+defaultSize={25} minSize={15} maxSize={40}
+
+// CORRECT
+defaultSize="25%" minSize="15%" maxSize="40%"
+
+Panel ref: Use panelRef={ref}, not ref={ref}, to get the imperative handle (collapse(), expand(), isCollapsed())
+
+No onCollapse/onExpand: Use onResize instead:
+
+onResize={(size) => {
+  setCollapsed(size.asPercentage === 0)
+}}
+
+The callback signature is (panelSize: { asPercentage: number; inPixels: number }, id, prevSize) => void
+
+onLayoutChange on Group returns { [panelId: string]: number }, not number[]
+
+Adding this to your project instructions will prevent any agent (or contributor) from repeating these v4 API mismatches across any plugin.
+
 ---
 
 *GSD Methodology adapted for Google Antigravity*
