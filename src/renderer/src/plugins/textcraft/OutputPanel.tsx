@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Check, FileText, AlignLeft, Copy, FileDown, ChevronDown, ChevronRight, ChevronsUpDown, Loader2, BookOpen } from 'lucide-react'
 import { Card } from '@renderer/components/ui/card'
 import { Skeleton } from '@renderer/components/ui/skeleton'
@@ -245,7 +246,7 @@ export default function OutputPanel(): React.JSX.Element {
   const showActions = (isComplete || hasOutput) && !isStreaming
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden border-x-0 border-t-0 p-4">
+    <Card className="flex flex-col h-full overflow-hidden border-white/5 bg-black/20 backdrop-blur-md p-4 rounded-xl shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between pb-2">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
@@ -257,63 +258,73 @@ export default function OutputPanel(): React.JSX.Element {
           <div className="flex items-center gap-1">
             {hasSections && (
               <>
-                <button
+                <motion.button
                   type="button"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={toggleAll}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-medium bg-white/2 border border-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors shadow-sm"
                   title={allCollapsed ? 'Expand all sections' : 'Collapse all sections'}
                 >
                   <ChevronsUpDown size={13} />
                   <span>{allCollapsed ? 'Expand' : 'Collapse'}</span>
-                </button>
-                <div className="h-4 w-px bg-white/[0.08] mx-0.5" />
+                </motion.button>
+                <div className="h-4 w-px bg-white/10 mx-1" />
               </>
             )}
 
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => void handleCopyRaw()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium bg-white/2 border border-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors shadow-sm"
               title="Copy plain text"
             >
               {copiedMode === 'raw' ? <Check size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} /> : <AlignLeft size={13} className={copiedMode === 'raw' ? 'text-success' : undefined} />}
               <span>{copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}</span>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => void handleCopyFormatted()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium bg-white/2 border border-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors shadow-sm"
               title="Copy markdown source"
             >
               {copiedMode === 'formatted' ? <Check size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} /> : <FileText size={13} className={copiedMode === 'formatted' ? 'text-success' : undefined} />}
               <span>{copiedMode === 'formatted' ? 'Copied!' : 'Markdown'}</span>
-            </button>
+            </motion.button>
 
-            <div className="h-4 w-px bg-white/[0.08] mx-0.5" />
+            <div className="h-4 w-px bg-white/10 mx-1" />
 
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => void handleExportPDF()}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium bg-white/2 border border-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 shadow-sm"
               title="Export as PDF"
             >
               {isExporting ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
               <span>{isExporting ? 'Exporting...' : 'PDF'}</span>
-            </button>
+            </motion.button>
 
-            <div className="h-4 w-px bg-white/[0.08] mx-0.5" />
+            <div className="h-4 w-px bg-white/10 mx-1" />
 
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => void handleSaveAsNote()}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-white/[0.06] text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium bg-white/2 border border-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors shadow-sm"
               title="Save as Nebula note"
             >
               {savedAsNote ? <Check size={13} className={savedAsNote ? 'text-success' : undefined} /> : <BookOpen size={13} className={savedAsNote ? 'text-success' : undefined} />}
               <span>{savedAsNote ? 'Saved!' : 'Note'}</span>
-            </button>
+            </motion.button>
           </div>
         )}
 
@@ -376,7 +387,7 @@ export default function OutputPanel(): React.JSX.Element {
                     <button
                       type="button"
                       onClick={() => toggleSection(idx)}
-                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-1 -ml-1 text-left transition-colors hover:bg-white/[0.04] ${headingClass} text-foreground`}
+                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-1 -ml-1 text-left transition-colors hover:bg-white/4 ${headingClass} text-foreground`}
                     >
                       {isCollapsed ? (
                         <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
@@ -385,11 +396,19 @@ export default function OutputPanel(): React.JSX.Element {
                       )}
                       <span>{section.heading.replace(/\*\*/g, '')}</span>
                     </button>
-                    {!isCollapsed && section.content.trim() && (
-                      <div className="pl-5">
-                        <MarkdownRenderer text={section.content} className="text-sm leading-relaxed" />
-                      </div>
-                    )}
+                    <AnimatePresence initial={false}>
+                      {!isCollapsed && section.content.trim() && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="pl-5 overflow-hidden"
+                        >
+                          <MarkdownRenderer text={section.content} className="text-sm leading-relaxed" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )
               })
@@ -408,8 +427,10 @@ export default function OutputPanel(): React.JSX.Element {
       </div>
 
       {/* Footer: word/char count */}
-      <div className="text-xs text-muted-foreground px-1 pt-2 border-t border-white/[0.06]">
-        {wordCount} words | {charCount} chars
+      <div className="text-[11px] font-medium tracking-wide text-muted-foreground/60 px-1 pt-2 border-t border-white/6 flex items-center gap-2 uppercase">
+        <span>{wordCount} {wordCount === 1 ? 'word' : 'words'}</span>
+        <span className="h-1 w-1 rounded-full bg-border" />
+        <span>{charCount} {charCount === 1 ? 'char' : 'chars'}</span>
       </div>
     </Card>
   )

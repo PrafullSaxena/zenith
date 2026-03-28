@@ -9,6 +9,7 @@
 import { Card } from '@renderer/components/ui/card'
 import { Button } from '@renderer/components/ui/button'
 import { SimpleSelect } from '@renderer/components/ui/select'
+import { motion } from 'framer-motion'
 import { useTextCraftStore } from '../../stores/textcraft-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -80,9 +81,9 @@ export default function ControlsPanel(): React.JSX.Element {
   }
 
   return (
-    <Card className="flex flex-col h-full gap-2.5 overflow-y-auto border-x-0 border-t-0 p-3">
+    <Card className="flex flex-col h-full gap-2.5 overflow-y-auto border-white/5 bg-black/20 backdrop-blur-md p-3 rounded-xl shadow-lg">
       {/* Header */}
-      <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1">
+      <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1 pb-1">
         Controls
       </div>
 
@@ -100,14 +101,16 @@ export default function ControlsPanel(): React.JSX.Element {
           {TONE_OPTIONS.map((opt) => {
             const isActive = options.tones.includes(opt.value)
             return (
-              <button
+              <motion.button
                 key={opt.value}
                 type="button"
+                whileHover={{ y: -1, scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => handleToggleTone(opt.value)}
                 className={`w-full rounded-lg py-1.5 px-2.5 text-left transition-colors ${
                   isActive
-                    ? 'bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/30'
-                    : 'bg-white/[0.04] text-muted-foreground hover:text-foreground hover:bg-white/[0.06] border border-transparent'
+                    ? 'bg-primary/20 text-primary border border-primary/50 shadow-sm'
+                    : 'bg-white/4 text-muted-foreground hover:text-foreground hover:bg-white/6 border border-white/5'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -116,7 +119,7 @@ export default function ControlsPanel(): React.JSX.Element {
                     {opt.description}
                   </span>
                 </div>
-              </button>
+              </motion.button>
             )
           })}
         </div>
@@ -153,7 +156,7 @@ export default function ControlsPanel(): React.JSX.Element {
           }
           placeholder="e.g., Make it shorter, emphasize security..."
           rows={3}
-          className="w-full resize-none rounded-xl h-48 bg-white/[0.03] border border-[hsl(var(--border))] text-foreground placeholder:text-muted-foreground/50 text-sm leading-relaxed p-3 focus:outline-none focus:border-[hsl(var(--border))]"
+          className="w-full resize-none rounded-xl h-24 bg-black/40 border border-white/10 text-foreground placeholder:text-muted-foreground/50 text-sm leading-relaxed p-3 focus:outline-none focus:ring-1 focus:ring-primary/50 transition-shadow"
         />
       </div>
 
@@ -170,7 +173,7 @@ export default function ControlsPanel(): React.JSX.Element {
           <Button
             variant="destructive"
             size="lg"
-            className="w-full"
+            className="w-full rounded-xl"
             onClick={handleCancel}
           >
             Cancel
@@ -179,7 +182,7 @@ export default function ControlsPanel(): React.JSX.Element {
           <Button
             variant="default"
             size="lg"
-            className="w-full"
+            className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(var(--primary),0.3)] hover:shadow-[0_0_20px_rgba(var(--primary),0.5)] transition-all"
             onClick={handleRefine}
             disabled={!canRefine}
           >

@@ -6,10 +6,9 @@
  * with stagger entrance animation. Loading shows Skeleton, empty shows div.
  */
 
-import { Eye, Clock, Trash2 } from 'lucide-react'
+import { Clock, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
-import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { useTextCraftStore } from '../../stores/textcraft-store'
@@ -48,11 +47,13 @@ export default function HistoryPanel(): React.JSX.Element {
       >
         {history.map((entry) => (
           <motion.div key={entry.id} variants={staggerItem}>
-            <div
-              className="group cursor-pointer rounded-xl border border-border/50 bg-card/60 px-3 py-2.5 transition-colors hover:bg-card"
+            <motion.div
+              whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.04)' }}
+              whileTap={{ scale: 0.99 }}
+              className="group cursor-pointer rounded-xl border border-white/5 bg-black/20 backdrop-blur-md px-4 py-3 shadow-lg"
               onClick={() => useTextCraftStore.getState().loadFromHistory(entry)}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-4">
                 <div className="flex-1 min-w-0">
                   {/* Input preview */}
                   <p className="text-sm text-foreground line-clamp-1">
@@ -102,7 +103,7 @@ export default function HistoryPanel(): React.JSX.Element {
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         ))}
       </motion.div>

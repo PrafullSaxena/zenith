@@ -5,13 +5,13 @@
  *  - Header: Card with Wand2 icon, gradient title, and GlassTab bar (Refine / History)
  *  - Refine tab: Three-panel resizable layout: InputPanel (left), ControlsPanel (middle), OutputPanel (right)
  *  - History tab: Full-width HistoryPanel showing saved refinements
- *
  * Default-exported for React.lazy() compatibility in the plugin registry.
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Wand2, Clock, PenLine } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { pageTransition } from '@renderer/lib/motion'
 import { Card } from '@renderer/components/ui/card'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
@@ -34,16 +34,8 @@ const tabs: CardTab[] = [
   { id: 'history', label: 'History', icon: Clock }
 ]
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
-
 export default function TextCraftView(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState('refine')
-  const [leftWidth, setLeftWidth] = useState(36)
-  const [rightWidth, setRightWidth] = useState(38)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const containerWidthRef = useRef(800)
 
   const history = useTextCraftStore((s) => s.history)
 
@@ -51,52 +43,6 @@ export default function TextCraftView(): React.JSX.Element {
   useEffect(() => {
     useTextCraftStore.getState().loadHistory()
   }, [])
-
-  // Track container width via ResizeObserver
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        containerWidthRef.current = entry.contentRect.width
-      }
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-
-  const handleLeftResize = useCallback((dx: number) => {
-    setLeftWidth((prev) => clamp(prev + (dx * 100) / containerWidthRef.current, 20, 50))
-  }, [])
-
-  const handleRightResize = useCallback((dx: number) => {
-    setRightWidth((prev) => clamp(prev - (dx * 100) / containerWidthRef.current, 20, 50))
-  }, [])
-
-  /** Creates onMouseDown for a resize handle that fires `onDrag(dx)` per mouse-move. */
-  const makeResizeHandler = useCallback(
-    (onDrag: (dx: number) => void) => (e: React.MouseEvent) => {
-      e.preventDefault()
-      let lastX = e.clientX
-      const onMouseMove = (ev: MouseEvent): void => {
-        const dx = ev.clientX - lastX
-        lastX = ev.clientX
-        onDrag(dx)
-      }
-      const onMouseUp = (): void => {
-        document.removeEventListener('mousemove', onMouseMove)
-        document.removeEventListener('mouseup', onMouseUp)
-        document.body.style.cursor = ''
-        document.body.style.userSelect = ''
-      }
-      document.body.style.cursor = 'col-resize'
-      document.body.style.userSelect = 'none'
-      document.addEventListener('mousemove', onMouseMove)
-      document.addEventListener('mouseup', onMouseUp)
-    },
-    []
-  )
 
   return (
     <div className="flex h-full flex-col">
@@ -119,32 +65,27 @@ export default function TextCraftView(): React.JSX.Element {
             animate="animate"
             exit="exit"
             className="flex flex-1 overflow-hidden"
-            ref={containerRef}
           >
-            {/* Left: Input */}
-            <div style={{ width: leftWidth + '%' }} className="shrink-0 overflow-auto p-4">
-              <InputPanel />
-            </div>
+            <PanelGroup orientation="horizontal" className="w-full h-full">
+              {/* Left: Input */}
+              <Panel defaultSize="33%" minSize="20%" className="h-full p-4 overflow-hidden flex flex-col">
+                <InputPanel />
+              </Panel>
 
-            <div
-              onMouseDown={makeResizeHandler(handleLeftResize)}
-              className="w-px shrink-0 cursor-col-resize bg-border/50 hover:bg-primary/40 active:bg-primary/60 transition-colors"
-            />
+              <PanelResizeHandle className="w-1 shrink-0 bg-transparent transition-colors hover:bg-primary/20 active:bg-primary/40 cursor-col-resize -mx-0.5 z-10" />
 
-            {/* Middle: Controls */}
-            <div className="flex-1 overflow-auto p-4">
-              <ControlsPanel />
-            </div>
+              {/* Middle: Controls */}
+              <Panel defaultSize="33%" minSize="20%" className="h-full p-4 overflow-hidden flex flex-col">
+                <ControlsPanel />
+              </Panel>
 
-            <div
-              onMouseDown={makeResizeHandler(handleRightResize)}
-              className="w-px shrink-0 cursor-col-resize bg-border/50 hover:bg-primary/40 active:bg-primary/60 transition-colors"
-            />
+              <PanelResizeHandle className="w-1 shrink-0 bg-transparent transition-colors hover:bg-primary/20 active:bg-primary/40 cursor-col-resize -mx-0.5 z-10" />
 
-            {/* Right: Output */}
-            <div style={{ width: rightWidth + '%' }} className="shrink-0 overflow-auto p-4">
-              <OutputPanel />
-            </div>
+              {/* Right: Output */}
+              <Panel defaultSize="34%" minSize="20%" className="h-full p-4 overflow-hidden flex flex-col">
+                <OutputPanel />
+              </Panel>
+            </PanelGroup>
           </motion.div>
         ) : (
           <motion.div
