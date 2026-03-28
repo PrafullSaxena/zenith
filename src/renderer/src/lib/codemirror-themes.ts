@@ -10,7 +10,6 @@
 import { EditorView } from '@codemirror/view'
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { tags } from '@lezer/highlight'
-import { oneDark } from '@codemirror/theme-one-dark'
 import type { Extension } from '@codemirror/state'
 
 // ---------------------------------------------------------------------------
@@ -240,18 +239,21 @@ const THEME_CACHE = new Map<string, Extension[]>()
 
 /**
  * Get the CodeMirror theme extension for a given hljs theme name.
- * Returns `oneDark` for "zenith" or unknown theme names.
  */
 export function getCodeMirrorTheme(hljsTheme: string | undefined): Extension[] {
   const key = hljsTheme ?? 'zenith'
 
-  if (key === 'zenith') return [oneDark]
-
   const cached = THEME_CACHE.get(key)
   if (cached) return cached
 
-  const palette = PALETTES[key]
-  if (!palette) return [oneDark]
+  // For zenith or unknown, construct a seamless fallback
+  const palette = PALETTES[key] || {
+    bg: 'transparent', fg: '#c9d1d9', selectionBg: 'rgba(56, 139, 253, 0.15)',
+    activeLine: 'rgba(255, 255, 255, 0.03)', cursor: '#58a6ff',
+    keyword: '#ff7b72', string: '#a5d6ff', number: '#79c0ff',
+    comment: '#8b949e', function: '#d2a8ff', type: '#ffa657',
+    variable: '#ffa657', operator: '#c9d1d9', punctuation: '#c9d1d9'
+  }
 
   const ext = buildTheme(palette)
   THEME_CACHE.set(key, ext)

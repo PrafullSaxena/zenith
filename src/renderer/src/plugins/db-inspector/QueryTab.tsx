@@ -33,10 +33,11 @@ import {
   EyeOff
 } from 'lucide-react'
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useDbStore, buildCmSchema } from '../../stores/db-store'
 import type { QueryTab as QueryTabType, OutputMessage } from '../../types/database'
-import { Card } from '@renderer/components/ui/card'
 import { Button } from '@renderer/components/ui/button'
+import { Separator } from '@renderer/components/ui/separator'
 import SqlEditor from './SqlEditor'
 import ResultsGrid from './ResultsGrid'
 import SavedQueriesPanel from './SavedQueriesPanel'
@@ -63,13 +64,13 @@ function useElapsedTimer(isRunning: boolean): string {
   useEffect(() => {
     if (isRunning) {
       startRef.current = Date.now()
-      setElapsed(0)
+      setTimeout(() => setElapsed(0), 0)
       const interval = setInterval(() => {
         setElapsed(Date.now() - startRef.current)
       }, 100)
       return () => clearInterval(interval)
     } else {
-      setElapsed(0)
+      setTimeout(() => setElapsed(0), 0)
     }
     return undefined
   }, [isRunning])
@@ -179,7 +180,7 @@ export default function QueryTab({
         pos = end + 1
       }
     }
-  }, [tab.id, tab.sql, executeQuery, handleExecuteAll])
+  }, [tab.id, executeQuery, handleExecuteAll])
 
   const handleFormat = useCallback(() => {
     const container = containerRef.current
@@ -391,16 +392,18 @@ export default function QueryTab({
   return (
     <div ref={containerRef} className="flex h-full flex-col overflow-hidden">
       {/* Toolbar */}
-      <div className="flex shrink-0 items-center gap-0.5 border-b border-white/[0.06] bg-white/[0.015] px-2 py-0.5">
+      {/* Toolbar */}
+      <div className="flex shrink-0 items-center gap-1 border-b border-border bg-card/40 px-3 py-1.5 shadow-sm">
         {/* Run current statement */}
         <Tooltip content="Run statement" shortcut="⌘↵">
           <Button
             variant="default"
-            size="xs"
+            size="sm"
+            className="h-7 px-2.5 text-xs font-medium bg-primary/90 hover:bg-primary text-primary-foreground shadow-sm"
             onClick={handleRunCurrent}
             disabled={isRunning}
           >
-            <Play size={10} />
+            <Play size={12} className="mr-1.5" />
             Run
           </Button>
         </Tooltip>
@@ -409,11 +412,12 @@ export default function QueryTab({
         <Tooltip content="Run all" shortcut="⌘⇧↵">
           <Button
             variant="ghost"
-            size="xs"
+            size="sm"
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent"
             onClick={handleExecuteAll}
             disabled={isRunning}
           >
-            <ChevronRight size={10} />
+            <ChevronRight size={14} className="mr-1" />
             All
           </Button>
         </Tooltip>
@@ -423,113 +427,122 @@ export default function QueryTab({
           <Tooltip content="Cancel query">
             <Button
               variant="destructive"
-              size="xs"
+              size="sm"
+              className="h-7 px-2 text-xs"
               onClick={handleCancel}
             >
-              <Square size={10} />
+              <Square size={12} className="mr-1.5" />
               Cancel
             </Button>
           </Tooltip>
         )}
 
-        <div className="mx-1 h-4 w-px bg-border" />
+        <Separator orientation="vertical" className="mx-1 h-5 bg-border/60" />
 
         {/* Write mode toggle */}
         <Tooltip content={tab.writeEnabled ? 'Write mode — DML allowed' : 'Read-only mode'}>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => toggleWriteMode(tab.id)}
-            className={`flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] active:scale-95 transition-all ${
+            className={`h-7 px-2 flex items-center gap-1.5 text-xs transition-colors ${
               tab.writeEnabled
-                ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30'
-                : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
+                ? 'bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 hover:text-amber-400'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             }`}
           >
-            {tab.writeEnabled ? <Unlock size={11} /> : <Lock size={11} />}
+            {tab.writeEnabled ? <Unlock size={12} /> : <Lock size={12} />}
             {tab.writeEnabled ? 'Write' : 'Read'}
-          </button>
+          </Button>
         </Tooltip>
 
         {/* Output mode toggle */}
         <Tooltip content={tab.outputMode === 'split' ? 'Switch to inline output' : 'Switch to split output'}>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => toggleOutputMode(tab.id)}
-            className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
+            className="h-7 w-7 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
-            {tab.outputMode === 'split' ? <PanelBottom size={11} /> : <AlignLeft size={11} />}
-            {tab.outputMode === 'split' ? 'Split' : 'Inline'}
-          </button>
+            {tab.outputMode === 'split' ? <PanelBottom size={14} /> : <AlignLeft size={14} />}
+          </Button>
         </Tooltip>
 
         {/* Show/hide output */}
         <Tooltip content={showOutput ? 'Hide output' : 'Show output'}>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setShowOutput((v) => !v)}
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-card-hover hover:text-foreground transition-all active:scale-95"
+            className="h-7 w-7 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
-            {showOutput ? <Eye size={11} /> : <EyeOff size={11} />}
-          </button>
+            {showOutput ? <Eye size={14} /> : <EyeOff size={14} />}
+          </Button>
         </Tooltip>
+
+        <Separator orientation="vertical" className="mx-1 h-5 bg-border/60" />
 
         {/* Format */}
         <Tooltip content="Format SQL" shortcut="⌘⇧F">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleFormat}
-            className="rounded-lg p-0.5 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
+            className="h-7 w-7 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
-            <Code2 size={13} />
-          </button>
+            <Code2 size={14} />
+          </Button>
         </Tooltip>
 
         {/* Explain in Optimizer */}
         <Tooltip content="Analyze in Optimizer">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleExplain}
-            className="rounded-lg p-0.5 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
+            className="h-7 w-7 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
-            <Zap size={13} />
-          </button>
+            <Zap size={14} />
+          </Button>
         </Tooltip>
+
+        <Separator orientation="vertical" className="mx-1 h-5 bg-border/60" />
 
         {/* Variables toggle */}
         <Tooltip content="Query variables">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setShowVariables((v) => !v)}
-            className={`rounded-lg p-0.5 active:scale-95 transition-all ${
+            className={`h-7 w-7 transition-colors ${
               showVariables
-                ? 'bg-primary/20 text-primary'
-                : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
+                ? 'bg-primary/15 text-primary hover:bg-primary/25'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             }`}
           >
-            <Braces size={13} />
-          </button>
+            <Braces size={14} />
+          </Button>
         </Tooltip>
-
-        <div className="mx-1 h-4 w-px bg-border" />
 
         {/* Saved queries toggle */}
         <Tooltip content="Saved queries">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setShowSavedQueries((v) => !v)}
-            className={`rounded-lg p-0.5 active:scale-95 transition-all ${
+            className={`h-7 w-7 transition-colors ${
               showSavedQueries
-                ? 'bg-primary/20 text-primary'
-                : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
+                ? 'bg-primary/15 text-primary hover:bg-primary/25'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             }`}
           >
-            <BookMarked size={13} />
-          </button>
+            <BookMarked size={14} />
+          </Button>
         </Tooltip>
 
         {/* Save query (inline name input or trigger button) */}
         {showSaveInput ? (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 border border-border/60 bg-background rounded-md px-1 h-7">
             <input
               type="text"
               value={saveQueryName}
@@ -537,33 +550,36 @@ export default function QueryTab({
               onKeyDown={handleSaveKeyDown}
               placeholder="Query name…"
               autoFocus
-              className="h-6 w-28 rounded border border-white/[0.1] bg-transparent px-1.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+              className="w-24 bg-transparent px-1.5 text-xs text-foreground placeholder-muted-foreground/50 border-none outline-none focus:ring-0"
             />
             <Button
               variant="default"
-              size="sm"
+              size="icon"
+              className="h-5 w-5 rounded bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={handleSaveQuery}
               disabled={!saveQueryName.trim()}
             >
-              Save
+              <CheckCircle2 size={10} />
             </Button>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 rounded text-muted-foreground hover:bg-accent hover:text-foreground"
               onClick={() => { setShowSaveInput(false); setSaveQueryName('') }}
-              className="rounded p-1 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <XCircle size={12} />
-            </button>
+              <X size={10} />
+            </Button>
           </div>
         ) : (
           <Tooltip content="Save query">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setShowSaveInput(true)}
-              className="rounded-lg p-0.5 text-muted-foreground hover:bg-card-hover hover:text-foreground active:scale-95 transition-all"
+              className="h-7 w-7 text-muted-foreground hover:bg-accent hover:text-foreground"
             >
-              <Save size={13} />
-            </button>
+              <Save size={14} />
+            </Button>
           </Tooltip>
         )}
 
@@ -577,42 +593,60 @@ export default function QueryTab({
       </div>
 
       {/* Saved queries panel (collapsible) */}
-      {showSavedQueries && _connectionId && (
-        <div className="shrink-0 border-b border-border animate-slide-down" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-          <SavedQueriesPanel
-            connectionId={_connectionId}
-            onLoadQuery={handleLoadSavedQuery}
-          />
-        </div>
-      )}
+      <AnimatePresence>
+        {showSavedQueries && _connectionId && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="shrink-0 border-b border-border overflow-hidden"
+          >
+            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+              <SavedQueriesPanel
+                connectionId={_connectionId}
+                onLoadQuery={handleLoadSavedQuery}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Variables panel (collapsible) */}
-      {showVariables && (
-        <div className="shrink-0 flex items-center gap-2 px-2 py-1.5 border-b border-border bg-card/30 flex-wrap animate-slide-down">
-          {Object.entries(tab.variables || {}).map(([name, value]) => (
-            <VariableChip
-              key={name}
-              name={name}
-              value={value}
-              onChangeName={(newName) => {
-                if (newName !== name) {
-                  removeTabVariable(tab.id, name)
-                  setTabVariable(tab.id, newName, value)
-                }
-              }}
-              onChange={(v) => setTabVariable(tab.id, name, v)}
-              onRemove={() => removeTabVariable(tab.id, name)}
-            />
-          ))}
-          <button
-            type="button"
-            onClick={handleAddVariable}
-            className="flex items-center gap-1 px-2 py-0.5 text-xs text-muted-foreground hover:text-primary rounded border border-dashed border-border hover:border-primary/50 transition-colors"
+      <AnimatePresence>
+        {showVariables && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="shrink-0 border-b border-border bg-card/30 overflow-hidden"
           >
-            <Plus size={10} /> Add
-          </button>
-        </div>
-      )}
+            <div className="flex items-center gap-2 px-2 py-1.5 flex-wrap">
+              {Object.entries(tab.variables || {}).map(([name, value]) => (
+                <VariableChip
+                  key={name}
+                  name={name}
+                  value={value}
+                  onChangeName={(newName) => {
+                    if (newName !== name) {
+                      removeTabVariable(tab.id, name)
+                      setTabVariable(tab.id, newName, value)
+                    }
+                  }}
+                  onChange={(v) => setTabVariable(tab.id, name, v)}
+                  onRemove={() => removeTabVariable(tab.id, name)}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={handleAddVariable}
+                className="flex items-center gap-1 px-2 py-0.5 text-xs text-muted-foreground hover:text-primary rounded border border-dashed border-border hover:border-primary/50 transition-colors"
+              >
+                <Plus size={10} /> Add
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Editor + Results */}
       {tab.outputMode === 'split' ? (

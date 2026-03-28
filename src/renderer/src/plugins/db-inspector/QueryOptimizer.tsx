@@ -1,10 +1,10 @@
 /**
  * QueryOptimizer — Paste SQL, get EXPLAIN ANALYZE + AI optimization.
- * Each analysis is a collapsible tile with structured sections:
- * EXPLAIN, Insights, Query Flow (Mermaid), Tradeoffs, Suggestions, Optimized Query.
+ * Refactored to use Shadcn Tabs for modular analysis views and 
+ * strong framer-motion staggers for modern aesthetic feel.
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap,
   Square,
@@ -21,7 +21,6 @@ import {
   Scale,
   ListChecks,
   Code2,
-  ChevronsUpDown,
   Clock,
   FileDown,
   AlignLeft,
@@ -37,7 +36,7 @@ import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
-import { staggerContainer, staggerItem } from '../../lib/motion'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@renderer/components/ui/tabs'
 import MermaidRenderer from './MermaidRenderer'
 import { highlightCode } from '../../lib/highlight'
 import { renderInline } from '../../components/MarkdownRenderer'
@@ -190,7 +189,6 @@ export default function QueryOptimizer({
   const [sql, setSql] = useState('')
   const streamRef = useRef<HTMLDivElement>(null)
 
-  // Consume pending SQL from QueryTab's Explain button
   const pendingOptimizerSql = useDbStore((s) => s.pendingOptimizerSql)
   const setPendingOptimizerSql = useDbStore((s) => s.setPendingOptimizerSql)
 
@@ -223,59 +221,78 @@ export default function QueryOptimizer({
     session?.status === 'streaming' || session?.status === 'analyzing'
   const canAnalyze = hasConnection && hasAgent && !isActive
 
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  }
+
+  const staggerItem = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  }
+
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-background/50">
       {/* SQL input */}
-      <Card className="shrink-0 rounded-none border-x-0 border-t-0 p-4">
-        <textarea
-          value={sql}
-          onChange={(e) => setSql(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={
-            !hasConnection
-              ? 'Connect to a database first...'
-              : !hasAgent
-                ? 'Configure an AI agent in Settings...'
-                : 'Paste your SQL query here... (Cmd+Enter to analyze)'
-          }
-          disabled={!canAnalyze}
-          rows={4}
-          className="w-full resize-none rounded-lg border border-[hsl(var(--border))] bg-white/[0.03] px-3 py-2 font-mono text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/60 focus:border-[var(--primary)] focus:outline-none disabled:opacity-50"
-        />
-        <div className="mt-2 flex items-center gap-2">
-          {isActive ? (
-            <Button variant="destructive" size="sm" onClick={onCancel}>
-              <Square size={12} />
-              Cancel
-            </Button>
-          ) : (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleAnalyze}
-              disabled={!canAnalyze || !sql.trim()}
-            >
-              <Zap size={12} />
-              Analyze Query
-            </Button>
-          )}
-          {session?.status === 'analyzing' && (
-            <span className="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]">
-              <Loader2 size={12} className="animate-spin text-[var(--primary)]" />
-              Running EXPLAIN ANALYZE...
-            </span>
-          )}
-          {session?.status === 'streaming' && (
-            <span className="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]">
-              <Loader2 size={12} className="animate-spin text-[var(--primary)]" />
-              AI analyzing...
-            </span>
-          )}
+      <Card className="shrink-0 rounded-none border-x-0 border-t-0 p-4 shadow-sm bg-card/60 backdrop-blur-md z-10 transition-all">
+        <div className="relative flex items-end gap-2 rounded-xl border border-border bg-background shadow-inner focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 transition-all p-1">
+          <textarea
+            value={sql}
+            onChange={(e) => setSql(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              !hasConnection
+                ? 'Connect to a database first...'
+                : !hasAgent
+                  ? 'Configure an AI agent in Settings...'
+                  : 'Paste your SQL query here... (Cmd+Enter to analyze)'
+            }
+            disabled={!canAnalyze}
+            rows={4}
+            className="w-full resize-none font-mono bg-transparent px-3 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none disabled:opacity-50 min-h-[80px]"
+          />
+        </div>
+        
+        <div className="mt-3 flex flex-wrap justify-between items-center gap-2">
+          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider pl-1">
+             SQL Analyzer
+          </p>
+          <div className="flex items-center gap-2">
+             {session?.status === 'analyzing' && (
+               <span className="flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse">
+                 <Loader2 size={12} className="animate-spin text-primary" />
+                 Running EXPLAIN ANALYZE...
+               </span>
+             )}
+             {session?.status === 'streaming' && (
+               <span className="flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse">
+                 <Loader2 size={12} className="animate-spin text-primary" />
+                 AI analyzing...
+               </span>
+             )}
+             {isActive ? (
+               <Button variant="destructive" size="sm" onClick={onCancel} className="h-8 shadow-sm">
+                 <Square size={12} className="mr-1.5 fill-current" />
+                 Cancel
+               </Button>
+             ) : (
+               <Button
+                 variant="default"
+                 size="sm"
+                 onClick={handleAnalyze}
+                 disabled={!canAnalyze || !sql.trim()}
+                 className="h-8 shadow-sm"
+               >
+                 <Zap size={12} className="mr-1.5 fill-current" />
+                 Analyze Query
+               </Button>
+             )}
+          </div>
         </div>
       </Card>
 
       {/* Results area */}
-      <div ref={streamRef} className="flex-1 overflow-auto p-4">
+      <div ref={streamRef} className="flex-1 overflow-auto p-4 scroll-smooth">
         {!session && tiles.length === 0 && (
           <div className="flex h-full items-center justify-center">
             <EmptyState
@@ -287,17 +304,29 @@ export default function QueryOptimizer({
         )}
 
         {/* Active streaming session */}
-        {session && session.status === 'streaming' && (
-          <Card className="mb-4 overflow-hidden border-[var(--primary)]/30 bg-gradient-to-b from-[var(--primary)]/5 to-transparent p-0">
-            <div className="flex items-center gap-2 border-b border-[var(--primary)]/20 bg-[var(--primary)]/5 px-4 py-2">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-[var(--primary)]" />
-              <p className="text-xs font-medium text-[var(--primary)]">AI Analysis in progress</p>
-            </div>
-            <pre className="max-h-64 overflow-auto px-4 py-3 font-mono text-[11px] leading-relaxed text-[hsl(var(--foreground))]">
-              {session.rawText || 'Analyzing...'}
-            </pre>
-          </Card>
-        )}
+        <AnimatePresence>
+          {session && session.status === 'streaming' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-4"
+            >
+              <Card className="overflow-hidden border-primary/30 bg-gradient-to-b from-primary/5 to-transparent p-0 shadow-lg relative">
+                <div className="flex items-center gap-2 border-b border-primary/20 bg-primary/10 px-4 py-2">
+                  <span className="relative flex h-2 w-2">
+                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                     <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  </span>
+                  <p className="text-xs font-semibold text-primary/80 uppercase tracking-wider">Analysis in progress</p>
+                </div>
+                <pre className="max-h-64 overflow-auto px-4 py-4 font-mono text-[11px] leading-relaxed text-foreground custom-scrollbar">
+                  {session.rawText || 'Analyzing...'}
+                </pre>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Error state */}
         {session?.status === 'error' && session.error && (
@@ -308,7 +337,7 @@ export default function QueryOptimizer({
 
         {/* Completed tiles with stagger animation */}
         <motion.div
-          className="space-y-4"
+          className="space-y-6 pb-8"
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
@@ -329,20 +358,8 @@ export default function QueryOptimizer({
 function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
   const { session } = tile
   const [expanded, setExpanded] = useState(true)
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['suggestions'])
-  )
   const [copiedMode, setCopiedMode] = useState<null | 'raw' | 'formatted'>(null)
   const [isExporting, setIsExporting] = useState(false)
-
-  const toggleSection = useCallback((section: string) => {
-    setExpandedSections((prev) => {
-      const next = new Set(prev)
-      if (next.has(section)) next.delete(section)
-      else next.add(section)
-      return next
-    })
-  }, [])
 
   const handleCopyRaw = useCallback(async () => {
     const md = composeTileMarkdown(tile)
@@ -367,24 +384,18 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
     }
   }, [tile, isExporting])
 
-  const allSectionIds = [
-    session.explainOutput && 'explain',
-    session.insights.length > 0 && 'insights',
-    session.mermaidDiagram && 'flow',
-    session.tradeoffs.length > 0 && 'tradeoffs',
-    session.suggestions.length > 0 && 'suggestions'
-  ].filter(Boolean) as string[]
-
-  const allExpanded = allSectionIds.every((id) => expandedSections.has(id))
-
-  const toggleAll = useCallback(() => {
-    setExpandedSections(allExpanded ? new Set() : new Set(allSectionIds))
-  }, [allExpanded, allSectionIds])
-
   const timeLabel = new Date(tile.timestamp).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit'
   })
+
+  let defaultTab = 'suggestions'
+  if (session.suggestions.length === 0) {
+    if (session.explainOutput) defaultTab = 'explain'
+    else if (session.insights.length > 0) defaultTab = 'insights'
+    else if (session.mermaidDiagram) defaultTab = 'flow'
+    else if (session.tradeoffs.length > 0) defaultTab = 'tradeoffs'
+  }
 
   const sugCount = session.suggestions.length
   const highCount = session.suggestions.filter(
@@ -392,249 +403,204 @@ function TileCard({ tile }: { tile: OptimizerTile }): React.JSX.Element {
   ).length
 
   return (
-    <Card className="overflow-hidden p-0">
+    <Card className="overflow-hidden p-0 shadow-md border-border bg-card">
       {/* Tile header */}
-      <div className="flex w-full items-center gap-3 bg-gradient-to-r from-primary/[0.04] to-transparent px-4 py-3">
-        {/* Clickable left region: expand/collapse */}
+      <div className="flex w-full items-center gap-3 bg-gradient-to-r from-background to-muted/20 px-4 py-3 border-b border-border/40 hover:bg-muted/10 transition-colors">
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left transition-colors"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left outline-none"
         >
-          {expanded ? (
-            <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
-          ) : (
-            <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
-          )}
-          <Zap size={13} className="shrink-0 text-primary" />
-          <p className="min-w-0 truncate font-mono text-[11px] text-foreground">
+          <div className={`p-1 rounded-md transition-colors ${expanded ? 'bg-primary/10 text-primary' : 'hover:bg-muted text-muted-foreground'}`}>
+            {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </div>
+          <Zap size={14} className="shrink-0 text-primary" />
+          <p className="min-w-0 truncate font-mono text-xs font-semibold text-foreground/90">
             {tile.originalQuery.slice(0, 100)}
             {tile.originalQuery.length > 100 ? '…' : ''}
           </p>
         </button>
 
-        {/* Right region: badges + export actions */}
+        {/* Badges + Actions */}
         <div className="flex shrink-0 items-center gap-2">
           {highCount > 0 && (
-            <Badge variant="destructive">
+            <Badge variant="destructive" className="animate-pulse shadow-sm h-5 py-0">
               {highCount} critical
             </Badge>
           )}
           {sugCount > 0 && (
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="h-5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20">
               {sugCount} suggestion{sugCount !== 1 ? 's' : ''}
             </Badge>
           )}
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-            <Clock size={9} />
+
+          <div className="w-px h-4 bg-border mx-1" />
+
+          {/* Export Dropdown styled via inline buttons for now */}
+          <div className="flex items-center gap-1 bg-background border border-border rounded-md shadow-sm p-0.5">
+             <button
+               type="button"
+               onClick={() => void handleExportPDF()}
+               disabled={isExporting}
+               className="flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+             >
+               {isExporting ? <Loader2 size={11} className="animate-spin" /> : <FileDown size={11} />}
+               PDF
+             </button>
+             <div className="w-px h-3 bg-border" />
+             <button
+               type="button"
+               onClick={() => void handleCopyRaw()}
+               className={`flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-medium transition-colors ${copiedMode === 'raw' ? 'bg-emerald-400/10 text-emerald-400' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+             >
+               {copiedMode === 'raw' ? <Check size={11} /> : <AlignLeft size={11} />}
+               Raw
+             </button>
+             <div className="w-px h-3 bg-border" />
+             <button
+               type="button"
+               onClick={() => void handleCopyFormatted()}
+               className={`flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-medium transition-colors ${copiedMode === 'formatted' ? 'bg-emerald-400/10 text-emerald-400' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+             >
+               {copiedMode === 'formatted' ? <Check size={11} /> : <FileText size={11} />}
+               Format
+             </button>
+          </div>
+          
+          <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground/60 ml-1">
+            <Clock size={10} />
             {timeLabel}
           </span>
-
-          {/* Separator */}
-          <div className="h-4 w-px bg-border/40" />
-
-          {/* Export buttons */}
-          <button
-            type="button"
-            onClick={() => void handleExportPDF()}
-            disabled={isExporting}
-            className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
-            title="Export as PDF (save to file)"
-          >
-            {isExporting ? <Loader2 size={11} className="animate-spin" /> : <FileDown size={11} />}
-            {isExporting ? 'Exporting…' : 'PDF'}
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleCopyRaw()}
-            className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            title="Copy plain text (no formatting)"
-          >
-            {copiedMode === 'raw' ? <Check size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} /> : <AlignLeft size={11} className={copiedMode === 'raw' ? 'text-success' : undefined} />}
-            {copiedMode === 'raw' ? 'Copied!' : 'Raw Text'}
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleCopyFormatted()}
-            className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            title="Copy formatted markdown"
-          >
-            {copiedMode === 'formatted' ? <Check size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} /> : <FileText size={11} className={copiedMode === 'formatted' ? 'text-success' : undefined} />}
-            {copiedMode === 'formatted' ? 'Copied!' : 'Formatted'}
-          </button>
         </div>
       </div>
 
       {/* Tile body */}
-      {expanded && (
-        <div>
-          {/* Collapse/Expand All bar */}
-          {allSectionIds.length > 1 && (
-            <div className="flex justify-end border-t border-border bg-card px-3 py-1">
-              <button
-                type="button"
-                onClick={toggleAll}
-                className="flex items-center gap-1 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ChevronsUpDown size={10} />
-                {allExpanded ? 'Collapse All' : 'Expand All'}
-              </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden bg-background"
+          >
+            <div className="px-4 py-3 flex flex-col gap-4">
+              
+              <Tabs defaultValue={defaultTab} className="w-full">
+                <TabsList className="h-8 bg-muted/40 mb-4 inline-flex items-center p-1 border border-border/50">
+                  {session.suggestions.length > 0 && (
+                    <TabsTrigger value="suggestions" className="text-[11px] h-6 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       Suggestions ({session.suggestions.length})
+                    </TabsTrigger>
+                  )}
+                  {session.explainOutput && (
+                    <TabsTrigger value="explain" className="text-[11px] h-6 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       Explain Output
+                    </TabsTrigger>
+                  )}
+                  {session.insights.length > 0 && (
+                    <TabsTrigger value="insights" className="text-[11px] h-6 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       Insights
+                    </TabsTrigger>
+                  )}
+                  {session.mermaidDiagram && (
+                    <TabsTrigger value="flow" className="text-[11px] h-6 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       Query Flow
+                    </TabsTrigger>
+                  )}
+                  {session.tradeoffs.length > 0 && (
+                    <TabsTrigger value="tradeoffs" className="text-[11px] h-6 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       Tradeoffs
+                    </TabsTrigger>
+                  )}
+                </TabsList>
+                
+                {/* Tab contents */}
+                {session.suggestions.length > 0 && (
+                  <TabsContent value="suggestions" className="m-0 space-y-3 outline-none">
+                    {session.suggestions.map((s, i) => (
+                      <SuggestionCard key={i} suggestion={s} index={i + 1} />
+                    ))}
+                  </TabsContent>
+                )}
+                
+                {session.explainOutput && (
+                   <TabsContent value="explain" className="m-0 outline-none">
+                     <div className="bg-muted/30 border border-border/60 rounded-lg p-1 shadow-inner">
+                       <pre className="max-h-64 overflow-auto rounded-md bg-transparent p-3 font-mono text-[11px] leading-relaxed text-foreground custom-scrollbar">
+                         {session.explainOutput}
+                       </pre>
+                     </div>
+                   </TabsContent>
+                )}
+                
+                {session.insights.length > 0 && (
+                   <TabsContent value="insights" className="m-0 outline-none">
+                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                       {session.insights.map((insight, i) => (
+                         <li
+                           key={i}
+                           className="flex flex-col gap-2 rounded-lg bg-yellow-400/5 border border-yellow-400/20 px-4 py-3 text-xs text-foreground shadow-sm"
+                         >
+                           <div className="flex items-center gap-2 font-medium text-yellow-500/80">
+                             <Lightbulb size={12} /> Insight
+                           </div>
+                           <span className="leading-relaxed opacity-90">{renderInline(insight)}</span>
+                         </li>
+                       ))}
+                     </ul>
+                   </TabsContent>
+                )}
+                
+                {session.mermaidDiagram && (
+                   <TabsContent value="flow" className="m-0 outline-none">
+                     <div className="overflow-auto rounded-lg border border-border/60 bg-muted/20 p-4 shadow-sm min-h-[300px]">
+                       <MermaidRenderer syntax={session.mermaidDiagram} />
+                     </div>
+                   </TabsContent>
+                )}
+                
+                {session.tradeoffs.length > 0 && (
+                   <TabsContent value="tradeoffs" className="m-0 outline-none">
+                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                       {session.tradeoffs.map((tradeoff, i) => (
+                         <li
+                           key={i}
+                           className="flex flex-col gap-2 rounded-lg bg-orange-500/5 border border-orange-500/20 px-4 py-3 text-xs text-foreground shadow-sm"
+                         >
+                           <div className="flex items-center gap-2 font-medium text-orange-500/80">
+                             <Scale size={12} /> Tradeoff
+                           </div>
+                           <span className="leading-relaxed opacity-90">{renderInline(tradeoff)}</span>
+                         </li>
+                       ))}
+                     </ul>
+                   </TabsContent>
+                )}
+              </Tabs>
+
+              {/* Optimized Query (standalone) */}
+              {session.optimizedQuery && (
+                <div className="mt-4 pt-4 border-t border-border/40">
+                  <OptimizedQueryBlock query={session.optimizedQuery} />
+                </div>
+              )}
+
+              {/* Summary */}
+              {session.summary && (
+                <div className="mt-4 rounded-lg bg-primary/5 border border-primary/10 px-4 py-3 shadow-inner">
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                    <ListChecks size={11} /> AI Summary
+                  </p>
+                  <p className="mt-2 text-[12px] leading-relaxed text-foreground/90">
+                    {renderInline(session.summary)}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-
-          <div className="divide-y divide-border/60">
-            {/* EXPLAIN ANALYZE */}
-            {session.explainOutput && (
-              <Section
-                id="explain"
-                label="EXPLAIN ANALYZE"
-                icon={<Code2 size={12} className="text-violet-400" />}
-                isExpanded={expandedSections.has('explain')}
-                onToggle={toggleSection}
-              >
-                <pre className="max-h-48 overflow-auto rounded-lg bg-secondary/50 p-3 font-mono text-[11px] leading-relaxed text-foreground">
-                  {session.explainOutput}
-                </pre>
-              </Section>
-            )}
-
-            {/* Insights */}
-            {session.insights.length > 0 && (
-              <Section
-                id="insights"
-                label={`Insights (${session.insights.length})`}
-                icon={<Lightbulb size={12} className="text-yellow-400" />}
-                isExpanded={expandedSections.has('insights')}
-                onToggle={toggleSection}
-              >
-                <ul className="space-y-2">
-                  {session.insights.map((insight, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2.5 rounded-lg bg-secondary/30 px-3 py-2 text-xs text-foreground"
-                    >
-                      <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-400/60" />
-                      <span className="leading-relaxed">{renderInline(insight)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Section>
-            )}
-
-            {/* Query Flow (Mermaid) */}
-            {session.mermaidDiagram && (
-              <Section
-                id="flow"
-                label="Query Flow"
-                icon={<GitBranch size={12} className="text-cyan-400" />}
-                isExpanded={expandedSections.has('flow')}
-                onToggle={toggleSection}
-              >
-                <div className="overflow-auto rounded-lg bg-secondary/30 p-3">
-                  <MermaidRenderer syntax={session.mermaidDiagram} />
-                </div>
-              </Section>
-            )}
-
-            {/* Tradeoffs */}
-            {session.tradeoffs.length > 0 && (
-              <Section
-                id="tradeoffs"
-                label={`Tradeoffs (${session.tradeoffs.length})`}
-                icon={<Scale size={12} className="text-orange-400" />}
-                isExpanded={expandedSections.has('tradeoffs')}
-                onToggle={toggleSection}
-              >
-                <ul className="space-y-2">
-                  {session.tradeoffs.map((tradeoff, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2.5 rounded-lg bg-orange-500/5 border border-orange-500/10 px-3 py-2 text-xs text-foreground"
-                    >
-                      <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400/60" />
-                      <span className="leading-relaxed">{renderInline(tradeoff)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Section>
-            )}
-
-            {/* Suggestions */}
-            {session.suggestions.length > 0 && (
-              <Section
-                id="suggestions"
-                label={`Suggestions (${session.suggestions.length})`}
-                icon={<ListChecks size={12} className="text-primary" />}
-                isExpanded={expandedSections.has('suggestions')}
-                onToggle={toggleSection}
-              >
-                <div className="space-y-3">
-                  {session.suggestions.map((s, i) => (
-                    <SuggestionCard key={i} suggestion={s} index={i + 1} />
-                  ))}
-                </div>
-              </Section>
-            )}
-
-            {/* Optimized Query (standalone) */}
-            {session.optimizedQuery && (
-              <div className="px-4 py-3">
-                <OptimizedQueryBlock query={session.optimizedQuery} />
-              </div>
-            )}
-
-            {/* Summary */}
-            {session.summary && (
-              <div className="bg-gradient-to-r from-accent/5 to-transparent px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Summary
-                </p>
-                <p className="mt-1.5 text-xs leading-relaxed text-foreground">
-                  {renderInline(session.summary)}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </Card>
-  )
-}
-
-// ── Collapsible Section ────────────────────────────────────────────
-
-function Section({
-  id,
-  label,
-  icon,
-  isExpanded,
-  onToggle,
-  children
-}: {
-  id: string
-  label: string
-  icon: React.ReactNode
-  isExpanded: boolean
-  onToggle: (id: string) => void
-  children: React.ReactNode
-}): React.JSX.Element {
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={() => onToggle(id)}
-        className="flex w-full items-center gap-2 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/50"
-      >
-        {isExpanded ? (
-          <ChevronDown size={11} className="shrink-0" />
-        ) : (
-          <ChevronRight size={11} className="shrink-0" />
+          </motion.div>
         )}
-        {icon}
-        <span>{label}</span>
-      </button>
-      {isExpanded && <div className="px-4 pb-3">{children}</div>}
-    </div>
+      </AnimatePresence>
+    </Card>
   )
 }
 
@@ -663,54 +629,58 @@ function SuggestionCard({
 
   return (
     <Card
-      className={`overflow-hidden p-0 border-l-2 ${config.border}`}
+      className={`overflow-hidden p-0 border-l-[3px] ${config.border} shadow-sm transition-all hover:shadow-md bg-card/40`}
     >
-      <div className="px-3 py-2.5">
+      <div className="px-4 py-3">
         {/* Header row */}
-        <div className="flex items-center gap-2">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/[0.04] text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
+        <div className="flex items-center gap-3">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-foreground/60 shadow-inner">
             {index}
           </span>
-          <Badge variant={badgeVariant}>
-            <Icon size={9} />
+          <Badge variant={badgeVariant} className="shadow-sm">
+            <Icon size={10} className="mr-1" />
             {config.label}
           </Badge>
-          <span className="rounded-lg bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">
+          <span className="rounded bg-muted/50 px-2 py-0.5 text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">
             {TYPE_LABELS[suggestion.type] ?? suggestion.type}
           </span>
         </div>
 
         {/* Title + explanation */}
-        <p className="mt-2 text-[13px] font-medium text-foreground">
-          {renderInline(suggestion.title)}
-        </p>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          {renderInline(suggestion.explanation)}
-        </p>
+        <div className="mt-3 pl-9">
+           <p className="text-[13px] font-bold text-foreground tracking-tight">
+             {renderInline(suggestion.title)}
+           </p>
+           <p className="mt-1.5 text-[12px] leading-relaxed text-foreground/80">
+             {renderInline(suggestion.explanation)}
+           </p>
+        </div>
       </div>
 
       {/* Suggested SQL */}
       {suggestion.suggestedSQL && (
-        <div className="border-t border-border bg-card/50 px-3 py-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Suggested Fix
+        <div className="border-t border-border/40 bg-muted/10 px-4 py-3 ml-0">
+          <div className="flex items-center justify-between mb-2">
+            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+              <Code2 size={11} /> Suggested Fix
             </span>
             <button
               type="button"
               onClick={handleCopySql}
-              className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium bg-background border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground shadow-sm"
             >
-              {sqlCopied ? <Check size={9} className={sqlCopied ? 'text-success' : undefined} /> : <Copy size={9} className={sqlCopied ? 'text-success' : undefined} />}
-              {sqlCopied ? 'Copied!' : 'Copy'}
+              {sqlCopied ? <Check size={10} className={sqlCopied ? 'text-emerald-400' : undefined} /> : <Copy size={10} className={sqlCopied ? 'text-emerald-400' : undefined} />}
+              {sqlCopied ? 'Copied!' : 'Copy Fix'}
             </button>
           </div>
-          <pre className="mt-1 overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed">
-            <code
-              className="hljs"
-              dangerouslySetInnerHTML={{ __html: highlightCode(suggestion.suggestedSQL, 'sql') }}
-            />
-          </pre>
+          <div className="bg-card border border-border/50 rounded-lg p-1 shadow-inner">
+             <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed p-2 custom-scrollbar">
+               <code
+                 className="hljs"
+                 dangerouslySetInnerHTML={{ __html: highlightCode(suggestion.suggestedSQL, 'sql') }}
+               />
+             </pre>
+          </div>
         </div>
       )}
     </Card>
@@ -733,27 +703,32 @@ function OptimizedQueryBlock({
   }, [query])
 
   return (
-    <Card className="overflow-hidden border-[var(--primary)]/25 bg-gradient-to-b from-[var(--primary)]/5 to-transparent p-0">
-      <div className="flex items-center justify-between border-b border-[var(--primary)]/15 px-3 py-2">
+    <Card className="overflow-hidden border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent p-0 shadow-md">
+      <div className="flex items-center justify-between border-b border-primary/15 bg-primary/5 px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <Zap size={11} className="text-[var(--primary)]" />
-          <p className="text-xs font-semibold text-[var(--primary)]">Optimized Query</p>
+          <div className="bg-primary/20 p-1.5 rounded-md">
+             <Zap size={13} className="text-primary fill-primary" />
+          </div>
+          <p className="text-xs font-bold uppercase tracking-wider text-primary">Optimized Query Output</p>
         </div>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={handleCopy}
-          className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[var(--primary)]/10 hover:text-[hsl(var(--foreground))]"
+          className="h-7 px-2.5 text-[11px] font-medium bg-background border border-primary/20 hover:bg-primary/10 hover:text-primary transition-colors"
         >
-          {copied ? <Check size={10} className={copied ? 'text-emerald-400' : undefined} /> : <Copy size={10} className={copied ? 'text-emerald-400' : undefined} />}
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
+          {copied ? <Check size={11} className={copied ? 'text-emerald-400 mr-1.5' : undefined} /> : <Copy size={11} className={copied ? 'text-emerald-400 mr-1.5' : undefined} />}
+          {copied ? 'Copied!' : 'Copy Full Query'}
+        </Button>
       </div>
-      <pre className="overflow-x-auto whitespace-pre-wrap px-3 py-3 font-mono text-[11px] leading-relaxed">
-        <code
-          className="hljs"
-          dangerouslySetInnerHTML={{ __html: highlightCode(query, 'sql') }}
-        />
-      </pre>
+      <div className="bg-background/40 p-1">
+         <pre className="overflow-x-auto whitespace-pre-wrap px-4 py-3 font-mono text-[11px] leading-relaxed custom-scrollbar">
+           <code
+             className="hljs"
+             dangerouslySetInnerHTML={{ __html: highlightCode(query, 'sql') }}
+           />
+         </pre>
+      </div>
     </Card>
   )
 }

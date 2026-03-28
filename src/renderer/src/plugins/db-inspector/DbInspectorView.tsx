@@ -23,13 +23,13 @@ import {
   Database
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import type { EditorView } from '@codemirror/view'
 import { useDbStore } from '../../stores/db-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useActivityStore } from '../../stores/activity-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import type { DbInspectorTab, DbHistoryEntry } from '../../types/database'
-import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { PageHeader } from '../../components/shared/page-header'
@@ -55,6 +55,7 @@ export default function DbInspectorView(): React.JSX.Element {
 
   // -- Left panel collapse state
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false)
+  const leftPanelRef = useRef<any>(null)
 
   // -- Editor view ref for schema double-click insert
   const activeEditorViewRef = useRef<EditorView | null>(null)
@@ -320,11 +321,19 @@ export default function DbInspectorView(): React.JSX.Element {
       ) : (
       /* Main content */
       <div className="flex flex-1 overflow-hidden">
-        {/* Left panel -- Connections (sticky) + Schema Explorer (scrollable) + collapse toggle */}
-        <div
-          className="relative flex shrink-0 flex-col border-r border-white/[0.06] transition-all duration-200"
-          style={{ width: isLeftPanelCollapsed ? 0 : 248, overflow: 'hidden' }}
-        >
+        <PanelGroup direction="horizontal">
+          {/* Left panel -- Connections (sticky) + Schema Explorer (scrollable) + collapse toggle */}
+          <Panel
+            ref={leftPanelRef}
+            collapsible={true}
+            collapsedSize={0}
+            defaultSize={20}
+            minSize={15}
+            maxSize={40}
+            onCollapse={() => setIsLeftPanelCollapsed(true)}
+            onExpand={() => setIsLeftPanelCollapsed(false)}
+            className="flex flex-col bg-white/[0.02]"
+          >
           <div className="flex h-full flex-col bg-white/[0.02]" style={{ width: 248 }}>
             <div className="shrink-0 border-b border-white/[0.06] px-3 py-2.5">
               <ConnectionManager
@@ -362,20 +371,28 @@ export default function DbInspectorView(): React.JSX.Element {
               </div>
             )}
           </div>
-        </div>
+          </Panel>
 
-        {/* Collapse/expand toggle button */}
-        <button
-          type="button"
-          onClick={() => setIsLeftPanelCollapsed((v) => !v)}
-          title={isLeftPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
-          className="relative z-10 flex h-10 w-4 shrink-0 items-center justify-center self-start mt-2 rounded-r border border-l-0 border-[hsl(var(--border))] bg-white/[0.03] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-white/[0.06] transition-colors"
-        >
-          {isLeftPanelCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
-        </button>
+          {/* Resize handle with toggle button */}
+          <PanelResizeHandle className="relative flex w-1.5 shrink-0 items-center justify-center bg-transparent transition-colors hover:bg-white/[0.06] active:bg-primary/20 cursor-col-resize z-10">
+            <button
+              type="button"
+              onClick={() => {
+                const panel = leftPanelRef.current
+                if (panel) {
+                  if (panel.isCollapsed()) panel.expand()
+                  else panel.collapse()
+                }
+              }}
+              title={isLeftPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
+              className="absolute -left-[1px] top-6 flex h-8 w-3.5 items-center justify-center rounded-r border border-l-0 border-[hsl(var(--border))] bg-card text-[hsl(var(--muted-foreground))] hover:text-foreground hover:bg-white/[0.06] transition-colors"
+            >
+              {isLeftPanelCollapsed ? <ChevronRight size={10} /> : <ChevronLeft size={10} />}
+            </button>
+          </PanelResizeHandle>
 
-        {/* Right panel -- Tabbed content */}
-        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Right panel -- Tabbed content */}
+          <Panel minSize={30} className="flex flex-col overflow-hidden bg-background">
           {/* Agent status warning */}
           {isConnected && !hasAgent && (
             <div className="flex items-center gap-2 border-b border-yellow-500/20 bg-yellow-500/10 px-4 py-2">
@@ -461,7 +478,8 @@ export default function DbInspectorView(): React.JSX.Element {
               )}
             </motion.div>
           </AnimatePresence>
-        </div>
+          </Panel>
+        </PanelGroup>
       </div>
       )}
     </div>
