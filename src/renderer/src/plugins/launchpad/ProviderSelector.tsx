@@ -7,7 +7,6 @@
  */
 import { Cloud, Globe, Server, Rocket } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Card } from '@renderer/components/ui/card'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import type { CloudProvider } from '../../types/launchpad'
@@ -90,33 +89,36 @@ export default function ProviderSelector({ onSelect }: ProviderSelectorProps): R
 
           return (
             <motion.div key={card.id} variants={staggerItem}>
-              <Card
-                className="cursor-pointer p-6 text-left h-full"
-                style={
-                  {
-                    '--hover-glow': brandColor
-                  } as React.CSSProperties
-                }
+              <motion.div
+                whileHover={{ y: -2, scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="cursor-pointer p-6 text-left h-full rounded-2xl border border-white/5 bg-black/20 backdrop-blur-md shadow-lg transition-colors relative overflow-hidden group"
                 onClick={() => onSelect(card.id)}
               >
-                <div className="flex flex-col items-start gap-4">
+                {/* Background glow injected safely */}
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none" 
+                  style={{ backgroundColor: brandColor }} 
+                />
+                
+                <div className="flex flex-col items-start gap-4 relative z-10">
                   <div
-                    className={`rounded-lg p-2.5 bg-white/[0.04] border border-white/[0.06] ${accentText}`}
+                    className={`rounded-xl p-3 bg-white/5 border border-white/10 ${accentText} shadow-inner`}
                   >
-                    <Icon size={24} />
+                    <Icon size={26} />
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <span className={`text-sm font-bold ${accentText}`}>{info.shortName}</span>
-                    <span className="text-base font-semibold text-[hsl(var(--foreground))]">
+                  <div className="flex flex-col gap-1.5">
+                    <span className={`text-xs font-bold uppercase tracking-wider ${accentText}`}>{info.shortName}</span>
+                    <span className="text-xl font-bold text-foreground">
                       {info.displayName}
                     </span>
-                    <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed mt-1">
+                    <p className="text-sm text-muted-foreground/80 leading-relaxed mt-2">
                       {card.description}
                     </p>
                   </div>
                 </div>
-              </Card>
+              </motion.div>
             </motion.div>
           )
         })}

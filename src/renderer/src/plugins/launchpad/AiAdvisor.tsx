@@ -9,7 +9,7 @@
  */
 import React, { useState, useMemo } from 'react'
 import { Sparkles, MessageSquare, Square, X } from 'lucide-react'
-import { Card } from '@renderer/components/ui/card'
+import { motion } from 'framer-motion'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
@@ -17,7 +17,6 @@ import { useLaunchpadStore } from '../../stores/launchpad-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { ChatInterface, type ChatMessage } from '../../components/shared/chat-interface'
-import MarkdownRenderer from '../../components/MarkdownRenderer'
 
 const EXAMPLE_PROMPTS = [
   'I need a simple web app with 2 servers, a database, and file storage',
@@ -27,7 +26,7 @@ const EXAMPLE_PROMPTS = [
 ]
 
 export default function AiAdvisor(): React.JSX.Element {
-  const [setQuestion] = useState('')
+  const [, setQuestion] = useState('')
 
   // Store
   const aiSession = useLaunchpadStore((s) => s.aiSession)
@@ -93,11 +92,6 @@ export default function AiAdvisor(): React.JSX.Element {
     return msgs
   }, [aiSession])
 
-  // Markdown renderer for assistant messages
-  const renderContent = (content: string) => (
-    <MarkdownRenderer text={content} className="text-sm leading-relaxed" />
-  )
-
   // If no provider selected, show empty state
   if (!hasAgent && !aiSession) {
     return (
@@ -130,14 +124,15 @@ export default function AiAdvisor(): React.JSX.Element {
               Example prompts
             </p>
             {EXAMPLE_PROMPTS.map((prompt, i) => (
-              <Card
+              <motion.div
                 key={i}
-                interactive
-                className="p-3 cursor-pointer"
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="p-3 cursor-pointer rounded-xl border border-white/5 bg-black/20 hover:bg-white/5 transition-colors backdrop-blur-md shadow-sm"
                 onClick={() => handleExamplePrompt(prompt)}
               >
-                <p className="text-xs text-[hsl(var(--muted-foreground))]">{prompt}</p>
-              </Card>
+                <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{prompt}</p>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -186,15 +181,22 @@ export default function AiAdvisor(): React.JSX.Element {
 
       {/* Error state */}
       {aiSession.status === 'error' && aiSession.error && (
-        <Card className="mx-4 mb-2 border-[var(--destructive)]/30 bg-[var(--destructive)]/5 p-4">
-          <p className="text-xs text-[var(--destructive)]">{aiSession.error}</p>
-        </Card>
+        <div className="mx-4 mb-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 shadow-[0_0_15px_rgba(239,68,68,0.1)] backdrop-blur-md">
+          <p className="text-xs font-medium text-destructive">{aiSession.error}</p>
+        </div>
       )}
 
       {/* Suggestion banner */}
       {pendingSuggestions && aiSession.status === 'complete' && (
-        <Card className="mx-4 mb-4 border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
-          <div className="flex items-start justify-between gap-3">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          className="mx-4 mb-4 rounded-xl border border-primary/40 bg-primary/10 p-4 shadow-[0_0_30px_rgba(var(--primary),0.15)] backdrop-blur-xl relative overflow-hidden"
+        >
+          {/* subtle moving highlight */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
+          
+          <div className="flex items-start justify-between gap-3 relative z-10">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles size={13} className="text-[var(--primary)]" />
@@ -232,7 +234,7 @@ export default function AiAdvisor(): React.JSX.Element {
               Dismiss
             </Button>
           </div>
-        </Card>
+        </motion.div>
       )}
     </div>
   )

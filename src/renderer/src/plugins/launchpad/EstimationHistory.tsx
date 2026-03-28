@@ -7,8 +7,7 @@
  */
 import React from 'react'
 import { Clock, Trash2, RotateCcw } from 'lucide-react'
-import { motion } from 'framer-motion'
-import { Card } from '@renderer/components/ui/card'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
@@ -69,15 +68,16 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
   }
 
   return (
-    <motion.div variants={staggerItem}>
-      <Card
-        className="cursor-pointer group hover:border-white/[0.12] transition-colors"
+    <motion.div variants={staggerItem} layout>
+      <motion.div
+        whileHover={{ y: -2 }}
+        className="cursor-pointer group rounded-xl border border-white/5 bg-black/20 backdrop-blur-md hover:bg-white/5 transition-all w-full overflow-hidden"
         onClick={() => onLoad(entry)}
       >
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[13px] font-medium text-foreground truncate">
+              <span className="text-sm font-semibold tracking-wide text-foreground truncate group-hover:text-primary transition-colors">
                 {entry.name}
               </span>
               <Badge variant={badgeVariant} className="shrink-0 text-[10px] px-2 py-0.5">
@@ -85,44 +85,45 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
               </Badge>
             </div>
 
-            <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground/80 font-medium">
               <span>
                 {entry.services.length} service{entry.services.length !== 1 ? 's' : ''}
               </span>
               <span className="opacity-30">&bull;</span>
-              <span className="font-medium text-foreground/80">
+              <span className="text-foreground/90">
                 {formatCurrency(entry.totalMonthly)}/mo
               </span>
               <span className="opacity-30">&bull;</span>
-              <div className="flex items-center gap-1">
-                <Clock size={10} />
+              <div className="flex items-center gap-1.5 opacity-70">
+                <Clock size={11} className="shrink-0" />
                 <span>{formatDate(entry.savedAt)}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0 duration-300">
             <Button
               variant="default"
-              size="xs"
+              size="sm"
               onClick={handleLoad}
               aria-label="Load estimation"
+              className="bg-primary/20 hover:bg-primary/30 text-primary border-0 shadow-none h-8"
             >
-              <RotateCcw size={11} />
+              <RotateCcw size={12} className="mr-1.5" />
               Load
             </Button>
             <Button
               variant="ghost"
-              size="icon-xs"
+              size="icon"
               onClick={handleDelete}
               aria-label="Delete estimation"
-              className="text-muted-foreground hover:text-destructive"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
             >
-              <Trash2 size={12} />
+              <Trash2 size={14} />
             </Button>
           </div>
         </div>
-      </Card>
+      </motion.div>
     </motion.div>
   )
 }
@@ -174,14 +175,16 @@ export default function EstimationHistory(): React.JSX.Element {
             animate="visible"
             className="space-y-2"
           >
-            {history.map((entry) => (
-              <HistoryEntryCard
-                key={entry.id}
-                entry={entry}
-                onLoad={handleLoad}
-                onDelete={handleDelete}
-              />
-            ))}
+            <AnimatePresence>
+              {history.map((entry) => (
+                <HistoryEntryCard
+                  key={entry.id}
+                  entry={entry}
+                  onLoad={handleLoad}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </AnimatePresence>
           </motion.div>
         )}
       </div>

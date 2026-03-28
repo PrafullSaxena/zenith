@@ -10,7 +10,7 @@
  */
 import { useState, useCallback, useEffect } from 'react'
 import { Settings2 } from 'lucide-react'
-import { Card } from '@renderer/components/ui/card'
+import { motion } from 'framer-motion'
 import { Input } from '@renderer/components/ui/input'
 import { SimpleSelect } from '@renderer/components/ui/select'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
@@ -136,17 +136,24 @@ export default function ResourceConfigurator(): React.JSX.Element {
           if (!service) return null
 
           return (
-            <Card key={sel.serviceId}>
+            <motion.div 
+              key={sel.serviceId}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl border border-white/5 bg-black/40 shadow-[inset_0_0_20px_rgba(255,255,255,0.01)] backdrop-blur-sm overflow-hidden"
+            >
               {/* Card header */}
-              <p className="mb-3 text-sm font-semibold text-[hsl(var(--foreground))] border-b border-white/[0.06] pb-2">
-                {service.name}
-                <span className="ml-2 text-xs font-normal text-[hsl(var(--muted-foreground))]/50">
-                  {service.description}
-                </span>
-              </p>
+              <div className="bg-white/5 px-4 py-3 border-b border-white/5">
+                <p className="text-sm font-bold tracking-wide text-foreground flex items-center gap-2">
+                  {service.name}
+                  <span className="text-[11px] font-normal text-muted-foreground/60 tracking-normal">
+                    {service.description}
+                  </span>
+                </p>
+              </div>
 
               {/* Config fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
                 {Object.entries(service.configSchema).map(([key, field]: [string, ConfigField]) => {
                   const currentValue = sel.config[key]
 
@@ -159,9 +166,9 @@ export default function ResourceConfigurator(): React.JSX.Element {
                           : field.options[0]?.value ?? ''
 
                     return (
-                      <div key={key} className="flex flex-col gap-1">
+                      <div key={key} className="flex flex-col gap-1.5">
                         {field.label && (
-                          <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+                          <label className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
                             {field.label}
                           </label>
                         )}
@@ -213,7 +220,7 @@ export default function ResourceConfigurator(): React.JSX.Element {
                   return null
                 })}
               </div>
-            </Card>
+            </motion.div>
           )
         })}
       </div>

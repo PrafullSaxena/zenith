@@ -14,9 +14,9 @@
  * Default-exported for React.lazy() compatibility in the plugin registry.
  */
 import { useEffect } from 'react'
-import { Rocket, Calculator, MessageSquare, Clock, GitCompare } from 'lucide-react'
+import { Rocket, Calculator, MessageSquare, Clock, GitCompare, GripVertical } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Card } from '@renderer/components/ui/card'
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '@renderer/lib/motion'
@@ -99,17 +99,37 @@ export default function LaunchpadView(): React.JSX.Element {
               {!provider ? (
                 <ProviderSelector onSelect={handleProviderSelect} />
               ) : (
-                <div className="flex h-full overflow-hidden">
-                  <div className="w-64 shrink-0 overflow-y-auto border-r border-white/[0.06] p-4">
-                    <ServiceCatalog provider={provider} />
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-4">
-                    <ResourceConfigurator />
-                  </div>
-                  <div className="w-72 shrink-0 overflow-y-auto border-l border-white/[0.06] p-4">
-                    <EstimationSummary />
-                  </div>
-                </div>
+                <PanelGroup orientation="horizontal" className="flex h-full overflow-hidden">
+                  <Panel defaultSize="20%" minSize="15%" className="flex flex-col border-r border-white/5 bg-black/10">
+                    <div className="flex-1 overflow-y-auto p-4 w-full">
+                      <ServiceCatalog provider={provider} />
+                    </div>
+                  </Panel>
+
+                  <PanelResizeHandle className="flex w-1 items-center justify-center bg-border/40 transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary">
+                    <div className="z-10 flex h-6 w-3 items-center justify-center rounded-sm border border-border bg-card">
+                      <GripVertical size={10} className="text-muted-foreground" />
+                    </div>
+                  </PanelResizeHandle>
+
+                  <Panel defaultSize="55%" minSize="30%" className="flex flex-col bg-black/20">
+                    <div className="flex-1 overflow-y-auto p-4 w-full">
+                      <ResourceConfigurator />
+                    </div>
+                  </Panel>
+
+                  <PanelResizeHandle className="flex w-1 items-center justify-center bg-border/40 transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary">
+                    <div className="z-10 flex h-6 w-3 items-center justify-center rounded-sm border border-border bg-card">
+                      <GripVertical size={10} className="text-muted-foreground" />
+                    </div>
+                  </PanelResizeHandle>
+
+                  <Panel defaultSize="25%" minSize="20%" className="flex flex-col border-l border-white/5 bg-black/10">
+                    <div className="flex-1 overflow-y-auto w-full p-4">
+                      <EstimationSummary />
+                    </div>
+                  </Panel>
+                </PanelGroup>
               )}
             </>
           )}

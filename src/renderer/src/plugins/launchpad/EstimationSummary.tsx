@@ -7,7 +7,6 @@
  */
 import React, { useState } from 'react'
 import { DollarSign, Download, Trash2, Save } from 'lucide-react'
-import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
@@ -178,10 +177,10 @@ export default function EstimationSummary(): React.JSX.Element {
                 return (
                   <div
                     key={item.serviceId}
-                    className="flex items-start justify-between rounded-lg px-2 py-2 hover:bg-white/[0.03] transition-colors"
+                    className="flex items-start justify-between rounded-xl px-3 py-2.5 hover:bg-white/5 transition-colors group cursor-default border border-transparent hover:border-white/5"
                   >
                     <div className="flex-1 min-w-0 pr-2">
-                      <p className="text-xs font-medium text-[hsl(var(--foreground))] truncate">
+                      <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                         {item.serviceName}
                       </p>
                       {configSummary && (
@@ -213,18 +212,18 @@ export default function EstimationSummary(): React.JSX.Element {
         </div>
       )}
 
-      {/* Totals — sticky Card */}
-      <Card className="sticky bottom-0 rounded-none border-x-0 border-b-0 mx-0 p-4">
+      {/* Totals — sticky glass pill */}
+      <div className="sticky bottom-0 mx-4 mb-4 rounded-xl border border-white/10 bg-black/60 backdrop-blur-xl p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-20">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
             Grand Total
           </span>
           <div className="text-right">
-            <p className="text-lg font-bold text-[hsl(var(--foreground))] flex items-center gap-0.5">
-              $
+            <p className="text-2xl font-bold tracking-tight text-white flex items-center gap-0.5 justify-end">
+              <span className="text-primary mr-0.5">$</span>
               <span>{Math.round(displayMode === 'monthly' ? totalMonthly : totalYearly)}</span>
             </p>
-            <p className="text-xs text-[hsl(var(--muted-foreground))]/70">
+            <p className="text-[10px] text-muted-foreground/80 lowercase mt-0.5">
               per {displayMode === 'monthly' ? 'month' : 'year'}
             </p>
           </div>
@@ -241,7 +240,7 @@ export default function EstimationSummary(): React.JSX.Element {
             </span>
           </div>
         )}
-      </Card>
+      </div>
 
       {/* Save input (inline) */}
       {showSaveInput && (

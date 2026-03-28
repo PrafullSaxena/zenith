@@ -7,7 +7,7 @@
  */
 import React from 'react'
 import { GitCompare, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { Card } from '@renderer/components/ui/card'
+import { motion } from 'framer-motion'
 import { Badge } from '@renderer/components/ui/badge'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
@@ -179,9 +179,16 @@ export default function ComparisonView(): React.JSX.Element {
             const isCurrentProvider = p === provider
 
             return (
-              <Card
+              <motion.div
                 key={p}
-                className={`flex-1 min-w-0 ${isCheapest ? 'border-emerald-500/30' : ''}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: p === 'aws' ? 0 : p === 'gcp' ? 0.1 : 0.2 }}
+                className={`flex-1 min-w-0 rounded-2xl border p-4 shadow-lg backdrop-blur-md transition-all duration-300 ${
+                  isCheapest 
+                    ? 'border-emerald-500/50 bg-emerald-500/5 shadow-[0_0_30px_rgba(16,185,129,0.1)]' 
+                    : 'border-white/5 bg-black/20'
+                }`}
               >
                 {/* Provider header */}
                 <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/[0.06]">
@@ -265,7 +272,7 @@ export default function ComparisonView(): React.JSX.Element {
                     </span>
                   )}
                 </div>
-              </Card>
+              </motion.div>
             )
           })}
         </div>

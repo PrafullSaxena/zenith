@@ -9,7 +9,7 @@
  */
 import { useState, useMemo } from 'react'
 import { ChevronDown, ChevronRight, Search, X } from 'lucide-react'
-import { Card } from '@renderer/components/ui/card'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@renderer/components/ui/badge'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import { Input } from '@renderer/components/ui/input'
@@ -122,13 +122,13 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search services..."
-            className="pl-7 pr-7 py-1.5 text-xs"
+            className="pl-7 pr-7 py-1.5 text-xs bg-black/40 border-white/5 shadow-inner"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]/40 hover:text-[hsl(var(--foreground))] transition-colors z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors z-10"
             >
               <X size={12} />
             </button>
@@ -153,96 +153,104 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
               ).length
 
               return (
-                <Card key={category.id} className="p-0 overflow-hidden rounded-xl">
+                <div key={category.id} className="overflow-hidden rounded-xl border border-white/5 bg-black/20 backdrop-blur-md shadow-lg">
                   {/* Category header */}
                   <button
                     type="button"
                     onClick={() => toggleCategory(category.id)}
-                    className="flex w-full items-center justify-between px-2.5 py-1.5 text-left transition-colors hover:bg-white/[0.04]"
+                    className="flex w-full items-center justify-between px-3 py-2 text-left transition-colors hover:bg-white/5"
                   >
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {isOpen ? (
                         <ChevronDown
-                          size={12}
-                          className="text-[hsl(var(--muted-foreground))] shrink-0"
+                          size={14}
+                          className="text-muted-foreground shrink-0"
                         />
                       ) : (
                         <ChevronRight
-                          size={12}
-                          className="text-[hsl(var(--muted-foreground))] shrink-0"
+                          size={14}
+                          className="text-muted-foreground shrink-0"
                         />
                       )}
-                      <span className="text-xs font-medium text-[hsl(var(--foreground))]">
+                      <span className="text-sm font-semibold text-foreground">
                         {category.name}
                       </span>
                       {selectedCount > 0 && (
-                        <Badge variant="default">{selectedCount}</Badge>
+                        <Badge variant="default" className="scale-90">{selectedCount}</Badge>
                       )}
                     </div>
-                    <span className="text-[10px] text-[hsl(var(--muted-foreground))]/40">
+                    <span className="text-xs font-medium text-muted-foreground/60">
                       {category.services.length}
                     </span>
                   </button>
 
                   {/* Service rows */}
-                  {isOpen && (
-                    <div className="divide-y divide-white/[0.04]">
-                      {category.services.map((service: ServiceDefinition) => {
-                        const selected = isSelected(service.id)
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="divide-y divide-white/5 border-t border-white/5"
+                      >
+                        {category.services.map((service: ServiceDefinition) => {
+                          const selected = isSelected(service.id)
 
-                        return (
-                          <button
-                            key={service.id}
-                            type="button"
-                            onClick={() => handleToggle(category.id, service.id)}
-                            className={`flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors ${
-                              selected
-                                ? 'border-l-2 border-l-[var(--primary)] bg-[var(--primary)]/5 hover:bg-[var(--primary)]/10'
-                                : 'hover:bg-white/[0.03]'
-                            }`}
-                          >
-                            {/* Checkbox visual */}
-                            <div
-                              className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors ${
+                          return (
+                            <button
+                              key={service.id}
+                              type="button"
+                              onClick={() => handleToggle(category.id, service.id)}
+                              className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors ${
                                 selected
-                                  ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
-                                  : 'border-white/[0.12] bg-white/[0.04]'
+                                  ? 'border-l-2 border-l-primary bg-primary/10 hover:bg-primary/20 backdrop-blur-sm'
+                                  : 'border-l-2 border-l-transparent hover:bg-white/5'
                               }`}
                             >
-                              {selected && (
-                                <svg width="8" height="6" viewBox="0 0 10 8" fill="none">
-                                  <path
-                                    d="M1 4L3.5 6.5L9 1"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                </svg>
-                              )}
-                            </div>
-
-                            {/* Service info */}
-                            <div className="flex-1 min-w-0">
-                              <p
-                                className={`text-xs font-medium leading-tight ${
+                              {/* Checkbox visual */}
+                              <div
+                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border transition-all ${
                                   selected
-                                    ? 'text-[var(--primary)]'
-                                    : 'text-[hsl(var(--foreground))]'
+                                    ? 'border-primary bg-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.3)]'
+                                    : 'border-white/20 bg-black/40 shadow-inner'
                                 }`}
                               >
-                                {service.name}
-                              </p>
-                              <p className="text-[10px] text-[hsl(var(--muted-foreground))]/60 leading-snug mt-0.5 line-clamp-2">
-                                {service.description}
-                              </p>
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
-                </Card>
+                                {selected && (
+                                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                    <path
+                                      d="M1 4L3.5 6.5L9 1"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                )}
+                              </div>
+
+                              {/* Service info */}
+                              <div className="flex-1 min-w-0">
+                                <p
+                                  className={`text-xs font-semibold tracking-wide ${
+                                    selected
+                                      ? 'text-primary'
+                                      : 'text-foreground'
+                                  }`}
+                                >
+                                  {service.name}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground/70 leading-relaxed mt-0.5 line-clamp-2">
+                                  {service.description}
+                                </p>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               )
             })}
           </div>
