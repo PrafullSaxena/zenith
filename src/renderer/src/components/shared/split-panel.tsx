@@ -1,5 +1,5 @@
 import React from 'react'
-import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
+import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { cn } from '@renderer/lib/utils'
 
 interface SplitPanelProps {
@@ -44,16 +44,16 @@ export function SplitPanel({
 
   return (
     <PanelGroup
-      direction={direction}
+      orientation={direction}
       className={cn('h-full', className)}
-      onLayout={onResize}
+      onLayoutChange={onResize ? (layout) => onResize(Object.values(layout)) : undefined}
     >
       {childArray.map((child, index) => (
         <React.Fragment key={index}>
           {index > 0 && <ResizeHandle direction={direction} />}
           <Panel
-            defaultSize={sizes?.[index]}
-            minSize={minSizes?.[index] ?? 10}
+            defaultSize={sizes?.[index] != null ? `${sizes[index]}%` : undefined}
+            minSize={`${minSizes?.[index] ?? 10}%`}
           >
             {child}
           </Panel>

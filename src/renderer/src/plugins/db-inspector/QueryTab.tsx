@@ -652,7 +652,7 @@ export default function QueryTab({
       {tab.outputMode === 'split' ? (
         // ── Split mode: resizable editor top, results bottom ────────
         <PanelGroup orientation="vertical" className="flex-1">
-          <Panel defaultSize={showOutput && hasResult ? 60 : 100} minSize={20}>
+          <Panel defaultSize={showOutput && hasResult ? "60%" : "100%"} minSize="20%">
             <div className="h-full overflow-hidden">
               <SqlEditor
                 value={tab.sql}
@@ -672,7 +672,7 @@ export default function QueryTab({
               <PanelResizeHandle className="h-1.5 bg-transparent hover:bg-primary/30 transition-colors cursor-row-resize flex items-center justify-center group">
                 <div className="w-8 h-0.5 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
               </PanelResizeHandle>
-              <Panel defaultSize={40} minSize={15}>
+              <Panel defaultSize="40%" minSize="15%">
                 <div className="h-full flex flex-col overflow-hidden animate-results-enter">
                   <div className="flex items-center gap-0 border-b border-white/[0.06] bg-white/[0.02] shrink-0">
                     <button

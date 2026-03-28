@@ -20,7 +20,12 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
-  Database
+  Database,
+  Search,
+  GitFork,
+  Sparkles,
+  Link2,
+  Loader2
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
@@ -29,8 +34,9 @@ import { useDbStore } from '../../stores/db-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { useActivityStore } from '../../stores/activity-store'
 import { useSettingsStore } from '../../stores/settings-store'
-import type { DbInspectorTab, DbHistoryEntry } from '../../types/database'
+import type { DbInspectorTab, DbHistoryEntry, RelationshipMode } from '../../types/database'
 import { Badge } from '@renderer/components/ui/badge'
+import { Button } from '@renderer/components/ui/button'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '../../lib/motion'
@@ -50,12 +56,237 @@ const TABS: { id: string; label: string; icon: typeof MessageSquare }[] = [
   { id: 'history', label: 'History', icon: Clock }
 ]
 
+const ER_MODES: { id: RelationshipMode; label: string; icon: typeof Link2; needsAgent?: boolean }[] = [
+  { id: 'fk-only', label: 'FK Only', icon: Link2 },
+  { id: 'convention', label: 'Convention', icon: GitFork },
+  { id: 'ai', label: 'AI Inferred', icon: Sparkles, needsAgent: true }
+]
+
+function fuzzyMatch(query: string, target: string): boolean {
+  const q = query.toLowerCase()
+  const t = target.toLowerCase()
+  let qi = 0
+  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+    if (t[ti] === q[qi]) qi++
+  }
+  return qi === q.length
+}
+
+function ERSidebar({
+  tables,
+  selectedTables,
+  onToggleTable,
+  onSetTables,
+  onGenerate,
+  hasConnection,
+  hasAgent,
+  erRelationshipMode,
+  onModeChange,
+  erInferenceStatus,
+  erInferredRelationships,
+  erSession,
+  tableSearch,
+  onTableSearchChange
+}: {
+  tables: { name: string }[]
+  selectedTables: string[]
+  onToggleTable: (t: string) => void
+  onSetTables: (t: string[]) => void
+  onGenerate: () => Promise<void>
+  hasConnection: boolean
+  hasAgent: boolean
+  erRelationshipMode: RelationshipMode
+  onModeChange: (m: RelationshipMode) => void
+  erInferenceStatus: string
+  erInferredRelationships: { source: string }[]
+  erSession: { inferredRelationships?: { source: string }[] } | null
+  tableSearch: string
+  onTableSearchChange: (v: string) => void
+}): React.JSX.Element {
+  const [isGenerating, setIsGenerating] = useState(false)
+
+  const filteredTables = React.useMemo(() => {
+    if (!tableSearch.trim()) return tables
+    return tables.filter((t) => fuzzyMatch(tableSearch.trim(), t.name))
+  }, [tables, tableSearch])
+
+  const allSelected = tables.length > 0 && selectedTables.length === tables.length
+  const noneSelected = selectedTables.length === 0
+  const isInferring = erInferenceStatus === 'streaming' || erInferenceStatus === 'inferring'
+  const aiPending = erRelationshipMode === 'ai' && isInferring
+  const inferredCount = erInferredRelationships.length
+
+  const inferredSummary = React.useMemo(() => {
+    if (!erSession?.inferredRelationships?.length) return null
+    const conv = erSession.inferredRelationships.filter((r) => r.source === 'convention').length
+    const ai = erSession.inferredRelationships.filter((r) => r.source === 'ai').length
+    const parts: string[] = []
+    if (conv > 0) parts.push(`${conv} convention`)
+    if (ai > 0) parts.push(`${ai} AI`)
+    return parts.join(', ')
+  }, [erSession?.inferredRelationships])
+
+  const handleGenerate = async (): Promise<void> => {
+    setIsGenerating(true)
+    try {
+      await onGenerate()
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col flex-1 overflow-hidden px-3 py-2">
+      <div className="flex items-center justify-between shrink-0 mb-3">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Select Tables
+        </p>
+        <span className="text-[10px] text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded">
+          {selectedTables.length}/{tables.length}
+        </span>
+      </div>
+
+      {!hasConnection ? (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-xs text-muted-foreground/50 text-center">Connect to a database first…</p>
+        </div>
+      ) : tables.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-xs text-muted-foreground/50 text-center">No tables in selected schema</p>
+        </div>
+      ) : (
+        <>
+          <div className="relative mb-3 shrink-0">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+            <input
+              type="text"
+              value={tableSearch}
+              onChange={(e) => onTableSearchChange(e.target.value)}
+              placeholder="Filter tables…"
+              className="w-full rounded-md border border-border bg-background pl-8 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/40 focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none transition-all"
+            />
+          </div>
+
+          <div className="flex justify-between items-center mb-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => onSetTables(allSelected ? [] : tables.map((t) => t.name))}
+              className="text-[10px] text-primary hover:text-primary/80 transition-colors"
+            >
+              {allSelected ? 'Deselect All' : 'Select All'}
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-auto -mx-1 px-1 custom-scrollbar">
+            <div className="flex flex-wrap gap-1.5 pb-2">
+              {filteredTables.map((t) => {
+                const isSelected = selectedTables.includes(t.name)
+                return (
+                  <button
+                    key={t.name}
+                    type="button"
+                    onClick={() => onToggleTable(t.name)}
+                    className={`rounded-full px-2.5 py-1 text-[11px] transition-all whitespace-nowrap ${
+                      isSelected
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-secondary text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
+                    }`}
+                  >
+                    {t.name}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Controls at bottom */}
+      <div className="shrink-0 pt-4 mt-2 border-t border-border/40 space-y-3">
+        {hasConnection && tables.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              Relationships Mode
+            </span>
+            <div className="flex rounded-md border border-border overflow-hidden bg-background">
+              {ER_MODES.map((mode) => {
+                const Icon = mode.icon
+                const isActive = erRelationshipMode === mode.id
+                const isDisabled = mode.needsAgent && !hasAgent
+                return (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => !isDisabled && onModeChange(mode.id)}
+                    disabled={isDisabled}
+                    title={isDisabled ? 'Requires AI agent — configure in Settings' : undefined}
+                    className={`flex flex-1 items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-medium transition-colors ${
+                      mode.id !== 'fk-only' ? 'border-l border-border' : ''
+                    } ${
+                      isActive
+                        ? 'bg-primary/10 text-primary shadow-inner'
+                        : isDisabled
+                          ? 'text-muted-foreground/30 cursor-not-allowed bg-muted/30'
+                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                    }`}
+                  >
+                    <Icon size={12} />
+                    {mode.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        <Button
+          variant="default"
+          size="sm"
+          className="w-full text-xs font-medium bg-primary/90 hover:bg-primary text-primary-foreground"
+          onClick={handleGenerate}
+          disabled={noneSelected || isGenerating || !hasConnection}
+        >
+          {isGenerating ? (
+            <Loader2 size={13} className="animate-spin mr-1.5" />
+          ) : (
+            <GitFork size={13} className="mr-1.5" />
+          )}
+          {isGenerating ? 'Generating...' : 'Generate ER Diagram'}
+        </Button>
+
+        {inferredCount > 0 && inferredSummary && (
+          <div className="flex items-center gap-1.5 text-[10px] text-primary bg-primary/10 px-2 py-1.5 rounded-md border border-primary/20">
+            <Sparkles size={11} className="shrink-0" />
+            <span className="truncate">{inferredCount} inferred ({inferredSummary})</span>
+          </div>
+        )}
+
+        {aiPending && (
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/50 px-2 py-1.5 rounded-md">
+            <Loader2 size={11} className="animate-spin shrink-0" />
+            <span className="truncate">AI inference in progress…</span>
+          </div>
+        )}
+
+        {erInferenceStatus === 'error' && (
+          <div className="flex items-center gap-1.5 text-[10px] text-red-400 bg-red-400/10 px-2 py-1.5 rounded-md border border-red-400/20">
+            <span className="truncate">AI inference failed. Showing convention results.</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function DbInspectorView(): React.JSX.Element {
   const navigate = useNavigate()
 
   // -- Left panel collapse state
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false)
   const leftPanelRef = useRef<any>(null)
+
+  // -- ER table search (for left panel sidebar)
+  const [erTableSearch, setErTableSearch] = useState('')
 
   // -- Editor view ref for schema double-click insert
   const activeEditorViewRef = useRef<EditorView | null>(null)
@@ -320,21 +551,22 @@ export default function DbInspectorView(): React.JSX.Element {
         />
       ) : (
       /* Main content */
-      <div className="flex flex-1 overflow-hidden">
-        <PanelGroup direction="horizontal">
+      <div className="flex flex-1 overflow-hidden relative z-0 w-full h-full">
+        <PanelGroup orientation="horizontal" className="w-full h-full">
           {/* Left panel -- Connections (sticky) + Schema Explorer (scrollable) + collapse toggle */}
           <Panel
-            ref={leftPanelRef}
+            panelRef={leftPanelRef}
             collapsible={true}
-            collapsedSize={0}
-            defaultSize={20}
-            minSize={15}
-            maxSize={40}
-            onCollapse={() => setIsLeftPanelCollapsed(true)}
-            onExpand={() => setIsLeftPanelCollapsed(false)}
+            collapsedSize="0%"
+            defaultSize="22%"
+            minSize="15%"
+            maxSize="40%"
+            onResize={(size) => {
+              setIsLeftPanelCollapsed(size.asPercentage === 0)
+            }}
             className="flex flex-col bg-white/[0.02]"
           >
-          <div className="flex h-full flex-col bg-white/[0.02]" style={{ width: 248 }}>
+          <div className="flex h-full flex-col bg-white/[0.02] w-full overflow-hidden">
             <div className="shrink-0 border-b border-white/[0.06] px-3 py-2.5">
               <ConnectionManager
                 connections={connections}
@@ -347,7 +579,25 @@ export default function DbInspectorView(): React.JSX.Element {
               />
             </div>
 
-            {isConnected && (
+            {isConnected && activeTab === 'er-diagram' ? (
+              /* ER Diagram sidebar: table selection + mode controls */
+              <ERSidebar
+                tables={tables}
+                selectedTables={selectedTablesForER}
+                onToggleTable={toggleTableForER}
+                onSetTables={setSelectedTablesForER}
+                onGenerate={handleGenerateER}
+                hasConnection={isConnected}
+                hasAgent={hasAgent}
+                erRelationshipMode={erRelationshipMode}
+                onModeChange={switchERMode}
+                erInferenceStatus={erInferenceStatus}
+                erInferredRelationships={erInferredRelationships}
+                erSession={erSession}
+                tableSearch={erTableSearch}
+                onTableSearchChange={setErTableSearch}
+              />
+            ) : isConnected ? (
               <div className="flex-1 overflow-auto px-3 py-2">
                 <SchemaExplorer
                   databases={databases}
@@ -369,12 +619,12 @@ export default function DbInspectorView(): React.JSX.Element {
                   onInsertAtCursor={activeTab === 'query-console' ? handleInsertAtCursor : undefined}
                 />
               </div>
-            )}
+            ) : null}
           </div>
           </Panel>
 
           {/* Resize handle with toggle button */}
-          <PanelResizeHandle className="relative flex w-1.5 shrink-0 items-center justify-center bg-transparent transition-colors hover:bg-white/[0.06] active:bg-primary/20 cursor-col-resize z-10">
+          <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent transition-colors hover:bg-white/10 active:bg-primary/20 cursor-col-resize z-50">
             <button
               type="button"
               onClick={() => {
@@ -392,7 +642,7 @@ export default function DbInspectorView(): React.JSX.Element {
           </PanelResizeHandle>
 
           {/* Right panel -- Tabbed content */}
-          <Panel minSize={30} className="flex flex-col overflow-hidden bg-background">
+          <Panel minSize="30%" className="flex flex-col overflow-hidden bg-background">
           {/* Agent status warning */}
           {isConnected && !hasAgent && (
             <div className="flex items-center gap-2 border-b border-yellow-500/20 bg-yellow-500/10 px-4 py-2">
@@ -412,13 +662,13 @@ export default function DbInspectorView(): React.JSX.Element {
 
           {/* Tab content with AnimatePresence */}
           <AnimatePresence mode="wait">
-            <motion.div
+              <motion.div
               key={activeTab}
               variants={pageTransition}
               initial="initial"
               animate="animate"
               exit="exit"
-              className="flex-1 overflow-auto"
+              className="flex-1 overflow-auto h-full w-full flex flex-col"
             >
               {activeTab === 'ask-ai' && (
                 <AskAI

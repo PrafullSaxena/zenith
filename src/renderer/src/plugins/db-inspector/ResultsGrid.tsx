@@ -12,6 +12,7 @@ import { Download, Copy, Check, AlertCircle, Table2, ArrowDownAZ, ArrowUpZA } fr
 import { Button } from '@renderer/components/ui/button'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
+import { Loader2 } from 'lucide-react'
 import CellModal from './CellModal'
 
 // -- Types
@@ -171,6 +172,7 @@ export default function ResultsGrid({
   const [cellModal, setCellModal] = useState<{ value: unknown; fieldName: string } | null>(null)
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null)
   const [copiedTsv, setCopiedTsv] = useState(false)
+  const [columnSizing, setColumnSizing] = useState({})
   const isLoadingMoreRef = useRef(false)
 
   // -- TanStack Table definition
@@ -206,8 +208,9 @@ export default function ResultsGrid({
   const table = useReactTable({
     data: rows,
     columns,
-    state: { sorting },
+    state: { sorting, columnSizing },
     onSortingChange: setSorting,
+    onColumnSizingChange: setColumnSizing,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     columnResizeMode: 'onChange'
@@ -359,7 +362,7 @@ export default function ResultsGrid({
               <div
                 key={header.id}
                 className={`relative flex items-center px-2 py-1.5 border-r border-border/50 bg-transparent text-[11px] font-semibold text-muted-foreground uppercase tracking-wider select-none ${header.id === 'rowIndex' ? 'sticky left-0 z-20 bg-card/90 shadow-[1px_0_0_0_hsl(var(--border))] justify-center' : ''}`}
-                style={{ width: header.getSize() }}
+                style={{ width: header.getSize(), flex: `0 0 ${header.getSize()}px` }}
               >
                 {header.isPlaceholder ? null : (
                   <div
@@ -420,7 +423,7 @@ export default function ResultsGrid({
                       className={`relative flex items-center px-1 py-0 h-full border-r border-border/30 overflow-hidden ${
                          cell.column.id === 'rowIndex' ? 'sticky left-0 z-[5] bg-card/80 shadow-[1px_0_0_0_hsl(var(--border))] backdrop-blur-sm' : ''
                       }`}
-                      style={{ width: cell.column.getSize() }}
+                      style={{ width: cell.column.getSize(), flex: `0 0 ${cell.column.getSize()}px` }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </div>

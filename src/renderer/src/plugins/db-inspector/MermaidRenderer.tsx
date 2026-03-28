@@ -241,7 +241,7 @@ export default function MermaidRenderer({
 
   // Interactive: zoom/pan wrapper
   return (
-    <div className={`group relative ${className ?? ''}`}>
+    <div className={`group relative flex flex-col ${className ?? ''}`}>
       {error && (
         <pre className="mb-2 rounded border border-red-500/20 bg-red-500/10 p-2 text-xs text-red-400">
           Diagram render error: {error}
@@ -304,10 +304,9 @@ export default function MermaidRenderer({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`overflow-hidden rounded-lg border border-border bg-secondary/30 ${
+        className={`h-full overflow-hidden rounded-lg border border-border bg-secondary/30 ${
           isDragging ? 'cursor-grabbing' : 'cursor-grab'
         }`}
-        style={{ minHeight: 200 }}
       >
         <div
           ref={svgContainerRef}
@@ -319,10 +318,6 @@ export default function MermaidRenderer({
         />
       </div>
 
-      {/* Hint */}
-      <p className="mt-1.5 text-center text-[10px] text-muted-foreground/40">
-        Scroll to zoom · Drag to pan · Click reset to fit
-      </p>
     </div>
   )
 }
