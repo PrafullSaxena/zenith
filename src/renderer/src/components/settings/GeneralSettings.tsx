@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useSettingsStore } from '../../stores/settings-store'
 import { PLUGINS } from '../../plugins/registry'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import { SettingsField } from './SettingsField'
 import { THEMES } from '@renderer/lib/theme'
@@ -122,68 +122,74 @@ export function GeneralSettings(): React.JSX.Element {
         <p className="text-xs text-muted-foreground">Application-wide preferences and defaults.</p>
       </div>
 
-      {/* ── Appearance ── */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <SettingsField
-              field={themeField}
-              value={getSetting('general.theme')}
-              onChange={(value) => setSetting('general.theme', value)}
-            />
-            <SettingsField
-              field={hljsThemeField}
-              value={getSetting('general.hljsTheme')}
-              onChange={(value) => setSetting('general.hljsTheme', value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md overflow-hidden"
+      >
+        <div className="px-5 py-3 border-b border-white/5">
+          <h3 className="text-[13px] font-semibold text-foreground">Appearance</h3>
+        </div>
+        <div className="p-5 space-y-4">
+          <SettingsField
+            field={themeField}
+            value={getSetting('general.theme')}
+            onChange={(value) => setSetting('general.theme', value)}
+          />
+          <SettingsField
+            field={hljsThemeField}
+            value={getSetting('general.hljsTheme')}
+            onChange={(value) => setSetting('general.hljsTheme', value)}
+          />
+        </div>
+      </motion.div>
 
-      {/* ── Behavior ── */}
-      <Card className="rounded-xl">
-        <CardHeader>
-          <CardTitle>Behavior</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <SettingsField
-              field={defaultViewField}
-              value={getSetting('general.defaultView')}
-              onChange={(value) => setSetting('general.defaultView', value)}
-            />
-            <SettingsField
-              field={showWelcomeField}
-              value={getSetting('general.showWelcomeOnStart')}
-              onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md overflow-hidden"
+      >
+        <div className="px-5 py-3 border-b border-white/5">
+          <h3 className="text-[13px] font-semibold text-foreground">Behavior</h3>
+        </div>
+        <div className="p-5 space-y-4">
+          <SettingsField
+            field={defaultViewField}
+            value={getSetting('general.defaultView')}
+            onChange={(value) => setSetting('general.defaultView', value)}
+          />
+          <SettingsField
+            field={showWelcomeField}
+            value={getSetting('general.showWelcomeOnStart')}
+            onChange={(value) => setSetting('general.showWelcomeOnStart', value)}
+          />
+        </div>
+      </motion.div>
 
-      {/* ── Export ── */}
-      <Card className="rounded-xl">
-        <CardHeader>
-          <CardTitle>Export</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <SettingsField
-              field={pdfStyleField}
-              value={getSetting('general.pdfStyle')}
-              onChange={(value) => setSetting('general.pdfStyle', value)}
-            />
-            <SettingsField
-              field={workingDirectoryField}
-              value={getSetting('general.workingDirectory')}
-              onChange={(value) => setSetting('general.workingDirectory', value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md overflow-hidden"
+      >
+        <div className="px-5 py-3 border-b border-white/5">
+          <h3 className="text-[13px] font-semibold text-foreground">Export</h3>
+        </div>
+        <div className="p-5 space-y-4">
+          <SettingsField
+            field={pdfStyleField}
+            value={getSetting('general.pdfStyle')}
+            onChange={(value) => setSetting('general.pdfStyle', value)}
+          />
+          <SettingsField
+            field={workingDirectoryField}
+            value={getSetting('general.workingDirectory')}
+            onChange={(value) => setSetting('general.workingDirectory', value)}
+          />
+        </div>
+      </motion.div>
     </div>
   )
 }

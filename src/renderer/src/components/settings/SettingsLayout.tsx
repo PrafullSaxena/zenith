@@ -38,7 +38,7 @@ export function SettingsLayout(): React.JSX.Element {
         className="flex flex-1 min-h-0 w-full"
       >
         {/* Left sidebar — vertical tabs */}
-        <div className="w-44 flex-shrink-0 overflow-y-auto border-r border-white/[0.06] py-4 px-2">
+        <div className="w-44 shrink-0 overflow-y-auto border-r border-white/6 bg-black/20 backdrop-blur-md py-4 px-2">
           <div className="px-2 mb-2">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Settings
@@ -49,7 +49,7 @@ export function SettingsLayout(): React.JSX.Element {
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="w-full justify-start rounded-lg text-left px-2.5 py-1.5 text-[13px] data-[state=active]:bg-white/[0.06]"
+                className="w-full justify-start rounded-lg text-left px-2.5 py-1.5 text-[13px] data-[state=active]:bg-white/6 data-[state=active]:text-foreground"
               >
                 {tab.label}
               </TabsTrigger>

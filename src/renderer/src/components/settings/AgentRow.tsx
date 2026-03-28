@@ -59,12 +59,12 @@ export function AgentRow({
   }
 
   return (
-    <tr className="border-b border-white/[0.06] transition-colors hover:bg-white/[0.02]">
+    <tr className="border-b border-white/6 transition-colors hover:bg-white/2">
       {/* Provider name + type badge */}
       <td className="px-4 py-2.5">
         <div className="flex items-center gap-2">
           <span className="text-[13px] font-medium text-foreground">{provider.name}</span>
-          <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-muted-foreground">
+          <span className="rounded bg-white/6 px-1.5 py-0.5 text-[10px] text-muted-foreground">
             {typeLabels[provider.type] ?? provider.type}
           </span>
         </div>
@@ -90,7 +90,7 @@ export function AgentRow({
                   onChange={(e) => setApiKeyInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Enter API key"
-                  className="w-44 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+                  className="w-44 rounded-lg border border-white/8 bg-white/4 px-2 py-1 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
                   autoFocus
                 />
                 <button
@@ -118,7 +118,7 @@ export function AgentRow({
                 )}
                 <button
                   onClick={() => setIsEditingKey(true)}
-                  className="rounded-lg border border-white/[0.08] px-2 py-0.5 text-[11px] text-muted-foreground transition hover:text-foreground hover:bg-white/[0.04]"
+                  className="rounded-lg border border-white/8 px-2 py-0.5 text-[11px] text-muted-foreground transition hover:text-foreground hover:bg-white/4"
                 >
                   {provider.hasApiKey ? 'Update' : 'Set'}
                 </button>
@@ -136,7 +136,7 @@ export function AgentRow({
           <button
             onClick={onTestConnection}
             disabled={isTesting}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-2 py-0.5 text-[11px] text-muted-foreground transition hover:text-foreground hover:bg-white/[0.04] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/8 px-2 py-0.5 text-[11px] text-muted-foreground transition hover:text-foreground hover:bg-white/4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isTesting && <Loader2 size={11} className="animate-spin" />}
             Test

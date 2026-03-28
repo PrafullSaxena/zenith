@@ -83,12 +83,12 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
       ))}
 
       {/* Default AI Agent dropdown */}
-      <div className="mt-6 border-t border-border pt-5">
+      <div className="mt-6 border-t border-white/5 pt-5">
         <label className="mb-1.5 block text-sm font-medium text-foreground">
           Default AI Agent
         </label>
         <select
-          className="w-full rounded-lg border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition appearance-none"
+          className="w-full rounded-lg border border-white/8 bg-white/3 px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition appearance-none"
           value={
             (getSetting(`plugins.${pluginId}.defaultAgent`) as string) ?? ''
           }

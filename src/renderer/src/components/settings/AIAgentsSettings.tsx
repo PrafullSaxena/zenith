@@ -42,10 +42,10 @@ export function AIAgentsSettings(): React.JSX.Element {
       </div>
 
       {/* Providers table */}
-      <div className="overflow-hidden rounded-lg border border-white/[0.08]">
+      <div className="overflow-hidden rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
         <table className="w-full border-collapse text-[13px]">
           <thead>
-            <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+            <tr className="border-b border-white/6 bg-white/3">
               <th className="px-4 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 Provider
               </th>

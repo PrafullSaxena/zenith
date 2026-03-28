@@ -99,7 +99,7 @@ export function MCPSettings(): React.JSX.Element {
 
       {/* Server list */}
       {servers.length === 0 && !showAddForm && (
-        <div className="rounded-lg border border-dashed border-border/50 px-4 py-8 text-center">
+        <div className="rounded-xl border border-dashed border-white/10 bg-black/10 px-4 py-8 text-center">
           <Server size={24} className="mx-auto mb-2 text-muted-foreground/30" />
           <p className="text-sm text-muted-foreground">No MCP servers configured</p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -109,7 +109,7 @@ export function MCPSettings(): React.JSX.Element {
       )}
 
       {servers.length > 0 && (
-        <div className="divide-y divide-border/30 rounded-xl border border-border/50">
+        <div className="divide-y divide-white/5 rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
           {servers.map((server) => (
             <div
               key={server.id}
@@ -173,7 +173,7 @@ export function MCPSettings(): React.JSX.Element {
           Add MCP Server
         </button>
       ) : (
-        <div className="rounded-xl border border-border/50 bg-secondary/30 p-4">
+        <div className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md p-4">
           <button
             type="button"
             onClick={() => setShowAddForm(false)}
@@ -260,7 +260,7 @@ export function MCPSettings(): React.JSX.Element {
       )}
 
       {/* Info box */}
-      <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3">
+      <div className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md px-4 py-3">
         <p className="text-[11px] font-medium text-muted-foreground">About MCP</p>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground/60">
           The Model Context Protocol (MCP) allows AI agents to access external tools, data

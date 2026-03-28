@@ -173,7 +173,7 @@ export function SettingsField({ field, value, onChange, error }: SettingsFieldPr
   }
 
   return (
-    <div className="-mx-2 mb-4 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/30">
+    <div className="-mx-2 mb-4 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/3">
       {/* Label -- skip for boolean (toggle has its own inline label) */}
       {field.type !== 'boolean' ? (
         <Label className="mb-1.5 block text-sm font-medium">
