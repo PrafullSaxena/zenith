@@ -76,42 +76,45 @@ export default function NoteContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[160px] rounded-xl bg-secondary/80 backdrop-blur-xl border border-white/[0.08] shadow-lg py-1"
+      className="fixed z-50 min-w-[8rem] overflow-hidden rounded-xl border border-white/[0.1] bg-popover/80 backdrop-blur-2xl p-1 text-popover-foreground shadow-[0_8px_32px_rgba(0,0,0,0.4)] animate-in fade-in-0 zoom-in-95"
       style={{ left: x, top: y }}
     >
       <button
         type="button"
-        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-foreground cursor-pointer"
+        className="relative flex w-full cursor-default select-none items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none transition-colors hover:bg-secondary hover:text-foreground focus:bg-secondary focus:text-foreground"
         onClick={() => {
           onPin()
           onClose()
         }}
       >
-        <Pin size={14} className={isPinned ? 'text-primary' : 'text-muted-foreground'} />
-        {isPinned ? 'Unpin' : 'Pin'}
+        <Pin size={14} className="shrink-0 text-muted-foreground" />
+        {isPinned ? 'Unpin Note' : 'Pin Note'}
       </button>
+
       <button
         type="button"
-        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-foreground cursor-pointer"
+        className="relative flex w-full cursor-default select-none items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none transition-colors hover:bg-secondary hover:text-foreground focus:bg-secondary focus:text-foreground"
         onClick={() => {
           onDuplicate()
           onClose()
         }}
       >
-        <Copy size={14} className="text-muted-foreground" />
+        <Copy size={14} className="shrink-0 text-muted-foreground" />
         Duplicate
       </button>
-      <div className="my-1 border-t border-white/[0.06]" />
+      
+      <div className="-mx-1 my-1 h-px bg-border" />
+      
       <button
         type="button"
-        className="flex w-full items-center gap-2 hover:bg-white/[0.06] transition-colors rounded-lg px-3 py-2 text-sm text-red-400 cursor-pointer"
+        className="relative flex w-full cursor-default select-none items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none transition-colors hover:bg-red-500/10 hover:text-red-400 focus:bg-red-500/10 focus:text-red-400 text-red-400/80"
         onClick={() => {
           onDelete()
           onClose()
         }}
       >
-        <Trash2 size={14} />
-        Delete
+        <Trash2 size={14} className="shrink-0" />
+        Delete Note
       </button>
     </div>
   )

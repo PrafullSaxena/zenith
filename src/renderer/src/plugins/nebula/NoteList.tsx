@@ -338,8 +338,10 @@ function NoteItem({
 
   return (
     <Card
-      className={`group relative mx-2 mb-1 cursor-pointer p-3 ${
-        isActive ? 'border-l-2 border-primary' : ''
+      className={`group relative mx-2 mb-1.5 cursor-pointer overflow-hidden border-l-2 p-3 transition-all duration-300 ease-out hover:translate-x-1 outline-none ${
+        isActive 
+          ? 'border-primary bg-primary/10 shadow-[0_0_15px_-3px_rgba(var(--primary),0.2)]' 
+          : 'border-transparent bg-transparent hover:bg-white/[0.04] hover:shadow-md hover:border-primary/20'
       }`}
       onClick={() => onSelect(note.id)}
       onContextMenu={(e: React.MouseEvent) => onContextMenu(e, note.id, note.pinned)}
@@ -348,8 +350,8 @@ function NoteItem({
         {/* Title line */}
         <div className="flex items-center gap-1.5">
           <span
-            className={`truncate text-sm font-medium ${
-              isActive ? 'text-foreground' : 'text-foreground/80'
+            className={`truncate text-sm font-medium transition-colors ${
+              isActive ? 'text-foreground' : 'text-foreground/80 group-hover:text-foreground'
             }`}
           >
             {note.title || 'Untitled'}
@@ -361,7 +363,7 @@ function NoteItem({
 
         {/* Content preview (2 lines) */}
         {previewText && (
-          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground/60 leading-relaxed">
+          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground/60 leading-relaxed transition-colors group-hover:text-muted-foreground/80">
             {previewText}
           </p>
         )}
@@ -378,12 +380,12 @@ function NoteItem({
         )}
 
         {/* Timestamp + drawing indicator */}
-        <div className="mt-1 flex items-center gap-1.5">
-          <span className="text-[10px] text-muted-foreground/40">
+        <div className="mt-1 flex items-center gap-1.5 transition-colors group-hover:text-foreground/60">
+          <span className="text-[10px] text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/60">
             {relativeTime(note.updatedAt)}
           </span>
           {note.hasDrawing && (
-            <span title="Has drawing"><Pencil size={9} className="text-muted-foreground/40" /></span>
+            <span title="Has drawing"><Pencil size={9} className="text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/60" /></span>
           )}
         </div>
       </div>
@@ -395,12 +397,12 @@ function NoteItem({
           e.stopPropagation()
           onTogglePin(note.id)
         }}
-        className={`absolute right-2 top-2 shrink-0 rounded-lg p-0.5 transition-all ${
+        className={`absolute right-2 top-2 shrink-0 rounded-lg p-0.5 transition-all outline-none ${
           note.pinned
-            ? 'text-primary opacity-100'
-            : 'text-muted-foreground opacity-0 hover:text-primary group-hover:opacity-100'
+            ? 'text-primary opacity-100 hover:bg-primary/10'
+            : 'text-muted-foreground opacity-0 hover:bg-secondary hover:text-foreground group-hover:opacity-100'
         }`}
-        title={note.pinned ? 'Unpin' : 'Pin'}
+        title={note.pinned ? 'Unpin Note' : 'Pin Note'}
       >
         <Pin size={12} className={note.pinned ? 'fill-current' : ''} />
       </button>
@@ -412,7 +414,7 @@ function NoteItem({
           e.stopPropagation()
           onDeleteRequest(note.id, note.title)
         }}
-        className="absolute right-2 bottom-2 shrink-0 rounded-lg p-0.5 text-muted-foreground opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
+        className="absolute right-2 bottom-2 shrink-0 rounded-lg p-0.5 text-muted-foreground opacity-0 transition-all hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100 outline-none"
         title="Delete note"
       >
         <Trash2 size={12} />

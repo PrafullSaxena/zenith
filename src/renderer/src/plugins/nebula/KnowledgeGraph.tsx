@@ -165,31 +165,37 @@ export default function KnowledgeGraph(): React.JSX.Element {
   }
 
   return (
-    <Card className="flex h-full flex-col rounded-none border-x-0 border-t-0 p-0">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
+    <Card className="relative flex h-full flex-col overflow-hidden rounded-none border-x-0 border-t-0 p-0 bg-transparent">
+      {/* Floating Control Palette */}
+      <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 items-center gap-4 rounded-full border border-white/10 bg-black/60 px-4 py-2 shadow-xl backdrop-blur-xl">
         <div className="flex items-center gap-2">
-          <Share2 size={15} className="text-primary" />
-          <h2 className="text-sm font-semibold text-foreground">Knowledge Graph</h2>
-          <span className="text-xs text-muted-foreground">
-            {nodeCount} {nodeCount === 1 ? 'note' : 'notes'} &middot; {linkCount}{' '}
-            {linkCount === 1 ? 'connection' : 'connections'}
-          </span>
+          <Share2 size={14} className="text-primary" />
+          <h2 className="text-sm font-semibold tracking-wide text-foreground">Knowledge Graph</h2>
         </div>
+        
+        <div className="h-4 w-px bg-white/10" />
+        
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80">
+          <span className="font-medium text-foreground">{nodeCount}</span> {nodeCount === 1 ? 'note' : 'notes'}
+          <span className="mx-1 text-muted-foreground/40">&middot;</span>
+          <span className="font-medium text-foreground">{linkCount}</span> {linkCount === 1 ? 'connection' : 'connections'}
+        </div>
+
+        <div className="h-4 w-px bg-white/10" />
+
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={() => loadGraphData()}
           title="Refresh graph data"
-          className="gap-1.5"
+          className="h-6 w-6 rounded-full text-muted-foreground hover:bg-white/10 hover:text-primary transition-colors cursor-pointer"
         >
           <RefreshCw size={12} />
-          Refresh
         </Button>
       </div>
 
       {/* Graph container */}
-      <div ref={containerRef} className="relative flex-1 overflow-hidden" style={{ touchAction: 'none' }}>
+      <div ref={containerRef} className="absolute inset-0 z-0 h-full w-full" style={{ touchAction: 'none' }}>
         <ForceGraph2D
             graphData={safeGraphData}
             width={dimensions.width}

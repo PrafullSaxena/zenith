@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -593,55 +594,88 @@ export default function NoteEditor({
           </div>
         </div>
 
-        {/* Metadata line */}
-        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground/60">
-          <span>{relativeTime(updatedAt)}</span>
-          <span>{wordCount} {wordCount === 1 ? 'word' : 'words'}</span>
-        </div>
 
-        {/* Topic tags */}
-        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 pb-2">
-          {tags.map((tag) => (
-            <span
-              key={tag.id}
-              className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary"
-            >
-              {tag.label}
-              <button
-                type="button"
-                onClick={() => handleRemoveTag(tag.id)}
-                className="text-primary/50 hover:text-primary"
-              >
-                <X size={10} />
-              </button>
+        <div className="mt-3 mb-2 flex flex-col gap-2 rounded-xl border border-white/6 bg-white/2 p-2.5 backdrop-blur-md">
+          {/* Metadata line */}
+          <div className="flex items-center gap-3 text-[11px] font-medium tracking-wide text-muted-foreground/60 uppercase">
+            {isSaving ? (
+              <span className="flex items-center gap-1.5 text-primary">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
+                </span>
+                Saving...
+              </span>
+            ) : (
+              <span>{relativeTime(updatedAt)}</span>
+            )}
+            <span className="h-1 w-1 rounded-full bg-border" />
+            <span>
+              {wordCount} {wordCount === 1 ? 'word' : 'words'}
             </span>
-          ))}
-          {showTagInput ? (
-            <input
-              ref={tagInputRef}
-              type="text"
-              value={tagInputValue}
-              onChange={(e) => setTagInputValue(e.target.value)}
-              onKeyDown={handleTagKeyDown}
-              onBlur={() => {
-                if (tagInputValue.trim()) handleAddTag()
-                else {
-                  setShowTagInput(false)
-                  setTagInputValue('')
-                }
-              }}
-              placeholder="Add tag..."
-              className="w-20 rounded-full border border-border/50 bg-transparent px-2 py-0.5 text-xs text-foreground outline-none placeholder:text-muted-foreground/40 focus:border-primary"
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowTagInput(true)}
-              className="flex items-center gap-0.5 rounded-full border border-dashed border-border/50 px-1.5 py-0.5 text-[10px] text-muted-foreground/50 transition-colors hover:border-primary/40 hover:text-primary/60"
-            >
-              <Plus size={10} />
-            </button>
-          )}
+          </div>
+
+          {/* Topic tags */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <AnimatePresence>
+              {tags.map((tag) => (
+                <motion.span
+                  key={tag.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                >
+                  {tag.label}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag.id)}
+                    className="text-primary/50 transition-colors hover:text-primary"
+                  >
+                    <X size={10} />
+                  </button>
+                </motion.span>
+              ))}
+            </AnimatePresence>
+            
+            <AnimatePresence mode="popLayout">
+              {showTagInput ? (
+                <motion.input
+                  key="input"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 80 }}
+                  exit={{ opacity: 0, width: 0 }}
+                  ref={tagInputRef}
+                  type="text"
+                  value={tagInputValue}
+                  onChange={(e) => setTagInputValue(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  onBlur={() => {
+                    if (tagInputValue.trim()) handleAddTag()
+                    else {
+                      setShowTagInput(false)
+                      setTagInputValue('')
+                    }
+                  }}
+                  placeholder="Add tag..."
+                  className="rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 text-xs text-foreground outline-none placeholder:text-muted-foreground/40 focus:border-primary"
+                />
+              ) : (
+                <motion.button
+                  key="button"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  type="button"
+                  onClick={() => setShowTagInput(true)}
+                  className="flex items-center gap-0.5 rounded-full border border-dashed border-white/10 px-1.5 py-0.5 text-[10px] text-muted-foreground/50 transition-colors hover:border-primary/40 hover:text-primary/60 hover:bg-white/5 cursor-pointer"
+                >
+                  <Plus size={10} />
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 

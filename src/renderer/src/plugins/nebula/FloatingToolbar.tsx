@@ -24,6 +24,7 @@ import {
   Link
 } from 'lucide-react'
 import { Card } from '@renderer/components/ui/card'
+import { motion } from 'framer-motion'
 
 interface FloatingToolbarProps {
   editor: Editor
@@ -134,17 +135,19 @@ function ToolbarBtn({
   title: string
 }): React.JSX.Element {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       title={title}
-      className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+      whileHover={{ scale: 1.15 }}
+      whileTap={{ scale: 0.9 }}
+      className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors cursor-pointer outline-none ${
         isActive
           ? 'bg-primary/20 text-primary'
-          : 'text-muted-foreground hover:bg-card-hover hover:text-foreground'
+          : 'text-muted-foreground hover:bg-white/[0.08] hover:text-foreground'
       }`}
     >
       {icon}
-    </button>
+    </motion.button>
   )
 }

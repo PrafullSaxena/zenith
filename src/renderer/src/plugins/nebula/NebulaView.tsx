@@ -29,11 +29,11 @@ import {
   Minimize2
 } from 'lucide-react'
 import { useNebulaStore } from '../../stores/nebula-store'
-import { Card } from '@renderer/components/ui/card'
 import { Button } from '@renderer/components/ui/button'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '../../lib/motion'
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
 import DrawingCanvas from './DrawingCanvas'
@@ -66,7 +66,6 @@ export default function NebulaView(): React.JSX.Element {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [drawingOpen, setDrawingOpen] = useState(false)
   const [drawingFullscreen, setDrawingFullscreen] = useState(false)
-  const [drawingWidthPct, setDrawingWidthPct] = useState(40) // percentage of content area
   const [showSaved, setShowSaved] = useState(false)
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -74,7 +73,7 @@ export default function NebulaView(): React.JSX.Element {
   const pendingContentRef = useRef<object | null>(null)
   const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wasSavingRef = useRef(false)
-  const contentAreaRef = useRef<HTMLDivElement>(null)
+  const leftPanelRef = useRef<any>(null)
 
   // Load notes on mount
   useEffect(() => {
@@ -207,36 +206,7 @@ export default function NebulaView(): React.JSX.Element {
     setDrawingFullscreen(false)
   }, [])
 
-  // Draggable resize handle between editor and drawing
-  const handleResizeStart = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault()
-      const contentEl = contentAreaRef.current
-      if (!contentEl) return
-
-      const handleMouseMove = (ev: MouseEvent): void => {
-        const rect = contentEl.getBoundingClientRect()
-        const mouseX = ev.clientX - rect.left
-        const totalW = rect.width
-        const editorPct = (mouseX / totalW) * 100
-        // Clamp: drawing between 20% and 70%
-        const newDrawingPct = Math.max(20, Math.min(70, 100 - editorPct))
-        setDrawingWidthPct(newDrawingPct)
-      }
-      const handleMouseUp = (): void => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-        document.body.style.cursor = ''
-        document.body.style.userSelect = ''
-      }
-
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-      document.body.style.cursor = 'col-resize'
-      document.body.style.userSelect = 'none'
-    },
-    []
-  )
+  // Draggable resize handle between editor and drawing using Panels natively
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-br from-surface-elevated/40 via-background to-surface-elevated/20">
@@ -264,46 +234,59 @@ export default function NebulaView(): React.JSX.Element {
         >
           {/* Notes tab */}
           {activeTab === 'notes' && (
-            <div className="flex h-full">
+            <div className="flex flex-1 overflow-hidden relative z-0 w-full h-full">
+              <PanelGroup orientation="horizontal" className="w-full h-full">
               {/* Sidebar */}
-              {sidebarCollapsed ? (
-                <div className="flex w-10 shrink-0 flex-col items-center border-r border-border/50 bg-card/50 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => setSidebarCollapsed(false)}
-                    className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/15 hover:text-primary"
-                    title="Expand sidebar"
-                  >
-                    <PanelLeft size={16} />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex w-64 shrink-0 flex-col border-r border-border/50 bg-card/30">
-                  {/* Collapse button */}
-                  <div className="flex justify-end px-1 pt-1">
+              <Panel
+                  panelRef={leftPanelRef}
+                  collapsible={true}
+                  collapsedSize="0%"
+                  defaultSize="22%"
+                  minSize="15%"
+                  maxSize="40%"
+                  onResize={(size) => {
+                    setSidebarCollapsed(size.asPercentage === 0)
+                  }}
+                  className="flex flex-col bg-card/30 border-r border-border/50"
+                >
+                {sidebarCollapsed ? (
+                  <div className="flex flex-1 flex-col items-center pt-3 overflow-hidden">
                     <button
                       type="button"
-                      onClick={() => setSidebarCollapsed(true)}
-                      className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground/40 transition-colors hover:bg-primary/10 hover:text-muted-foreground"
-                      title="Collapse sidebar"
+                      onClick={() => leftPanelRef.current?.expand()}
+                      className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/15 hover:text-primary"
+                      title="Expand sidebar"
                     >
-                      <PanelLeftClose size={14} />
+                      <PanelLeft size={16} />
                     </button>
                   </div>
-                  <NoteList />
-                </div>
-              )}
+                ) : (
+                  <div className="flex w-full flex-col h-full overflow-hidden">
+                    {/* Collapse button */}
+                    <div className="flex justify-end px-1 pt-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => leftPanelRef.current?.collapse()}
+                        className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground/40 transition-colors hover:bg-primary/10 hover:text-muted-foreground"
+                        title="Collapse sidebar"
+                      >
+                        <PanelLeftClose size={14} />
+                      </button>
+                    </div>
+                    <NoteList />
+                  </div>
+                )}
+              </Panel>
+
+              <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent transition-colors hover:bg-white/10 active:bg-primary/20 cursor-col-resize z-50 mx-[-4px]" />
 
               {/* Content area */}
-              <div ref={contentAreaRef} className="relative flex flex-1 overflow-hidden">
+              <Panel className="relative flex flex-col overflow-hidden">
                 {activeNote ? (
-                  <div className="flex h-full w-full">
+                  <PanelGroup orientation="horizontal" className="w-full h-full">
                     {/* Editor -- hidden when drawing is fullscreen */}
                     {!drawingFullscreen && (
-                      <div
-                        className="flex flex-col overflow-hidden"
-                        style={drawingOpen ? { width: `${100 - drawingWidthPct}%` } : { flex: 1 }}
-                      >
+                      <Panel defaultSize="60%" className="flex flex-col overflow-hidden">
                         <NoteEditor
                           key={activeNote.id}
                           noteId={activeNote.id}
@@ -319,28 +302,21 @@ export default function NebulaView(): React.JSX.Element {
                           isSaving={isSaving}
                           showSaved={showSaved}
                         />
-                      </div>
+                      </Panel>
                     )}
 
                     {/* Resize handle between editor and drawing */}
                     {drawingOpen && !drawingFullscreen && (
-                      <div
-                        onMouseDown={handleResizeStart}
-                        className="group flex w-1.5 shrink-0 cursor-col-resize items-center justify-center hover:bg-primary/20 transition-colors"
-                        title="Drag to resize"
-                      >
-                        <div className="h-8 w-0.5 rounded-full bg-border group-hover:bg-primary transition-colors" />
-                      </div>
+                      <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent transition-colors hover:bg-white/10 active:bg-primary/20 cursor-col-resize z-50 -mx-px">
+                        <div className="h-8 w-0.5 rounded-full bg-border" />
+                      </PanelResizeHandle>
                     )}
 
                     {/* Drawing panel */}
                     {drawingOpen && (
-                      <div
-                        className="flex flex-col border-l border-border/50"
-                        style={drawingFullscreen ? { width: '100%' } : { width: `${drawingWidthPct}%` }}
-                      >
+                      <Panel defaultSize={drawingFullscreen ? "100%" : "40%"} className="flex flex-col border-l border-border/50 overflow-hidden">
                         {/* Drawing panel header */}
-                        <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-3 py-1.5">
+                        <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-3 py-1.5 bg-background">
                           <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                             <Pencil size={12} />
                             Drawing
@@ -367,16 +343,16 @@ export default function NebulaView(): React.JSX.Element {
                           </div>
                         </div>
                         {/* Canvas */}
-                        <div className="flex-1">
+                        <div className="flex-1 bg-background">
                           <DrawingCanvas
                             key={activeNote.id}
                             snapshot={activeNote.drawing}
                             onSave={handleDrawingSave}
                           />
                         </div>
-                      </div>
+                      </Panel>
                     )}
-                  </div>
+                  </PanelGroup>
                 ) : notes.length === 0 ? (
                   <EmptyState
                     icon={BookOpen}
@@ -412,7 +388,8 @@ export default function NebulaView(): React.JSX.Element {
 
                 {/* Voice Recorder FAB -- hidden when drawing is fullscreen */}
                 {!drawingFullscreen && <VoiceRecorder noteId={activeNote?.id ?? null} />}
-              </div>
+              </Panel>
+            </PanelGroup>
             </div>
           )}
 

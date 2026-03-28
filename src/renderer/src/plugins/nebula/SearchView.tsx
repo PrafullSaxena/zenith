@@ -22,7 +22,6 @@ import { useNebulaStore } from '../../stores/nebula-store'
 import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
-import { Input } from '@renderer/components/ui/input'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { staggerContainer, staggerItem } from '../../lib/motion'
@@ -162,21 +161,21 @@ export default function SearchView(): React.JSX.Element {
 
         {!searchCollapsed && (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="relative mb-3">
-              <Search
-                size={15}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-              />
-              <Input
+            <div className="group relative mb-4">
+              <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                <Search size={16} className="text-muted-foreground/50 transition-colors group-focus-within:text-primary" />
+              </div>
+              <input
+                type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="Search notes..."
-                className="w-full pl-9"
+                placeholder="Search your knowledge base..."
+                className="h-10 w-full rounded-xl border border-white/5 bg-white/5 pl-10 pr-4 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/40 focus:bg-white/10 focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             {/* Search results */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto pr-1">
               {isSearching ? (
                 <div className="space-y-2">
                   <Skeleton className="h-24 w-full rounded-xl" />
@@ -205,9 +204,13 @@ export default function SearchView(): React.JSX.Element {
                   className="space-y-2"
                 >
                   {searchResults.map((result) => (
-                    <motion.div key={result.id} variants={staggerItem}>
+                    <motion.div 
+                      key={result.id} 
+                      variants={staggerItem}
+                      whileHover={{ scale: 1.01, x: 2 }}
+                    >
                       <Card
-                        className="cursor-pointer p-4"
+                        className="cursor-pointer border border-white/[0.04] bg-white/[0.02] p-4 transition-colors hover:border-primary/30 hover:bg-white/[0.04] hover:shadow-md"
                         onClick={() => handleResultClick(result.id)}
                       >
                         {/* Title with highlight */}
@@ -272,62 +275,67 @@ export default function SearchView(): React.JSX.Element {
 
         {!qaCollapsed && (
           <div className="flex min-h-0 flex-1 flex-col">
-            {/* Question input */}
-            <div className="mb-3 flex gap-2">
-              <Input
-                value={questionText}
-                onChange={(e) => setQuestionText(e.target.value)}
-                onKeyDown={handleQuestionKeyDown}
-                placeholder="Ask a question about your notes..."
-                disabled={isStreaming}
-                className="flex-1"
-              />
-              {isStreaming ? (
-                <Button
-                  variant="ghost"
-                  onClick={cancelQa}
-                  className="border border-red-500/30 text-red-400 hover:bg-red-500/20"
-                >
-                  <X size={13} />
-                  Cancel
-                </Button>
-              ) : (
-                <Button
-                  variant="default"
-                  onClick={handleAskQuestion}
-                  disabled={!questionText.trim()}
-                >
-                  <MessageCircleQuestion size={13} />
-                  Ask
-                </Button>
-              )}
-            </div>
+            <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border border-white/10 bg-black/20">
+              {/* Response area */}
+              <div className="flex-1 overflow-y-auto p-5">
+                {isStreaming && !qaAnswer ? (
+                  <div className="flex items-center gap-3 py-4 text-muted-foreground">
+                    <Loader2 size={16} className="animate-spin text-primary" />
+                    <span className="text-sm tracking-wide text-muted-foreground/80">Synthesizing knowledge...</span>
+                  </div>
+                ) : qaAnswer ? (
+                  <div className="prose prose-invert max-w-none prose-sm leading-relaxed">
+                    <MarkdownRenderer text={qaAnswer} />
+                    {isStreaming && (
+                      <span className="ml-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] text-primary animate-pulse">
+                        <Loader2 size={10} className="animate-spin" /> Generating
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <EmptyState
+                    icon={MessageCircleQuestion}
+                    title="Talk to your notes"
+                    description="AI will instantly synthesize answers from your knowledge base."
+                    className="py-12"
+                  />
+                )}
+              </div>
 
-            {/* Response area */}
-            <Card className="flex-1 overflow-y-auto p-4">
-              {isStreaming && !qaAnswer ? (
-                <div className="flex items-center gap-2 py-2 text-muted-foreground">
-                  <Loader2 size={14} className="animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground/80">Searching notes and generating answer...</span>
-                </div>
-              ) : qaAnswer ? (
-                <div>
-                  {isStreaming && (
-                    <div className="mb-2 flex items-center gap-1.5 text-[10px] text-primary">
-                      <Loader2 size={10} className="animate-spin" />
-                      Generating...
-                    </div>
-                  )}
-                  <MarkdownRenderer text={qaAnswer} className="text-sm" />
-                </div>
-              ) : (
-                <EmptyState
-                  icon={MessageCircleQuestion}
-                  title="Ask your notes anything"
-                  description="AI will search your knowledge base and provide an answer"
-                  className="py-8"
+              {/* Chat Input attached to bottom */}
+              <div className="relative border-t border-white/[0.06] bg-black/40 p-3">
+                <input
+                  type="text"
+                  value={questionText}
+                  onChange={(e) => setQuestionText(e.target.value)}
+                  onKeyDown={handleQuestionKeyDown}
+                  placeholder="Ask a question..."
+                  disabled={isStreaming}
+                  className="h-11 w-full rounded-full border border-white/10 bg-white/5 pl-4 pr-24 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/50 focus:bg-white/10 disabled:opacity-50"
                 />
-              )}
+                <div className="absolute top-1/2 right-4 -translate-y-1/2 flex items-center gap-1.5">
+                  {isStreaming ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={cancelQa}
+                      className="h-8 rounded-full border border-red-500/30 px-3 text-xs text-red-400 hover:bg-red-500/20 cursor-pointer"
+                    >
+                      <X size={12} className="mr-1" /> Stop
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleAskQuestion}
+                      disabled={!questionText.trim()}
+                      className="h-8 rounded-full px-3 text-xs shadow-[0_0_15px_-3px_rgba(var(--primary),0.3)] transition-all hover:scale-105 hover:shadow-[0_0_20px_-3px_rgba(var(--primary),0.5)] cursor-pointer"
+                    >
+                      Ask <MessageCircleQuestion size={12} className="ml-1" />
+                    </Button>
+                  )}
+                </div>
+              </div>
             </Card>
           </div>
         )}
