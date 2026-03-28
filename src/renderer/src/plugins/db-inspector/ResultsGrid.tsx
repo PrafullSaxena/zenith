@@ -396,8 +396,8 @@ export default function ResultsGrid({
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Toolbar */}
-      <Card className="flex items-center gap-2 px-3 py-1.5 rounded-none border-x-0 border-t-0 flex-shrink-0">
-        <span className="text-xs text-[hsl(var(--muted-foreground))] mr-auto">
+      <div className="flex items-center gap-2 px-3 py-1 border-b border-white/[0.06] bg-white/[0.02] flex-shrink-0">
+        <span className="text-[11px] text-muted-foreground mr-auto">
           {hasMore
             ? `Showing ${rows.length}+ rows`
             : `Showing ${rows.length} row${rows.length === 1 ? '' : 's'}`}
@@ -419,7 +419,7 @@ export default function ResultsGrid({
           <Download className="w-3 h-3" />
           JSON
         </Button>
-      </Card>
+      </div>
 
       {/* Table */}
       <div
@@ -432,7 +432,7 @@ export default function ResultsGrid({
           style={{ tableLayout: 'fixed', width: totalWidth }}
         >
           {/* Header */}
-          <thead className="sticky top-0 z-10 bg-white/[0.03]">
+          <thead className="sticky top-0 z-10 bg-[hsl(var(--background))]">
             <tr>
               {/* Row number column */}
               <th

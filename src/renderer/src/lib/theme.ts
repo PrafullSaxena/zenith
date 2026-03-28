@@ -5,28 +5,40 @@
  * Used for programmatic color access (charts, canvas, dynamic styles).
  */
 
-export const THEME = {
-  name: "zenith-violet",
-  label: "Zenith Violet",
-  mode: "dark" as const,
-} as const
+export interface ThemeDefinition {
+  id: string
+  label: string
+  mode: 'dark'
+  /** Primary accent color as HSL string (for swatches / previews) */
+  primaryHsl: string
+}
 
-/** Raw HSL strings matching CSS vars (without hsl() wrapper) */
+/** All available themes. First entry is the default. */
+export const THEMES: ThemeDefinition[] = [
+  { id: 'zenith', label: 'Zenith Violet', mode: 'dark', primaryHsl: '263 75% 60%' },
+  { id: 'obsidian-indigo', label: 'Obsidian Indigo', mode: 'dark', primaryHsl: '234 89% 67%' },
+  { id: 'carbon-emerald', label: 'Carbon Emerald', mode: 'dark', primaryHsl: '160 84% 50%' },
+  { id: 'midnight-amber', label: 'Midnight Amber', mode: 'dark', primaryHsl: '38 92% 55%' },
+]
+
+export const THEME = THEMES[0]
+
+/** Raw HSL strings matching CSS vars for the default theme (without hsl() wrapper) */
 export const themeColors = {
-  background: "240 10% 4%",
-  foreground: "0 0% 95%",
-  card: "240 6% 8%",
-  primary: "263 70% 58%",
-  secondary: "240 4% 16%",
-  muted: "240 4% 16%",
-  mutedForeground: "240 5% 65%",
-  accent: "263 70% 58%",
-  destructive: "0 63% 51%",
-  success: "142 71% 45%",
-  warning: "38 92% 50%",
-  info: "217 91% 60%",
-  border: "240 4% 16%",
-  ring: "263 70% 58%",
+  background: "240 12% 6%",
+  foreground: "220 15% 95%",
+  card: "240 8% 11%",
+  primary: "263 75% 60%",
+  secondary: "240 6% 16%",
+  muted: "240 6% 16%",
+  mutedForeground: "240 8% 62%",
+  accent: "263 75% 60%",
+  destructive: "0 72% 55%",
+  success: "152 70% 48%",
+  warning: "38 95% 52%",
+  info: "217 92% 62%",
+  border: "240 6% 20%",
+  ring: "263 75% 60%",
 } as const
 
 /** Convert an HSL string to a CSS hsl() value */

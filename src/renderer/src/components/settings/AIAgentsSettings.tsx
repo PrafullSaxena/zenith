@@ -35,27 +35,27 @@ export function AIAgentsSettings(): React.JSX.Element {
   return (
     <div className="stagger-children space-y-6">
       <div>
-        <h2 className="mb-1 text-lg font-semibold text-foreground">AI Agents</h2>
+        <h2 className="mb-1 text-sm font-medium text-foreground tracking-tight">AI Agents</h2>
         <p className="text-xs text-muted-foreground">
           Configure AI providers for your plugins
         </p>
       </div>
 
       {/* Providers table */}
-      <div className="overflow-hidden rounded-lg border border-border/50">
-        <table className="w-full border-collapse">
+      <div className="overflow-hidden rounded-lg border border-white/[0.08]">
+        <table className="w-full border-collapse text-[13px]">
           <thead>
-            <tr className="border-b border-border">
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+              <th className="px-4 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 Provider
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 API Key
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 Actions
               </th>
             </tr>

@@ -230,7 +230,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
   // ── Empty state ──
   if (entries.length === 0) {
     return (
-      <Card className="flex h-full flex-col rounded-[28px]">
+      <Card className="flex h-full flex-col rounded-xl">
         <CardHeader>
           <CardTitle className="text-sm">Token Usage</CardTitle>
           <p className="text-[11px] text-muted-foreground">7-day consumption by AI agent</p>
@@ -252,7 +252,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
 
   // ── Data state ──
   return (
-    <Card className="flex h-full flex-col rounded-[28px]">
+    <Card className="flex h-full flex-col rounded-xl">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <div>
           <CardTitle className="text-sm">Token Usage</CardTitle>

@@ -58,13 +58,13 @@ export default function ConnectionManager({
     <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+        <h3 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           Connection
         </h3>
         <button
           type="button"
           onClick={onOpenSettings}
-          className="rounded p-1 text-[hsl(var(--muted-foreground))] hover:bg-white/[0.04] hover:text-[var(--primary)]"
+          className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] hover:bg-white/[0.04] hover:text-[var(--primary)]"
           title="Manage connections in Settings"
         >
           <Settings size={14} />

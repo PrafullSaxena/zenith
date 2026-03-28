@@ -20,7 +20,7 @@ function TabsList({
       <TabsPrimitive.List
         data-slot="tabs-list"
         className={cn(
-          "inline-flex h-10 items-center justify-center rounded-xl bg-secondary p-1 text-muted-foreground",
+          "inline-flex h-10 items-center justify-center rounded-xl bg-white/[0.05] border border-white/[0.06] p-1 text-muted-foreground backdrop-blur-sm",
           className
         )}
         {...props}
@@ -70,7 +70,7 @@ function TabsTrigger({
       {isActive && (
         <motion.span
           layoutId={`tab-indicator-${layoutId}`}
-          className="absolute inset-0 rounded-lg bg-card shadow-sm"
+          className="absolute inset-0 rounded-lg bg-white/[0.08] shadow-sm"
           style={{ zIndex: 0 }}
           transition={{ type: "spring", damping: 20, stiffness: 300, duration: 0.25 }}
         />

@@ -33,58 +33,199 @@
 :root {
   color-scheme: dark;
 
-  /* Base surfaces */
-  --background: 240 10% 5.5%;
-  --foreground: 0 0% 95%;
-  --card: 240 6% 10%;
-  --card-foreground: 0 0% 95%;
-  --popover: 240 6% 12%;
-  --popover-foreground: 0 0% 95%;
+  /* Base surfaces — richer with subtle blue undertone */
+  --background: 240 12% 6%;
+  --foreground: 220 15% 95%;
+  --card: 240 8% 11%;
+  --card-foreground: 220 15% 95%;
+  --popover: 240 8% 13%;
+  --popover-foreground: 220 15% 95%;
 
-  /* Accent — Violet */
-  --primary: 263 70% 58%;
+  /* Accent — Violet (slightly more vivid) */
+  --primary: 263 75% 60%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary surfaces */
-  --secondary: 240 4% 18%;
-  --secondary-foreground: 0 0% 85%;
-  --muted: 240 4% 18%;
-  --muted-foreground: 240 5% 65%;
+  /* Secondary surfaces — warmer, more visible */
+  --secondary: 240 6% 16%;
+  --secondary-foreground: 220 10% 88%;
+  --muted: 240 6% 16%;
+  --muted-foreground: 240 8% 62%;
 
   /* Accent alias */
-  --accent: 263 70% 58%;
+  --accent: 263 75% 60%;
   --accent-foreground: 0 0% 100%;
 
-  /* Status colors */
-  --destructive: 0 63% 51%;
-  --success: 142 71% 45%;
-  --warning: 38 92% 50%;
-  --info: 217 91% 60%;
+  /* Status colors — punchier */
+  --destructive: 0 72% 55%;
+  --success: 152 70% 48%;
+  --warning: 38 95% 52%;
+  --info: 217 92% 62%;
 
-  /* Chrome */
-  --border: 240 4% 22%;
-  --input: 240 4% 22%;
-  --ring: 263 70% 58%;
+  /* Chrome — slightly more visible borders */
+  --border: 240 6% 20%;
+  --input: 240 6% 20%;
+  --ring: 263 75% 60%;
 
   /* Radius */
-  --radius: 1rem;
+  --radius: 0.75rem;
 
   /* Sidebar */
-  --sidebar: 240 6% 10%;
-  --sidebar-foreground: 0 0% 95%;
-  --sidebar-primary: 263 70% 58%;
+  --sidebar: 240 8% 9%;
+  --sidebar-foreground: 220 15% 95%;
+  --sidebar-primary: 263 75% 60%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 4% 18%;
-  --sidebar-accent-foreground: 0 0% 85%;
-  --sidebar-border: 240 4% 22%;
-  --sidebar-ring: 263 70% 58%;
+  --sidebar-accent: 240 6% 16%;
+  --sidebar-accent-foreground: 220 10% 88%;
+  --sidebar-border: 240 6% 18%;
+  --sidebar-ring: 263 75% 60%;
 
   /* Chart colors */
-  --chart-1: 263 70% 58%;
-  --chart-2: 142 71% 45%;
-  --chart-3: 217 91% 60%;
-  --chart-4: 38 92% 50%;
-  --chart-5: 0 63% 51%;
+  --chart-1: 263 75% 60%;
+  --chart-2: 152 70% 48%;
+  --chart-3: 217 92% 62%;
+  --chart-4: 38 95% 52%;
+  --chart-5: 0 72% 55%;
+}
+
+/* =========================================================================
+   Obsidian Indigo — Deep navy + electric indigo (Linear/Vercel vibes)
+   ========================================================================= */
+[data-theme="obsidian-indigo"] {
+  --background: 228 14% 6%;
+  --foreground: 220 20% 96%;
+  --card: 228 10% 11%;
+  --card-foreground: 220 20% 96%;
+  --popover: 228 10% 13%;
+  --popover-foreground: 220 20% 96%;
+
+  --primary: 234 89% 67%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 228 8% 16%;
+  --secondary-foreground: 220 14% 88%;
+  --muted: 228 8% 16%;
+  --muted-foreground: 228 10% 55%;
+
+  --accent: 234 89% 67%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 72% 55%;
+  --success: 152 70% 48%;
+  --warning: 38 95% 52%;
+  --info: 210 100% 65%;
+
+  --border: 228 8% 18%;
+  --input: 228 8% 18%;
+  --ring: 234 89% 67%;
+
+  --sidebar: 228 12% 8%;
+  --sidebar-foreground: 220 20% 96%;
+  --sidebar-primary: 234 89% 67%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 228 8% 16%;
+  --sidebar-accent-foreground: 220 14% 88%;
+  --sidebar-border: 228 8% 16%;
+  --sidebar-ring: 234 89% 67%;
+
+  --chart-1: 234 89% 67%;
+  --chart-2: 152 70% 48%;
+  --chart-3: 280 65% 65%;
+  --chart-4: 38 95% 52%;
+  --chart-5: 0 72% 55%;
+}
+
+/* =========================================================================
+   Carbon Emerald — Near-black carbon + vivid emerald (Supabase/Warp vibes)
+   ========================================================================= */
+[data-theme="carbon-emerald"] {
+  --background: 200 12% 5%;
+  --foreground: 180 10% 96%;
+  --card: 200 8% 10%;
+  --card-foreground: 180 10% 96%;
+  --popover: 200 8% 12%;
+  --popover-foreground: 180 10% 96%;
+
+  --primary: 160 84% 50%;
+  --primary-foreground: 200 20% 6%;
+
+  --secondary: 200 6% 15%;
+  --secondary-foreground: 180 8% 85%;
+  --muted: 200 6% 15%;
+  --muted-foreground: 200 8% 52%;
+
+  --accent: 160 84% 50%;
+  --accent-foreground: 200 20% 6%;
+
+  --destructive: 0 72% 55%;
+  --success: 160 84% 50%;
+  --warning: 38 95% 52%;
+  --info: 200 90% 60%;
+
+  --border: 200 6% 17%;
+  --input: 200 6% 17%;
+  --ring: 160 84% 50%;
+
+  --sidebar: 200 10% 7%;
+  --sidebar-foreground: 180 10% 96%;
+  --sidebar-primary: 160 84% 50%;
+  --sidebar-primary-foreground: 200 20% 6%;
+  --sidebar-accent: 200 6% 15%;
+  --sidebar-accent-foreground: 180 8% 85%;
+  --sidebar-border: 200 6% 15%;
+  --sidebar-ring: 160 84% 50%;
+
+  --chart-1: 160 84% 50%;
+  --chart-2: 234 89% 67%;
+  --chart-3: 38 95% 52%;
+  --chart-4: 280 65% 65%;
+  --chart-5: 0 72% 55%;
+}
+
+/* =========================================================================
+   Midnight Amber — True dark + golden amber (Arc/Stripe vibes)
+   ========================================================================= */
+[data-theme="midnight-amber"] {
+  --background: 240 10% 5%;
+  --foreground: 40 15% 96%;
+  --card: 240 7% 10%;
+  --card-foreground: 40 15% 96%;
+  --popover: 240 7% 12%;
+  --popover-foreground: 40 15% 96%;
+
+  --primary: 38 92% 55%;
+  --primary-foreground: 240 10% 6%;
+
+  --secondary: 240 5% 15%;
+  --secondary-foreground: 40 10% 85%;
+  --muted: 240 5% 15%;
+  --muted-foreground: 240 6% 52%;
+
+  --accent: 38 92% 55%;
+  --accent-foreground: 240 10% 6%;
+
+  --destructive: 0 72% 55%;
+  --success: 152 70% 48%;
+  --warning: 38 92% 55%;
+  --info: 217 92% 62%;
+
+  --border: 240 5% 17%;
+  --input: 240 5% 17%;
+  --ring: 38 92% 55%;
+
+  --sidebar: 240 8% 7%;
+  --sidebar-foreground: 40 15% 96%;
+  --sidebar-primary: 38 92% 55%;
+  --sidebar-primary-foreground: 240 10% 6%;
+  --sidebar-accent: 240 5% 15%;
+  --sidebar-accent-foreground: 40 10% 85%;
+  --sidebar-border: 240 5% 15%;
+  --sidebar-ring: 38 92% 55%;
+
+  --chart-1: 38 92% 55%;
+  --chart-2: 152 70% 48%;
+  --chart-3: 217 92% 62%;
+  --chart-4: 280 65% 65%;
+  --chart-5: 0 72% 55%;
 }
 
 /* =========================================================================
@@ -183,13 +324,38 @@
     border-color: hsl(var(--border));
   }
 
+  /* Remove focus rings/highlights globally — clean look */
+  input:focus,
+  textarea:focus,
+  select:focus,
+  button:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+    box-shadow: none;
+    border-color: hsl(var(--border));
+  }
+
   body {
     background:
-      radial-gradient(circle at 50% 0%, hsl(var(--primary) / 0.15), transparent 30%),
-      radial-gradient(ellipse at 80% 60%, hsl(30 40% 12% / 0.05), transparent 50%),
+      radial-gradient(ellipse 70% 50% at 50% -10%, hsl(var(--primary) / 0.18), transparent),
+      radial-gradient(ellipse 50% 40% at 90% 60%, hsl(217 70% 25% / 0.10), transparent),
+      radial-gradient(ellipse 40% 35% at 5% 85%, hsl(var(--primary) / 0.08), transparent),
+      radial-gradient(ellipse 30% 30% at 70% 20%, hsl(280 50% 20% / 0.06), transparent),
       hsl(var(--background));
     color: hsl(var(--foreground));
     font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
@@ -201,6 +367,18 @@
   width: 100%;
   height: 100vh;
   overflow: hidden;
+}
+
+/* ── Primary bg buttons — subtle glow uplift ──────────────────────────
+   Inline buttons using raw bg-primary get a soft glow on hover.
+   The [data-slot="button"] buttons are handled via cva in button.tsx. */
+button.bg-primary:not([data-slot="button"]),
+a.bg-primary:not([data-slot="button"]) {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+button.bg-primary:not([data-slot="button"]):hover,
+a.bg-primary:not([data-slot="button"]):hover {
+  box-shadow: 0 2px 12px rgba(139,92,246,0.2);
 }
 
 /* Thin auto-hiding scrollbars */
@@ -240,8 +418,7 @@
 
 /* Focus visible for accessibility */
 :focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+  outline: none;
 }
 
 /* Reduced motion */

@@ -60,11 +60,11 @@ export function EmptyState({
         transition={{ type: 'spring', stiffness: 150, damping: 15 }}
         className="mb-4"
       >
-        <Icon size={64} className="text-muted-foreground/30" />
+        <Icon size={36} className="text-muted-foreground/25" strokeWidth={1.5} />
       </motion.div>
 
-      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-      <p className="text-sm text-muted-foreground mb-4 max-w-sm">{description}</p>
+      <h3 className="text-sm font-medium text-foreground tracking-tight">{title}</h3>
+      <p className="text-xs text-muted-foreground mb-4 max-w-sm">{description}</p>
 
       <div className="flex items-center gap-3">
         {actionLabel && onAction && (

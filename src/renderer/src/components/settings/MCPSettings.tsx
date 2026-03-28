@@ -90,7 +90,7 @@ export function MCPSettings(): React.JSX.Element {
   return (
     <div className="stagger-children space-y-6">
       <div>
-        <h2 className="mb-1 text-lg font-semibold text-foreground">MCP Servers</h2>
+        <h2 className="mb-1 text-sm font-medium text-foreground tracking-tight">MCP Servers</h2>
         <p className="text-xs text-muted-foreground">
           Configure Model Context Protocol servers for enhanced AI capabilities and tool
           orchestration.

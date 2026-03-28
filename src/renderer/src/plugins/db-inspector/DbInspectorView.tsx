@@ -322,11 +322,11 @@ export default function DbInspectorView(): React.JSX.Element {
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel -- Connections (sticky) + Schema Explorer (scrollable) + collapse toggle */}
         <div
-          className="relative flex shrink-0 flex-col border-r border-[hsl(var(--border))] transition-all duration-200"
-          style={{ width: isLeftPanelCollapsed ? 0 : 256, overflow: isLeftPanelCollapsed ? 'hidden' : 'visible' }}
+          className="relative flex shrink-0 flex-col border-r border-white/[0.06] transition-all duration-200"
+          style={{ width: isLeftPanelCollapsed ? 0 : 248, overflow: 'hidden' }}
         >
-          <Card className="flex h-full flex-col rounded-none border-0" style={{ width: 256 }}>
-            <div className="shrink-0 border-b border-[hsl(var(--border))] p-3">
+          <div className="flex h-full flex-col bg-white/[0.02]" style={{ width: 248 }}>
+            <div className="shrink-0 border-b border-white/[0.06] px-3 py-2.5">
               <ConnectionManager
                 connections={connections}
                 connectionStatuses={connectionStatuses}
@@ -339,7 +339,7 @@ export default function DbInspectorView(): React.JSX.Element {
             </div>
 
             {isConnected && (
-              <div className="flex-1 overflow-auto p-3">
+              <div className="flex-1 overflow-auto px-3 py-2">
                 <SchemaExplorer
                   databases={databases}
                   activeDatabase={activeDatabase}
@@ -361,7 +361,7 @@ export default function DbInspectorView(): React.JSX.Element {
                 />
               </div>
             )}
-          </Card>
+          </div>
         </div>
 
         {/* Collapse/expand toggle button */}

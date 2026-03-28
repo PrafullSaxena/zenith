@@ -61,7 +61,7 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
   if (plugin.settingsSchema.length === 0) {
     return (
       <div>
-        <h2 className="mb-6 text-lg font-semibold text-foreground">{plugin.name}</h2>
+        <h2 className="mb-6 text-sm font-medium text-foreground tracking-tight">{plugin.name}</h2>
         <p className="text-sm text-muted-foreground">No settings available for this plugin.</p>
       </div>
     )
@@ -69,7 +69,7 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
 
   return (
     <div>
-      <h2 className="mb-2 text-lg font-semibold text-foreground">{plugin.name}</h2>
+      <h2 className="mb-2 text-sm font-medium text-foreground tracking-tight">{plugin.name}</h2>
       <p className="mb-6 text-xs text-muted-foreground">{plugin.description}</p>
 
       {plugin.settingsSchema.map((field) => (

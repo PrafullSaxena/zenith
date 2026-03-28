@@ -96,18 +96,18 @@ export default function QueryConsole({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* Tab bar with glass appearance */}
-      <Card className="flex shrink-0 items-center overflow-x-auto rounded-none border-x-0 border-t-0">
+      {/* Tab bar */}
+      <div className="flex shrink-0 items-center overflow-x-auto border-b border-white/[0.06] bg-white/[0.02]">
         {queryTabs.map((tab) => {
           const isActive = tab.id === activeQueryTabId
           return (
             <div
               key={tab.id}
               onClick={() => setActiveQueryTab(tab.id)}
-              className={`group relative flex shrink-0 cursor-pointer items-center gap-1 px-3 py-2 text-xs font-medium transition-colors ${
+              className={`group relative flex shrink-0 cursor-pointer items-center gap-1 px-3 py-1.5 text-[11px] font-medium transition-colors ${
                 isActive
-                  ? 'border-b-2 border-[var(--primary)] text-[var(--primary)] bg-white/[0.04]'
-                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-white/[0.02]'
+                  ? 'text-foreground bg-white/[0.05] border-b border-primary'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.02]'
               }`}
             >
               {renamingTabId === tab.id ? (
@@ -118,7 +118,7 @@ export default function QueryConsole({
                   onBlur={commitRename}
                   onKeyDown={handleRenameKeyDown}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-24 bg-transparent outline-none border-b border-[var(--primary)] text-[hsl(var(--foreground))]"
+                  className="w-24 bg-transparent outline-none border-b border-white/[0.15] text-foreground"
                   autoFocus
                 />
               ) : (
@@ -149,12 +149,12 @@ export default function QueryConsole({
         <button
           type="button"
           onClick={addQueryTab}
-          className="flex shrink-0 items-center gap-1 px-2 py-2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+          className="flex shrink-0 items-center gap-1 px-2 py-1.5 text-muted-foreground hover:text-foreground transition-colors"
           title="Add query tab"
         >
-          <Plus size={14} />
+          <Plus size={12} />
         </button>
-      </Card>
+      </div>
 
       {/* Active tab content */}
       <div className="flex-1 overflow-hidden">

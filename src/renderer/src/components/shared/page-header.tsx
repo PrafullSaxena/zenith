@@ -41,12 +41,12 @@ export function PageHeader({
       <div
         className={cn(
           'mx-3 flex items-center gap-3 px-4 h-11 shrink-0',
-          'rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50',
+          'rounded-xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]',
           className
         )}
       >
         <Icon size={18} className="text-primary shrink-0" />
-        <h1 className="text-sm font-semibold text-foreground whitespace-nowrap">{title}</h1>
+        <h1 className="text-[13px] font-medium text-foreground whitespace-nowrap tracking-tight">{title}</h1>
 
         {tabs && tabs.length > 0 && (
           <div className="flex items-center gap-1 ml-3">

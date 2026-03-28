@@ -70,27 +70,30 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
 
   return (
     <motion.div variants={staggerItem}>
-      <Card className="cursor-pointer" onClick={() => onLoad(entry)}>
-        <div className="flex items-start justify-between gap-3">
+      <Card
+        className="cursor-pointer group hover:border-white/[0.12] transition-colors"
+        onClick={() => onLoad(entry)}
+      >
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-sm font-semibold text-[hsl(var(--foreground))] truncate">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[13px] font-medium text-foreground truncate">
                 {entry.name}
               </span>
-              <Badge variant={badgeVariant} className="shrink-0">
+              <Badge variant={badgeVariant} className="shrink-0 text-[10px] px-2 py-0.5">
                 {providerInfo.shortName}
               </Badge>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-[hsl(var(--muted-foreground))]">
+            <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
               <span>
                 {entry.services.length} service{entry.services.length !== 1 ? 's' : ''}
               </span>
-              <span className="text-[hsl(var(--muted-foreground))]/30">&bull;</span>
-              <span className="font-medium text-[hsl(var(--foreground))]">
+              <span className="opacity-30">&bull;</span>
+              <span className="font-medium text-foreground/80">
                 {formatCurrency(entry.totalMonthly)}/mo
               </span>
-              <span className="text-[hsl(var(--muted-foreground))]/30">&bull;</span>
+              <span className="opacity-30">&bull;</span>
               <div className="flex items-center gap-1">
                 <Clock size={10} />
                 <span>{formatDate(entry.savedAt)}</span>
@@ -98,10 +101,10 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="default"
-              size="sm"
+              size="xs"
               onClick={handleLoad}
               aria-label="Load estimation"
             >
@@ -109,12 +112,13 @@ function HistoryEntryCard({ entry, onLoad, onDelete }: HistoryEntryCardProps): R
               Load
             </Button>
             <Button
-              variant="destructive"
-              size="sm"
+              variant="ghost"
+              size="icon-xs"
               onClick={handleDelete}
               aria-label="Delete estimation"
+              className="text-muted-foreground hover:text-destructive"
             >
-              <Trash2 size={11} />
+              <Trash2 size={12} />
             </Button>
           </div>
         </div>

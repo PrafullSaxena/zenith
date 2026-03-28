@@ -6,30 +6,33 @@ import { motion, type HTMLMotionProps } from "framer-motion"
 import { cn } from "@renderer/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl text-sm font-medium whitespace-nowrap transition-colors duration-150 ease-out outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg text-[13px] font-medium whitespace-nowrap transition-all duration-200 ease-out outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default:
+          "bg-primary/15 text-primary border border-primary/20 hover:bg-primary/25 hover:border-primary/35 hover:shadow-[0_0_12px_rgba(139,92,246,0.15)]",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
+          "bg-destructive/12 text-[hsl(0,80%,70%)] border border-destructive/20 hover:bg-destructive/20 hover:border-destructive/30 hover:shadow-[0_0_12px_rgba(239,68,68,0.12)] focus-visible:ring-destructive/30",
         outline:
-          "border border-border text-foreground bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border border-white/[0.08] text-foreground bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/[0.14]",
         secondary:
-          "bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80",
+          "bg-white/[0.06] text-secondary-foreground border border-white/[0.08] hover:bg-white/[0.10] hover:border-white/[0.14]",
         ghost:
-          "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground",
+          "bg-transparent text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        solid:
+          "bg-gradient-to-b from-[hsl(263,75%,62%)] to-[hsl(263,70%,50%)] text-white shadow-[0_1px_2px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] hover:from-[hsl(263,75%,66%)] hover:to-[hsl(263,70%,54%)] hover:shadow-[0_2px_10px_rgba(139,92,246,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        xs: "h-6 gap-1 rounded-lg px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-8 gap-1.5 rounded-lg px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-lg px-6 has-[>svg]:px-4",
-        icon: "size-9",
-        "icon-xs": "size-6 rounded-lg [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-8",
-        "icon-lg": "size-10",
+        default: "h-8 px-3 py-1.5 has-[>svg]:px-2.5",
+        xs: "h-6 gap-1 px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-7 gap-1 px-2.5 text-xs has-[>svg]:px-2",
+        lg: "h-9 px-5 has-[>svg]:px-4",
+        icon: "size-8",
+        "icon-xs": "size-6 [&_svg:not([class*='size-'])]:size-3",
+        "icon-sm": "size-7",
+        "icon-lg": "size-9",
       },
     },
     defaultVariants: {
@@ -63,7 +66,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // For asChild or link variant (no scale animation makes sense), or disableMotion, fall back to plain element
     if (asChild) {
       return (
         <Slot.Root

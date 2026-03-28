@@ -69,7 +69,7 @@ function QuickStat({
         </div>
         <div className="min-w-0">
           <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-          <p className="text-lg font-semibold leading-tight text-foreground">{value}</p>
+          <p className="text-base font-medium leading-tight text-foreground tabular-nums">{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -152,7 +152,7 @@ export default function MissionControl(): React.JSX.Element {
       <div className="drag-region h-3 w-full" />
       {/* ── Hero Header ─────────────────────────────────────────────── */}
       <motion.div variants={staggerItem}>
-        <Card className="relative overflow-hidden rounded-[28px] backdrop-blur-sm bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.08),transparent_60%)]">
+        <Card className="relative overflow-hidden rounded-xl bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.10),transparent_60%)]">
           <CardContent className="px-5 py-4">
             {/* Subtle glow effect */}
             <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-primary/[0.04] blur-3xl" />

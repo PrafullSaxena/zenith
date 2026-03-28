@@ -61,7 +61,7 @@ export function HealthPanel({
   })).filter((g) => g.items.length > 0)
 
   return (
-    <Card className="flex h-full flex-col rounded-[28px]">
+    <Card className="flex h-full flex-col rounded-xl">
       {/* Header */}
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <div>

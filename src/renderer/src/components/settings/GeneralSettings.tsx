@@ -4,6 +4,7 @@ import { PLUGINS } from '../../plugins/registry'
 import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import { SettingsField } from './SettingsField'
+import { THEMES } from '@renderer/lib/theme'
 import type { SettingsField as SettingsFieldDef } from '../../types/plugin'
 
 // ---------------------------------------------------------------------------
@@ -43,6 +44,15 @@ export function GeneralSettings(): React.JSX.Element {
       { label: 'Zenith', value: 'dashboard' },
       ...PLUGINS.map((p) => ({ label: p.name, value: p.id }))
     ]
+  }
+
+  const themeField: SettingsFieldDef = {
+    key: 'theme',
+    label: 'Theme',
+    type: 'select',
+    description: 'Color theme for the application',
+    defaultValue: 'zenith',
+    options: THEMES.map((t) => ({ label: t.label, value: t.id }))
   }
 
   const hljsThemeField: SettingsFieldDef = {
@@ -108,17 +118,22 @@ export function GeneralSettings(): React.JSX.Element {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-1 text-lg font-semibold text-foreground">General</h2>
+        <h2 className="mb-1 text-sm font-medium text-foreground tracking-tight">General</h2>
         <p className="text-xs text-muted-foreground">Application-wide preferences and defaults.</p>
       </div>
 
       {/* ── Appearance ── */}
-      <Card className="rounded-[22px]">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Appearance</CardTitle>
+          <CardTitle>Appearance</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            <SettingsField
+              field={themeField}
+              value={getSetting('general.theme')}
+              onChange={(value) => setSetting('general.theme', value)}
+            />
             <SettingsField
               field={hljsThemeField}
               value={getSetting('general.hljsTheme')}
@@ -129,9 +144,9 @@ export function GeneralSettings(): React.JSX.Element {
       </Card>
 
       {/* ── Behavior ── */}
-      <Card className="rounded-[22px]">
+      <Card className="rounded-xl">
         <CardHeader>
-          <CardTitle className="text-lg">Behavior</CardTitle>
+          <CardTitle>Behavior</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -150,9 +165,9 @@ export function GeneralSettings(): React.JSX.Element {
       </Card>
 
       {/* ── Export ── */}
-      <Card className="rounded-[22px]">
+      <Card className="rounded-xl">
         <CardHeader>
-          <CardTitle className="text-lg">Export</CardTitle>
+          <CardTitle>Export</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

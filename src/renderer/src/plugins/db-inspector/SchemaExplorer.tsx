@@ -83,8 +83,8 @@ export default function SchemaExplorer({
     <div className="space-y-3 ">
       {/* Database selector */}
       <div>
-        <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-          <Database size={11} />
+        <label className="mb-1 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <Database size={10} />
           Database
         </label>
         {isLoadingDatabases ? (
@@ -101,7 +101,7 @@ export default function SchemaExplorer({
 
       {/* Schema selector */}
       <div>
-        <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+        <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           Schema
         </label>
         <SimpleSelect
@@ -122,7 +122,7 @@ export default function SchemaExplorer({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={`Search ${tables.length} tables...`}
-            className="w-full rounded-lg border border-[hsl(var(--border))] bg-white/[0.03] pl-7 pr-2 py-1.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/60 focus:border-[var(--primary)] focus:outline-none"
+            className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] pl-7 pr-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
           />
         </div>
       )}
@@ -230,7 +230,7 @@ export default function SchemaExplorer({
                         {/* Indexes */}
                         {indexes.length > 0 && (
                           <div className="mt-1">
-                            <p className="text-[10px] font-semibold uppercase text-[hsl(var(--muted-foreground))]">
+                            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                               Indexes
                             </p>
                             {indexes.map((idx) => (

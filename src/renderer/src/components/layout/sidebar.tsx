@@ -237,7 +237,7 @@ export function Sidebar(): React.JSX.Element {
         aria-label="Main navigation"
         className={cn(
           'relative z-10 flex h-full flex-shrink-0 flex-col',
-          'border-r border-border bg-card/88 backdrop-blur-[14px]'
+          'border-r border-white/[0.06] bg-white/[0.03] backdrop-blur-2xl'
         )}
         animate={{ width: isCollapsed ? 56 : 240 }}
         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
@@ -268,7 +268,7 @@ export function Sidebar(): React.JSX.Element {
                 <div className="flex items-center justify-center h-5 w-5 rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
                   Z
                 </div>
-                <span className="text-xs font-semibold text-foreground whitespace-nowrap">Zenith</span>
+                <span className="text-xs font-medium text-foreground whitespace-nowrap tracking-tight">Zenith</span>
               </motion.div>
             )}
           </AnimatePresence>

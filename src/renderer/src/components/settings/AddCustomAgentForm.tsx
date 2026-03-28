@@ -59,21 +59,21 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
   }
 
   const inputClass =
-    'w-full rounded-lg border border-border/50 bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition'
+    'w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition'
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 rounded-xl border border-border/50 bg-secondary/30 p-4">
-      <h3 className="mb-3 text-sm font-semibold text-foreground">Add Custom Provider</h3>
+    <form onSubmit={handleSubmit} className="mt-4 rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+      <h3 className="mb-3 text-[13px] font-medium text-foreground tracking-tight">Add Custom Provider</h3>
 
       {/* Provider type toggle */}
-      <div className="mb-3 flex gap-2">
+      <div className="mb-3 flex gap-1.5">
         <button
           type="button"
           onClick={() => setProviderType('cli')}
-          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+          className={`rounded-lg px-3 py-1 text-[11px] font-medium transition ${
             providerType === 'cli'
-              ? 'bg-primary text-background'
-              : 'border border-border/50 text-muted-foreground hover:border-primary hover:text-primary'
+              ? 'bg-primary/15 text-primary border border-primary/20'
+              : 'border border-white/[0.08] text-muted-foreground hover:text-foreground hover:bg-white/[0.04]'
           }`}
         >
           CLI Agent
@@ -81,10 +81,10 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
         <button
           type="button"
           onClick={() => setProviderType('custom')}
-          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+          className={`rounded-lg px-3 py-1 text-[11px] font-medium transition ${
             providerType === 'custom'
-              ? 'bg-primary text-background'
-              : 'border border-border/50 text-muted-foreground hover:border-primary hover:text-primary'
+              ? 'bg-primary/15 text-primary border border-primary/20'
+              : 'border border-white/[0.08] text-muted-foreground hover:text-foreground hover:bg-white/[0.04]'
           }`}
         >
           API Provider
@@ -173,14 +173,14 @@ export function AddCustomAgentForm({ onClose }: AddCustomAgentFormProps): React.
       <div className="mt-4 flex items-center gap-2">
         <button
           type="submit"
-          className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-background transition hover:bg-primary/90"
+          className="rounded-lg bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition hover:bg-primary/90"
         >
           Add Provider
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="px-3 py-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+          className="px-3 py-1.5 text-[12px] text-muted-foreground transition hover:text-foreground"
         >
           Cancel
         </button>

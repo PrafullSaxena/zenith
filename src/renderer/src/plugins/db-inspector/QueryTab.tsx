@@ -391,7 +391,7 @@ export default function QueryTab({
   return (
     <div ref={containerRef} className="flex h-full flex-col overflow-hidden">
       {/* Toolbar */}
-      <Card className="flex shrink-0 items-center gap-0.5 rounded-none border-x-0 border-t-0 px-2 py-1">
+      <div className="flex shrink-0 items-center gap-0.5 border-b border-white/[0.06] bg-white/[0.015] px-2 py-0.5">
         {/* Run current statement */}
         <Tooltip content="Run statement" shortcut="⌘↵">
           <Button
@@ -537,7 +537,7 @@ export default function QueryTab({
               onKeyDown={handleSaveKeyDown}
               placeholder="Query name…"
               autoFocus
-              className="h-6 w-28 rounded border border-primary bg-transparent px-1.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+              className="h-6 w-28 rounded border border-white/[0.1] bg-transparent px-1.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
             />
             <Button
               variant="default"
@@ -570,11 +570,11 @@ export default function QueryTab({
         <div className="flex-1" />
 
         {/* Connection status badge */}
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
           <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
           <span className="max-w-[120px] truncate">{schema ?? 'public'}</span>
         </div>
-      </Card>
+      </div>
 
       {/* Saved queries panel (collapsible) */}
       {showSavedQueries && _connectionId && (
@@ -619,7 +619,7 @@ export default function QueryTab({
         // ── Split mode: resizable editor top, results bottom ────────
         <PanelGroup orientation="vertical" className="flex-1">
           <Panel defaultSize={showOutput && hasResult ? 60 : 100} minSize={20}>
-            <Card className="h-full overflow-hidden rounded-none border-x-0 border-t-0 p-0">
+            <div className="h-full overflow-hidden">
               <SqlEditor
                 value={tab.sql}
                 onChange={(sql) => updateQueryTabSql(tab.id, sql)}
@@ -631,7 +631,7 @@ export default function QueryTab({
                 onEditorReady={handleEditorReady}
                 variables={tab.variables}
               />
-            </Card>
+            </div>
           </Panel>
           {showOutput && hasResult && (
             <>
@@ -639,14 +639,14 @@ export default function QueryTab({
                 <div className="w-8 h-0.5 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
               </PanelResizeHandle>
               <Panel defaultSize={40} minSize={15}>
-                <div className="h-full flex flex-col overflow-hidden border-t border-border animate-results-enter">
-                  <div className="flex items-center gap-0 border-b border-border bg-card/50 shrink-0">
+                <div className="h-full flex flex-col overflow-hidden animate-results-enter">
+                  <div className="flex items-center gap-0 border-b border-white/[0.06] bg-white/[0.02] shrink-0">
                     <button
                       type="button"
                       onClick={() => setOutputTab('results')}
-                      className={`px-3 py-1 text-xs font-medium transition-all duration-150 ${
+                      className={`px-3 py-1 text-[11px] font-medium transition-all duration-150 ${
                         outputTab === 'results'
-                          ? 'text-primary border-b-2 border-primary'
+                          ? 'text-foreground border-b border-primary'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -655,9 +655,9 @@ export default function QueryTab({
                     <button
                       type="button"
                       onClick={() => setOutputTab('output')}
-                      className={`px-3 py-1 text-xs font-medium transition-all duration-150 relative ${
+                      className={`px-3 py-1 text-[11px] font-medium transition-all duration-150 relative ${
                         outputTab === 'output'
-                          ? 'text-primary border-b-2 border-primary'
+                          ? 'text-foreground border-b border-primary'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -692,15 +692,15 @@ export default function QueryTab({
             />
           </div>
           {showOutput && hasInlineResults && (
-            <div className="border-t border-border">
+            <div className="border-t border-white/[0.06]">
               {/* Results/Output tab headers */}
-              <div className="flex items-center gap-0 border-b border-border bg-card/50 shrink-0">
+              <div className="flex items-center gap-0 border-b border-white/[0.06] bg-white/[0.02] shrink-0">
                 <button
                   type="button"
                   onClick={() => setOutputTab('results')}
-                  className={`px-3 py-1 text-xs font-medium transition-all duration-150 ${
+                  className={`px-3 py-1 text-[11px] font-medium transition-all duration-150 ${
                     outputTab === 'results'
-                      ? 'text-primary border-b-2 border-primary'
+                      ? 'text-foreground border-b border-primary'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -709,9 +709,9 @@ export default function QueryTab({
                 <button
                   type="button"
                   onClick={() => setOutputTab('output')}
-                  className={`px-3 py-1 text-xs font-medium transition-all duration-150 relative ${
+                  className={`px-3 py-1 text-[11px] font-medium transition-all duration-150 relative ${
                     outputTab === 'output'
-                      ? 'text-primary border-b-2 border-primary'
+                      ? 'text-foreground border-b border-primary'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
