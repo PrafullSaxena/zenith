@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import type { PullRequest } from '../../types/bitbucket'
 import { formatRelativeTime } from '../../components/dashboard/utils'
 import { RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, ExternalLink, Files, GitPullRequest } from 'lucide-react'
-import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
@@ -59,7 +58,7 @@ export function PRList({
       </div>
 
       {/* PR list */}
-      <div className="flex-1 space-y-2 overflow-y-auto">
+      <div className="flex-1 space-y-2 overflow-y-auto px-1">
         {/* Loading state with skeleton cards */}
         {isLoading && (pullRequests?.length ?? 0) === 0 && (
           <div className="space-y-2">
@@ -105,8 +104,14 @@ export function PRList({
               const isSelected = pr.id === selectedPrId
               return (
                 <motion.div key={pr.id} variants={staggerItem}>
-                  <Card
-                    className={`cursor-pointer p-4  ${isSelected ? 'border-l-2 border-l-accent' : ''}`}
+                  <motion.div
+                    whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.04)' }}
+                    whileTap={{ scale: 0.99 }}
+                    className={`group cursor-pointer rounded-xl border px-4 py-3 transition-colors shadow-lg overflow-hidden ${
+                      isSelected 
+                        ? 'border-primary/50 bg-primary/10 backdrop-blur-md'
+                        : 'border-white/5 bg-black/20 backdrop-blur-md hover:border-white/10'
+                    }`}
                     onClick={() => onSelect(pr)}
                   >
                     {/* Top row: PR title + link icon (left), file count badge (right) */}
@@ -156,7 +161,7 @@ export function PRList({
                         {formatRelativeTime(pr.created_on)}
                       </span>
                     </div>
-                  </Card>
+                  </motion.div>
                 </motion.div>
               )
             })}

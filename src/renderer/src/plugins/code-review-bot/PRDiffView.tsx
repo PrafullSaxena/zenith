@@ -66,12 +66,11 @@ export function PRDiffView({
         const isCollapsed = collapsed[filePath] ?? false
 
         return (
-          <Card key={filePath} className="overflow-hidden p-0">
+          <Card key={filePath} className="overflow-hidden p-0 border border-white/5 bg-black/20 backdrop-blur-sm shadow-md">
             {/* File header toolbar */}
-            <Card
-             
+            <div
               onClick={() => toggleFile(filePath)}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-secondary rounded-none border-x-0 border-t-0"
+              className="flex w-full cursor-pointer items-center gap-2 bg-black/40 px-3 py-2 text-left transition-colors hover:bg-white/5 border-b border-white/5"
             >
               {isCollapsed ? (
                 <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
@@ -87,7 +86,7 @@ export function PRDiffView({
               <span className="shrink-0 text-xs text-diff-del-text">
                 -{file.deletions}
               </span>
-            </Card>
+            </div>
 
             {/* File diff content — preserved without modification */}
             {!isCollapsed && (
@@ -151,16 +150,16 @@ export function PRDiffView({
                             return (
                               <div
                                 key={commentIdx}
-                                className={`ml-12 mr-3 my-1 rounded-lg border-l-4 bg-secondary p-2.5 ${sevConfig.border}`}
+                                className={`ml-12 mr-3 my-1.5 rounded-xl border border-white/5 border-l-4 bg-black/40 backdrop-blur-md p-3 shadow-inner ${sevConfig.border}`}
                               >
                                 {/* Header row: severity + kind + title */}
-                                <div className="flex items-center gap-2 mb-1">
+                                <div className="flex items-center gap-2 mb-1.5">
                                   <span
                                     className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${sevConfig.badge}`}
                                   >
                                     {sevConfig.emoji} {sevConfig.label}
                                   </span>
-                                  <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-card text-muted-foreground">
+                                  <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-white/5 text-muted-foreground">
                                     {kindConfig.icon} {kindConfig.label}
                                   </span>
                                   <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
@@ -169,15 +168,15 @@ export function PRDiffView({
                                 </div>
 
                                 {/* Body */}
-                                <p className="text-sm text-foreground leading-relaxed">
+                                <p className="text-sm text-muted-foreground/90 leading-relaxed">
                                   {comment.body}
                                 </p>
 
                                 {/* Suggested fix */}
                                 {comment.suggestedFix && (
-                                  <div className="mt-1.5 rounded bg-success-muted border border-success/10 px-2 py-1">
-                                    <p className="text-xs text-success">
-                                      <span className="font-semibold">Fix: </span>
+                                  <div className="mt-2 rounded-lg bg-green-500/10 border border-green-500/20 px-3 py-2">
+                                    <p className="text-xs text-green-400">
+                                      <span className="font-semibold uppercase tracking-wide text-[10px] mr-1">Suggested Fix:</span>
                                       {comment.suggestedFix}
                                     </p>
                                   </div>

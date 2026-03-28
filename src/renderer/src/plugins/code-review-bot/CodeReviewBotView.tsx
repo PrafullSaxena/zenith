@@ -10,7 +10,8 @@ import { PRDiffView } from './PRDiffView'
 import { ReviewPanel } from './ReviewPanel'
 import { ReviewHistory } from './ReviewHistory'
 import { SettingsPanel } from './SettingsPanel'
-import { GitPullRequest } from 'lucide-react'
+import { GitPullRequest, GripVertical } from 'lucide-react'
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
@@ -353,9 +354,10 @@ export default function CodeReviewBotView(): React.JSX.Element {
           className="flex-1"
         />
       ) : (
-      <div className="flex flex-1 overflow-hidden ">
+      <PanelGroup orientation="horizontal" autoSaveId="crb-v4-split" className="flex flex-1 overflow-hidden" disablePointerEventsDuringResizing>
         {/* Left panel: PR list */}
-        <div className="overflow-y-auto border-r border-border p-4 w-md">
+        <Panel defaultSize="30%" minSize="20%" className="border-r border-white/5 bg-black/10 flex flex-col">
+          <div className="flex-1 overflow-y-auto p-4 w-full">
           <PRList
             pullRequests={pullRequests}
             isLoading={isLoadingPRs}
@@ -369,10 +371,17 @@ export default function CodeReviewBotView(): React.JSX.Element {
             onPageChange={handlePageChange}
             fileCounts={prFileCounts}
           />
-        </div>
+          </div>
+        </Panel>
+
+        <PanelResizeHandle className="flex w-1 items-center justify-center bg-border/40 transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary">
+          <div className="z-10 flex h-6 w-3 items-center justify-center rounded-sm border border-border bg-card">
+            <GripVertical size={10} className="text-muted-foreground" />
+          </div>
+        </PanelResizeHandle>
 
         {/* Right panel: tabbed content with page transitions */}
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <Panel defaultSize="70%" minSize="40%" className="flex flex-col bg-background/50">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -406,8 +415,8 @@ export default function CodeReviewBotView(): React.JSX.Element {
               )}
             </motion.div>
           </AnimatePresence>
-        </div>
-      </div>
+        </Panel>
+      </PanelGroup>
       )}
     </div>
   )

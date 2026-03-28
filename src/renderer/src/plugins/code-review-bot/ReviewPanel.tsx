@@ -132,18 +132,18 @@ export function ReviewPanel({
   if (session.status === 'streaming') {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center gap-2 px-4 py-3">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50">
           <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-primary" />
           <span className="text-sm font-medium text-foreground">
             AI Review in progress...
           </span>
         </div>
 
-        <Card className="mx-4 mb-3 flex-1 overflow-y-auto p-4">
-          <div ref={scrollRef} className="font-mono text-sm text-foreground">
-            <pre className="whitespace-pre-wrap">{session.rawText || 'Waiting for response...'}</pre>
+        <div className="mx-4 my-3 flex-1 overflow-y-auto p-4 rounded-xl border border-white/5 bg-black/40 backdrop-blur-md shadow-inner">
+          <div ref={scrollRef} className="font-mono text-sm text-muted-foreground/80 leading-relaxed">
+            <pre className="whitespace-pre-wrap font-sans">{session.rawText || 'Waiting for response...'}</pre>
           </div>
-        </Card>
+        </div>
 
         {/* Streaming placeholder skeleton */}
         <div className="mx-4 mb-3">
@@ -361,10 +361,11 @@ function FindingCard({
   const kindConfig = KIND_CONFIG[comment.kind]
 
   return (
-    <Card
-      className={`overflow-hidden border-l-4 p-0 ${sevConfig.border} ${
-        !comment.shouldPost ? 'opacity-50' : ''
-      }`}
+    <motion.div
+      whileHover={{ y: -1, backgroundColor: 'rgba(255,255,255,0.02)' }}
+      className={`overflow-hidden rounded-xl border-l-4 border-y border-r border-white/5 bg-black/40 backdrop-blur-md shadow-lg transition-opacity ${
+        sevConfig.border
+      } ${!comment.shouldPost ? 'opacity-50' : ''}`}
     >
       {/* Card header -- always visible */}
       <div
@@ -488,6 +489,6 @@ function FindingCard({
           )}
         </div>
       )}
-    </Card>
+    </motion.div>
   )
 }

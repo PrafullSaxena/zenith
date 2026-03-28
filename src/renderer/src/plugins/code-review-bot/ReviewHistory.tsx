@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { ExternalLink, Eye, History } from 'lucide-react'
 import type { ReviewHistoryEntry } from '../../types/review'
 import { formatRelativeTime } from '../../components/dashboard/utils'
-import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
@@ -52,7 +51,10 @@ export function ReviewHistory({
     >
       {history.map((entry) => (
         <motion.div key={entry.id} variants={staggerItem}>
-          <Card className="p-3">
+          <motion.div
+            whileHover={{ y: -2, backgroundColor: 'rgba(255,255,255,0.04)' }}
+            className="rounded-xl border border-white/5 bg-black/20 p-4 shadow-md backdrop-blur-sm transition-colors"
+          >
             {/* Top row: PR title + status */}
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
@@ -88,12 +90,12 @@ export function ReviewHistory({
             </div>
 
             {/* Bottom row: counts, timestamp, open button */}
-            <div className="mt-2 flex items-center gap-3">
-              <span className="text-xs text-muted-foreground">
+            <div className="mt-3 flex items-center gap-3">
+              <span className="inline-flex items-center rounded bg-white/5 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                 {entry.commentCount} comments, {entry.postedCount} posted
               </span>
 
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground/60">
                 {formatRelativeTime(entry.timestamp)}
               </span>
 
@@ -105,15 +107,15 @@ export function ReviewHistory({
                     e.stopPropagation()
                     onOpen(entry)
                   }}
-                  className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
+                  className="ml-auto flex shrink-0 items-center justify-center rounded-lg bg-white/5 px-2.5 py-1.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/20"
                   title="Open review comments"
                 >
-                  <Eye size={13} className="inline mr-1" />
+                  <Eye size={13} className="mr-1.5" />
                   Open
                 </button>
               )}
             </div>
-          </Card>
+          </motion.div>
         </motion.div>
       ))}
     </motion.div>
