@@ -51,9 +51,8 @@ export default function AboutView(): React.JSX.Element {
   }
 
   return (
-    <div className="relative h-full w-full overflow-y-auto bg-background text-foreground">
-      {/* ── Background Dotted Tech Mesh ── */}
-      <div className="pointer-events-none absolute inset-0 z-0 h-full w-full dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,#000_70%,transparent_100%)] opacity-60"></div>
+    <div className="relative h-full w-full overflow-y-auto text-foreground">
+      <div className="pointer-events-none absolute inset-0 z-0 dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:24px_24px]" />
 
       {/* ── macOS title bar drag region ── */}
       <div className="drag-region absolute top-0 z-50 h-5 w-full shrink-0" />

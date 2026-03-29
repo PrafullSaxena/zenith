@@ -210,7 +210,8 @@ export default function NebulaView(): React.JSX.Element {
   // Draggable resize handle between editor and drawing using Panels natively
 
   return (
-    <div className="flex h-full flex-col bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[length:24px_24px]">
+    <div className="relative flex h-full flex-col">
+      <div className="pointer-events-none absolute inset-0 z-0 dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:24px_24px]" />
       {/* Toast notifications -- visible across all tabs */}
       <ToastContainer />
 

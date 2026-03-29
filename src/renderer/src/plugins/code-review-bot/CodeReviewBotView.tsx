@@ -309,11 +309,9 @@ export default function CodeReviewBotView(): React.JSX.Element {
   )
 
   return (
-    <div className="relative flex h-full flex-col bg-background text-foreground overflow-x-hidden">
-      {/* Background Dotted Tech Mesh */}
-      <div className="pointer-events-none absolute inset-0 z-0 h-full w-full dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_100%_100%_at_50%_0%,#000_100%,transparent_100%)] opacity-80" />
-
-      <div className="relative z-10 flex flex-col flex-1 h-full px-4 lg:px-6 pb-4">
+    <div className="relative flex h-full flex-col text-foreground overflow-x-hidden">
+      <div className="pointer-events-none absolute inset-0 z-0 dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:24px_24px]" />
+      <div className="flex flex-col flex-1 h-full px-4 lg:px-6 pb-4">
         {/* Card with gradient title and tabs */}
         <PageHeader
           icon={GitPullRequest}

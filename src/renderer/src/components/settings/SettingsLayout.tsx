@@ -29,7 +29,8 @@ export function SettingsLayout(): React.JSX.Element {
   ]
 
   return (
-    <div className="flex flex-col h-full -m-4">
+    <div className="relative flex flex-col h-full -m-4">
+      <div className="pointer-events-none absolute inset-0 z-0 dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:24px_24px]" />
       {/* Drag region for macOS title bar dragging */}
       <div className="drag-region h-3 w-full shrink-0" />
       <Tabs

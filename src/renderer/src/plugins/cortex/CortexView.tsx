@@ -68,7 +68,8 @@ export default function CortexView(): React.JSX.Element {
   }, [activeRepo?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="flex h-full flex-col bg-background relative">
+    <div className="relative flex h-full flex-col">
+      <div className="pointer-events-none absolute inset-0 z-0 dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:24px_24px]" />
       {/* Ambient top gradient glow */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--primary-rgb,99,102,241),0.04),transparent_60%)]" />
       {/* Card with Brain icon, gradient title, and tab bar */}
