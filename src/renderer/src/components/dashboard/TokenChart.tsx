@@ -229,8 +229,8 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
   // ── Empty state ──
   if (entries.length === 0) {
     return (
-      <div className="flex h-full flex-col rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
-        <div className="px-5 py-3 border-b border-white/5">
+      <div className="flex h-full flex-col p-1">
+        <div className="px-5 py-3 border-b border-border">
           <h3 className="text-sm font-semibold text-foreground">Token Usage</h3>
           <p className="text-[11px] text-muted-foreground">7-day consumption by AI agent</p>
         </div>
@@ -251,8 +251,8 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
 
   // ── Data state ──
   return (
-    <div className="flex h-full flex-col rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
+    <div className="flex h-full flex-col p-1">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border">
         <div>
           <h3 className="text-sm font-semibold text-foreground">Token Usage</h3>
           <p className="text-[11px] text-muted-foreground">7-day consumption by AI agent</p>

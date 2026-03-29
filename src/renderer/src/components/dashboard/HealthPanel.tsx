@@ -60,9 +60,9 @@ export function HealthPanel({
   })).filter((g) => g.items.length > 0)
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
+    <div className="flex h-full flex-col p-1">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border">
         <div>
           <h3 className="text-sm font-semibold text-foreground">System Health</h3>
           <div className="mt-1">
@@ -108,7 +108,7 @@ export function HealthPanel({
                   {group.items.map((res) => (
                     <div
                       key={res.id}
-                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5"
+                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-foreground/5"
                     >
                       <span className={cn('h-2 w-2 shrink-0 rounded-full', STATUS_DOT[res.status])} />
                       <span className="flex-1 truncate text-xs font-medium text-foreground">{res.name}</span>

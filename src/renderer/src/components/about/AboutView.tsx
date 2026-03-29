@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { motion, useMotionValue, useMotionTemplate } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ExternalLink, Zap, Wrench, Download, CheckCircle, Loader2 } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
 import zenithLogo from '../../assets/zenith-logo.png'
@@ -11,44 +11,7 @@ import {
   GETTING_STARTED
 } from '../../config/about.config'
 
-// Extracted UI component for reusable animated glowing spotlight cells inside the Bento Grid.
-function SpotlightCard({
-  children,
-  className = ''
-}: {
-  children: React.ReactNode
-  className?: string
-}): React.JSX.Element {
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-
-  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent): void {
-    const { left, top } = currentTarget.getBoundingClientRect()
-    mouseX.set(clientX - left)
-    mouseY.set(clientY - top)
-  }
-
-  return (
-    <div
-      className={`group relative flex overflow-hidden rounded-[24px] border border-border bg-card/40 backdrop-blur-3xl transition-all duration-500 hover:border-foreground/20 hover:bg-card/60 ${className}`}
-      onMouseMove={handleMouseMove}
-    >
-      <motion.div
-        className="pointer-events-none absolute -inset-px z-0 rounded-[24px] opacity-0 transition duration-300 group-hover:opacity-100"
-        style={{
-          background: useMotionTemplate`
-            radial-gradient(
-              650px circle at ${mouseX}px ${mouseY}px,
-              rgba(130, 81, 238, 0.15),
-              transparent 80%
-            )
-          `
-        }}
-      />
-      <div className="relative z-10 flex h-full w-full flex-col">{children}</div>
-    </div>
-  )
-}
+import { SpotlightCard } from '@renderer/components/ui/spotlight-card'
 
 export default function AboutView(): React.JSX.Element {
   const [exportState, setExportState] = useState<'idle' | 'exporting' | 'done'>('idle')
