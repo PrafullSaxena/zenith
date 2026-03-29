@@ -6,111 +6,20 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   User,
-  Github,
-  Linkedin,
-  Twitter,
   ExternalLink,
-  Database,
-  GitPullRequest,
   Zap,
-  MessageSquare,
   Wrench,
-  Server,
   BookOpen,
   Download,
   CheckCircle,
   Loader2
 } from 'lucide-react'
-import { Card } from '@renderer/components/ui/card'
 import { Button } from '@renderer/components/ui/button'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import zenithLogo from '../../assets/zenith-logo.png'
+import { APP_VERSION, AUTHOR, SOCIAL_LINKS, CAPABILITIES, GETTING_STARTED } from '../../config/about.config'
 
-const APP_VERSION = '1.0.0'
 
-const SOCIAL_LINKS = [
-  {
-    label: 'GitHub',
-    url: 'https://github.com/prafullsaxena',
-    icon: Github
-  },
-  {
-    label: 'LinkedIn',
-    url: 'https://linkedin.com/in/prafullsaxena',
-    icon: Linkedin
-  },
-  {
-    label: 'Twitter / X',
-    url: 'https://x.com/prafullsaxena',
-    icon: Twitter
-  }
-]
-
-const CAPABILITIES = [
-  {
-    icon: GitPullRequest,
-    title: 'AI Code Reviews',
-    desc: 'Automated Bitbucket PR reviews with AI-generated inline comments and severity analysis'
-  },
-  {
-    icon: Database,
-    title: 'Database Inspector',
-    desc: 'Connect to PostgreSQL databases, browse schemas, explore tables, columns, indexes, and foreign keys'
-  },
-  {
-    icon: Zap,
-    title: 'Query Optimizer',
-    desc: 'EXPLAIN ANALYZE + AI insights, mermaid query flow, tradeoff analysis, and optimized SQL generation'
-  },
-  {
-    icon: MessageSquare,
-    title: 'AI-Powered Q&A',
-    desc: 'Ask natural language questions about your database schema with follow-up conversation support'
-  },
-  {
-    icon: Wrench,
-    title: 'ER Diagrams',
-    desc: 'Generate interactive entity-relationship diagrams with zoom, pan, code editing, and visual rendering'
-  },
-  {
-    icon: Server,
-    title: 'MCP Integration',
-    desc: 'Configure Model Context Protocol servers for extended AI capabilities and tool orchestration'
-  }
-]
-
-const GETTING_STARTED = [
-  {
-    step: 1,
-    title: 'Configure an AI Agent',
-    desc: 'Go to Settings → AI Agents. Ensure at least one provider (Claude, Gemini, Ollama, etc.) shows "Connected" status.'
-  },
-  {
-    step: 2,
-    title: 'Add a Database Connection',
-    desc: 'Open DbInspector, click "Add Connection", enter your PostgreSQL credentials, and test the connection.'
-  },
-  {
-    step: 3,
-    title: 'Explore Your Schema',
-    desc: 'Select a database and schema from the left panel. Browse tables, view columns, indexes, and foreign keys.'
-  },
-  {
-    step: 4,
-    title: 'Ask AI About Your Data',
-    desc: 'Switch to the "Ask AI" tab and ask questions like "Which tables store user data?" or "Write a query to find inactive users".'
-  },
-  {
-    step: 5,
-    title: 'Optimize Queries',
-    desc: 'Paste a slow SQL query in the "Query Optimizer" tab. AI will run EXPLAIN ANALYZE and suggest index, rewrite, and structural optimizations.'
-  },
-  {
-    step: 6,
-    title: 'Generate ER Diagrams',
-    desc: 'Select tables in the "ER Diagram" tab and click Generate. Zoom, pan, and edit the Mermaid syntax for documentation.'
-  }
-]
 
 export default function AboutView(): React.JSX.Element {
   const [exportState, setExportState] = useState<'idle' | 'exporting' | 'done'>('idle')
@@ -135,24 +44,28 @@ export default function AboutView(): React.JSX.Element {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 p-6 pt-0">
-      {/* Drag region for macOS title bar dragging */}
-      <div className="drag-region h-3 w-full" />
+    <div className="h-full overflow-y-auto bg-transparent">
+      <div className="mx-auto max-w-3xl space-y-8 p-6 pt-0">
+        {/* Drag region for macOS title bar dragging */}
+        <div className="drag-region h-4 w-full shrink-0" />
       {/* ── App Header ── */}
-      <Card className="text-center p-6">
+      <div className="relative overflow-hidden rounded-xl border border-white/5 bg-black/10 p-8 text-center backdrop-blur-md">
+        {/* Glowing Orb */}
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -ml-16 -mt-16 h-32 w-32 rounded-full bg-primary/20 blur-3xl" />
+        
         <img
           src={zenithLogo}
           alt="Zenith"
-          className="mx-auto mb-4 h-20 w-20 shadow-lg shadow-accent/20 transition-transform duration-200 hover:scale-105"
+          className="relative mx-auto mb-4 h-20 w-20 shadow-lg shadow-accent/20 transition-transform duration-200 hover:scale-105"
         />
-        <h1 className="text-2xl font-bold text-foreground">Zenith</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className="relative text-2xl font-bold text-foreground">Zenith</h1>
+        <p className="relative mt-1 text-sm text-muted-foreground">
           Your AI-powered development toolkit
         </p>
-        <span className="mt-2 inline-block rounded-full bg-secondary px-3 py-0.5 text-[11px] font-medium text-muted-foreground">
+        <span className="relative mt-3 inline-block rounded-full border border-white/5 bg-black/30 px-3 py-0.5 text-[11px] font-medium tracking-wide text-muted-foreground">
           v{APP_VERSION}
         </span>
-      </Card>
+      </div>
 
       {/* ── Capabilities ── */}
       <section>
@@ -170,17 +83,23 @@ export default function AboutView(): React.JSX.Element {
             const Icon = cap.icon
             return (
               <motion.div key={cap.title} variants={staggerItem}>
-                <Card interactive className="h-full p-4">
+                <motion.div
+                  className="group flex h-full flex-col rounded-xl border border-white/5 bg-black/20 p-4 transition-colors duration-200 hover:border-white/10 backdrop-blur-md"
+                  whileHover={{ y: -2 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                >
                   <div className="mb-2 flex items-center gap-2">
-                    <Icon size={16} className="shrink-0 text-primary" />
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 transition-colors group-hover:bg-primary/20">
+                      <Icon size={14} className="text-primary" />
+                    </div>
                     <h3 className="text-sm font-semibold text-foreground">
                       {cap.title}
                     </h3>
                   </div>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
+                  <p className="text-xs leading-relaxed text-muted-foreground group-hover:text-muted-foreground/80 transition-colors">
                     {cap.desc}
                   </p>
-                </Card>
+                </motion.div>
               </motion.div>
             )
           })}
@@ -193,24 +112,22 @@ export default function AboutView(): React.JSX.Element {
           <User size={14} className="text-primary" />
           About the Author
         </h2>
-        <Card className="p-5">
+        <div className="rounded-xl border border-white/5 bg-black/20 p-5 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
-              PS
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary shadow-[inset_0_0_20px_rgba(var(--primary),0.05)]">
+              {AUTHOR.initials}
             </div>
             <div>
               <h3 className="text-base font-semibold text-foreground">
-                Prafull Saxena
+                {AUTHOR.name}
               </h3>
               <p className="text-xs text-muted-foreground">
-                Software Engineer · Full-Stack Developer
+                {AUTHOR.role}
               </p>
             </div>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Building tools that make developers more productive. Zenith was created to
-            bring AI-powered code review, database inspection, and query optimization
-            into a single, cohesive desktop experience.
+            {AUTHOR.bio}
           </p>
           <div className="mt-4 flex items-center gap-2">
             {SOCIAL_LINKS.map((link) => {
@@ -221,6 +138,7 @@ export default function AboutView(): React.JSX.Element {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleOpenExternal(link.url)}
+                  className="hover:bg-white/5 font-medium"
                 >
                   <Icon size={13} />
                   {link.label}
@@ -229,7 +147,7 @@ export default function AboutView(): React.JSX.Element {
               )
             })}
           </div>
-        </Card>
+        </div>
       </section>
 
       {/* ── Getting Started — Glass Timeline ── */}
@@ -238,25 +156,29 @@ export default function AboutView(): React.JSX.Element {
           <BookOpen size={14} className="text-primary" />
           Getting Started
         </h2>
-        <div className="space-y-3">
-          {GETTING_STARTED.map((item, index) => (
-            <Card key={item.step} className="relative pl-10 p-4">
-              {/* Numbered step indicator */}
-              <div className="absolute left-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-                {item.step}
+        <div className="relative rounded-xl border border-white/5 bg-black/20 p-5 px-6 backdrop-blur-md">
+          {/* Vertical continuous track line */}
+          <div className="absolute left-[33px] top-8 bottom-8 w-px bg-white/10" />
+          
+          <div className="relative space-y-6">
+            {GETTING_STARTED.map((item) => (
+              <div key={item.step} className="group flex gap-4">
+                {/* Numbered step indicator glowing node */}
+                <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.3)] transition-transform group-hover:scale-110">
+                  {item.step}
+                </div>
+                
+                <div className="min-w-0 pt-0.5">
+                  <h4 className="text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
+                    {item.title}
+                  </h4>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground opacity-90">
+                    {item.desc}
+                  </p>
+                </div>
               </div>
-              {/* Vertical connecting line between steps */}
-              {index < GETTING_STARTED.length - 1 && (
-                <div className="absolute left-[21px] top-9 bottom-0 w-px bg-border/40" />
-              )}
-              <h4 className="text-sm font-semibold text-foreground">
-                {item.title}
-              </h4>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                {item.desc}
-              </p>
-            </Card>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -266,7 +188,7 @@ export default function AboutView(): React.JSX.Element {
           <Wrench size={14} className="text-primary" />
           Diagnostics
         </h2>
-        <Card className="p-5">
+        <div className="rounded-xl border border-white/5 bg-black/20 p-5 backdrop-blur-md">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h4 className="text-sm font-semibold text-foreground">
@@ -280,28 +202,30 @@ export default function AboutView(): React.JSX.Element {
               onClick={handleExportLogs}
               disabled={exportState !== 'idle'}
               size="sm"
+              variant="outline"
+              className="bg-black/30 hover:bg-white/5"
             >
               {exportState === 'exporting' && (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 size={14} className="mr-2 animate-spin" />
                   Exporting...
                 </>
               )}
               {exportState === 'done' && (
                 <>
-                  <CheckCircle size={14} className="text-success" />
+                  <CheckCircle size={14} className="mr-2 text-primary" />
                   Saved!
                 </>
               )}
               {exportState === 'idle' && (
                 <>
-                  <Download size={14} />
+                  <Download size={14} className="mr-2" />
                   Download Logs
                 </>
               )}
             </Button>
           </div>
-        </Card>
+        </div>
       </section>
 
       {/* Footer */}
@@ -309,6 +233,7 @@ export default function AboutView(): React.JSX.Element {
         <p className="text-[11px] text-muted-foreground/70">
           Built with Electron · React · TypeScript · Tailwind CSS
         </p>
+      </div>
       </div>
     </div>
   )

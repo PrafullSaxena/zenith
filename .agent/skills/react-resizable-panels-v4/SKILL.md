@@ -51,3 +51,14 @@ onResize={(size) => {
 }}
 ```
 The standard hook interface acts as: `(panelSize: { asPercentage: number; inPixels: number }, id, prevSize) => void`
+
+## 6. Group Layout Change
+`onLayoutChange` on `Group` returns an object mapping panel IDs to sizes, not an array of numbers like v3:
+
+```tsx
+// ❌ WRONG (v3 style)
+onLayoutChange={(sizes: number[]) => saveSizes(sizes)}
+
+// ✅ CORRECT (v4 style)
+onLayoutChange={(sizes: { [panelId: string]: number }) => saveSizes(sizes)}
+```
