@@ -105,19 +105,19 @@ export function PRList({
               return (
                 <motion.div key={pr.id} variants={staggerItem}>
                   <motion.div
-                    whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.04)' }}
+                    whileHover={{ x: 2, backgroundColor: 'hsl(var(--foreground), 0.05)' }}
                     whileTap={{ scale: 0.99 }}
-                    className={`group cursor-pointer rounded-xl border px-4 py-3 transition-colors shadow-lg overflow-hidden ${
+                    className={`group cursor-pointer rounded-[14px] border p-3.5 transition-all shadow-sm ${
                       isSelected 
-                        ? 'border-primary/50 bg-primary/10 backdrop-blur-md'
-                        : 'border-white/5 bg-black/20 backdrop-blur-md hover:border-white/10'
+                        ? 'border-primary/50 bg-primary/10 backdrop-blur-md ring-1 ring-primary/20'
+                        : 'border-border bg-foreground/[0.02] hover:border-foreground/20'
                     }`}
                     onClick={() => onSelect(pr)}
                   >
                     {/* Top row: PR title + link icon (left), file count badge (right) */}
-                    <div className="flex items-start justify-between gap-2 ">
-                      <div className="flex min-w-0 items-center gap-1.5">
-                        <p className="min-w-0 truncate font-medium text-foreground">{pr.title}</p>
+                    <div className="flex items-start justify-between gap-3 mb-1.5">
+                      <div className="flex min-w-0 items-center gap-2 flex-1">
+                        <p className={`min-w-0 truncate font-semibold text-[13px] ${isSelected ? 'text-primary' : 'text-foreground'}`}>{pr.title}</p>
                         <span
                           role="button"
                           tabIndex={0}
@@ -131,33 +131,37 @@ export function PRList({
                               window.api?.app?.openExternal?.(pr.links.html.href)
                             }
                           }}
-                          className="shrink-0 text-muted-foreground/60 transition-colors hover:text-primary"
+                          className="shrink-0 text-muted-foreground/40 transition-colors hover:text-primary z-10"
                           title="Open in Bitbucket"
                         >
                           <ExternalLink size={12} />
                         </span>
                       </div>
                       {fileCounts && fileCounts[pr.id] != null && (
-                        <Badge variant="default">
-                          <Files size={11} className="inline mr-0.5" />
+                        <Badge variant="secondary" className="px-1.5 py-0 rounded-[6px] shrink-0 font-bold bg-foreground/10 text-[10px] tracking-wider text-muted-foreground">
+                          <Files size={10} className="inline mr-1" />
                           {fileCounts[pr.id]}
                         </Badge>
                       )}
                     </div>
 
                     {/* Author */}
-                    <p className="mt-0.5 text-sm text-muted-foreground">
+                    <p className="mt-0 text-[11px] font-medium text-muted-foreground mb-2">
                       {pr.author.display_name}
                     </p>
 
                     {/* Branch flow and timestamp */}
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="truncate text-xs text-muted-foreground">
-                        {pr.source.branch.name}
-                        <span className="mx-1 text-muted-foreground/60">&rarr;</span>
-                        {pr.destination.branch.name}
-                      </span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="truncate text-[10px] font-mono font-medium px-1.5 py-0.5 rounded-[4px] bg-foreground/5 text-muted-foreground border border-border">
+                          {pr.source.branch.name}
+                        </span>
+                        <ChevronRight size={10} className="text-muted-foreground/40 shrink-0" />
+                        <span className="truncate text-[10px] font-mono font-medium px-1.5 py-0.5 rounded-[4px] bg-foreground/5 text-muted-foreground border border-border">
+                          {pr.destination.branch.name}
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-[10px] font-bold text-muted-foreground/60 tracking-wider">
                         {formatRelativeTime(pr.created_on)}
                       </span>
                     </div>

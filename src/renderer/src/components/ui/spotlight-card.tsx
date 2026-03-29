@@ -9,7 +9,7 @@ interface SpotlightCardProps extends HTMLMotionProps<'div'> {
 export function SpotlightCard({
   children,
   className = '',
-  spotlightColor = 'rgba(130, 81, 238, 0.15)',
+  spotlightColor = 'hsl(var(--primary) / 0.08)',
   ...props
 }: SpotlightCardProps): React.JSX.Element {
   const mouseX = useMotionValue(0)
@@ -37,7 +37,7 @@ export function SpotlightCard({
             radial-gradient(
               650px circle at ${mouseX}px ${mouseY}px,
               ${spotlightColor},
-              transparent 80%
+              transparent 70%
             )
           `
         }}

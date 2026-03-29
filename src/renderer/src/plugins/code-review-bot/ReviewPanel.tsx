@@ -139,8 +139,8 @@ export function ReviewPanel({
           </span>
         </div>
 
-        <div className="mx-4 my-3 flex-1 overflow-y-auto p-4 rounded-xl border border-white/5 bg-black/40 backdrop-blur-md shadow-inner">
-          <div ref={scrollRef} className="font-mono text-sm text-muted-foreground/80 leading-relaxed">
+        <div className="mx-4 my-3 flex-1 overflow-y-auto p-4 rounded-[16px] border border-border bg-card/60 backdrop-blur-md shadow-sm">
+          <div ref={scrollRef} className="font-mono text-[13px] text-muted-foreground/80 leading-relaxed">
             <pre className="whitespace-pre-wrap font-sans">{session.rawText || 'Waiting for response...'}</pre>
           </div>
         </div>
@@ -362,8 +362,8 @@ function FindingCard({
 
   return (
     <motion.div
-      whileHover={{ y: -1, backgroundColor: 'rgba(255,255,255,0.02)' }}
-      className={`overflow-hidden rounded-xl border-l-4 border-y border-r border-white/5 bg-black/40 backdrop-blur-md shadow-lg transition-opacity ${
+      whileHover={{ y: -2, backgroundColor: 'hsl(var(--foreground), 0.03)' }}
+      className={`overflow-hidden rounded-[16px] border-l-[3px] border-y border-r border-border bg-card transition-all duration-300 shadow-sm ${
         sevConfig.border
       } ${!comment.shouldPost ? 'opacity-50' : ''}`}
     >

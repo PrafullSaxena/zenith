@@ -66,11 +66,11 @@ export function PRDiffView({
         const isCollapsed = collapsed[filePath] ?? false
 
         return (
-          <Card key={filePath} className="overflow-hidden p-0 border border-white/5 bg-black/20 backdrop-blur-sm shadow-md">
+          <Card key={filePath} className="overflow-hidden p-0 border border-border bg-card/40 backdrop-blur-md shadow-sm rounded-[16px]">
             {/* File header toolbar */}
             <div
               onClick={() => toggleFile(filePath)}
-              className="flex w-full cursor-pointer items-center gap-2 bg-black/40 px-3 py-2 text-left transition-colors hover:bg-white/5 border-b border-white/5"
+              className="flex w-full cursor-pointer items-center gap-2 bg-card/60 px-3 py-2 text-left transition-colors hover:bg-card/80 border-b border-border"
             >
               {isCollapsed ? (
                 <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
@@ -150,7 +150,7 @@ export function PRDiffView({
                             return (
                               <div
                                 key={commentIdx}
-                                className={`ml-12 mr-3 my-1.5 rounded-xl border border-white/5 border-l-4 bg-black/40 backdrop-blur-md p-3 shadow-inner ${sevConfig.border}`}
+                                className={`ml-12 mr-3 my-1.5 rounded-xl border border-border border-l-4 bg-card/60 backdrop-blur-md p-3 shadow-inner ${sevConfig.border}`}
                               >
                                 {/* Header row: severity + kind + title */}
                                 <div className="flex items-center gap-2 mb-1.5">
@@ -159,7 +159,7 @@ export function PRDiffView({
                                   >
                                     {sevConfig.emoji} {sevConfig.label}
                                   </span>
-                                  <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-white/5 text-muted-foreground">
+                                  <span className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-foreground/5 text-muted-foreground">
                                     {kindConfig.icon} {kindConfig.label}
                                   </span>
                                   <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">

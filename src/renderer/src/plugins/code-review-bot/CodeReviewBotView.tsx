@@ -10,7 +10,7 @@ import { PRDiffView } from './PRDiffView'
 import { ReviewPanel } from './ReviewPanel'
 import { ReviewHistory } from './ReviewHistory'
 import { SettingsPanel } from './SettingsPanel'
-import { GitPullRequest, GripVertical } from 'lucide-react'
+import { GitPullRequest } from 'lucide-react'
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
@@ -18,6 +18,7 @@ import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { SimpleSelect } from '@renderer/components/ui/select'
 import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '../../lib/motion'
+import { SpotlightCard } from '@renderer/components/ui/spotlight-card'
 import type { PullRequest } from '../../types/bitbucket'
 import type { ReviewComment, ReviewHistoryEntry } from '../../types/review'
 import type { RepoEntry } from '../../components/settings/RepoListEditor'
@@ -308,40 +309,40 @@ export default function CodeReviewBotView(): React.JSX.Element {
   )
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Card with gradient title and tabs */}
-      <PageHeader
-        icon={GitPullRequest}
-        title="Code Review"
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={(id) => setActiveTab(id as Tab)}
-        statusIndicator={connectionBadge}
-      />
+    <div className="relative flex h-full flex-col bg-background text-foreground overflow-x-hidden">
+      {/* Background Dotted Tech Mesh */}
+      <div className="pointer-events-none absolute inset-0 z-0 h-full w-full dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_100%_100%_at_50%_0%,#000_100%,transparent_100%)] opacity-80" />
 
-      {/* Repo selector bar */}
-      {effectiveRepos.length > 0 && (
-        // <Card className="mx-3 flex items-center gap-3 px-2 py-2 p-2 my-2 shrink-0 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50">
-        <Card className="mx-3 py-2 bg-transparent border-b border-l-0 border-r-0 border-t-0 rounded-none">
-          {effectiveRepos.length === 1 ? (
-            <Badge variant="default">
-              {workspace} / {repoSlug}
-            </Badge>
-          ) : (
-            <SimpleSelect
-              value={String(selectedRepoIndex)}
-              onChange={(val) => handleRepoSwitch(Number(val))}
-              options={repoOptions}
-              className="w-auto"
-            />
-          )}
-          {effectiveRepos.length === 0 && (
-            <span className="text-xs text-muted-foreground/60">
-              No repos configured
-            </span>
-          )}
-        </Card>
-      )}
+      <div className="relative z-10 flex flex-col flex-1 h-full px-4 lg:px-6 pb-4">
+        {/* Card with gradient title and tabs */}
+        <PageHeader
+          icon={GitPullRequest}
+          title="Code Review"
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as Tab)}
+          statusIndicator={connectionBadge}
+        />
+
+        {/* Repo selector bar */}
+        {effectiveRepos.length > 0 && (
+          <div className="my-4 shrink-0 mx-2">
+            <Card className="inline-flex items-center gap-3 px-3 py-1.5 rounded-xl bg-card/60 backdrop-blur-md border border-border shadow-sm">
+              {effectiveRepos.length === 1 ? (
+                <Badge variant="default" className="text-xs font-bold tracking-wider">
+                  {workspace} / {repoSlug}
+                </Badge>
+              ) : (
+                <SimpleSelect
+                  value={String(selectedRepoIndex)}
+                  onChange={(val) => handleRepoSwitch(Number(val))}
+                  options={repoOptions}
+                  className="w-auto text-sm font-semibold"
+                />
+              )}
+            </Card>
+          </div>
+        )}
 
       {/* Main content area */}
       {effectiveRepos.length === 0 ? (
@@ -354,70 +355,75 @@ export default function CodeReviewBotView(): React.JSX.Element {
           className="flex-1"
         />
       ) : (
-      <PanelGroup orientation="horizontal" autoSaveId="crb-v4-split" className="flex flex-1 overflow-hidden" disablePointerEventsDuringResizing>
-        {/* Left panel: PR list */}
-        <Panel defaultSize="30%" minSize="20%" className="border-r border-white/5 bg-black/10 flex flex-col">
-          <div className="flex-1 overflow-y-auto p-4 w-full">
-          <PRList
-            pullRequests={pullRequests}
-            isLoading={isLoadingPRs}
-            error={prError}
-            onSelect={handlePRSelect}
-            onRefresh={handleRefreshPRs}
-            selectedPrId={selectedPR?.id}
-            page={prPage}
-            totalPages={prTotalPages}
-            totalCount={prTotalCount}
-            onPageChange={handlePageChange}
-            fileCounts={prFileCounts}
-          />
-          </div>
+      <PanelGroup orientation="horizontal" autoSaveId="crb-v4-split" className="flex flex-1 w-full gap-3 overflow-hidden mb-2" disablePointerEventsDuringResizing>
+        
+        {/* Left Panel: PR List */}
+        <Panel defaultSize="30%" minSize="20%" className="relative group/panel">
+          <SpotlightCard className="h-full w-full flex flex-col p-0 !rounded-[20px] shadow-lg border-border">
+            <div className="flex-1 overflow-y-auto p-4 md:p-5 w-full">
+              <PRList
+                pullRequests={pullRequests}
+                isLoading={isLoadingPRs}
+                error={prError}
+                onSelect={handlePRSelect}
+                onRefresh={handleRefreshPRs}
+                selectedPrId={selectedPR?.id}
+                page={prPage}
+                totalPages={prTotalPages}
+                totalCount={prTotalCount}
+                onPageChange={handlePageChange}
+                fileCounts={prFileCounts}
+              />
+            </div>
+          </SpotlightCard>
         </Panel>
 
-        <PanelResizeHandle className="flex w-1 items-center justify-center bg-border/40 transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary">
-          <div className="z-10 flex h-6 w-3 items-center justify-center rounded-sm border border-border bg-card">
-            <GripVertical size={10} className="text-muted-foreground" />
-          </div>
+        {/* Floating Resizer Handle */}
+        <PanelResizeHandle className="relative flex w-3 items-center justify-center group outline-none cursor-col-resize">
+          <div className="z-10 flex h-16 w-[3px] items-center justify-center rounded-full bg-border transition-colors group-hover:bg-primary group-data-[resize-handle-state=drag]:bg-primary shadow-sm" />
         </PanelResizeHandle>
 
-        {/* Right panel: tabbed content with page transitions */}
-        <Panel defaultSize="70%" minSize="40%" className="flex flex-col bg-background/50">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              variants={pageTransition}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="flex-1 overflow-y-auto p-4"
-            >
-              {activeTab === 'diff' && (
-                <PRDiffView
-                  diffFiles={diffFiles}
-                  reviewComments={currentSession?.comments ?? []}
-                  onCommentClick={handleCommentClick}
-                />
-              )}
-              {activeTab === 'review' && (
-                <ReviewPanel
-                  session={currentSession}
-                  onStart={handleStartReview}
-                  onCancel={cancelReview}
-                  onPostAll={handlePostAll}
-                  onNewReview={handleNewReview}
-                  onUpdateComment={updateComment}
-                  isConnected={isConnected}
-                  hasAgent={hasAgent}
-                />
-              )}
-              {activeTab === 'history' && (
-                <ReviewHistory history={history} isLoading={isLoadingHistory} onOpen={handleHistoryOpen} />
-              )}
-            </motion.div>
-          </AnimatePresence>
+        {/* Right Panel: Content Tabs */}
+        <Panel defaultSize="70%" minSize="40%" className="relative group/panel">
+          <SpotlightCard className="h-full w-full flex flex-col p-0 !rounded-[20px] shadow-lg border-border">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                variants={pageTransition}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="flex-1 overflow-y-auto p-4 md:p-6 bg-transparent"
+              >
+                {activeTab === 'diff' && (
+                  <PRDiffView
+                    diffFiles={diffFiles}
+                    reviewComments={currentSession?.comments ?? []}
+                    onCommentClick={handleCommentClick}
+                  />
+                )}
+                {activeTab === 'review' && (
+                  <ReviewPanel
+                    session={currentSession}
+                    onStart={handleStartReview}
+                    onCancel={cancelReview}
+                    onPostAll={handlePostAll}
+                    onNewReview={handleNewReview}
+                    onUpdateComment={updateComment}
+                    isConnected={isConnected}
+                    hasAgent={hasAgent}
+                  />
+                )}
+                {activeTab === 'history' && (
+                  <ReviewHistory history={history} isLoading={isLoadingHistory} onOpen={handleHistoryOpen} />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </SpotlightCard>
         </Panel>
       </PanelGroup>
       )}
+      </div>
     </div>
   )
 }
