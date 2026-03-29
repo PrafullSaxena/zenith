@@ -40,6 +40,7 @@ import { Button } from '@renderer/components/ui/button'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '../../lib/motion'
+import { SpotlightCard } from '@renderer/components/ui/spotlight-card'
 import ConnectionManager from './ConnectionManager'
 import SchemaExplorer from './SchemaExplorer'
 import AskAI from './AskAI'
@@ -528,7 +529,7 @@ export default function DbInspectorView(): React.JSX.Element {
   ) : undefined
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[length:24px_24px]">
       {/* Header with Card */}
       <PageHeader
         icon={Database}
@@ -564,10 +565,10 @@ export default function DbInspectorView(): React.JSX.Element {
             onResize={(size) => {
               setIsLeftPanelCollapsed(size.asPercentage === 0)
             }}
-            className="flex flex-col bg-white/2"
+            className="flex flex-col px-4 pb-4 pt-1"
           >
-          <div className="flex h-full flex-col bg-white/2 w-full overflow-hidden">
-            <div className="shrink-0 border-b border-white/6 px-3 py-2.5">
+            <SpotlightCard className="flex h-full flex-col w-full overflow-hidden">
+            <div className="shrink-0 border-b border-border/50 px-3 py-2.5">
               <ConnectionManager
                 connections={connections}
                 connectionStatuses={connectionStatuses}
@@ -620,11 +621,12 @@ export default function DbInspectorView(): React.JSX.Element {
                 />
               </div>
             ) : null}
-          </div>
+            </SpotlightCard>
           </Panel>
 
           {/* Resize handle with toggle button */}
-          <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent transition-colors hover:bg-white/10 active:bg-primary/20 cursor-col-resize z-50">
+          <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent cursor-col-resize z-50 group">
+            <div className="w-0.5 h-12 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
             <button
               type="button"
               onClick={() => {
@@ -642,7 +644,8 @@ export default function DbInspectorView(): React.JSX.Element {
           </PanelResizeHandle>
 
           {/* Right panel -- Tabbed content */}
-          <Panel minSize="30%" className="flex flex-col overflow-hidden bg-background">
+          <Panel minSize="30%" className="flex flex-col overflow-hidden pb-4 pt-1 pr-4">
+            <SpotlightCard className="flex flex-col h-full overflow-hidden w-full">
           {/* Agent status warning */}
           {isConnected && !hasAgent && (
             <div className="flex items-center gap-2 border-b border-yellow-500/20 bg-yellow-500/10 px-4 py-2">
@@ -728,6 +731,7 @@ export default function DbInspectorView(): React.JSX.Element {
               )}
             </motion.div>
           </AnimatePresence>
+          </SpotlightCard>
           </Panel>
         </PanelGroup>
       </div>

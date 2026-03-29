@@ -146,7 +146,7 @@ export default function SchemaExplorer({
                     <AccordionItem key={table.name} value={table.name} className="border-b-0">
                       <AccordionTrigger 
                         onDoubleClick={() => onInsertAtCursor?.(table.name)}
-                        className={`flex w-full items-center gap-2 hover:bg-white/5 transition-colors rounded-lg px-2 py-1.5 text-xs hover:no-underline ${
+                        className={`flex w-full items-center gap-2 hover:bg-foreground/[0.02] transition-colors rounded-lg px-2 py-1.5 text-xs hover:no-underline ${
                           selectedTable === table.name
                             ? 'bg-primary/10 text-primary'
                             : 'text-foreground'
@@ -164,7 +164,7 @@ export default function SchemaExplorer({
                           </span>
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="ml-5 border-l border-white/5 pl-3 pb-2 pt-1 mr-2 space-y-2">
+                      <AccordionContent className="ml-5 border-l border-border pl-3 pb-2 pt-1 mr-2 space-y-2">
                         {isLoadingDetails ? (
                           <Skeleton className="h-4 w-full" />
                         ) : (
@@ -179,7 +179,7 @@ export default function SchemaExplorer({
                                 <div
                                   key={col.name}
                                   onDoubleClick={() => onInsertAtCursor?.(col.name)}
-                                  className="flex items-center gap-1.5 text-[11px] text-foreground hover:bg-white/5 transition-colors rounded-md py-0.5 px-1 -mx-1 cursor-pointer"
+                                  className="flex items-center gap-1.5 text-[11px] text-foreground hover:bg-foreground/[0.02] transition-colors rounded-md py-0.5 px-1 -mx-1 cursor-pointer"
                                 >
                                   {col.isPrimaryKey ? (
                                     <Key size={9} className="shrink-0 text-amber-400" />

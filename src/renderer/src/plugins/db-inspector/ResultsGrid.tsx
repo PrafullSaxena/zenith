@@ -349,7 +349,7 @@ export default function ResultsGrid({
       {/* Table Container */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-auto bg-background/50 custom-scrollbar"
+        className="flex-1 overflow-auto bg-transparent custom-scrollbar"
         onScroll={handleScroll}
       >
         <div
@@ -357,11 +357,11 @@ export default function ResultsGrid({
           style={{ width: tableWidth, minWidth: '100%' }}
         >
           {/* Header */}
-          <div className="sticky top-0 z-10 flex border-b border-border bg-card/90 backdrop-blur-md shadow-sm">
+          <div className="sticky top-0 z-10 flex border-b border-border/50 bg-background/40 backdrop-blur-md shadow-sm">
             {table.getFlatHeaders().map((header) => (
               <div
                 key={header.id}
-                className={`relative flex items-center px-2 py-1.5 border-r border-border/50 bg-transparent text-[11px] font-semibold text-muted-foreground uppercase tracking-wider select-none ${header.id === 'rowIndex' ? 'sticky left-0 z-20 bg-card/90 shadow-[1px_0_0_0_hsl(var(--border))] justify-center' : ''}`}
+                className={`relative flex items-center px-2 py-1.5 border-r border-border/50 bg-transparent text-[11px] font-semibold text-muted-foreground uppercase tracking-wider select-none ${header.id === 'rowIndex' ? 'sticky left-0 z-20 bg-background/40 backdrop-blur-md shadow-[1px_0_0_0_hsl(var(--border))] justify-center' : ''}`}
                 style={{ width: header.getSize(), flex: `0 0 ${header.getSize()}px` }}
               >
                 {header.isPlaceholder ? null : (
@@ -406,7 +406,7 @@ export default function ResultsGrid({
                 <div
                   key={row.id}
                   className={`absolute top-0 left-0 flex w-full border-b border-border/30 hover:bg-muted/40 transition-colors ${
-                    isEven ? 'bg-muted/10' : 'bg-transparent'
+                    isEven ? 'bg-foreground/[0.01]' : 'bg-transparent'
                   }`}
                   style={{
                     height: virtualRow.size + 'px',
@@ -421,7 +421,7 @@ export default function ResultsGrid({
                     <div
                       key={cell.id}
                       className={`relative flex items-center px-1 py-0 h-full border-r border-border/30 overflow-hidden ${
-                         cell.column.id === 'rowIndex' ? 'sticky left-0 z-5 bg-card/80 shadow-[1px_0_0_0_hsl(var(--border))] backdrop-blur-sm' : ''
+                         cell.column.id === 'rowIndex' ? 'sticky left-0 z-5 bg-background/40 shadow-[1px_0_0_0_hsl(var(--border))] backdrop-blur-sm' : ''
                       }`}
                       style={{ width: cell.column.getSize(), flex: `0 0 ${cell.column.getSize()}px` }}
                     >
@@ -451,7 +451,7 @@ export default function ResultsGrid({
       {/* Context Menu */}
       {contextMenu && (
         <div
-          className="fixed z-50 bg-card/90 border border-border rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-1.5 min-w-40 backdrop-blur-xl"
+          className="fixed z-50 bg-card/40 border border-border/50 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-1.5 min-w-40 backdrop-blur-xl"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >

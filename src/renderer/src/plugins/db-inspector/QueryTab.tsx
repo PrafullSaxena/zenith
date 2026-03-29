@@ -393,7 +393,7 @@ export default function QueryTab({
     <div ref={containerRef} className="flex h-full flex-col overflow-hidden">
       {/* Toolbar */}
       {/* Toolbar */}
-      <div className="flex shrink-0 items-center gap-1 border-b border-border bg-card/40 px-3 py-1.5 shadow-sm">
+      <div className="flex shrink-0 items-center gap-1 border-b border-border/50 bg-transparent px-3 py-1.5 shadow-sm">
         {/* Run current statement */}
         <Tooltip content="Run statement" shortcut="⌘↵">
           <Button
@@ -618,7 +618,7 @@ export default function QueryTab({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="shrink-0 border-b border-border bg-card/30 overflow-hidden"
+            className="shrink-0 border-b border-border/50 bg-foreground/[0.02] overflow-hidden"
           >
             <div className="flex items-center gap-2 px-2 py-1.5 flex-wrap">
               {Object.entries(tab.variables || {}).map(([name, value]) => (
@@ -674,7 +674,7 @@ export default function QueryTab({
               </PanelResizeHandle>
               <Panel defaultSize="40%" minSize="15%">
                 <div className="h-full flex flex-col overflow-hidden animate-results-enter">
-                  <div className="flex items-center gap-0 border-b border-white/6 bg-white/2 shrink-0">
+                  <div className="flex items-center gap-0 border-b border-border/50 bg-foreground/[0.02] shrink-0">
                     <button
                       type="button"
                       onClick={() => setOutputTab('results')}
@@ -726,9 +726,9 @@ export default function QueryTab({
             />
           </div>
           {showOutput && hasInlineResults && (
-            <div className="border-t border-white/6">
+            <div className="border-t border-border/50">
               {/* Results/Output tab headers */}
-              <div className="flex items-center gap-0 border-b border-white/6 bg-white/2 shrink-0">
+              <div className="flex items-center gap-0 border-b border-border/50 bg-foreground/[0.02] shrink-0">
                 <button
                   type="button"
                   onClick={() => setOutputTab('results')}
