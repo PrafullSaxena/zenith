@@ -510,7 +510,7 @@ export default function NoteEditor({
   })()
 
   return (
-    <Card className="flex flex-1 flex-col overflow-hidden rounded-none border-x-0 border-t-0 p-0">
+    <Card className="flex flex-1 flex-col overflow-hidden rounded-none border-x-0 border-t-0 bg-transparent p-0">
       {/* Title area with auto-save dot */}
       <div className="px-4 pt-4 pb-0">
         <div className="flex items-center gap-2">
@@ -595,7 +595,7 @@ export default function NoteEditor({
         </div>
 
 
-        <div className="mt-3 mb-2 flex flex-col gap-2 rounded-xl border border-white/6 bg-white/2 p-2.5 backdrop-blur-md">
+        <div className="mt-3 mb-2 flex flex-col gap-2 rounded-xl border border-border/50 bg-foreground/[0.02] p-2.5 backdrop-blur-md">
           {/* Metadata line */}
           <div className="flex items-center gap-3 text-[11px] font-medium tracking-wide text-muted-foreground/60 uppercase">
             {isSaving ? (
@@ -669,7 +669,7 @@ export default function NoteEditor({
                   exit={{ opacity: 0, scale: 0.8 }}
                   type="button"
                   onClick={() => setShowTagInput(true)}
-                  className="flex items-center gap-0.5 rounded-full border border-dashed border-white/10 px-1.5 py-0.5 text-[10px] text-muted-foreground/50 transition-colors hover:border-primary/40 hover:text-primary/60 hover:bg-white/5 cursor-pointer"
+                  className="flex items-center gap-0.5 rounded-full border border-dashed border-border/30 px-1.5 py-0.5 text-[10px] text-muted-foreground/50 transition-colors hover:border-primary/40 hover:text-primary/60 hover:bg-foreground/[0.02] cursor-pointer"
                 >
                   <Plus size={10} />
                 </motion.button>
@@ -681,7 +681,7 @@ export default function NoteEditor({
 
       {/* Table toolbar — always in same spot, controls appear inline when table active */}
       {editor && (
-        <div className="flex items-center border-b border-border/50 px-4 py-1">
+        <div className="flex items-center border-b border-border/50 bg-transparent px-4 py-1">
           <button
             type="button"
             onClick={handleInsertTable}

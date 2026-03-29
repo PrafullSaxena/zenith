@@ -34,6 +34,7 @@ import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '../../lib/motion'
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
+import { SpotlightCard } from '@renderer/components/ui/spotlight-card'
 import NoteList from './NoteList'
 import NoteEditor from './NoteEditor'
 import DrawingCanvas from './DrawingCanvas'
@@ -209,7 +210,7 @@ export default function NebulaView(): React.JSX.Element {
   // Draggable resize handle between editor and drawing using Panels natively
 
   return (
-    <div className="flex h-full flex-col bg-linear-to-br from-surface-elevated/40 via-background to-surface-elevated/20">
+    <div className="flex h-full flex-col bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[length:24px_24px]">
       {/* Toast notifications -- visible across all tabs */}
       <ToastContainer />
 
@@ -247,8 +248,9 @@ export default function NebulaView(): React.JSX.Element {
                   onResize={(size) => {
                     setSidebarCollapsed(size.asPercentage === 0)
                   }}
-                  className="flex flex-col bg-card/30 border-r border-border/50"
+                  className="flex flex-col px-4 pb-4 pt-1"
                 >
+                <SpotlightCard className="flex h-full flex-col w-full overflow-hidden">
                 {sidebarCollapsed ? (
                   <div className="flex flex-1 flex-col items-center pt-3 overflow-hidden">
                     <button
@@ -276,12 +278,16 @@ export default function NebulaView(): React.JSX.Element {
                     <NoteList />
                   </div>
                 )}
+                </SpotlightCard>
               </Panel>
 
-              <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent transition-colors hover:bg-white/10 active:bg-primary/20 cursor-col-resize z-50 mx-[-4px]" />
+              <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent cursor-col-resize z-50 group">
+                <div className="w-0.5 h-12 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
+              </PanelResizeHandle>
 
               {/* Content area */}
-              <Panel className="relative flex flex-col overflow-hidden">
+              <Panel className="relative flex flex-col overflow-hidden px-4 pb-4 pt-1">
+                <SpotlightCard className="flex h-full w-full flex-col overflow-hidden">
                 {activeNote ? (
                   <PanelGroup orientation="horizontal" className="w-full h-full">
                     {/* Editor -- hidden when drawing is fullscreen */}
@@ -307,8 +313,8 @@ export default function NebulaView(): React.JSX.Element {
 
                     {/* Resize handle between editor and drawing */}
                     {drawingOpen && !drawingFullscreen && (
-                      <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent transition-colors hover:bg-white/10 active:bg-primary/20 cursor-col-resize z-50 -mx-px">
-                        <div className="h-8 w-0.5 rounded-full bg-border" />
+                      <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent cursor-col-resize z-50 group -mx-px">
+                        <div className="h-8 w-0.5 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
                       </PanelResizeHandle>
                     )}
 
@@ -316,7 +322,7 @@ export default function NebulaView(): React.JSX.Element {
                     {drawingOpen && (
                       <Panel defaultSize={drawingFullscreen ? "100%" : "40%"} className="flex flex-col border-l border-border/50 overflow-hidden">
                         {/* Drawing panel header */}
-                        <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-3 py-1.5 bg-background">
+                        <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-3 py-1.5 bg-transparent">
                           <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                             <Pencil size={12} />
                             Drawing
@@ -343,7 +349,7 @@ export default function NebulaView(): React.JSX.Element {
                           </div>
                         </div>
                         {/* Canvas */}
-                        <div className="flex-1 bg-background">
+                        <div className="flex-1 bg-transparent">
                           <DrawingCanvas
                             key={activeNote.id}
                             snapshot={activeNote.drawing}
@@ -376,7 +382,7 @@ export default function NebulaView(): React.JSX.Element {
                   <button
                     type="button"
                     onClick={handleToggleDrawing}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 rounded-l-lg border border-r-0 border-border/50 bg-secondary/80 px-1.5 py-3 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary shadow-sm backdrop-blur-sm"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1 rounded-l-lg border border-r-0 border-border/50 bg-card/40 px-1.5 py-3 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary shadow-sm backdrop-blur-md"
                     title="Open drawing panel"
                   >
                     <Pencil size={14} />
@@ -388,6 +394,7 @@ export default function NebulaView(): React.JSX.Element {
 
                 {/* Voice Recorder FAB -- hidden when drawing is fullscreen */}
                 {!drawingFullscreen && <VoiceRecorder noteId={activeNote?.id ?? null} />}
+                </SpotlightCard>
               </Panel>
             </PanelGroup>
             </div>
