@@ -12,7 +12,7 @@ function Card({
     <div
       data-slot="card"
       className={cn(
-        "bg-white/[0.04] text-card-foreground rounded-xl border border-white/[0.08] shadow-sm backdrop-blur-xl",
+        "bg-white/4 text-card-foreground rounded-xl border border-white/8 shadow-sm backdrop-blur-xl",
         interactive && interactiveCardClasses,
         className
       )}

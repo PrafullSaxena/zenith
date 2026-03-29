@@ -64,7 +64,7 @@ export default function ConnectionManager({
         <button
           type="button"
           onClick={onOpenSettings}
-          className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] hover:bg-white/[0.04] hover:text-[var(--primary)]"
+          className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] hover:bg-white/4 hover:text-(--primary)"
           title="Manage connections in Settings"
         >
           <Settings size={14} />
@@ -80,7 +80,7 @@ export default function ConnectionManager({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-[hsl(var(--border))] px-3 py-2 text-xs text-[hsl(var(--muted-foreground))] hover:border-[var(--primary)]/50 hover:text-[var(--primary)] transition"
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-[hsl(var(--border))] px-3 py-2 text-xs text-[hsl(var(--muted-foreground))] hover:border-(--primary)/50 hover:text-(--primary) transition"
           >
             <Settings size={12} />
             Add in Settings
@@ -100,7 +100,7 @@ export default function ConnectionManager({
           {activeConnection && (
             <div className="space-y-2">
               {/* Connection info with status dot */}
-              <div className="rounded-lg border border-[hsl(var(--border))] bg-white/[0.02] px-3 py-2">
+              <div className="rounded-lg border border-[hsl(var(--border))] bg-white/2 px-3 py-2">
                 <div className="flex items-center gap-2">
                   <span
                     className={`h-2 w-2 shrink-0 rounded-full ${

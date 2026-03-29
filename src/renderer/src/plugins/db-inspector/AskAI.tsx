@@ -417,7 +417,7 @@ export default function AskAI({
                   onClick={handleSubmit}
                   disabled={!canAsk || !question.trim()}
                 >
-                  <Send size={13} className={question.trim() ? "translate-x-[1px] -translate-y-[1px]" : ""} />
+                  <Send size={13} className={question.trim() ? "translate-x-px -translate-y-px" : ""} />
                 </Button>
               )}
             </div>

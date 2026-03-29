@@ -76,7 +76,7 @@ export default function NoteContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[8rem] overflow-hidden rounded-xl border border-white/[0.1] bg-popover/80 backdrop-blur-2xl p-1 text-popover-foreground shadow-[0_8px_32px_rgba(0,0,0,0.4)] animate-in fade-in-0 zoom-in-95"
+      className="fixed z-50 min-w-32 overflow-hidden rounded-xl border border-white/10 bg-popover/80 backdrop-blur-2xl p-1 text-popover-foreground shadow-[0_8px_32px_rgba(0,0,0,0.4)] animate-in fade-in-0 zoom-in-95"
       style={{ left: x, top: y }}
     >
       <button

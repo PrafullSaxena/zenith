@@ -295,7 +295,7 @@ function RouteSummary({ routes, onNavigate }: { routes: RouteInfo[]; onNavigate:
       </div>
 
       {/* Route list */}
-      <Card className="divide-y divide-white/[0.04]">
+      <Card className="divide-y divide-white/4">
         {topRoutes.map((route, i) => {
           const mc = getMethodColor(route.method)
           return (
@@ -606,13 +606,13 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                 <Background gap={20} size={1} color="#1e293b" />
                 <Controls
                   showInteractive={false}
-                  className="!bg-card !border-border/60 !rounded-lg [&>button]:!bg-card [&>button]:!border-border/40 [&>button]:!text-muted-foreground"
+                  className="bg-card! border-border/60! rounded-lg! [&>button]:!bg-card [&>button]:!border-border/40 [&>button]:!text-muted-foreground"
                 />
                 <MiniMap
                   nodeStrokeWidth={3}
                   pannable
                   zoomable
-                  className="!bg-card !border-border/60 !rounded-lg"
+                  className="bg-card! border-border/60! rounded-lg!"
                 />
               </ReactFlow>
             )}
@@ -774,9 +774,9 @@ export default function ArchitectureDashboard(): React.JSX.Element {
                     </motion.div>
                     <p className="text-xs text-muted-foreground">Cortex is thinking...</p>
                     <div className="mt-2 w-full max-w-lg space-y-2">
-                      <div className="h-5 w-3/4 animate-pulse rounded bg-white/[0.04]" />
-                      <div className="h-4 w-full animate-pulse rounded bg-white/[0.04]" />
-                      <div className="h-4 w-5/6 animate-pulse rounded bg-white/[0.04]" />
+                      <div className="h-5 w-3/4 animate-pulse rounded bg-white/4" />
+                      <div className="h-4 w-full animate-pulse rounded bg-white/4" />
+                      <div className="h-4 w-5/6 animate-pulse rounded bg-white/4" />
                     </div>
                   </div>
                 )}

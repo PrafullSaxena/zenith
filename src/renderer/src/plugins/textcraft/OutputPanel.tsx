@@ -330,7 +330,7 @@ export default function OutputPanel(): React.JSX.Element {
 
         {/* Streaming indicator in header */}
         {isStreaming && (
-          <span className="flex items-center gap-1.5 text-[11px] text-[var(--primary)]">
+          <span className="flex items-center gap-1.5 text-[11px] text-(--primary)">
             <Copy size={12} className="animate-pulse" />
             Streaming...
           </span>
@@ -355,7 +355,7 @@ export default function OutputPanel(): React.JSX.Element {
             {hasOutput ? (
               <>
                 <MarkdownRenderer text={rawText} className="text-sm leading-relaxed" />
-                <span className="animate-pulse text-[var(--primary)] text-sm">Refining...</span>
+                <span className="animate-pulse text-(--primary) text-sm">Refining...</span>
               </>
             ) : (
               <Skeleton className="h-4 w-full" />

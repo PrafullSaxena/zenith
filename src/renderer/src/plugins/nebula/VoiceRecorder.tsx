@@ -194,7 +194,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
         {voiceState === 'recording' && (
           <motion.div
             key="fab-recording"
-            className="flex items-center gap-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-white/[0.08] px-4 shadow-[0_0_20px_rgba(var(--primary),0.4)]"
+            className="flex items-center gap-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-white/8 px-4 shadow-[0_0_20px_rgba(var(--primary),0.4)]"
             initial={{ width: 48, height: 48, borderRadius: 24 }}
             animate={{ width: 280, height: 80, borderRadius: 16 }}
             exit={{ width: 48, height: 48, borderRadius: 24, opacity: 0 }}
@@ -238,7 +238,7 @@ export default function VoiceRecorder({ noteId }: VoiceRecorderProps): React.JSX
         {voiceState === 'processing' && (
           <motion.div
             key="fab-processing"
-            className="flex items-center gap-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-white/[0.08] px-4 shadow-xl"
+            className="flex items-center gap-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-white/8 px-4 shadow-xl"
             initial={{ width: 280, height: 80, borderRadius: 16 }}
             animate={{ width: 220, height: 56, borderRadius: 16 }}
             exit={{ scale: 0, opacity: 0 }}

@@ -674,7 +674,7 @@ export default function QueryTab({
               </PanelResizeHandle>
               <Panel defaultSize="40%" minSize="15%">
                 <div className="h-full flex flex-col overflow-hidden animate-results-enter">
-                  <div className="flex items-center gap-0 border-b border-white/[0.06] bg-white/[0.02] shrink-0">
+                  <div className="flex items-center gap-0 border-b border-white/6 bg-white/2 shrink-0">
                     <button
                       type="button"
                       onClick={() => setOutputTab('results')}
@@ -726,9 +726,9 @@ export default function QueryTab({
             />
           </div>
           {showOutput && hasInlineResults && (
-            <div className="border-t border-white/[0.06]">
+            <div className="border-t border-white/6">
               {/* Results/Output tab headers */}
-              <div className="flex items-center gap-0 border-b border-white/[0.06] bg-white/[0.02] shrink-0">
+              <div className="flex items-center gap-0 border-b border-white/6 bg-white/2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setOutputTab('results')}
@@ -832,7 +832,7 @@ function OutputConsoleMessage({ message }: { message: string }): React.JSX.Eleme
     <span className="min-w-0">
       {expanded ? (
         <span
-          className="whitespace-pre-wrap break-words cursor-pointer"
+          className="whitespace-pre-wrap wrap-break-word cursor-pointer"
           onClick={() => setExpanded(false)}
         >
           {message}

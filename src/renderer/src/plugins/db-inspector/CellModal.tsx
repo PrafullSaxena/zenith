@@ -49,11 +49,11 @@ export default function CellModal({ value, fieldName, isOpen, onClose }: CellMod
         {isNull ? (
           <span className="italic text-[hsl(var(--muted-foreground))]/50 text-sm">NULL</span>
         ) : isJson ? (
-          <pre className="text-xs font-mono text-[hsl(var(--foreground))] whitespace-pre-wrap break-words">
+          <pre className="text-xs font-mono text-[hsl(var(--foreground))] whitespace-pre-wrap wrap-break-word">
             {display}
           </pre>
         ) : (
-          <p className="text-sm text-[hsl(var(--foreground))] whitespace-pre-wrap break-words">{display}</p>
+          <p className="text-sm text-[hsl(var(--foreground))] whitespace-pre-wrap wrap-break-word">{display}</p>
         )}
       </div>
 

@@ -564,10 +564,10 @@ export default function DbInspectorView(): React.JSX.Element {
             onResize={(size) => {
               setIsLeftPanelCollapsed(size.asPercentage === 0)
             }}
-            className="flex flex-col bg-white/[0.02]"
+            className="flex flex-col bg-white/2"
           >
-          <div className="flex h-full flex-col bg-white/[0.02] w-full overflow-hidden">
-            <div className="shrink-0 border-b border-white/[0.06] px-3 py-2.5">
+          <div className="flex h-full flex-col bg-white/2 w-full overflow-hidden">
+            <div className="shrink-0 border-b border-white/6 px-3 py-2.5">
               <ConnectionManager
                 connections={connections}
                 connectionStatuses={connectionStatuses}
@@ -635,7 +635,7 @@ export default function DbInspectorView(): React.JSX.Element {
                 }
               }}
               title={isLeftPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
-              className="absolute -left-[1px] top-6 flex h-8 w-3.5 items-center justify-center rounded-r border border-l-0 border-[hsl(var(--border))] bg-card text-[hsl(var(--muted-foreground))] hover:text-foreground hover:bg-white/[0.06] transition-colors"
+              className="absolute -left-[1px] top-6 flex h-8 w-3.5 items-center justify-center rounded-r border border-l-0 border-[hsl(var(--border))] bg-card text-[hsl(var(--muted-foreground))] hover:text-foreground hover:bg-white/6 transition-colors"
             >
               {isLeftPanelCollapsed ? <ChevronRight size={10} /> : <ChevronLeft size={10} />}
             </button>

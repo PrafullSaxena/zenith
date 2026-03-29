@@ -132,7 +132,7 @@ function CellValue({
           {displayStr}
         </span>
         {showTooltip && (
-          <div className="absolute z-50 bottom-full left-0 mb-1 w-64 bg-card border border-border/80 rounded shadow-lg p-2 text-xs text-foreground whitespace-pre-wrap break-words pointer-events-none backdrop-blur-md">
+          <div className="absolute z-50 bottom-full left-0 mb-1 w-64 bg-card border border-border/80 rounded shadow-lg p-2 text-xs text-foreground whitespace-pre-wrap wrap-break-word pointer-events-none backdrop-blur-md">
             {tooltipStr}
             {str.length > 200 && <span className="text-muted-foreground ml-1">...</span>}
           </div>
@@ -421,7 +421,7 @@ export default function ResultsGrid({
                     <div
                       key={cell.id}
                       className={`relative flex items-center px-1 py-0 h-full border-r border-border/30 overflow-hidden ${
-                         cell.column.id === 'rowIndex' ? 'sticky left-0 z-[5] bg-card/80 shadow-[1px_0_0_0_hsl(var(--border))] backdrop-blur-sm' : ''
+                         cell.column.id === 'rowIndex' ? 'sticky left-0 z-5 bg-card/80 shadow-[1px_0_0_0_hsl(var(--border))] backdrop-blur-sm' : ''
                       }`}
                       style={{ width: cell.column.getSize(), flex: `0 0 ${cell.column.getSize()}px` }}
                     >

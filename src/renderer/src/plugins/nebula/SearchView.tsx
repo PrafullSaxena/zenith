@@ -210,7 +210,7 @@ export default function SearchView(): React.JSX.Element {
                       whileHover={{ scale: 1.01, x: 2 }}
                     >
                       <Card
-                        className="cursor-pointer border border-white/[0.04] bg-white/[0.02] p-4 transition-colors hover:border-primary/30 hover:bg-white/[0.04] hover:shadow-md"
+                        className="cursor-pointer border border-white/4 bg-white/2 p-4 transition-colors hover:border-primary/30 hover:bg-white/4 hover:shadow-md"
                         onClick={() => handleResultClick(result.id)}
                       >
                         {/* Title with highlight */}
@@ -303,7 +303,7 @@ export default function SearchView(): React.JSX.Element {
               </div>
 
               {/* Chat Input attached to bottom */}
-              <div className="relative border-t border-white/[0.06] bg-black/40 p-3">
+              <div className="relative border-t border-white/6 bg-black/40 p-3">
                 <input
                   type="text"
                   value={questionText}

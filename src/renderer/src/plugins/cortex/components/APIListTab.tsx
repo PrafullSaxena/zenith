@@ -184,7 +184,7 @@ export default function APIListTab(): React.JSX.Element {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter endpoints..."
-            className="w-56 rounded-lg border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl py-1.5 pl-7 pr-3 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+            className="w-56 rounded-lg border border-white/8 bg-white/3 backdrop-blur-xl py-1.5 pl-7 pr-3 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
           />
         </div>
         </div>
@@ -201,7 +201,7 @@ export default function APIListTab(): React.JSX.Element {
       )}
 
       {/* Table */}
-      <Card className="flex-1 min-h-0 overflow-hidden flex flex-col !p-0">
+      <Card className="flex-1 min-h-0 overflow-hidden flex flex-col p-0!">
         <div className="flex-1 min-h-0 overflow-auto">
         <table className="w-full text-xs">
           <thead className="sticky top-0 bg-secondary text-[10px] uppercase tracking-wider text-muted-foreground z-10">
@@ -218,7 +218,7 @@ export default function APIListTab(): React.JSX.Element {
             {filteredRoutes.map((route, i) => (
               <tr
                 key={`${route.method}-${route.fullPath}-${i}`}
-                className="border-b border-border/40 transition-colors even:bg-white/[0.02] hover:bg-white/[0.04]"
+                className="border-b border-border/40 transition-colors even:bg-white/2 hover:bg-white/4"
               >
                 <td className="px-3 py-2">
                   {(() => {

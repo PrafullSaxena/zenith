@@ -146,9 +146,9 @@ export default function EstimationHistory(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="shrink-0 border-b border-white/[0.06] px-4 py-3">
+      <div className="shrink-0 border-b border-white/6 px-4 py-3">
         <div className="flex items-center gap-2">
-          <Clock size={14} className="text-[var(--primary)]" />
+          <Clock size={14} className="text-(--primary)" />
           <h2 className="text-sm font-semibold text-[hsl(var(--foreground))]">
             Estimation History
             {history.length > 0 && (

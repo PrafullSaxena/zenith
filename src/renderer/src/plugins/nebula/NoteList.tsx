@@ -341,7 +341,7 @@ function NoteItem({
       className={`group relative mx-2 mb-1.5 cursor-pointer overflow-hidden border-l-2 p-3 transition-all duration-300 ease-out hover:translate-x-1 outline-none ${
         isActive 
           ? 'border-primary bg-primary/10 shadow-[0_0_15px_-3px_rgba(var(--primary),0.2)]' 
-          : 'border-transparent bg-transparent hover:bg-white/[0.04] hover:shadow-md hover:border-primary/20'
+          : 'border-transparent bg-transparent hover:bg-white/4 hover:shadow-md hover:border-primary/20'
       }`}
       onClick={() => onSelect(note.id)}
       onContextMenu={(e: React.MouseEvent) => onContextMenu(e, note.id, note.pinned)}

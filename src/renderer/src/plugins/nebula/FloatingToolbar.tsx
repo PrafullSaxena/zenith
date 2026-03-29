@@ -40,7 +40,7 @@ export default function FloatingToolbar({
       editor={editor}
       shouldShow={({ state }) => !state.selection.empty && !editor.isActive('image')}
     >
-      <Card className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 shadow-lg !bg-secondary/95 backdrop-blur-xl !border-border">
+      <Card className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 shadow-lg bg-secondary/95! backdrop-blur-xl border-border!">
         <ToolbarBtn
           icon={<Bold size={14} />}
           isActive={editor.isActive('bold')}
@@ -144,7 +144,7 @@ function ToolbarBtn({
       className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors cursor-pointer outline-none ${
         isActive
           ? 'bg-primary/20 text-primary'
-          : 'text-muted-foreground hover:bg-white/[0.08] hover:text-foreground'
+          : 'text-muted-foreground hover:bg-white/8 hover:text-foreground'
       }`}
     >
       {icon}

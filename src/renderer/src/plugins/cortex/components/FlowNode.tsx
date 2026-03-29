@@ -198,17 +198,17 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-primary/50 !border-border !w-2 !h-2"
+        className="bg-primary/50! border-border! w-2! h-2!"
       />
 
       <motion.div
         whileHover={reducedMotion ? undefined : { scale: 1.02 }}
         transition={{ duration: 0.15 }}
         onClick={handleClick}
-        className={`relative overflow-hidden cursor-pointer rounded-xl border ${border} bg-white/[0.03] backdrop-blur-xl px-3 py-2 shadow-lg ${glow}`}
+        className={`relative overflow-hidden cursor-pointer rounded-xl border ${border} bg-white/3 backdrop-blur-xl px-3 py-2 shadow-lg ${glow}`}
         style={{ minWidth: 200, maxWidth: 240 }}
       >
-        <div className={`absolute left-0 inset-y-0 w-1 rounded-l-xl bg-gradient-to-b ${gradient}`} />
+        <div className={`absolute left-0 inset-y-0 w-1 rounded-l-xl bg-linear-to-b ${gradient}`} />
 
         {/* Header */}
         <div className="flex items-center gap-1.5">
@@ -238,13 +238,13 @@ const FlowNode = memo(function FlowNode({ data }: NodeProps<Node<FlowNodeData>>)
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-primary/50 !border-border !w-2 !h-2"
+        className="bg-primary/50! border-border! w-2! h-2!"
       />
 
       {/* Tooltip */}
       {showTooltip && (
         <div
-          className="absolute left-1/2 bottom-full z-50 mb-2 -translate-x-1/2 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-2xl p-3 shadow-xl"
+          className="absolute left-1/2 bottom-full z-50 mb-2 -translate-x-1/2 rounded-xl border border-white/8 bg-white/3 backdrop-blur-2xl p-3 shadow-xl"
           style={{ minWidth: 250, maxWidth: 320 }}
         >
           <div className="flex items-center gap-1.5 mb-1.5">

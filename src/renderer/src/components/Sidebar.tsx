@@ -70,7 +70,7 @@ function SidebarIcon({
             {Icon ? <Icon size={20} /> : <span className="text-xs">{iconName}</span>}
           </div>
           {/* Glass-styled tooltip with 400ms delay and slide entrance */}
-          <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)] px-2.5 py-1 text-xs text-text-primary opacity-0 shadow-lg backdrop-blur-sm transition-all duration-150 delay-[400ms] translate-x-0 group-hover:opacity-100 group-hover:translate-x-1">
+          <span className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg bg-(--glass-bg) border border-(--glass-border) px-2.5 py-1 text-xs text-text-primary opacity-0 shadow-lg backdrop-blur-sm transition-all duration-150 delay-[400ms] translate-x-0 group-hover:opacity-100 group-hover:translate-x-1">
             {label}
           </span>
         </>

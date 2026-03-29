@@ -79,7 +79,7 @@ export default function FlowDiagram({
   )
 
   return (
-    <div className="cortex-flow relative h-full w-full rounded-xl border border-white/[0.06] bg-background overflow-hidden">
+    <div className="cortex-flow relative h-full w-full rounded-xl border border-white/6 bg-background overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.03)_0%,transparent_70%)] pointer-events-none" />
       {totalNodes > NODE_CAP && (
         <div className="absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[11px] text-amber-300 shadow">
@@ -104,13 +104,13 @@ export default function FlowDiagram({
         <Background gap={20} size={1} color="#1e293b" variant={BackgroundVariant.Dots} />
         <Controls
           showInteractive={false}
-          className="!bg-white/[0.03] !backdrop-blur-xl !border-white/[0.08] !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/[0.06] [&>button]:!text-muted-foreground"
+          className="bg-white/3! backdrop-blur-xl! border-white/8! rounded-xl! [&>button]:!bg-transparent [&>button]:!border-white/6 [&>button]:!text-muted-foreground"
         />
         <MiniMap
           style={{ background: 'rgba(255,255,255,0.02)' }}
           maskColor="rgba(0,0,0,0.7)"
           nodeColor="oklch(72% 0.15 195 / 0.5)"
-          className="!border-white/[0.08] !rounded-xl"
+          className="border-white/8! rounded-xl!"
         />
       </ReactFlow>
     </div>

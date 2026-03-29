@@ -97,7 +97,7 @@ export default function QueryConsole({
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Tab bar */}
-      <div className="flex shrink-0 items-center overflow-x-auto border-b border-white/[0.06] bg-white/[0.02]">
+      <div className="flex shrink-0 items-center overflow-x-auto border-b border-white/6 bg-white/2">
         {queryTabs.map((tab) => {
           const isActive = tab.id === activeQueryTabId
           return (
@@ -106,8 +106,8 @@ export default function QueryConsole({
               onClick={() => setActiveQueryTab(tab.id)}
               className={`group relative flex shrink-0 cursor-pointer items-center gap-1 px-3 py-1.5 text-[11px] font-medium transition-colors ${
                 isActive
-                  ? 'text-foreground bg-white/[0.05] border-b border-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.02]'
+                  ? 'text-foreground bg-white/5 border-b border-primary'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/2'
               }`}
             >
               {renamingTabId === tab.id ? (
@@ -118,7 +118,7 @@ export default function QueryConsole({
                   onBlur={commitRename}
                   onKeyDown={handleRenameKeyDown}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-24 bg-transparent outline-none border-b border-white/[0.15] text-foreground"
+                  className="w-24 bg-transparent outline-none border-b border-white/15 text-foreground"
                   autoFocus
                 />
               ) : (
@@ -131,13 +131,13 @@ export default function QueryConsole({
               )}
               {/* Running indicator */}
               {tab.lastResult?.status === 'running' && (
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--primary)] animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-(--primary) animate-pulse" />
               )}
               {/* Close button */}
               <button
                 type="button"
                 onClick={(e) => handleCloseTab(e, tab.id)}
-                className="ml-0.5 rounded-lg p-0.5 opacity-0 group-hover:opacity-100 hover:bg-white/[0.06] transition-opacity"
+                className="ml-0.5 rounded-lg p-0.5 opacity-0 group-hover:opacity-100 hover:bg-white/6 transition-opacity"
               >
                 <X size={10} />
               </button>

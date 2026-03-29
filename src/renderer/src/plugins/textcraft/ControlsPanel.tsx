@@ -115,7 +115,7 @@ export default function ControlsPanel(): React.JSX.Element {
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs">{opt.label}</span>
-                  <span className={`text-[10px] ${isActive ? 'text-[var(--primary)]/70' : 'text-muted-foreground/40'}`}>
+                  <span className={`text-[10px] ${isActive ? 'text-(--primary)/70' : 'text-muted-foreground/40'}`}>
                     {opt.description}
                   </span>
                 </div>
@@ -126,7 +126,7 @@ export default function ControlsPanel(): React.JSX.Element {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/[0.04]" />
+      <div className="border-t border-white/4" />
 
       {/* Section 2: Format Selection via Select */}
       <div>
@@ -142,7 +142,7 @@ export default function ControlsPanel(): React.JSX.Element {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/[0.04]" />
+      <div className="border-t border-white/4" />
 
       {/* Section 3: Custom Instructions */}
       <div>
@@ -161,7 +161,7 @@ export default function ControlsPanel(): React.JSX.Element {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/[0.04]" />
+      <div className="border-t border-white/4" />
 
       {/* Section 4: Action Button */}
       <div>

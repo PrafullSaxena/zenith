@@ -105,7 +105,7 @@ export default function ServiceCatalog({ provider }: ServiceCatalogProps): React
   return (
     <div className="flex flex-col h-full">
       {/* Header with search */}
-      <div className="sticky top-0 z-10 bg-[hsl(var(--card))] p-3 border-b border-white/[0.06]">
+      <div className="sticky top-0 z-10 bg-[hsl(var(--card))] p-3 border-b border-white/6">
         <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]/60">
           Service Catalog
           <span className="ml-1 text-[hsl(var(--muted-foreground))]/40">({totalServices})</span>

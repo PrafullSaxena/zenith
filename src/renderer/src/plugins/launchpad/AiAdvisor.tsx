@@ -138,7 +138,7 @@ export default function AiAdvisor(): React.JSX.Element {
         </div>
 
         {/* Input area */}
-        <div className="shrink-0 border-t border-white/[0.06] p-4">
+        <div className="shrink-0 border-t border-white/6 p-4">
           <ChatInterface
             messages={[]}
             onSend={handleSubmit}
@@ -171,7 +171,7 @@ export default function AiAdvisor(): React.JSX.Element {
 
       {/* Streaming controls */}
       {isStreaming && (
-        <div className="shrink-0 border-t border-white/[0.06] px-4 py-2 flex justify-center">
+        <div className="shrink-0 border-t border-white/6 px-4 py-2 flex justify-center">
           <Button variant="destructive" size="sm" onClick={cancelAiChat}>
             <Square size={12} />
             Stop
@@ -194,13 +194,13 @@ export default function AiAdvisor(): React.JSX.Element {
           className="mx-4 mb-4 rounded-xl border border-primary/40 bg-primary/10 p-4 shadow-[0_0_30px_rgba(var(--primary),0.15)] backdrop-blur-xl relative overflow-hidden"
         >
           {/* subtle moving highlight */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
           
           <div className="flex items-start justify-between gap-3 relative z-10">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <Sparkles size={13} className="text-[var(--primary)]" />
-                <p className="text-xs font-semibold text-[var(--primary)]">
+                <Sparkles size={13} className="text-(--primary)" />
+                <p className="text-xs font-semibold text-(--primary)">
                   AI has suggested a configuration
                 </p>
               </div>

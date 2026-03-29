@@ -383,7 +383,7 @@ export default function DiagramsTab(): React.JSX.Element {
             <Background gap={20} size={1} color="#1e293b" variant={BackgroundVariant.Dots} />
             <Controls
               showInteractive={false}
-              className="!bg-white/3 !backdrop-blur-xl !border-white/8 !rounded-xl [&>button]:!bg-transparent [&>button]:!border-white/6 [&>button]:!text-muted-foreground"
+              className="bg-white/3! backdrop-blur-xl! border-white/8! rounded-xl! [&>button]:!bg-transparent [&>button]:!border-white/6 [&>button]:!text-muted-foreground"
             />
           </ReactFlow>
         )}

@@ -111,7 +111,7 @@ export default function LinkDialog({
   return (
     <div
       ref={dialogRef}
-      className="fixed z-50 w-72 rounded-xl bg-secondary/80 backdrop-blur-xl border border-white/[0.08] p-3 shadow-xl"
+      className="fixed z-50 w-72 rounded-xl bg-secondary/80 backdrop-blur-xl border border-white/8 p-3 shadow-xl"
       style={{
         left: Math.max(8, adjustedX),
         top: Math.max(8, adjustedY)

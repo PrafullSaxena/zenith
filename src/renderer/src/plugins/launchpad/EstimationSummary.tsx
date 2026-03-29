@@ -47,7 +47,7 @@ function CostTreemapFallback({
             <span className="w-20 truncate text-[9px] text-[hsl(var(--muted-foreground))]">
               {item.serviceName}
             </span>
-            <div className="flex-1 h-3 rounded-full bg-white/[0.03] overflow-hidden">
+            <div className="flex-1 h-3 rounded-full bg-white/3 overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{ width: `${pct}%`, backgroundColor: color, opacity: 0.7 }}
@@ -111,20 +111,20 @@ export default function EstimationSummary(): React.JSX.Element {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
+      <div className="flex items-center justify-between border-b border-white/6 px-4 py-3">
         <div className="flex items-center gap-2">
-          <DollarSign size={15} className="text-[var(--primary)]" />
+          <DollarSign size={15} className="text-(--primary)" />
           <span className="text-sm font-semibold text-[hsl(var(--foreground))]">Cost Estimation</span>
         </div>
 
         {/* Monthly / Yearly toggle — glass segmented control */}
-        <div className="flex rounded-xl border border-white/[0.06] overflow-hidden text-xs bg-white/[0.02]">
+        <div className="flex rounded-xl border border-white/6 overflow-hidden text-xs bg-white/2">
           <button
             type="button"
             onClick={() => setDisplayMode('monthly')}
             className={`px-2.5 py-1 transition-colors ${
               displayMode === 'monthly'
-                ? 'bg-[var(--primary)]/20 text-[var(--primary)]'
+                ? 'bg-(--primary)/20 text-(--primary)'
                 : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
           >
@@ -135,7 +135,7 @@ export default function EstimationSummary(): React.JSX.Element {
             onClick={() => setDisplayMode('yearly')}
             className={`px-2.5 py-1 transition-colors ${
               displayMode === 'yearly'
-                ? 'bg-[var(--primary)]/20 text-[var(--primary)]'
+                ? 'bg-(--primary)/20 text-(--primary)'
                 : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
           >
@@ -204,7 +204,7 @@ export default function EstimationSummary(): React.JSX.Element {
 
       {/* Cost Distribution (2D fallback) */}
       {result && selectedServices.length > 0 && (
-        <div className="border-t border-white/[0.06] px-4 pt-2 pb-1">
+        <div className="border-t border-white/6 px-4 pt-2 pb-1">
           <p className="text-[10px] text-[hsl(var(--muted-foreground))] mb-1">Cost Distribution</p>
           <div className="h-[200px]">
             <CostTreemapFallback items={result.items} />
@@ -244,7 +244,7 @@ export default function EstimationSummary(): React.JSX.Element {
 
       {/* Save input (inline) */}
       {showSaveInput && (
-        <div className="border-t border-white/[0.06] px-4 py-3 bg-white/[0.02]">
+        <div className="border-t border-white/6 px-4 py-3 bg-white/2">
           <p className="text-xs text-[hsl(var(--muted-foreground))] mb-2">Name this estimation:</p>
           <div className="flex gap-2">
             <Input
@@ -275,7 +275,7 @@ export default function EstimationSummary(): React.JSX.Element {
       )}
 
       {/* Action buttons */}
-      <div className="border-t border-white/[0.06] px-4 py-3 flex flex-col gap-2">
+      <div className="border-t border-white/6 px-4 py-3 flex flex-col gap-2">
         <Button
           variant="default"
           size="sm"

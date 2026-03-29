@@ -41,7 +41,7 @@ export function PageHeader({
       <div
         className={cn(
           'mx-3 flex items-center gap-3 px-4 h-11 shrink-0',
-          'rounded-xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]',
+          'rounded-xl bg-white/4 backdrop-blur-xl border border-white/8',
           className
         )}
       >

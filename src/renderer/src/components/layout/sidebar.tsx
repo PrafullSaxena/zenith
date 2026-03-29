@@ -237,7 +237,7 @@ export function Sidebar(): React.JSX.Element {
         aria-label="Main navigation"
         className={cn(
           'relative z-10 flex h-full flex-shrink-0 flex-col',
-          'border-r border-white/[0.06] bg-white/[0.03] backdrop-blur-2xl'
+          'border-r border-white/6 bg-white/3 backdrop-blur-2xl'
         )}
         animate={{ width: isCollapsed ? 56 : 240 }}
         transition={{ type: 'spring', damping: 20, stiffness: 300 }}

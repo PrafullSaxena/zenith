@@ -45,7 +45,7 @@ export default function ValidationPanel(): React.JSX.Element | null {
         )}
       </div>
 
-      <div className="max-h-60 overflow-y-auto bg-white/[0.01]">
+      <div className="max-h-60 overflow-y-auto bg-white/1">
         {validationResults.map((correction) => {
           const typeInfo = TYPE_LABELS[correction.type]
           const Icon = typeInfo.icon
@@ -53,7 +53,7 @@ export default function ValidationPanel(): React.JSX.Element | null {
           return (
             <div
               key={correction.id}
-              className={`flex items-start gap-3 border-t border-white/[0.04] px-4 py-2.5 ${
+              className={`flex items-start gap-3 border-t border-white/4 px-4 py-2.5 ${
                 correction.status !== 'pending' ? 'opacity-50' : ''
               }`}
             >

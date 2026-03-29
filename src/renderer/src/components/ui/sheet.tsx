@@ -29,7 +29,7 @@ function SheetOverlay({
 }
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-card/80 backdrop-blur-2xl border border-white/[0.1] p-6 shadow-[0_8px_40px_rgba(0,0,0,0.5)] transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:duration-300",
+  "fixed z-50 gap-4 bg-card/80 backdrop-blur-2xl border border-white/10 p-6 shadow-[0_8px_40px_rgba(0,0,0,0.5)] transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:duration-300",
   {
     variants: {
       side: {

@@ -15,14 +15,14 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/12 text-[hsl(0,80%,70%)] border border-destructive/20 hover:bg-destructive/20 hover:border-destructive/30 hover:shadow-[0_0_12px_rgba(239,68,68,0.12)] focus-visible:ring-destructive/30",
         outline:
-          "border border-white/[0.08] text-foreground bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/[0.14]",
+          "border border-white/8 text-foreground bg-white/2 hover:bg-white/6 hover:border-white/14",
         secondary:
-          "bg-white/[0.06] text-secondary-foreground border border-white/[0.08] hover:bg-white/[0.10] hover:border-white/[0.14]",
+          "bg-white/6 text-secondary-foreground border border-white/8 hover:bg-white/10 hover:border-white/14",
         ghost:
-          "bg-transparent text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
+          "bg-transparent text-muted-foreground hover:bg-white/6 hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         solid:
-          "bg-gradient-to-b from-[hsl(263,75%,62%)] to-[hsl(263,70%,50%)] text-white shadow-[0_1px_2px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] hover:from-[hsl(263,75%,66%)] hover:to-[hsl(263,70%,54%)] hover:shadow-[0_2px_10px_rgba(139,92,246,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]",
+          "bg-linear-to-b from-[hsl(263,75%,62%)] to-[hsl(263,70%,50%)] text-white shadow-[0_1px_2px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] hover:from-[hsl(263,75%,66%)] hover:to-[hsl(263,70%,54%)] hover:shadow-[0_2px_10px_rgba(139,92,246,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]",
       },
       size: {
         default: "h-8 px-3 py-1.5 has-[>svg]:px-2.5",

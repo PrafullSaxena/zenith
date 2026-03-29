@@ -103,7 +103,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
               {frameworks.map((fw) => (
                 <span
                   key={fw}
-                  className="rounded-full bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                  className="rounded-full bg-white/4 border border-white/8 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
                 >
                   {fw}
                 </span>
@@ -141,7 +141,7 @@ export default function TestCoverageCard({ stats }: TestCoverageCardProps): Reac
               {visibleUncovered.map((filePath) => (
                 <li key={filePath}>
                   <button
-                    className="w-full truncate rounded px-1 py-0.5 text-left text-[11px] text-muted-foreground transition-colors hover:bg-white/[0.03] hover:text-foreground"
+                    className="w-full truncate rounded px-1 py-0.5 text-left text-[11px] text-muted-foreground transition-colors hover:bg-white/3 hover:text-foreground"
                     onClick={() => navigateToFile(filePath)}
                     title={filePath}
                   >

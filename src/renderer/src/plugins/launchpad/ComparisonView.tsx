@@ -157,9 +157,9 @@ export default function ComparisonView(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="shrink-0 border-b border-white/[0.06] px-4 py-3">
+      <div className="shrink-0 border-b border-white/6 px-4 py-3">
         <div className="flex items-center gap-2 mb-1">
-          <GitCompare size={14} className="text-[var(--primary)]" />
+          <GitCompare size={14} className="text-(--primary)" />
           <h2 className="text-sm font-semibold text-[hsl(var(--foreground))]">
             Multi-Provider Comparison
           </h2>
@@ -191,7 +191,7 @@ export default function ComparisonView(): React.JSX.Element {
                 }`}
               >
                 {/* Provider header */}
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/[0.06]">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/6">
                   <span className={`text-sm font-semibold ${PROVIDER_HEADER_COLORS[p]}`}>
                     {PROVIDER_INFO[p].shortName}
                   </span>
@@ -258,7 +258,7 @@ export default function ComparisonView(): React.JSX.Element {
                 </div>
 
                 {/* Total */}
-                <div className="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between">
+                <div className="mt-3 pt-2 border-t border-white/6 flex items-center justify-between">
                   <span className="text-xs font-semibold text-[hsl(var(--foreground))]">Total</span>
                   {total === null ? (
                     <span className="text-xs text-[hsl(var(--muted-foreground))]/40">N/A</span>
