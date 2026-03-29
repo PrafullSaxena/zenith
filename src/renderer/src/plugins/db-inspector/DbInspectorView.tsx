@@ -565,7 +565,7 @@ export default function DbInspectorView(): React.JSX.Element {
             onResize={(size) => {
               setIsLeftPanelCollapsed(size.asPercentage === 0)
             }}
-            className="flex flex-col px-4 pb-4 pt-1"
+            className="flex flex-col px-4 pb-4 pt-4"
           >
             <SpotlightCard className="flex h-full flex-col w-full overflow-hidden">
             <div className="shrink-0 border-b border-border/50 px-3 py-2.5">
@@ -644,7 +644,7 @@ export default function DbInspectorView(): React.JSX.Element {
           </PanelResizeHandle>
 
           {/* Right panel -- Tabbed content */}
-          <Panel minSize="30%" className="flex flex-col overflow-hidden pb-4 pt-1 pr-4">
+          <Panel minSize="30%" className="flex flex-col overflow-hidden pb-4 pt-4 pr-4">
             <SpotlightCard className="flex flex-col h-full overflow-hidden w-full">
           {/* Agent status warning */}
           {isConnected && !hasAgent && (

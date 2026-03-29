@@ -48,9 +48,9 @@ export default function HistoryPanel(): React.JSX.Element {
         {history.map((entry) => (
           <motion.div key={entry.id} variants={staggerItem}>
             <motion.div
-              whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.04)' }}
+              whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              className="group cursor-pointer rounded-xl border border-white/5 bg-black/20 backdrop-blur-md px-4 py-3 shadow-lg"
+              className="group cursor-pointer rounded-xl border border-border/50 bg-foreground/[0.02] backdrop-blur-md px-4 py-3 shadow-sm hover:bg-foreground/[0.04] transition-colors"
               onClick={() => useTextCraftStore.getState().loadFromHistory(entry)}
             >
               <div className="flex items-start gap-4">

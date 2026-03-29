@@ -12,8 +12,8 @@ import { useState, useEffect } from 'react'
 import { Wand2, Clock, PenLine } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels'
+import { SpotlightCard } from '@renderer/components/ui/spotlight-card'
 import { pageTransition } from '@renderer/lib/motion'
-import { Card } from '@renderer/components/ui/card'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { PageHeader } from '../../components/shared/page-header'
 import type { LucideIcon } from 'lucide-react'
@@ -45,7 +45,7 @@ export default function TextCraftView(): React.JSX.Element {
   }, [])
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[length:24px_24px]">
       {/* Header + tab bar */}
       <PageHeader
         icon={Wand2}
@@ -68,22 +68,32 @@ export default function TextCraftView(): React.JSX.Element {
           >
             <PanelGroup orientation="horizontal" className="w-full h-full">
               {/* Left: Input */}
-              <Panel defaultSize="33%" minSize="20%" className="h-full p-4 overflow-hidden flex flex-col">
-                <InputPanel />
+              <Panel defaultSize="33%" minSize="20%" className="h-full px-4 pb-4 pt-4 overflow-hidden flex flex-col">
+                <SpotlightCard className="flex h-full w-full flex-col overflow-hidden">
+                  <InputPanel />
+                </SpotlightCard>
               </Panel>
 
-              <PanelResizeHandle className="w-1 shrink-0 bg-transparent transition-colors hover:bg-primary/20 active:bg-primary/40 cursor-col-resize -mx-0.5 z-10" />
+              <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent cursor-col-resize z-10 group">
+                <div className="w-0.5 h-12 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
+              </PanelResizeHandle>
 
               {/* Middle: Controls */}
-              <Panel defaultSize="33%" minSize="20%" className="h-full p-4 overflow-hidden flex flex-col">
-                <ControlsPanel />
+              <Panel defaultSize="33%" minSize="20%" className="h-full px-4 pb-4 pt-4 overflow-hidden flex flex-col">
+                <SpotlightCard className="flex h-full w-full flex-col overflow-hidden">
+                  <ControlsPanel />
+                </SpotlightCard>
               </Panel>
 
-              <PanelResizeHandle className="w-1 shrink-0 bg-transparent transition-colors hover:bg-primary/20 active:bg-primary/40 cursor-col-resize -mx-0.5 z-10" />
+              <PanelResizeHandle className="relative flex w-2 shrink-0 items-center justify-center bg-transparent cursor-col-resize z-10 group">
+                <div className="w-0.5 h-12 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
+              </PanelResizeHandle>
 
               {/* Right: Output */}
-              <Panel defaultSize="34%" minSize="20%" className="h-full p-4 overflow-hidden flex flex-col">
-                <OutputPanel />
+              <Panel defaultSize="34%" minSize="20%" className="h-full px-4 pb-4 pt-4 overflow-hidden flex flex-col">
+                <SpotlightCard className="flex h-full w-full flex-col overflow-hidden">
+                  <OutputPanel />
+                </SpotlightCard>
               </Panel>
             </PanelGroup>
           </motion.div>

@@ -81,7 +81,7 @@ export default function ControlsPanel(): React.JSX.Element {
   }
 
   return (
-    <Card className="flex flex-col h-full gap-2.5 overflow-y-auto border-white/5 bg-black/20 backdrop-blur-md p-3 rounded-xl shadow-lg">
+    <Card className="flex flex-col h-full gap-2.5 overflow-y-auto border-0 bg-transparent shadow-none p-3 rounded-xl">
       {/* Header */}
       <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1 pb-1">
         Controls
@@ -110,7 +110,7 @@ export default function ControlsPanel(): React.JSX.Element {
                 className={`w-full rounded-lg py-1.5 px-2.5 text-left transition-colors ${
                   isActive
                     ? 'bg-primary/20 text-primary border border-primary/50 shadow-sm'
-                    : 'bg-white/4 text-muted-foreground hover:text-foreground hover:bg-white/6 border border-white/5'
+                    : 'bg-foreground/[0.02] text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04] border border-border/50'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -126,7 +126,7 @@ export default function ControlsPanel(): React.JSX.Element {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/4" />
+      <div className="border-t border-border/30" />
 
       {/* Section 2: Format Selection via Select */}
       <div>
@@ -142,7 +142,7 @@ export default function ControlsPanel(): React.JSX.Element {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/4" />
+      <div className="border-t border-border/30" />
 
       {/* Section 3: Custom Instructions */}
       <div>
@@ -156,12 +156,12 @@ export default function ControlsPanel(): React.JSX.Element {
           }
           placeholder="e.g., Make it shorter, emphasize security..."
           rows={3}
-          className="w-full resize-none rounded-xl h-24 bg-black/40 border border-white/10 text-foreground placeholder:text-muted-foreground/50 text-sm leading-relaxed p-3 focus:outline-none focus:ring-1 focus:ring-primary/50 transition-shadow"
+          className="w-full resize-none rounded-xl h-24 bg-foreground/[0.02] border border-border/50 text-foreground placeholder:text-muted-foreground/50 text-sm leading-relaxed p-3 focus:outline-none focus:ring-1 focus:ring-primary/50 transition-shadow"
         />
       </div>
 
       {/* Divider */}
-      <div className="border-t border-white/4" />
+      <div className="border-t border-border/30" />
 
       {/* Section 4: Action Button */}
       <div>

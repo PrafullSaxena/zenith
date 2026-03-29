@@ -248,7 +248,7 @@ export default function NebulaView(): React.JSX.Element {
                   onResize={(size) => {
                     setSidebarCollapsed(size.asPercentage === 0)
                   }}
-                  className="flex flex-col px-4 pb-4 pt-1"
+                  className="flex flex-col px-4 pb-4 pt-4"
                 >
                 <SpotlightCard className="flex h-full flex-col w-full overflow-hidden">
                 {sidebarCollapsed ? (
@@ -286,7 +286,7 @@ export default function NebulaView(): React.JSX.Element {
               </PanelResizeHandle>
 
               {/* Content area */}
-              <Panel className="relative flex flex-col overflow-hidden px-4 pb-4 pt-1">
+              <Panel className="relative flex flex-col overflow-hidden px-4 pb-4 pt-4">
                 <div className="flex h-full w-full flex-col overflow-hidden rounded-[24px] border border-border bg-card/40 backdrop-blur-3xl">
                 {activeNote ? (
                   <PanelGroup orientation="horizontal" className="w-full h-full">

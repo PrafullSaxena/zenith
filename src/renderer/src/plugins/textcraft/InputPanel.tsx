@@ -15,7 +15,7 @@ export default function InputPanel(): React.JSX.Element {
   const charCount = inputText.length
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden border-white/5 bg-black/20 backdrop-blur-md p-3 rounded-xl shadow-lg">
+    <Card className="flex flex-col h-full overflow-hidden border-0 bg-transparent shadow-none p-3 rounded-xl">
       {/* Header */}
       <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1 pb-1.5">
         Input
@@ -29,7 +29,7 @@ export default function InputPanel(): React.JSX.Element {
       />
 
       {/* Footer: word/char count */}
-      <div className="text-[11px] font-medium tracking-wide text-muted-foreground/60 px-1 pt-2 border-t border-white/6 flex items-center gap-2 uppercase">
+      <div className="text-[11px] font-medium tracking-wide text-muted-foreground/60 px-1 pt-2 border-t border-border/50 flex items-center gap-2 uppercase">
         <span>{wordCount} {wordCount === 1 ? 'word' : 'words'}</span>
         <span className="h-1 w-1 rounded-full bg-border" />
         <span>{charCount} {charCount === 1 ? 'char' : 'chars'}</span>
