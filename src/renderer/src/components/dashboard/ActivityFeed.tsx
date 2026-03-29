@@ -12,7 +12,6 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { ActivityEntry, ActivityStatus } from '../../types/activity'
 import { getPluginById } from '../../plugins/registry'
-import { Card, CardContent } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
@@ -66,8 +65,8 @@ export function ActivityFeed({
 
   if (entries.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card/40 py-10">
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/[0.06]">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-black/10 py-10">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/6">
           <Inbox size={20} className="text-primary/30" />
         </div>
         <p className="text-sm font-medium text-muted-foreground">No recent activity</p>
@@ -98,8 +97,8 @@ export function ActivityFeed({
 
             return (
               <motion.div key={entry.id} variants={staggerItem}>
-                <Card className="rounded-[22px]">
-                  <CardContent className="flex items-center gap-3 px-4 py-2.5">
+                <div className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
+                  <div className="flex items-center gap-3 px-4 py-2.5">
                     {/* Left accent bar */}
                     <div
                       className="h-8 w-[3px] shrink-0 rounded-full"
@@ -140,8 +139,8 @@ export function ActivityFeed({
                     <span className="shrink-0 text-[11px] text-muted-foreground/60">
                       {formatRelativeTime(entry.timestamp)}
                     </span>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             )
           })}
@@ -149,7 +148,7 @@ export function ActivityFeed({
       </ScrollArea>
 
       {showViewAll && entries.length > 0 && (
-        <div className="border-t border-border px-4 py-2">
+        <div className="border-t border-white/5 px-4 py-2">
           <Button
             variant="ghost"
             className="w-full text-xs"

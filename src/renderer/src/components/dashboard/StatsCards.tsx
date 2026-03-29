@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import { BarChart3, GitPullRequest, Zap, Coins } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ActivityEntry } from '../../types/activity'
-import { Card, CardContent } from '@renderer/components/ui/card'
 import { cn } from '@renderer/lib/utils'
 import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 
@@ -75,8 +74,8 @@ export function StatsCards({ entries, totalTokens }: StatsCardsProps): React.JSX
         const Icon = stat.icon
         return (
           <motion.div key={stat.label} variants={staggerItem}>
-            <Card className="rounded-[22px]">
-              <CardContent className="p-4">
+            <div className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
+              <div className="p-4">
                 <div className="flex items-center gap-3">
                   <div className={cn('rounded-lg p-2', stat.bgColor)}>
                     <Icon size={18} className={stat.color} />
@@ -86,8 +85,8 @@ export function StatsCards({ entries, totalTokens }: StatsCardsProps): React.JSX
                     <p className="text-[11px] text-muted-foreground">{stat.label}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
         )
       })}

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
   GitPullRequest,
@@ -14,7 +15,6 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { PluginDefinition } from '../../types/plugin'
 import { useActivityStore } from '../../stores/activity-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
 import { cn } from '@renderer/lib/utils'
 
 /**
@@ -55,18 +55,20 @@ export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.
   const accentClasses = PLUGIN_ACCENTS[plugin.id] ?? 'from-primary/20 to-primary/10 text-primary'
 
   return (
-    <Card
+    <motion.div
       className={cn(
-        'group flex h-full cursor-pointer flex-col rounded-[22px] p-0 text-left',
-        'transition-all duration-200 hover:-translate-y-0.5 hover:border-muted-foreground/30'
+        'group flex h-full cursor-pointer flex-col rounded-xl border border-white/5 bg-black/20 backdrop-blur-md p-0 text-left',
+        'transition-colors duration-200 hover:border-white/10'
       )}
+      whileHover={{ y: -2 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={() => navigate(plugin.route)}
     >
-      <CardContent className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Icon with per-plugin accent */}
-            <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br', accentClasses)}>
+            <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-linear-to-br', accentClasses)}>
               {Icon && <Icon size={18} />}
             </div>
             <div className="min-w-0">
@@ -89,7 +91,7 @@ export function PluginCard({ plugin }: { plugin: PluginDefinition }): React.JSX.
         <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
           {plugin.description}
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   )
 }

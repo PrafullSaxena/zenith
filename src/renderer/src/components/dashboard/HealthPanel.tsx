@@ -5,7 +5,6 @@
  */
 import { RefreshCw, ShieldCheck } from 'lucide-react'
 import type { ResourceHealth, ResourceCategory, HealthStatus } from '../../types/health'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { cn } from '@renderer/lib/utils'
@@ -61,11 +60,11 @@ export function HealthPanel({
   })).filter((g) => g.items.length > 0)
 
   return (
-    <Card className="flex h-full flex-col rounded-xl">
+    <div className="flex h-full flex-col rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
       {/* Header */}
-      <CardHeader className="flex-row items-center justify-between space-y-0">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
         <div>
-          <CardTitle className="text-sm">System Health</CardTitle>
+          <h3 className="text-sm font-semibold text-foreground">System Health</h3>
           <div className="mt-1">
             <Badge variant={STATUS_BADGE_VARIANT[overallStatus]}>
               <span className={cn('mr-1.5 inline-block h-1.5 w-1.5 rounded-full', STATUS_DOT[overallStatus])} />
@@ -82,14 +81,14 @@ export function HealthPanel({
         >
           <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
         </Button>
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex-1">
+      <div className="flex-1 px-5 py-3">
         {/* Resource groups */}
         {grouped.length === 0 ? (
           <div className="flex flex-1 items-center justify-center py-8">
             <div className="text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/[0.08]">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8">
                 <ShieldCheck size={20} className="text-primary/40" />
               </div>
               <p className="text-sm font-medium text-muted-foreground">No resources configured</p>
@@ -109,7 +108,7 @@ export function HealthPanel({
                   {group.items.map((res) => (
                     <div
                       key={res.id}
-                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50"
+                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5"
                     >
                       <span className={cn('h-2 w-2 shrink-0 rounded-full', STATUS_DOT[res.status])} />
                       <span className="flex-1 truncate text-xs font-medium text-foreground">{res.name}</span>
@@ -125,7 +124,7 @@ export function HealthPanel({
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

@@ -22,7 +22,6 @@ import { useActivityStore } from '../../stores/activity-store'
 import { useTokenStore } from '../../stores/token-store'
 import { useHealthStore } from '../../stores/health-store'
 import { useDbStore } from '../../stores/db-store'
-import { Card, CardContent } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 import { cn } from '@renderer/lib/utils'
 import { staggerContainer, staggerItem } from '../../lib/motion'
@@ -62,8 +61,8 @@ function QuickStat({
   accent: string
 }): React.JSX.Element {
   return (
-    <Card className="rounded-[22px]">
-      <CardContent className="flex items-center gap-3 px-4 py-3">
+    <div className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
+      <div className="flex items-center gap-3 px-4 py-3">
         <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', accent)}>
           <Icon size={16} />
         </div>
@@ -71,8 +70,8 @@ function QuickStat({
           <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
           <p className="text-base font-medium leading-tight text-foreground tabular-nums">{value}</p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -152,11 +151,11 @@ export default function MissionControl(): React.JSX.Element {
       <div className="drag-region h-3 w-full" />
       {/* ── Hero Header ─────────────────────────────────────────────── */}
       <motion.div variants={staggerItem}>
-        <Card className="relative overflow-hidden rounded-xl bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.10),transparent_60%)]">
-          <CardContent className="px-5 py-4">
+        <div className="relative overflow-hidden rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
+          <div className="px-5 py-4">
             {/* Subtle glow effect */}
-            <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-primary/[0.04] blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-primary/[0.03] blur-2xl" />
+            <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-primary/4 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-primary/3 blur-2xl" />
 
             <div className="relative flex items-start justify-between">
               <div className="flex items-center gap-4">
@@ -215,8 +214,8 @@ export default function MissionControl(): React.JSX.Element {
                 accent="bg-purple-500/15 text-purple-400"
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
 
       {/* ── Token Chart + Health Panel — responsive 2:1 layout ───── */}

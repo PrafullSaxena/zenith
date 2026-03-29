@@ -11,7 +11,6 @@
 import { useMemo } from 'react'
 import { BarChart3 } from 'lucide-react'
 import type { TokenUsageEntry } from '../../stores/token-store'
-import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
 
 interface TokenChartProps {
@@ -230,14 +229,14 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
   // ── Empty state ──
   if (entries.length === 0) {
     return (
-      <Card className="flex h-full flex-col rounded-xl">
-        <CardHeader>
-          <CardTitle className="text-sm">Token Usage</CardTitle>
+      <div className="flex h-full flex-col rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
+        <div className="px-5 py-3 border-b border-white/5">
+          <h3 className="text-sm font-semibold text-foreground">Token Usage</h3>
           <p className="text-[11px] text-muted-foreground">7-day consumption by AI agent</p>
-        </CardHeader>
-        <CardContent className="flex flex-1 items-center justify-center">
+        </div>
+        <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/[0.08]">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8">
               <BarChart3 size={20} className="text-primary/40" />
             </div>
             <p className="text-sm font-medium text-muted-foreground">No usage data yet</p>
@@ -245,24 +244,24 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
               Token consumption will appear here after you run AI-powered queries
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   // ── Data state ──
   return (
-    <Card className="flex h-full flex-col rounded-xl">
-      <CardHeader className="flex-row items-center justify-between space-y-0">
+    <div className="flex h-full flex-col rounded-xl border border-white/5 bg-black/20 backdrop-blur-md">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
         <div>
-          <CardTitle className="text-sm">Token Usage</CardTitle>
+          <h3 className="text-sm font-semibold text-foreground">Token Usage</h3>
           <p className="text-[11px] text-muted-foreground">7-day consumption by AI agent</p>
         </div>
         <Badge variant="secondary" className="text-[11px]">
           {totalTokens.toLocaleString()} total
         </Badge>
-      </CardHeader>
-      <CardContent className="flex-1 pb-5">
+      </div>
+      <div className="flex-1 pb-5 px-5 pt-3">
         {/* Chart + Legend side-by-side */}
         <div className="flex min-h-0 flex-1 gap-4">
           {/* SVG Chart */}
@@ -408,7 +407,7 @@ export function TokenChart({ entries }: TokenChartProps): React.JSX.Element {
             })}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
