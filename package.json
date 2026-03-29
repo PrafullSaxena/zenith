@@ -4,7 +4,8 @@
   "description": "Zenith — AI-powered developer tools desktop app",
   "main": "./out/main/index.js",
   "type": "module",
-  "author": "",
+  "author": "Prafull Saxena",
+  "license": "UNLICENSED",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
