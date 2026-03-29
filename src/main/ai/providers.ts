@@ -88,26 +88,6 @@ export function createModel(
       return provider(modelName) as unknown as LanguageModel
     }
 
-    case 'cursor-agent': {
-      // Cursor does not expose a standard OpenAI-compatible Chat Completions
-      // endpoint.  Users must provide a proxy URL (e.g. LiteLLM or OpenRouter).
-      if (!baseUrl) {
-        throw new Error(
-          'Cursor requires a proxy URL. Configure a base URL in provider settings ' +
-          '(e.g., use LiteLLM proxy at http://localhost:4000/v1 or OpenRouter at https://openrouter.ai/api/v1).'
-        )
-      }
-      const provider = createOpenAI({
-        compatibility: 'compatible',
-        apiKey: apiKey || 'unused',
-        baseURL: baseUrl,
-        ...(apiKey
-          ? { headers: { Authorization: `Bearer ${apiKey}` } }
-          : {})
-      })
-      return provider.chat(modelName)
-    }
-
     case 'codex':
     case 'opencode':
     default: {

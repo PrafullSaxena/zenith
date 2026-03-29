@@ -99,13 +99,13 @@ export const DEFAULT_PROVIDERS: AgentProvider[] = [
   {
     id: 'cursor-agent',
     name: 'Cursor Agent',
-    type: 'cloud',
+    type: 'cli',
     baseUrl: '',
-    model: 'gpt-4o',
-    command: '',
+    model: '',
+    command: 'cursor-agent --trust --output-format=stream-json --stream-partial-output -p',
     status: 'not-configured',
     isCustom: false,
-    requiresApiKey: true,
+    requiresApiKey: false,
     hasApiKey: false
   }
 ]

@@ -214,6 +214,8 @@ export function streamCliReview(params: {
   // JSON event stream detection state (e.g. Codex CLI outputs JSON events)
   let isJsonStream: boolean | null = null
   let jsonBuffer = ''
+  // Real usage from cursor-agent's result event (more accurate than estimation)
+  let extractedUsage: { inputTokens: number; outputTokens: number } | undefined
 
   // Stream stdout chunks to renderer
   child.stdout.on('data', (data: Buffer) => {
@@ -234,8 +236,9 @@ export function streamCliReview(params: {
 
     if (isJsonStream) {
       jsonBuffer += chunk
-      const { text, remainder } = extractJsonEventText(jsonBuffer)
+      const { text, remainder, usage } = extractJsonEventText(jsonBuffer)
       jsonBuffer = remainder
+      if (usage) extractedUsage = usage
       if (text) {
         safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk: text })
       }
@@ -257,7 +260,8 @@ export function streamCliReview(params: {
 
     // Flush any remaining JSON buffer
     if (isJsonStream && jsonBuffer.trim()) {
-      const { text } = extractJsonEventText(jsonBuffer)
+      const { text, usage } = extractJsonEventText(jsonBuffer)
+      if (usage) extractedUsage = usage
       if (text) {
         safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk: text })
       }
@@ -265,14 +269,12 @@ export function streamCliReview(params: {
     }
 
     if (code === 0 || code === null) {
-      // Estimate tokens from output length (~4 chars per token)
-      const estimatedTokens = Math.ceil(fullText.length / 4)
-      safeSend(mainWindow, 'ai:stream:done', {
-        sessionId,
-        usage: estimatedTokens > 0
-          ? { totalTokens: estimatedTokens, isEstimated: true }
-          : undefined
-      })
+      // Use real token counts from cursor-agent result event when available,
+      // otherwise fall back to estimation (~4 chars per token).
+      const usagePayload = extractedUsage
+        ? { totalTokens: extractedUsage.inputTokens + extractedUsage.outputTokens, inputTokens: extractedUsage.inputTokens, outputTokens: extractedUsage.outputTokens }
+        : (fullText.length > 0 ? { totalTokens: Math.ceil(fullText.length / 4), isEstimated: true } : undefined)
+      safeSend(mainWindow, 'ai:stream:done', { sessionId, usage: usagePayload })
     } else {
       const detail = stderrText.trim()
       const errorMsg = detail
@@ -306,14 +308,23 @@ export function cancelCliReview(sessionId: string): void {
 /**
  * Extract displayable text from a buffer of JSON event objects.
  *
- * Some CLI tools (e.g. Codex) output newline-/space-delimited JSON events
- * instead of plain text. This function scans for complete JSON objects,
- * extracts the human-readable text from agent_message items, and returns
- * any remaining incomplete data so the caller can re-buffer it.
+ * Handles multiple CLI JSON stream formats:
+ *
+ * Codex format:
+ *   {"type":"item.completed","item":{"type":"agent_message","text":"..."}}
+ *
+ * Cursor Agent format (--output-format=stream-json --stream-partial-output):
+ *   {"type":"assistant","timestamp_ms":...,"message":{"role":"assistant","content":[{"type":"text","text":"..."}]}}
+ *   {"type":"result","subtype":"success","usage":{"inputTokens":N,"outputTokens":N,...}}
+ *   Note: cursor-agent emits a final {"type":"assistant"} WITHOUT timestamp_ms that contains
+ *   the full accumulated text — we skip it to avoid duplicating already-streamed content.
+ *
+ * Returns extracted text and any remaining incomplete JSON data.
  */
-function extractJsonEventText(buffer: string): { text: string; remainder: string } {
+function extractJsonEventText(buffer: string): { text: string; remainder: string; usage?: { inputTokens: number; outputTokens: number } } {
   let text = ''
   let pos = 0
+  let usage: { inputTokens: number; outputTokens: number } | undefined
 
   while (pos < buffer.length) {
     // Skip whitespace between JSON objects
@@ -344,10 +355,30 @@ function extractJsonEventText(buffer: string): { text: string; remainder: string
 
     try {
       const event = JSON.parse(buffer.slice(pos, end))
-      // Extract text from completed agent messages (the actual AI response)
+
+      // Codex: extract text from completed agent messages
       if (event.type === 'item.completed' && event.item) {
         if (event.item.type === 'agent_message' && typeof event.item.text === 'string') {
           text += event.item.text
+        }
+      }
+
+      // Cursor Agent: streaming assistant delta events (only those with timestamp_ms are
+      // true partial deltas; the final assistant event without timestamp_ms is the full
+      // accumulated text and must be skipped to avoid duplicating content).
+      if (event.type === 'assistant' && event.timestamp_ms != null && event.message?.content) {
+        for (const block of event.message.content) {
+          if (block.type === 'text' && typeof block.text === 'string') {
+            text += block.text
+          }
+        }
+      }
+
+      // Cursor Agent: result event carries accurate token usage
+      if (event.type === 'result' && event.subtype === 'success' && event.usage) {
+        const u = event.usage
+        if (typeof u.inputTokens === 'number' && typeof u.outputTokens === 'number') {
+          usage = { inputTokens: u.inputTokens, outputTokens: u.outputTokens }
         }
       }
     } catch {
@@ -357,7 +388,7 @@ function extractJsonEventText(buffer: string): { text: string; remainder: string
     pos = end
   }
 
-  return { text, remainder: buffer.slice(pos) }
+  return { text, remainder: buffer.slice(pos), usage }
 }
 
 /**
@@ -414,6 +445,8 @@ export function streamCliAnalysis(params: {
   // null = haven't determined yet, true = JSON events, false = plain text
   let isJsonStream: boolean | null = null
   let jsonBuffer = ''
+  // Real usage from cursor-agent's result event (more accurate than estimation)
+  let extractedUsage: { inputTokens: number; outputTokens: number } | undefined
 
   child.stdout.on('data', (data: Buffer) => {
     if (mainWindow.isDestroyed()) {
@@ -434,8 +467,9 @@ export function streamCliAnalysis(params: {
     if (isJsonStream) {
       // Buffer and parse JSON events, forward only extracted text
       jsonBuffer += chunk
-      const { text, remainder } = extractJsonEventText(jsonBuffer)
+      const { text, remainder, usage } = extractJsonEventText(jsonBuffer)
       jsonBuffer = remainder
+      if (usage) extractedUsage = usage
       if (text) {
         safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk: text })
       }
@@ -457,7 +491,8 @@ export function streamCliAnalysis(params: {
 
     // Flush any remaining JSON buffer
     if (isJsonStream && jsonBuffer.trim()) {
-      const { text } = extractJsonEventText(jsonBuffer)
+      const { text, usage } = extractJsonEventText(jsonBuffer)
+      if (usage) extractedUsage = usage
       if (text) {
         safeSend(mainWindow, 'ai:stream:chunk', { sessionId, chunk: text })
       }
@@ -465,13 +500,10 @@ export function streamCliAnalysis(params: {
     }
 
     if (code === 0 || code === null) {
-      const estimatedTokens = Math.ceil(fullText.length / 4)
-      safeSend(mainWindow, 'ai:stream:done', {
-        sessionId,
-        usage: estimatedTokens > 0
-          ? { totalTokens: estimatedTokens, isEstimated: true }
-          : undefined
-      })
+      const usagePayload = extractedUsage
+        ? { totalTokens: extractedUsage.inputTokens + extractedUsage.outputTokens, inputTokens: extractedUsage.inputTokens, outputTokens: extractedUsage.outputTokens }
+        : (fullText.length > 0 ? { totalTokens: Math.ceil(fullText.length / 4), isEstimated: true } : undefined)
+      safeSend(mainWindow, 'ai:stream:done', { sessionId, usage: usagePayload })
     } else {
       const detail = stderrText.trim()
       const errorMsg = detail
