@@ -9,7 +9,7 @@ interface SpotlightCardProps extends HTMLMotionProps<'div'> {
 export function SpotlightCard({
   children,
   className = '',
-  spotlightColor = 'hsl(var(--primary) / 0.08)',
+  spotlightColor = 'hsl(var(--primary) / 0.03)',
   ...props
 }: SpotlightCardProps): React.JSX.Element {
   const mouseX = useMotionValue(0)

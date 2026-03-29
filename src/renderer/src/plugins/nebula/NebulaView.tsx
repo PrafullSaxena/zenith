@@ -287,7 +287,7 @@ export default function NebulaView(): React.JSX.Element {
 
               {/* Content area */}
               <Panel className="relative flex flex-col overflow-hidden px-4 pb-4 pt-1">
-                <SpotlightCard className="flex h-full w-full flex-col overflow-hidden">
+                <div className="flex h-full w-full flex-col overflow-hidden rounded-[24px] border border-border bg-card/40 backdrop-blur-3xl">
                 {activeNote ? (
                   <PanelGroup orientation="horizontal" className="w-full h-full">
                     {/* Editor -- hidden when drawing is fullscreen */}
@@ -394,7 +394,7 @@ export default function NebulaView(): React.JSX.Element {
 
                 {/* Voice Recorder FAB -- hidden when drawing is fullscreen */}
                 {!drawingFullscreen && <VoiceRecorder noteId={activeNote?.id ?? null} />}
-                </SpotlightCard>
+                </div>
               </Panel>
             </PanelGroup>
             </div>
