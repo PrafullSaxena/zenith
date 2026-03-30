@@ -79,8 +79,8 @@
 - [x] **SET-02**: Provider status displayed in settings: Live / No Key / Stale with last-sync timestamp
 - [x] **SET-03**: Credentials section in settings: AWS access key + secret, GCP API key, GCP billing account — all masked, with Edit/Clear per field
 - [x] **SET-04**: GCP API key labeled "Required for live pricing" with link to GCP Console setup
-- [ ] **SET-05**: Sync status badge in Launchpad plugin header: Live / Partial / Cached / Stale
-- [ ] **SET-06**: Clicking sync status badge opens popover with per-provider detail + link to settings
+- [x] **SET-05**: Sync status badge in Launchpad plugin header: Live / Partial / Cached / Stale
+- [x] **SET-06**: Clicking sync status badge opens popover with per-provider detail + link to settings
 
 ---
 
@@ -164,8 +164,8 @@
 | SET-02 | Phase 12 | Complete |
 | SET-03 | Phase 12 | Complete |
 | SET-04 | Phase 12 | Complete |
-| SET-05 | Phase 12 | Pending |
-| SET-06 | Phase 12 | Pending |
+| SET-05 | Phase 12 | Complete |
+| SET-06 | Phase 12 | Complete |
 
 **Coverage:**
 - v1 requirements: 46 total

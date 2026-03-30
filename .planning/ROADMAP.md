@@ -23,7 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 9: Calculator & Store** - Pure calculator function, pricingCache, lazy loading, memoization, region picker (completed 2026-03-30)
 - [x] **Phase 10: Service Catalog** - 100-service DB-driven catalog, virtualized list, in-memory search, cross-provider equivalences (completed 2026-03-30)
 - [x] **Phase 11: Visualizations** - Recharts integration, treemap, donut, comparison bar, history trend line (completed 2026-03-30)
-- [ ] **Phase 12: Settings & Polish** - Settings panel, credentials UI, sync status badge, region persistence
+- [x] **Phase 12: Settings & Polish** - Settings panel, credentials UI, sync status badge, region persistence (completed 2026-03-30)
 
 ## Phase Details
 
@@ -260,7 +260,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 9. Calculator & Store | 3/3 | Complete   | 2026-03-30 |
 | 10. Service Catalog | 3/3 | Complete    | 2026-03-30 |
 | 11. Visualizations | 2/2 | Complete    | 2026-03-30 |
-| 12. Settings & Polish | 1/2 | In Progress|  |
+| 12. Settings & Polish | 2/2 | Complete   | 2026-03-30 |
 
 ---
 *Roadmap created: 2026-03-27*
