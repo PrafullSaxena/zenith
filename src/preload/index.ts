@@ -215,6 +215,57 @@ const api = {
       gcpBillingAccountId?: string
     }): Promise<{ saved: boolean }> =>
       ipcRenderer.invoke('launchpad:saveCredentials', credentials),
+
+    syncPricing: (): Promise<{
+      success: boolean
+      result?: {
+        startedAt: number
+        completedAt: number
+        providers: Array<{
+          provider: 'aws' | 'gcp' | 'azure'
+          status: 'success' | 'error' | 'skipped'
+          servicesUpdated: number
+          error?: string
+          deltaSkipped?: boolean
+        }>
+      }
+      error?: string
+    }> =>
+      ipcRenderer.invoke('launchpad:syncPricing'),
+
+    getSyncStatus: (): Promise<{
+      success: boolean
+      statuses?: Array<{
+        provider: 'aws' | 'gcp' | 'azure'
+        lastSyncAt: number | null
+        status: string | null
+        servicesUpdated: number | null
+        error: string | null
+      }>
+      error?: string
+    }> =>
+      ipcRenderer.invoke('launchpad:getSyncStatus'),
+
+    getRegions: (provider: string): Promise<{
+      success: boolean
+      regions?: Array<{ regionId: string; displayName: string }>
+      error?: string
+    }> =>
+      ipcRenderer.invoke('launchpad:getRegions', provider),
+
+    onSyncComplete: (
+      callback: (result: {
+        startedAt: number
+        completedAt: number
+        providers: Array<{ provider: string; status: string; servicesUpdated: number }>
+      }) => void
+    ): (() => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, result: unknown) =>
+        callback(result as Parameters<typeof callback>[0])
+      ipcRenderer.on('launchpad:syncComplete', handler)
+      // Return an unsubscribe function so the renderer can clean up
+      return () => ipcRenderer.removeListener('launchpad:syncComplete', handler)
+    },
   },
   textcraft: {
     exportPdf: (data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }): Promise<{ filePath: string | null }> =>
