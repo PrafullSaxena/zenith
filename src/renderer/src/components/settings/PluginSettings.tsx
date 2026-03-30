@@ -1,9 +1,11 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, lazy, Suspense } from 'react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { getPluginById } from '../../plugins/registry'
 import { SettingsField } from './SettingsField'
 import type { PluginId } from '../../types/plugin'
+
+const LaunchpadSettings = lazy(() => import('../../plugins/launchpad/LaunchpadSettings'))
 
 interface PluginSettingsProps {
   pluginId: PluginId
@@ -55,6 +57,21 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
       <div className="flex items-center justify-center py-12">
         <span className="text-sm text-muted-foreground">Loading settings...</span>
       </div>
+    )
+  }
+
+  // Launchpad uses a custom settings panel instead of schema-driven form
+  if (pluginId === 'launchpad') {
+    return (
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-12">
+            <span className="text-sm text-muted-foreground">Loading settings...</span>
+          </div>
+        }
+      >
+        <LaunchpadSettings />
+      </Suspense>
     )
   }
 
