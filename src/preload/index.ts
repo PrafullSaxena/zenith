@@ -216,6 +216,12 @@ const api = {
     }): Promise<{ saved: boolean }> =>
       ipcRenderer.invoke('launchpad:saveCredentials', credentials),
 
+    getCredentialStatus: (): Promise<Record<string, { set: boolean; masked: string | null }>> =>
+      ipcRenderer.invoke('launchpad:getCredentialStatus'),
+
+    deleteCredential: (args: { key: string }): Promise<{ deleted: boolean }> =>
+      ipcRenderer.invoke('launchpad:deleteCredential', args),
+
     syncPricing: (): Promise<{
       success: boolean
       result?: {

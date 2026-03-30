@@ -35,7 +35,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { initPricingDb } from './pricing/pricing-db'
 import { pricingRepository } from './pricing/pricing-repository'
-import { saveCredential, CRED_GCP_API_KEY, CRED_AWS_ACCESS_KEY_ID, CRED_AWS_SECRET_ACCESS_KEY, CRED_GCP_BILLING_ACCOUNT_ID } from './pricing/credentials'
+import { saveCredential, hasCredential, deleteCredential, getCredentialMasked, CRED_GCP_API_KEY, CRED_AWS_ACCESS_KEY_ID, CRED_AWS_SECRET_ACCESS_KEY, CRED_GCP_BILLING_ACCOUNT_ID } from './pricing/credentials'
 import { seedPricingDb } from './pricing/seed'
 import { pricingSync } from './pricing/pricing-sync'
 
@@ -667,6 +667,42 @@ export function registerIpcHandlers(): void {
         saveCredential(CRED_GCP_BILLING_ACCOUNT_ID, credentials.gcpBillingAccountId)
       }
       return { saved: true }
+    }
+  )
+
+  // ── launchpad:getCredentialStatus ────────────────────────────────────────
+  ipcMain.handle('launchpad:getCredentialStatus', () => {
+    const credKeys = {
+      gcpApiKey: CRED_GCP_API_KEY,
+      awsAccessKeyId: CRED_AWS_ACCESS_KEY_ID,
+      awsSecretAccessKey: CRED_AWS_SECRET_ACCESS_KEY,
+      gcpBillingAccountId: CRED_GCP_BILLING_ACCOUNT_ID
+    } as const
+
+    const result: Record<string, { set: boolean; masked: string | null }> = {}
+    for (const [friendly, credKey] of Object.entries(credKeys)) {
+      result[friendly] = {
+        set: hasCredential(credKey),
+        masked: getCredentialMasked(credKey)
+      }
+    }
+    return result
+  })
+
+  // ── launchpad:deleteCredential ─────────────────────────────────────────
+  ipcMain.handle(
+    'launchpad:deleteCredential',
+    (_event, { key }: { key: 'gcpApiKey' | 'awsAccessKeyId' | 'awsSecretAccessKey' | 'gcpBillingAccountId' }) => {
+      const credKeyMap: Record<string, string> = {
+        gcpApiKey: CRED_GCP_API_KEY,
+        awsAccessKeyId: CRED_AWS_ACCESS_KEY_ID,
+        awsSecretAccessKey: CRED_AWS_SECRET_ACCESS_KEY,
+        gcpBillingAccountId: CRED_GCP_BILLING_ACCOUNT_ID
+      }
+      const credKey = credKeyMap[key]
+      if (!credKey) return { deleted: false }
+      deleteCredential(credKey)
+      return { deleted: true }
     }
   )
 

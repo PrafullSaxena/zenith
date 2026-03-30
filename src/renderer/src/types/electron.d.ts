@@ -278,6 +278,8 @@ export interface ElectronAPI {
       awsSecretAccessKey?: string
       gcpBillingAccountId?: string
     }) => Promise<{ saved: boolean }>
+    getCredentialStatus: () => Promise<Record<string, { set: boolean; masked: string | null }>>
+    deleteCredential: (args: { key: string }) => Promise<{ deleted: boolean }>
     syncPricing: () => Promise<{
       success: boolean
       result?: {

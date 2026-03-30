@@ -63,3 +63,14 @@ export function hasCredential(key: string): boolean {
 export function deleteCredential(key: string): void {
   launchpadCredStore.delete(key)
 }
+
+/**
+ * Retrieve a credential and return it masked (last 4 chars visible).
+ * Returns null if the key has not been stored.
+ */
+export function getCredentialMasked(key: string): string | null {
+  const value = getCredential(key)
+  if (!value) return null
+  if (value.length <= 4) return value
+  return '\u2022'.repeat(value.length - 4) + value.slice(-4)
+}
