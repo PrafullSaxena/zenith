@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Screen Migration** - Migrate all 10 screens/plugins to use shared components (parallel agents)
 - [ ] **Phase 5: 3D Removal & Cleanup** - Delete Glass components, Three.js code, and old dependencies
 - [ ] **Phase 6: Polish** - Micro-interactions, empty states, command palette wiring, a11y audit, bundle audit
-- [ ] **Phase 7: Data Foundation** - Initialize pricing.db, PricingRepository, core IPC handlers, and credential storage
+- [x] **Phase 7: Data Foundation** - Initialize pricing.db, PricingRepository, core IPC handlers, and credential storage (completed 2026-03-30)
 - [ ] **Phase 8: Pricing Sync** - PricingSync service, AWS/Azure/GCP fetchers, delta sync, regional data, sync IPC channels
 - [ ] **Phase 9: Calculator & Store** - Pure calculator function, pricingCache, lazy loading, memoization, region picker
 - [ ] **Phase 10: Service Catalog** - 100-service DB-driven catalog, virtualized list, in-memory search, cross-provider equivalences
@@ -247,7 +247,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Screen Migration | 0/10 | Not started | - |
 | 5. 3D Removal & Cleanup | 0/1 | Not started | - |
 | 6. Polish | 0/3 | Not started | - |
-| 7. Data Foundation | 1/2 | In Progress|  |
+| 7. Data Foundation | 2/2 | Complete   | 2026-03-30 |
 | 8. Pricing Sync | 0/1 | Not started | - |
 | 9. Calculator & Store | 0/1 | Not started | - |
 | 10. Service Catalog | 0/1 | Not started | - |

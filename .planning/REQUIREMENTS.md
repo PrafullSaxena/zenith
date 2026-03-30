@@ -12,7 +12,7 @@
 
 - [x] **DATA-01**: Main process initializes `pricing.db` with `pricing_services`, `pricing_rates`, `pricing_regions`, and `pricing_sync_log` tables on app startup
 - [x] **DATA-02**: `PricingRepository` class exposes `getCatalog()`, `getRates()`, `getRegions()`, `getSyncStatus()`, `upsertRates()`, and `seedFromFallback()` methods
-- [ ] **DATA-03**: App seeds `pricing.db` from existing hardcoded TypeScript data on first launch (zero network dependency)
+- [x] **DATA-03**: App seeds `pricing.db` from existing hardcoded TypeScript data on first launch (zero network dependency)
 - [x] **DATA-04**: DB queries use indexes on `(provider, region, service_id)` and `(service_id, provider)` for sub-millisecond lookups
 - [x] **DATA-05**: Credentials (GCP API key, AWS keys, GCP billing account) stored encrypted via Electron `safeStorage`
 
@@ -39,12 +39,12 @@
 
 ### IPC Channels
 
-- [ ] **IPC-01**: `launchpad:getPricing` — returns rates for selected services + provider + region from DB
+- [x] **IPC-01**: `launchpad:getPricing` — returns rates for selected services + provider + region from DB
 - [ ] **IPC-02**: `launchpad:syncPricing` — triggers manual sync, returns sync status
 - [ ] **IPC-03**: `launchpad:getSyncStatus` — returns last sync time, next sync, per-provider status
 - [ ] **IPC-04**: `launchpad:getRegions` — returns available regions per provider from DB
-- [ ] **IPC-05**: `launchpad:saveCredentials` — stores encrypted API keys via safeStorage
-- [ ] **IPC-06**: `launchpad:getCatalog` — returns full service catalog grouped by category from DB
+- [x] **IPC-05**: `launchpad:saveCredentials` — stores encrypted API keys via safeStorage
+- [x] **IPC-06**: `launchpad:getCatalog` — returns full service catalog grouped by category from DB
 
 ### Calculator
 
@@ -118,7 +118,7 @@
 |-------------|-------|--------|
 | DATA-01 | Phase 7 | Complete |
 | DATA-02 | Phase 7 | Complete |
-| DATA-03 | Phase 7 | Pending |
+| DATA-03 | Phase 7 | Complete |
 | DATA-04 | Phase 7 | Complete |
 | DATA-05 | Phase 7 | Complete |
 | SYNC-01 | Phase 8 | Pending |
@@ -136,12 +136,12 @@
 | REGION-03 | Phase 9 | Pending |
 | REGION-04 | Phase 9 | Pending |
 | REGION-05 | Phase 9 | Pending |
-| IPC-01 | Phase 7 | Pending |
+| IPC-01 | Phase 7 | Complete |
 | IPC-02 | Phase 8 | Pending |
 | IPC-03 | Phase 8 | Pending |
 | IPC-04 | Phase 8 | Pending |
-| IPC-05 | Phase 7 | Pending |
-| IPC-06 | Phase 7 | Pending |
+| IPC-05 | Phase 7 | Complete |
+| IPC-06 | Phase 7 | Complete |
 | CALC-01 | Phase 9 | Pending |
 | CALC-02 | Phase 9 | Pending |
 | CALC-03 | Phase 9 | Pending |
