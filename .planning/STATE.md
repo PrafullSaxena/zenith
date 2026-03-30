@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 9 — Calculator Store
-Plan: 09-03 complete — memoCache read/write path wired into getTotalCost; CALC-04 satisfied; phase 09 complete (10/10 truths)
-Status: Plan 09-03 executed — calculator result memoization active; phase 09 fully complete
-Last activity: 2026-03-30 — 09-03 gap closure complete
+Phase: 10 — Service Catalog
+Plan: 10-01 complete — AWS/GCP/Azure catalogs expanded to 8 categories/~34 services each; SERVICE_EQUIVALENCES at 25 families
+Status: Plan 10-01 executed — all 3 provider catalogs at full 8-category structure; equivalences map expanded
+Last activity: 2026-03-31 — 10-01 catalog expansion complete
 
 Progress: [██░░░░░░░░] 8% (v2.0 milestone)
 
@@ -62,6 +62,9 @@ Key decisions for v2.0:
 - [Phase 09-calculator-store]: Region dropdown uses 12 hardcoded regions per provider — matches the 12 regions seeded and synced by the pricing pipeline
 - [Phase 09-calculator-store]: Composite memoCache key covers all active selections joined with '|' plus region — single Map lookup per getTotalCost invocation
 - [Phase 09-calculator-store]: electron.d.ts (renderer-side) takes precedence over preload/index.d.ts for Window.api types — phase-08 API additions must be mirrored in electron.d.ts
+- [Phase 10-service-catalog]: 8-category canonical structure (compute, storage, database, networking, mlai, analytics, messaging, security) — all 3 providers mirror this; no separate containers category
+- [Phase 10-service-catalog]: azure managed-disk and data-transfer IDs preserved in azure.ts to avoid breaking existing equivalences
+- [Phase 10-service-catalog]: bedrock and sagemaker both map to vertex-ai for GCP equivalence; kinesis and sns both map to pub-sub
 
 ### Pending Todos
 
@@ -73,6 +76,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30
-Stopped at: Completed 09-calculator-store/09-03-PLAN.md
-Resume file: Next phase after 09-calculator-store
+Last session: 2026-03-31
+Stopped at: Completed 10-service-catalog/10-01-PLAN.md
+Resume file: Next plan in 10-service-catalog

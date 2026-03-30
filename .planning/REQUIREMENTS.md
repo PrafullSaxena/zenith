@@ -57,10 +57,10 @@
 
 ### Service Catalog
 
-- [ ] **CAT-01**: Catalog expanded to ~100 services across 8 categories: Compute, Storage, Database, Network, ML/AI, Analytics & Streaming, Messaging/Integration, Security & Identity
-- [ ] **CAT-02**: All 3 providers (AWS, GCP, Azure) have equivalent coverage per category
+- [x] **CAT-01**: Catalog expanded to ~100 services across 8 categories: Compute, Storage, Database, Network, ML/AI, Analytics & Streaming, Messaging/Integration, Security & Identity
+- [x] **CAT-02**: All 3 providers (AWS, GCP, Azure) have equivalent coverage per category
 - [ ] **CAT-03**: Catalog served from `pricing_services` DB table (not hardcoded TypeScript imports)
-- [ ] **CAT-04**: Cross-provider equivalence table expanded from 11 to ~25 service families for ComparisonView
+- [x] **CAT-04**: Cross-provider equivalence table expanded from 11 to ~25 service families for ComparisonView
 - [ ] **CAT-05**: `ServiceCatalog` list virtualized with `@tanstack/react-virtual` — renders only visible rows regardless of catalog size
 - [ ] **CAT-06**: In-memory search index built on catalog load — search filters with no DB query on each keystroke
 
@@ -148,10 +148,10 @@
 | CALC-04 | Phase 9 | Complete |
 | CALC-05 | Phase 9 | Complete |
 | CALC-06 | Phase 9 | Complete |
-| CAT-01 | Phase 10 | Pending |
-| CAT-02 | Phase 10 | Pending |
+| CAT-01 | Phase 10 | Complete |
+| CAT-02 | Phase 10 | Complete |
 | CAT-03 | Phase 10 | Pending |
-| CAT-04 | Phase 10 | Pending |
+| CAT-04 | Phase 10 | Complete |
 | CAT-05 | Phase 10 | Pending |
 | CAT-06 | Phase 10 | Pending |
 | VIZ-01 | Phase 11 | Pending |
