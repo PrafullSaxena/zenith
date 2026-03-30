@@ -4,10 +4,26 @@
  *
  * All calculations return monthly and yearly estimates.
  * Yearly is always monthly * 12.
+ *
+ * API:
+ *   calculateServiceCost(serviceId, config, rates: ServiceRates, region): ServiceCostResult
+ *   calculateTotalCost(selections, rates: RateMap, region): { totalMonthly, totalYearly, items }
+ *
+ * RateMap is keyed by serviceId → { rateKey → numeric value }.
+ * Rates are loaded from pricing.db at runtime; this module never imports catalog files.
  */
 
 import type { ResourceConfig, ServiceCostResult, ServiceSelection, CostLineItem } from '../../types/launchpad'
-import type { ProviderCatalog, SelectOption } from './types'
+import type { SelectOption } from './types'
+
+// ─── RateMap types ────────────────────────────────────────────────────────────
+
+// ServiceRates: rateKey → numeric value (from pricing_rates DB table)
+type ServiceRates = Record<string, number>
+
+// RateMap: serviceId → ServiceRates
+// Re-exported so launchpad-store and other callers can import the type.
+export type RateMap = Record<string, ServiceRates>
 
 /**
  * Shared constant for hours per month (AWS standard assumption).
@@ -15,16 +31,6 @@ import type { ProviderCatalog, SelectOption } from './types'
  * Source: https://aws.amazon.com/ec2/pricing/on-demand/ (pricing documentation)
  */
 export const HOURS_PER_MONTH = 730
-
-// ─── Helper: find a service definition in a catalog by its id ───────────────
-
-function findService(catalog: ProviderCatalog, serviceId: string) {
-  for (const category of catalog.categories) {
-    const service = category.services.find((s) => s.id === serviceId)
-    if (service) return service
-  }
-  return null
-}
 
 // ─── Helper: safely cast config values ───────────────────────────────────────
 
@@ -48,11 +54,15 @@ function zeroCost(): ServiceCostResult {
 /**
  * Compute instances: EC2 / Compute Engine / Azure VM / App Service
  * Formula: pricePerHour * usageHoursPerMonth * quantity
+ * Primary price source: SelectOption.pricePerHour on the config value.
+ * Fallback: rates['pricePerHour']
  */
-function calcComputeInstance(config: ResourceConfig, instanceTypeKey: string, quantityKey: string, usageKey: string): ServiceCostResult {
+function calcComputeInstance(config: ResourceConfig, instanceTypeKey: string, quantityKey: string, usageKey: string, rates: ServiceRates): ServiceCostResult {
   try {
     const instanceTypeValue = config[instanceTypeKey]
-    const pricePerHour = (instanceTypeValue as SelectOption)?.pricePerHour ?? num(str(config[instanceTypeKey]))
+    const pricePerHour = (instanceTypeValue as SelectOption)?.pricePerHour
+      ?? num(str(config[instanceTypeKey]))
+      ?? (rates['pricePerHour'] ?? 0)
     const quantity = num(config[quantityKey], 1)
     const usageHours = num(config[usageKey], HOURS_PER_MONTH)
 
@@ -76,11 +86,15 @@ function calcComputeInstance(config: ResourceConfig, instanceTypeKey: string, qu
 /**
  * Object storage: S3 / Cloud Storage / Blob Storage
  * Formula: storageGb * storagePricePerGb + transferOutGb * transferPricePerGb
+ * Rates keys: pricePerGbStorage (storage), pricePerGbTransfer (egress)
  */
-function calcObjectStorage(config: ResourceConfig, storagePricePerGb: number, transferPricePerGb: number): ServiceCostResult {
+function calcObjectStorage(config: ResourceConfig, rates: ServiceRates, defaultStoragePrice: number, defaultTransferPrice: number): ServiceCostResult {
   try {
     const storageGb = num(config['storageGb'], 0)
     const transferOutGb = num(config['transferOutGb'], 0)
+
+    const storagePricePerGb = rates['pricePerGbStorage'] ?? defaultStoragePrice
+    const transferPricePerGb = rates['pricePerGbTransfer'] ?? defaultTransferPrice
 
     const storageCost = storageGb * storagePricePerGb
     const transferCost = transferOutGb * transferPricePerGb
@@ -113,11 +127,15 @@ function calcObjectStorage(config: ResourceConfig, storagePricePerGb: number, tr
 /**
  * Serverless functions: Lambda / Cloud Functions / Azure Functions
  * Formula: (requestsMillions * requestPricePerMillion) + (gbSeconds * durationPricePerGbSecond)
+ * Rate keys: pricePerMillionRequests, pricePerGbSecond
  */
-function calcServerlessFunction(config: ResourceConfig, requestPricePerMillion: number, durationPricePerGbSecond: number): ServiceCostResult {
+function calcServerlessFunction(config: ResourceConfig, rates: ServiceRates, defaultRequestPrice: number, defaultDurationPrice: number): ServiceCostResult {
   try {
     const requestsMillions = num(config['requests'], 0)
     const durationGbSeconds = num(config['durationGbSeconds'], 0)
+
+    const requestPricePerMillion = rates['pricePerMillionRequests'] ?? defaultRequestPrice
+    const durationPricePerGbSecond = rates['pricePerGbSecond'] ?? defaultDurationPrice
 
     // Total GB-seconds = requests (millions) * 1M * durationGbSeconds per request
     const totalGbSeconds = requestsMillions * 1_000_000 * durationGbSeconds
@@ -152,6 +170,7 @@ function calcServerlessFunction(config: ResourceConfig, requestPricePerMillion: 
 /**
  * Managed database (RDS / Cloud SQL): pricePerHour * HOURS_PER_MONTH * quantity
  * Optionally doubled for multi-AZ / high-availability.
+ * Primary price source: SelectOption.pricePerHour on the tier config value.
  */
 function calcManagedDatabase(config: ResourceConfig, tierKey: string, quantityKey: string, haKey: string | null): ServiceCostResult {
   try {
@@ -182,11 +201,15 @@ function calcManagedDatabase(config: ResourceConfig, tierKey: string, quantityKe
 
 /**
  * NoSQL / capacity-unit databases: DynamoDB / Firestore / Cosmos DB
+ * Rate keys: pricePerMillionRequests (read), pricePerMillionWrites (write)
  */
-function calcCapacityUnits(config: ResourceConfig, readPricePerMillion: number, writePricePerMillion: number): ServiceCostResult {
+function calcCapacityUnits(config: ResourceConfig, rates: ServiceRates, defaultReadPrice: number, defaultWritePrice: number): ServiceCostResult {
   try {
     const readUnits = num(config['readUnits'], 0)
     const writeUnits = num(config['writeUnits'], 0)
+
+    const readPricePerMillion = rates['pricePerMillionRequests'] ?? defaultReadPrice
+    const writePricePerMillion = rates['pricePerMillionWrites'] ?? defaultWritePrice
 
     const readCost = readUnits * readPricePerMillion
     const writeCost = writeUnits * writePricePerMillion
@@ -219,10 +242,12 @@ function calcCapacityUnits(config: ResourceConfig, readPricePerMillion: number, 
 /**
  * Block storage: EBS / Persistent Disk / Managed Disk
  * Formula: sizeGb * pricePerGb (monthly)
+ * Rate key: pricePerGb
  */
-function calcBlockStorage(config: ResourceConfig, pricePerGb: number): ServiceCostResult {
+function calcBlockStorage(config: ResourceConfig, rates: ServiceRates, defaultPrice: number): ServiceCostResult {
   try {
     const sizeGb = num(config['sizeGb'], 0)
+    const pricePerGb = rates['pricePerGb'] ?? defaultPrice
     const monthly = sizeGb * pricePerGb
 
     const breakdown: CostLineItem[] = [
@@ -270,10 +295,12 @@ function calcManagedDisk(config: ResourceConfig): ServiceCostResult {
 
 /**
  * Data transfer / CDN: gb * pricePerGb
+ * Rate key: pricePerGb
  */
-function calcDataTransfer(config: ResourceConfig, pricePerGb: number): ServiceCostResult {
+function calcDataTransfer(config: ResourceConfig, rates: ServiceRates, defaultPrice: number): ServiceCostResult {
   try {
     const gb = num(config['gb'], 0)
+    const pricePerGb = rates['pricePerGb'] ?? defaultPrice
     const monthly = gb * pricePerGb
 
     const breakdown: CostLineItem[] = [
@@ -293,10 +320,12 @@ function calcDataTransfer(config: ResourceConfig, pricePerGb: number): ServiceCo
 
 /**
  * API Gateway / Cloud Run requests
+ * Rate key: pricePerMillionRequests
  */
-function calcApiGateway(config: ResourceConfig, pricePerMillion: number): ServiceCostResult {
+function calcApiGateway(config: ResourceConfig, rates: ServiceRates, defaultPrice: number): ServiceCostResult {
   try {
     const requestsMillions = num(config['requestsPerMonth'], 0)
+    const pricePerMillion = rates['pricePerMillionRequests'] ?? defaultPrice
     const monthly = requestsMillions * pricePerMillion
 
     const breakdown: CostLineItem[] = [
@@ -316,16 +345,17 @@ function calcApiGateway(config: ResourceConfig, pricePerMillion: number): Servic
 
 // ─── Cloud Run composite pricing (vCPU + memory + requests) ──────────────────
 
-function calcCloudRun(config: ResourceConfig): ServiceCostResult {
+function calcCloudRun(config: ResourceConfig, rates: ServiceRates): ServiceCostResult {
   try {
     const requestsMillions = num(config['requestsPerMonth'], 0)
-    // Simplified: $0.40 per million requests (first 2M free, ignored here)
-    const monthly = requestsMillions * 0.40
+    // $0.40 per million requests (first 2M free, ignored here)
+    const pricePerMillion = rates['pricePerMillionRequests'] ?? 0.40
+    const monthly = requestsMillions * pricePerMillion
 
     const breakdown: CostLineItem[] = [
       {
-        label: `${requestsMillions}M requests @ $0.40/M`,
-        unitPrice: 0.40,
+        label: `${requestsMillions}M requests @ $${pricePerMillion.toFixed(2)}/M`,
+        unitPrice: pricePerMillion,
         quantity: requestsMillions,
         monthly
       }
@@ -372,6 +402,7 @@ function calcCosmosDb(config: ResourceConfig): ServiceCostResult {
  * Managed Kubernetes: EKS / GKE / AKS
  * Formula: (controlPlanePricePerHour * HOURS_PER_MONTH * clusters) + (nodePrice * HOURS_PER_MONTH * nodeCount * clusters)
  * AKS control plane is free ($0.00), EKS/GKE: $0.10/hr
+ * Primary node price source: SelectOption.pricePerHour on the node type config value.
  */
 function calcKubernetesCluster(config: ResourceConfig, nodeTypeKey: string, nodeCountKey: string, clusterCountKey: string, controlPlanePricePerHour: number): ServiceCostResult {
   try {
@@ -413,6 +444,7 @@ function calcKubernetesCluster(config: ResourceConfig, nodeTypeKey: string, node
 /**
  * Serverless containers: Fargate / Cloud Run containers / Azure Container Instances
  * Formula: (vcpuPrice + memoryPrice) * hoursPerMonth * tasks
+ * Primary price source: SelectOption.pricePerHour on vcpu and memoryGb config values.
  */
 function calcServerlessContainer(config: ResourceConfig): ServiceCostResult {
   try {
@@ -462,26 +494,25 @@ function calcServerlessContainer(config: ResourceConfig): ServiceCostResult {
  *
  * @param serviceId - The service identifier (e.g., 'ec2', 's3', 'rds')
  * @param config - User-specified resource configuration values
- * @param catalog - The provider catalog (used for service lookup, not pricing dispatch)
+ * @param rates - Rate map for this service from pricing DB (empty object is safe)
+ * @param _region - Region identifier (reserved for future region-specific rate lookups)
  * @returns ServiceCostResult with monthly, yearly, and breakdown
  */
 export function calculateServiceCost(
   serviceId: string,
   config: ResourceConfig,
-  catalog: ProviderCatalog
+  rates: ServiceRates,
+  _region: string
 ): ServiceCostResult {
   try {
-    const service = findService(catalog, serviceId)
-    if (!service) return zeroCost()
-
     switch (serviceId) {
       // ── AWS Compute ─────────────────────────────────────────────────────────
       case 'ec2':
-        return calcComputeInstance(config, 'instanceType', 'quantity', 'usageHoursPerMonth')
+        return calcComputeInstance(config, 'instanceType', 'quantity', 'usageHoursPerMonth', rates)
 
       case 'lambda':
         // $0.20 per 1M requests, $0.0000166667 per GB-second
-        return calcServerlessFunction(config, 0.20, 0.0000166667)
+        return calcServerlessFunction(config, rates, 0.20, 0.0000166667)
 
       // ── AWS Containers ───────────────────────────────────────────────────────
       case 'eks':
@@ -493,38 +524,38 @@ export function calculateServiceCost(
 
       // ── AWS Storage ─────────────────────────────────────────────────────────
       case 's3':
-        // $0.023/GB storage, $0.09/GB transfer out
-        return calcObjectStorage(config, 0.023, 0.09)
+        // Default: $0.023/GB storage, $0.09/GB transfer out
+        return calcObjectStorage(config, rates, 0.023, 0.09)
 
       case 'ebs':
-        // gp3: $0.08/GB/month
-        return calcBlockStorage(config, 0.08)
+        // Default: gp3 $0.08/GB/month
+        return calcBlockStorage(config, rates, 0.08)
 
       // ── AWS Database ────────────────────────────────────────────────────────
       case 'rds':
         return calcManagedDatabase(config, 'instanceClass', 'quantity', 'multiAz')
 
       case 'dynamodb':
-        // $0.25 per million read units, $1.25 per million write units
-        return calcCapacityUnits(config, 0.25, 1.25)
+        // Default: $0.25 per million read units, $1.25 per million write units
+        return calcCapacityUnits(config, rates, 0.25, 1.25)
 
       // ── AWS Networking ──────────────────────────────────────────────────────
       case 'cloudfront':
-        // $0.085/GB first 10 TB
-        return calcDataTransfer(config, 0.085)
+        // Default: $0.085/GB first 10 TB
+        return calcDataTransfer(config, rates, 0.085)
 
       // ── AWS Serverless ──────────────────────────────────────────────────────
       case 'api-gateway':
-        // HTTP API: $1.00 per million calls
-        return calcApiGateway(config, 1.00)
+        // Default: HTTP API $1.00 per million calls
+        return calcApiGateway(config, rates, 1.00)
 
       // ── GCP Compute ─────────────────────────────────────────────────────────
       case 'compute-engine':
-        return calcComputeInstance(config, 'machineType', 'quantity', 'usageHoursPerMonth')
+        return calcComputeInstance(config, 'machineType', 'quantity', 'usageHoursPerMonth', rates)
 
       case 'cloud-functions':
-        // $0.40 per million invocations, $0.0000025 per GB-second
-        return calcServerlessFunction(config, 0.40, 0.0000025)
+        // Default: $0.40 per million invocations, $0.0000025 per GB-second
+        return calcServerlessFunction(config, rates, 0.40, 0.0000025)
 
       // ── GCP Containers ───────────────────────────────────────────────────────
       case 'gke':
@@ -536,38 +567,37 @@ export function calculateServiceCost(
 
       // ── GCP Storage ─────────────────────────────────────────────────────────
       case 'cloud-storage':
-        // $0.020/GB storage, $0.08/GB egress
-        return calcObjectStorage(config, 0.020, 0.08)
+        // Default: $0.020/GB storage, $0.08/GB egress
+        return calcObjectStorage(config, rates, 0.020, 0.08)
 
       case 'persistent-disk':
-        // pd-ssd: $0.17/GB/month
-        return calcBlockStorage(config, 0.17)
+        // Default: pd-ssd $0.17/GB/month
+        return calcBlockStorage(config, rates, 0.17)
 
       // ── GCP Database ────────────────────────────────────────────────────────
       case 'cloud-sql':
         return calcManagedDatabase(config, 'tier', 'quantity', 'highAvailability')
 
       case 'firestore':
-        // $0.06 per 100K reads = $0.60 per million reads
-        // $0.18 per 100K writes = $1.80 per million writes
-        return calcCapacityUnits(config, 0.60, 1.80)
+        // Default: $0.60/million reads, $1.80/million writes
+        return calcCapacityUnits(config, rates, 0.60, 1.80)
 
       // ── GCP Networking ──────────────────────────────────────────────────────
       case 'cloud-cdn':
-        // $0.08/GB from North America
-        return calcDataTransfer(config, 0.08)
+        // Default: $0.08/GB from North America
+        return calcDataTransfer(config, rates, 0.08)
 
       // ── GCP Serverless ──────────────────────────────────────────────────────
       case 'cloud-run':
-        return calcCloudRun(config)
+        return calcCloudRun(config, rates)
 
       // ── Azure Compute ────────────────────────────────────────────────────────
       case 'azure-vm':
-        return calcComputeInstance(config, 'vmSize', 'quantity', 'usageHoursPerMonth')
+        return calcComputeInstance(config, 'vmSize', 'quantity', 'usageHoursPerMonth', rates)
 
       case 'azure-functions':
-        // $0.20 per million executions, $0.000016 per GB-second
-        return calcServerlessFunction(config, 0.20, 0.000016)
+        // Default: $0.20 per million executions, $0.000016 per GB-second
+        return calcServerlessFunction(config, rates, 0.20, 0.000016)
 
       // ── Azure Containers ─────────────────────────────────────────────────────
       case 'aks':
@@ -579,8 +609,8 @@ export function calculateServiceCost(
 
       // ── Azure Storage ────────────────────────────────────────────────────────
       case 'blob-storage':
-        // Hot tier: $0.018/GB storage, $0.087/GB egress
-        return calcObjectStorage(config, 0.018, 0.087)
+        // Default: Hot tier $0.018/GB storage, $0.087/GB egress
+        return calcObjectStorage(config, rates, 0.018, 0.087)
 
       case 'managed-disk':
         return calcManagedDisk(config)
@@ -594,22 +624,17 @@ export function calculateServiceCost(
 
       // ── Azure Networking ─────────────────────────────────────────────────────
       case 'azure-cdn':
-        // $0.087/GB from North America/Europe
-        return calcDataTransfer(config, 0.087)
+        // Default: $0.087/GB from North America/Europe
+        return calcDataTransfer(config, rates, 0.087)
 
       // ── Azure Serverless ─────────────────────────────────────────────────────
       case 'app-service':
-        return calcComputeInstance(config, 'tier', 'instances', 'usageHoursPerMonth')
+        return calcComputeInstance(config, 'tier', 'instances', 'usageHoursPerMonth', rates)
 
-      // ── Shared: data-transfer (all providers use same key) ──────────────────
-      case 'data-transfer': {
-        // Use provider-specific price based on catalog
-        const provider = catalog.provider
-        const pricePerGb = provider === 'aws' ? 0.09
-          : provider === 'gcp' ? 0.08
-          : 0.087 // azure
-        return calcDataTransfer(config, pricePerGb)
-      }
+      // ── Shared: data-transfer (provider-neutral lookup from rates) ──────────
+      case 'data-transfer':
+        // Default $0.09/GB (AWS standard); actual rate supplied via DB rates map
+        return calcDataTransfer(config, rates, 0.09)
 
       default:
         return zeroCost()
@@ -625,12 +650,14 @@ export function calculateServiceCost(
  * Calculate the total cost across all selected services.
  *
  * @param selections - Array of service selections with configs
- * @param catalog - Provider catalog for service lookup
+ * @param rates - RateMap: serviceId → ServiceRates (from pricing DB; empty object is safe)
+ * @param region - Region identifier (used for rate lookup; empty string falls back to defaults)
  * @returns Total monthly/yearly cost with per-service breakdown
  */
 export function calculateTotalCost(
   selections: ServiceSelection[],
-  catalog: ProviderCatalog
+  rates: RateMap,
+  region: string
 ): {
   totalMonthly: number
   totalYearly: number
@@ -642,15 +669,15 @@ export function calculateTotalCost(
     const items: Array<{ serviceId: string; serviceName: string } & ServiceCostResult> = []
 
     for (const selection of selections) {
-      const result = calculateServiceCost(selection.serviceId, selection.config, catalog)
-      const service = findService(catalog, selection.serviceId)
+      const serviceRates: ServiceRates = rates[selection.serviceId] ?? {}
+      const result = calculateServiceCost(selection.serviceId, selection.config, serviceRates, region)
 
       totalMonthly += result.monthly
       totalYearly += result.yearly
 
       items.push({
         serviceId: selection.serviceId,
-        serviceName: service?.name ?? selection.serviceId,
+        serviceName: selection.serviceId,
         ...result
       })
     }

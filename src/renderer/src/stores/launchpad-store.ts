@@ -22,6 +22,7 @@ import type {
   LaunchpadTab
 } from '../types/launchpad'
 import { calculateTotalCost } from '../data/cloud-pricing/calculator'
+import type { RateMap } from '../data/cloud-pricing/calculator'
 import { getCatalog } from '../data/cloud-pricing/index'
 import { useTokenStore } from './token-store'
 
@@ -142,8 +143,8 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
     if (!provider || selectedServices.length === 0) {
       return { monthly: 0, yearly: 0 }
     }
-    const catalog = getCatalog(provider)
-    const result = calculateTotalCost(selectedServices, catalog)
+    const rates: RateMap = {}
+    const result = calculateTotalCost(selectedServices, rates, '')
     return { monthly: result.totalMonthly, yearly: result.totalYearly }
   },
 
@@ -212,8 +213,8 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
     const { provider, selectedServices } = get()
     if (!provider) return
 
-    const catalog = getCatalog(provider)
-    const result = calculateTotalCost(selectedServices, catalog)
+    const rates: RateMap = {}
+    const result = calculateTotalCost(selectedServices, rates, '')
 
     const entry: EstimationEntry = {
       id: `est-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -370,8 +371,8 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
     const { provider, selectedServices, aiSession } = get()
     if (!provider) return null
 
-    const catalog = getCatalog(provider)
-    const result = calculateTotalCost(selectedServices, catalog)
+    const rates: RateMap = {}
+    const result = calculateTotalCost(selectedServices, rates, '')
 
     // Build line items for PDF from calculator results
     const serviceConfigMap: Record<string, ResourceConfig> = {}

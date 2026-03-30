@@ -63,13 +63,12 @@ function calcCostForProvider(
     const targetServiceId = getEquivalentServiceId(selection.serviceId, targetProvider)
     if (!targetServiceId) return null
 
-    const catalog = getCatalog(targetProvider)
     const config =
       targetProvider === currentProvider
         ? selection.config
         : getDefaultConfig(targetServiceId, targetProvider)
 
-    const result = calculateServiceCost(targetServiceId, config, catalog)
+    const result = calculateServiceCost(targetServiceId, config, {}, '')
     return result.monthly
   } catch {
     return null

@@ -13,7 +13,6 @@ import { Input } from '@renderer/components/ui/input'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
 
 import { useLaunchpadStore } from '../../stores/launchpad-store'
-import { getCatalog } from '../../data/cloud-pricing/index'
 import { calculateTotalCost } from '../../data/cloud-pricing/calculator'
 
 type DisplayMode = 'monthly' | 'yearly'
@@ -79,7 +78,7 @@ export default function EstimationSummary(): React.JSX.Element {
   // Compute total costs reactively
   const result =
     provider && selectedServices.length > 0
-      ? calculateTotalCost(selectedServices, getCatalog(provider))
+      ? calculateTotalCost(selectedServices, {}, '')
       : null
 
   const totalMonthly = result?.totalMonthly ?? 0
