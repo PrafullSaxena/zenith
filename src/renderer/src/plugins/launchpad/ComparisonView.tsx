@@ -20,6 +20,7 @@ import {
   getProviderServiceName,
 } from '../../data/cloud-pricing/equivalences'
 import { calculateServiceCost } from '../../data/cloud-pricing/calculator'
+import ComparisonBarChart from './charts/ComparisonBarChart'
 
 const ALL_PROVIDERS: CloudProvider[] = ['aws', 'gcp', 'azure']
 
@@ -197,6 +198,25 @@ export default function ComparisonView(): React.JSX.Element {
         {/* Cost comparison section — shown only when services are selected */}
         {hasSelections ? (
           <>
+            {/* Bar chart section */}
+            <div className="mb-4">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                Cost Comparison
+              </h3>
+              <div className="rounded-xl border border-white/5 bg-black/20 backdrop-blur-md p-4 overflow-auto max-h-[400px]">
+                <ComparisonBarChart
+                  data={rows.map((row) => ({
+                    serviceName: row.sourceName,
+                    aws: row.costs.aws,
+                    gcp: row.costs.gcp,
+                    azure: row.costs.azure,
+                  }))}
+                />
+              </div>
+            </div>
+            <div className="pb-2 border-b border-white/6 mb-4" />
+
+            {/* Provider detail cards */}
             <div className="flex gap-4">
               {ALL_PROVIDERS.map((p) => {
                 const total = totals[p]
