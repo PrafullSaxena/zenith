@@ -236,10 +236,11 @@ Plans:
   3. AWS access key, GCP API key, and GCP billing account fields are displayed masked with Edit and Clear actions per field
   4. The GCP API key field is labeled "Required for live pricing" with a link to the GCP Console API key setup page
   5. The Launchpad plugin header displays a sync status badge (Live / Partial / Cached / Stale) that opens a per-provider detail popover on click
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md -- TBD
+- [ ] 12-01-PLAN.md -- Launchpad settings panel: IPC for credential status/deletion, sync preferences, credentials UI, provider status cards
+- [ ] 12-02-PLAN.md -- Sync status badge in Launchpad header with per-provider popover and Settings navigation link
 
 ## Progress
 
@@ -259,8 +260,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 9. Calculator & Store | 3/3 | Complete   | 2026-03-30 |
 | 10. Service Catalog | 3/3 | Complete    | 2026-03-30 |
 | 11. Visualizations | 2/2 | Complete    | 2026-03-30 |
-| 12. Settings & Polish | 0/1 | Not started | - |
+| 12. Settings & Polish | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-03-27*
-*Last updated: 2026-03-31 — Phase 11 plans created (VIZ-01 through VIZ-06)*
+*Last updated: 2026-03-31 — Phase 12 plans created (SET-01 through SET-06)*
