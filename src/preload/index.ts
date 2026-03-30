@@ -188,8 +188,33 @@ const api = {
       ipcRenderer.invoke('db:exportErDiagramPdf', data),
   },
   launchpad: {
-    exportPdf: (estimation: unknown): Promise<{ filePath: string | null }> =>
+    exportPdf: (estimation: {
+      name: string
+      provider: string
+      lineItems: Array<{ serviceName: string; configSummary: string; monthly: number; yearly: number }>
+      totalMonthly: number
+      totalYearly: number
+      aiRecommendations?: string
+    }): Promise<{ filePath: string | null }> =>
       ipcRenderer.invoke('launchpad:exportPdf', estimation),
+
+    getCatalog: (provider: string): Promise<unknown[]> =>
+      ipcRenderer.invoke('launchpad:getCatalog', provider),
+
+    getPricing: (args: {
+      provider: string
+      region: string
+      serviceIds: string[]
+    }): Promise<Record<string, Record<string, number>>> =>
+      ipcRenderer.invoke('launchpad:getPricing', args),
+
+    saveCredentials: (credentials: {
+      gcpApiKey?: string
+      awsAccessKeyId?: string
+      awsSecretAccessKey?: string
+      gcpBillingAccountId?: string
+    }): Promise<{ saved: boolean }> =>
+      ipcRenderer.invoke('launchpad:saveCredentials', credentials),
   },
   textcraft: {
     exportPdf: (data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }): Promise<{ filePath: string | null }> =>
