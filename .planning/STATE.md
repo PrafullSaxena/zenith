@@ -67,6 +67,9 @@ Key decisions for v2.0:
 - [Phase 10-service-catalog]: bedrock and sagemaker both map to vertex-ai for GCP equivalence; kinesis and sns both map to pub-sub
 - [Phase 10-service-catalog]: equivalence table in ComparisonView renders unconditionally — cost comparison cards are conditional on selections
 - [Phase 10-service-catalog]: DISPLAY_NAMES in getProviderServiceName covers legacy 'managed-disk' ID to avoid lookup misses
+- [Phase 10-02-service-catalog]: getCatalog declared inline in electron.d.ts — main-process types must not be imported from renderer
+- [Phase 10-02-service-catalog]: dbCatalog parallel searchIndex string[] enables O(n) in-memory filter — no object traversal per keystroke
+- [Phase 10-02-service-catalog]: loadDbCatalog triggered from setProvider and ServiceCatalog useEffect — catalog loads on any provider change regardless of component mount state
 
 ### Pending Todos
 
