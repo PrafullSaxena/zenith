@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 8 — Pricing Sync
-Plan: 08-03 complete — Phase 8 all plans complete
-Status: Plan 08-03 executed — IPC layer wired: syncPricing, getSyncStatus, getRegions handlers + preload API extensions complete
-Last activity: 2026-03-30 — 08-03 IPC layer wiring complete
+Phase: 9 — Calculator Store
+Plan: 09-01 complete — pricing-sync.ts wired to real fetchers; calculator refactored to RateMap-driven pure function
+Status: Plan 09-01 executed — inline stubs removed; calculator API decoupled from ProviderCatalog
+Last activity: 2026-03-30 — 09-01 calculator/sync refactor complete
 
-Progress: [█░░░░░░░░░] 5% (v2.0 milestone)
+Progress: [██░░░░░░░░] 8% (v2.0 milestone)
 
 ## Performance Metrics
 
@@ -24,9 +24,9 @@ Progress: [█░░░░░░░░░] 5% (v2.0 milestone)
 - Total execution time: 0.7 hours
 
 **v2.0 Launchpad Enhancement:**
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: ~4 min
-- Total execution time: ~14 min
+- Total execution time: ~18 min
 
 *Updated after each plan completion*
 
@@ -55,6 +55,9 @@ Key decisions for v2.0:
 - [Phase 08-pricing-sync]: AWS delta check uses pricing-aws-meta.json sidecar (userData path) rather than DB column — simpler, no schema migration required
 - [Phase 08-pricing-sync]: SYNC-07 Cost Explorer skipped with TODO stub — @aws-sdk/client-pricing not in package.json, no new deps added in this plan
 - [Phase 08]: initPricingSync() exported from ipc-handlers.ts and called post-window-creation; onSyncComplete() returns unsubscribe fn (contextBridge-safe pattern)
+- [Phase 09-calculator-store]: calculator.ts keeps SelectOption.pricePerHour as primary price for compute/db/k8s — rates RateMap is fallback for services that used hardcoded constants
+- [Phase 09-calculator-store]: GCP skip detection updated from result.skipped to result.deltaSkipped && result.servicesUpdated === 0 to match real GcpFetchResult shape
+- [Phase 09-calculator-store]: Callers (launchpad-store, EstimationSummary, ComparisonView) pass empty RateMap {} — actual DB rate injection in subsequent plan
 
 ### Pending Todos
 
@@ -67,5 +70,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed 08-pricing-sync/08-03-PLAN.md
+Stopped at: Completed 09-calculator-store/09-01-PLAN.md
 Resume file: Next phase TBD

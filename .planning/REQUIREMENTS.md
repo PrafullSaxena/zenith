@@ -48,7 +48,7 @@
 
 ### Calculator
 
-- [ ] **CALC-01**: Calculator refactored to pure function — accepts `RateMap`, `ServiceSelection[]`, `region` as inputs, no internal hardcoded imports
+- [x] **CALC-01**: Calculator refactored to pure function — accepts `RateMap`, `ServiceSelection[]`, `region` as inputs, no internal hardcoded imports
 - [ ] **CALC-02**: `launchpad-store` gains `pricingCache` field: `{ rates: RateMap, region, lastFetched, status }`
 - [ ] **CALC-03**: Rates loaded lazily — only fetched for currently selected services, not entire catalog
 - [ ] **CALC-04**: Calculator results memoized with cache key `${serviceId}:${hashConfig(config)}:${region}`
@@ -142,7 +142,7 @@
 | IPC-04 | Phase 8 | Complete |
 | IPC-05 | Phase 7 | Complete |
 | IPC-06 | Phase 7 | Complete |
-| CALC-01 | Phase 9 | Pending |
+| CALC-01 | Phase 9 | Complete |
 | CALC-02 | Phase 9 | Pending |
 | CALC-03 | Phase 9 | Pending |
 | CALC-04 | Phase 9 | Pending |
