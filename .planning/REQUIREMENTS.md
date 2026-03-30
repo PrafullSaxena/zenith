@@ -1,275 +1,177 @@
-# Requirements: Zenith Full UI Revamp
+# Requirements: Zenith v2.0 — Launchpad Enhancement
 
-**Defined:** 2026-03-27
-**Core Value:** Every plugin must use the same shared component library -- consistency through reuse, not duplication.
+**Defined:** 2026-03-30
+**Core Value:** Live, accurate cloud cost estimation with regional pricing and a comprehensive service catalog.
+**Spec:** docs/superpowers/specs/2026-03-30-launchpad-enhancement-design.md
 
-## v1 Requirements
+---
 
-### Foundation
+## v1 Requirements (This Milestone)
 
-- [x] **FOUND-01**: shadcn/ui + Animate-UI installed and configured with Tailwind CSS v4
-- [x] **FOUND-02**: CSS custom property theme system with zenith-violet tokens applied globally
-- [x] **FOUND-03**: Inter + JetBrains Mono fonts loaded with font-display: swap
-- [x] **FOUND-04**: cn() utility (clsx + tailwind-merge) available project-wide
-- [x] **FOUND-05**: Radial gradient page background from primary color at top
+### Data Layer
 
-### Base Components
+- [ ] **DATA-01**: Main process initializes `pricing.db` with `pricing_services`, `pricing_rates`, `pricing_regions`, and `pricing_sync_log` tables on app startup
+- [ ] **DATA-02**: `PricingRepository` class exposes `getCatalog()`, `getRates()`, `getRegions()`, `getSyncStatus()`, `upsertRates()`, and `seedFromFallback()` methods
+- [ ] **DATA-03**: App seeds `pricing.db` from existing hardcoded TypeScript data on first launch (zero network dependency)
+- [ ] **DATA-04**: DB queries use indexes on `(provider, region, service_id)` and `(service_id, provider)` for sub-millisecond lookups
+- [ ] **DATA-05**: Credentials (GCP API key, AWS keys, GCP billing account) stored encrypted via Electron `safeStorage`
 
-- [ ] **COMP-01**: shadcn Button component with 4 variants (primary, secondary, destructive, ghost)
-- [ ] **COMP-02**: shadcn Card component with 28px radius, card bg, 1px border
-- [ ] **COMP-03**: shadcn Input + Label with focus ring and error states
-- [ ] **COMP-04**: shadcn Select with card bg dropdown and keyboard nav
-- [ ] **COMP-05**: Animate-UI Tabs with animated indicator bar
-- [ ] **COMP-06**: shadcn Badge with pill radius and 13% tinted status colors
-- [ ] **COMP-07**: Animate-UI Dialog with scale + fade animation
-- [ ] **COMP-08**: shadcn Sonner toast with status colors and auto-dismiss
-- [ ] **COMP-09**: shadcn Skeleton with shimmer animation
-- [ ] **COMP-10**: shadcn ScrollArea, Tooltip, Progress, DropdownMenu, Popover
-- [ ] **COMP-11**: Animate-UI Accordion and Sheet
-- [ ] **COMP-12**: shadcn Command (cmdk) for command palette
+### Pricing Sync
 
-### Shared Components
+- [ ] **SYNC-01**: `PricingSync` service initializes at app startup and schedules daily background sync
+- [ ] **SYNC-02**: AWS public pricing fetched from AWS Bulk Pricing JSON (no auth required)
+- [ ] **SYNC-03**: Azure public pricing fetched from Azure Retail Prices API (no auth required)
+- [ ] **SYNC-04**: GCP pricing fetched from Cloud Billing API using user-provided free API key
+- [ ] **SYNC-05**: Without GCP API key, GCP uses seeded/cached data (no crash, graceful degradation)
+- [ ] **SYNC-06**: Delta sync strategy: only changed rates fetched on subsequent syncs (ETag/lastModified comparison)
+- [ ] **SYNC-07**: Optional AWS reserved pricing via Cost Explorer API (requires access key + secret)
+- [ ] **SYNC-08**: Optional GCP committed use pricing via Billing Account API (requires billing account ID)
+- [ ] **SYNC-09**: Sync failures logged to `pricing_sync_log`; partial failures don't block other providers
+- [ ] **SYNC-10**: Main process emits `launchpad:syncComplete` IPC push to renderer when sync finishes
 
-- [x] **SHAR-01**: RichTextEditor -- Tiptap wrapper with full/minimal modes
-- [x] **SHAR-02**: ContentRenderer -- markdown output with code blocks, mermaid, streaming, actions
-- [x] **SHAR-03**: ChatInterface -- AI conversation with messages, suggestions, streaming
-- [x] **SHAR-04**: DataTable -- sortable, paginated, virtual scroll, cell expand
-- [x] **SHAR-05**: HistoryList -- historical entries with filters, restore/delete
-- [x] **SHAR-06**: PdfExporter -- unified PDF generation (report/document/diagram formats)
-- [x] **SHAR-07**: SearchInput -- debounced search with shortcut hint
-- [x] **SHAR-08**: CodeEditor -- CodeMirror 6 wrapper (editable/readOnly/execute modes)
-- [x] **SHAR-09**: FileTree -- Animate-UI Files based tree with search, virtual scroll
+### Regional Pricing
 
-### Layout
+- [ ] **REGION-01**: Top 12 regions per provider synced and stored as first-class rows in `pricing_rates`
+- [ ] **REGION-02**: Default regions set per provider: AWS `us-east-1`, GCP `us-central1`, Azure `eastus`
+- [ ] **REGION-03**: Region picker displayed in EstimationSummary header; single region applies to entire estimation
+- [ ] **REGION-04**: Changing region triggers instant cost recalculation from cached rates (no re-fetch)
+- [ ] **REGION-05**: Selected region persisted per provider in settings (`launchpad.defaultRegion.*`)
 
-- [x] **LYOT-01**: Collapsible sidebar (56px icon rail <-> 240px expanded, Cmd+B toggle)
-- [x] **LYOT-02**: PluginShell -- shared header + tabs wrapper for all plugins
-- [x] **LYOT-03**: SplitPanel -- shared resizable panel layout
-- [x] **LYOT-04**: CommandPalette -- Cmd+K global search across plugins, activity, settings
-- [x] **LYOT-05**: Page transitions preserved with Framer Motion (fade + slide)
+### IPC Channels
 
-### Dashboard
+- [ ] **IPC-01**: `launchpad:getPricing` — returns rates for selected services + provider + region from DB
+- [ ] **IPC-02**: `launchpad:syncPricing` — triggers manual sync, returns sync status
+- [ ] **IPC-03**: `launchpad:getSyncStatus` — returns last sync time, next sync, per-provider status
+- [ ] **IPC-04**: `launchpad:getRegions` — returns available regions per provider from DB
+- [ ] **IPC-05**: `launchpad:saveCredentials` — stores encrypted API keys via safeStorage
+- [ ] **IPC-06**: `launchpad:getCatalog` — returns full service catalog grouped by category from DB
 
-- [ ] **DASH-01**: MissionControl with radial gradient header, greeting, search, primary action
-- [ ] **DASH-02**: 4 MetricCards with status-colored icon containers and delta indicators
-- [ ] **DASH-03**: TokenChart restyled with theme colors in Card wrapper
-- [ ] **DASH-04**: HealthPanel with glowing status dots and grouped resources
-- [ ] **DASH-05**: ActivityFeed with nested rows, StatusBadges, plugin accents
-- [ ] **DASH-06**: PluginCards grid with hover lift animation
+### Calculator
 
-### Settings
+- [ ] **CALC-01**: Calculator refactored to pure function — accepts `RateMap`, `ServiceSelection[]`, `region` as inputs, no internal hardcoded imports
+- [ ] **CALC-02**: `launchpad-store` gains `pricingCache` field: `{ rates: RateMap, region, lastFetched, status }`
+- [ ] **CALC-03**: Rates loaded lazily — only fetched for currently selected services, not entire catalog
+- [ ] **CALC-04**: Calculator results memoized with cache key `${serviceId}:${hashConfig(config)}:${region}`
+- [ ] **CALC-05**: Fallback chain: DB rates → seeded fallback → "pricing unavailable" shown in UI
+- [ ] **CALC-06**: `pricingCache` refreshed automatically when `launchpad:syncComplete` event received
 
-- [ ] **SETT-01**: SettingsLayout with Animate-UI vertical Tabs
-- [ ] **SETT-02**: GeneralSettings with theme selector grid (single + placeholder slots)
-- [ ] **SETT-03**: AIAgentsSettings with DataTable, StatusBadge, API key management
-- [ ] **SETT-04**: MCPSettings with Card list, Switch toggle, DropdownMenu actions
-- [ ] **SETT-05**: PluginSettings with dynamic Accordion forms
-- [ ] **SETT-06**: ConnectionListEditor and RepoListEditor restyled
+### Service Catalog
 
-### Cortex Plugin
+- [ ] **CAT-01**: Catalog expanded to ~100 services across 8 categories: Compute, Storage, Database, Network, ML/AI, Analytics & Streaming, Messaging/Integration, Security & Identity
+- [ ] **CAT-02**: All 3 providers (AWS, GCP, Azure) have equivalent coverage per category
+- [ ] **CAT-03**: Catalog served from `pricing_services` DB table (not hardcoded TypeScript imports)
+- [ ] **CAT-04**: Cross-provider equivalence table expanded from 11 to ~25 service families for ComparisonView
+- [ ] **CAT-05**: `ServiceCatalog` list virtualized with `@tanstack/react-virtual` — renders only visible rows regardless of catalog size
+- [ ] **CAT-06**: In-memory search index built on catalog load — search filters with no DB query on each keystroke
 
-- [ ] **CRTX-01**: RepoManager with Card grid, StatusBadge, analyze Button
-- [ ] **CRTX-02**: InsightsPanel with 6 sub-tabs (Overview, APIs, Flows, Architecture, Diagrams, Graph)
-- [ ] **CRTX-03**: Overview with MetricCards, DonutChart, ContentRenderer for docs
-- [ ] **CRTX-04**: APIs tab with DataTable, method Badges, sortable headers
-- [ ] **CRTX-05**: Flows/Architecture/Diagrams with React Flow restyled using theme tokens
-- [ ] **CRTX-06**: Graph tab with 2D force graph only (remove MindGraph3D)
-- [ ] **CRTX-07**: CodePanel with shared FileTree + CodeEditor (readOnly)
-- [ ] **CRTX-08**: QAPanel with shared ChatInterface + citation renderActions
-- [ ] **CRTX-09**: ExportDialog with PdfExporter
+### Visualizations
 
-### DB Inspector Plugin
+- [ ] **VIZ-01**: `recharts` added as project dependency
+- [ ] **VIZ-02**: Treemap chart replaces current fallback bar chart in EstimationSummary — shows cost distribution by service, color-coded by category, hover shows cost + % of total
+- [ ] **VIZ-03**: Donut chart added to EstimationSummary showing spending split by category
+- [ ] **VIZ-04**: Grouped bar chart in ComparisonView replaces static text table — one group per service family, three bars (AWS/GCP/Azure), green = cheapest
+- [ ] **VIZ-05**: Trend line in History tab plots saved estimations over time — hover shows name + cost breakdown
+- [ ] **VIZ-06**: All charts use CSS custom properties for dark theme compatibility
 
-- [ ] **DBIP-01**: ConnectionManager with Card, Select, StatusBadge
-- [ ] **DBIP-02**: SchemaExplorer with Accordion tree and Tooltip
-- [ ] **DBIP-03**: QueryConsole with shared CodeEditor (execute mode) + DataTable results
-- [ ] **DBIP-04**: AskAI with shared ChatInterface + run-sql actions
-- [ ] **DBIP-05**: QueryOptimizer with ContentRenderer + mermaid
-- [ ] **DBIP-06**: ERDiagram with SearchInput, mode Tabs, Mermaid (remove SchemaOrb3D)
-- [ ] **DBIP-07**: DbHistory with shared HistoryList
+### Settings & Credentials UI
 
-### Nebula Plugin
+- [ ] **SET-01**: Launchpad settings panel added (Zenith Settings → Plugins → Launchpad): sync frequency, default region per provider, manual sync trigger
+- [ ] **SET-02**: Provider status displayed in settings: Live / No Key / Stale with last-sync timestamp
+- [ ] **SET-03**: Credentials section in settings: AWS access key + secret, GCP API key, GCP billing account — all masked, with Edit/Clear per field
+- [ ] **SET-04**: GCP API key labeled "Required for live pricing" with link to GCP Console setup
+- [ ] **SET-05**: Sync status badge in Launchpad plugin header: Live / Partial / Cached / Stale
+- [ ] **SET-06**: Clicking sync status badge opens popover with per-provider detail + link to settings
 
-- [ ] **NEBL-01**: NoteList with Card sidebar, ScrollArea, DropdownMenu context actions
-- [ ] **NEBL-02**: NoteEditor with shared RichTextEditor (full mode), auto-save StatusBadge
-- [ ] **NEBL-03**: SearchView with shared SearchInput + ChatInterface for Q&A
-- [ ] **NEBL-04**: KnowledgeGraph with 2D force graph only (remove KnowledgeGraph3D)
-- [ ] **NEBL-05**: VoiceRecorder, TranscriptionBlock, DrawingCanvas restyled
-- [ ] **NEBL-06**: All dialogs migrated to Animate-UI Dialog/AlertDialog/DropdownMenu
+---
 
-### TextCraft Plugin
+## Future Requirements (Deferred)
 
-- [ ] **TXCR-01**: 3-panel layout with shared SplitPanel
-- [ ] **TXCR-02**: InputPanel with shared RichTextEditor (minimal mode)
-- [ ] **TXCR-03**: ControlsPanel with ToggleGroup, Select, Textarea, primary Button
-- [ ] **TXCR-04**: OutputPanel with shared ContentRenderer (collapsible + all actions)
-- [ ] **TXCR-05**: HistoryPanel with shared HistoryList
+### v3 Candidates
 
-### Code Review Bot Plugin
+- **FUTURE-01**: Custom pricing overrides per service
+- **FUTURE-02**: Cost allocation tags / cost center mapping
+- **FUTURE-03**: Real-time cloud account import (actual usage data)
+- **FUTURE-04**: Budget alert thresholds with notifications
+- **FUTURE-05**: Full 30+ region sync per provider (on-demand available, full auto deferred)
+- **FUTURE-06**: Azure EA/MCA pricing (requires portal auth)
+- **FUTURE-07**: Cost forecasting / monthly trend projection
 
-- [ ] **CRVW-01**: PRList with Card list, author Badge, file count StatusBadge
-- [ ] **CRVW-02**: PRDiffView restyled with theme diff colors
-- [ ] **CRVW-03**: ReviewPanel with shared ContentRenderer + severity StatusBadges
-- [ ] **CRVW-04**: ReviewHistory with shared HistoryList
-- [ ] **CRVW-05**: SettingsPanel with shared RichTextEditor (minimal, guidelines)
-
-### Launchpad Plugin
-
-- [ ] **LNCH-01**: ProviderSelector with Card buttons, brand colors
-- [ ] **LNCH-02**: ServiceCatalog with shared SearchInput + ScrollArea
-- [ ] **LNCH-03**: ResourceConfigurator with dynamic forms
-- [ ] **LNCH-04**: EstimationSummary with cost breakdown, PdfExporter trigger
-- [ ] **LNCH-05**: AiAdvisor with shared ChatInterface + suggestion actions
-- [ ] **LNCH-06**: EstimationHistory + ComparisonView with shared components
-- [ ] **LNCH-07**: Remove CostTreemap3D
-
-### Activity & About
-
-- [ ] **MISC-01**: ActivityLog with shared DataTable, filters, StatusBadges
-- [ ] **MISC-02**: AboutView simplified with Cards and capability Badges
-
-### Cleanup
-
-- [ ] **CLEN-01**: Delete all 15 Glass* components and glass-utils.ts
-- [ ] **CLEN-02**: Delete all 5 Three.js 3D components (ActivityMesh3D, SchemaOrb3D, MindGraph3D, KnowledgeGraph3D, CostTreemap3D, Scene3DWrapper)
-- [ ] **CLEN-03**: Remove three, @react-three/fiber, @react-three/drei, d3-force-3d from package.json
-- [ ] **CLEN-04**: Clean up old CSS (hljs-zenith.css, flow-styles.css)
-
-### Polish
-
-- [ ] **POLS-01**: Animate-UI micro-interactions on all interactive elements
-- [ ] **POLS-02**: Empty states for every plugin
-- [ ] **POLS-03**: Command palette wired to all routes, activity, settings
-- [ ] **POLS-04**: Keyboard shortcuts audit (Cmd+K, Cmd+B, Cmd+N, Escape)
-- [ ] **POLS-05**: Accessibility audit (focus rings, ARIA, reduced motion)
-- [ ] **POLS-06**: Bundle size audit after Three.js removal
-
-## v2 Requirements
-
-### Multi-Theme Support
-- **THME-01**: Add 3-5 curated themes (Nord, Tokyo Night, Catppuccin, Synthwave)
-- **THME-02**: Theme selector grid with live preview
-- **THME-03**: Per-plugin theme override capability
-
-### Light Mode
-- **LITE-01**: Full light mode variant for all components
-- **LITE-02**: System preference detection (prefers-color-scheme)
+---
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| New plugin features | UI-only revamp, no new functionality |
-| Store/IPC changes | Visual layer only, business logic untouched |
-| Mobile/responsive redesign | Desktop app, existing responsive sufficient |
-| Light mode | Dark-only for this milestone |
-| Multiple themes | Single theme, architecture supports future |
-| New 3D visualizations | Replacing with 2D, not adding new |
+| Azure EA/MCA pricing | Requires Azure portal auth, not API-accessible |
+| Real-time cloud account import | Cost estimation only, not monitoring — v3 |
+| Custom pricing overrides | Deferred to v3 |
+| Cost allocation tags | Deferred to v3 |
+| All 30+ regions auto-sync | Top 12 covers 95% usage; full sync on demand |
+| Light mode | Dark-only across Zenith |
+| Breaking existing features | History, PDF export, AI advisor must continue working |
+
+---
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1 | Complete |
-| FOUND-02 | Phase 1 | Complete |
-| FOUND-03 | Phase 1 | Complete |
-| FOUND-04 | Phase 1 | Complete |
-| FOUND-05 | Phase 1 | Complete |
-| COMP-01 | Phase 2 | Pending |
-| COMP-02 | Phase 2 | Pending |
-| COMP-03 | Phase 2 | Pending |
-| COMP-04 | Phase 2 | Pending |
-| COMP-05 | Phase 2 | Pending |
-| COMP-06 | Phase 2 | Pending |
-| COMP-07 | Phase 2 | Pending |
-| COMP-08 | Phase 2 | Pending |
-| COMP-09 | Phase 2 | Pending |
-| COMP-10 | Phase 2 | Pending |
-| COMP-11 | Phase 2 | Pending |
-| COMP-12 | Phase 2 | Pending |
-| SHAR-01 | Phase 3 | Complete |
-| SHAR-02 | Phase 3 | Complete |
-| SHAR-03 | Phase 3 | Complete |
-| SHAR-04 | Phase 3 | Complete |
-| SHAR-05 | Phase 3 | Complete |
-| SHAR-06 | Phase 3 | Complete |
-| SHAR-07 | Phase 3 | Complete |
-| SHAR-08 | Phase 3 | Complete |
-| SHAR-09 | Phase 3 | Complete |
-| LYOT-01 | Phase 3 | Complete |
-| LYOT-02 | Phase 3 | Complete |
-| LYOT-03 | Phase 3 | Complete |
-| LYOT-04 | Phase 3 | Complete |
-| LYOT-05 | Phase 3 | Complete |
-| DASH-01 | Phase 4 | Pending |
-| DASH-02 | Phase 4 | Pending |
-| DASH-03 | Phase 4 | Pending |
-| DASH-04 | Phase 4 | Pending |
-| DASH-05 | Phase 4 | Pending |
-| DASH-06 | Phase 4 | Pending |
-| SETT-01 | Phase 4 | Pending |
-| SETT-02 | Phase 4 | Pending |
-| SETT-03 | Phase 4 | Pending |
-| SETT-04 | Phase 4 | Pending |
-| SETT-05 | Phase 4 | Pending |
-| SETT-06 | Phase 4 | Pending |
-| CRTX-01 | Phase 4 | Pending |
-| CRTX-02 | Phase 4 | Pending |
-| CRTX-03 | Phase 4 | Pending |
-| CRTX-04 | Phase 4 | Pending |
-| CRTX-05 | Phase 4 | Pending |
-| CRTX-06 | Phase 4 | Pending |
-| CRTX-07 | Phase 4 | Pending |
-| CRTX-08 | Phase 4 | Pending |
-| CRTX-09 | Phase 4 | Pending |
-| DBIP-01 | Phase 4 | Pending |
-| DBIP-02 | Phase 4 | Pending |
-| DBIP-03 | Phase 4 | Pending |
-| DBIP-04 | Phase 4 | Pending |
-| DBIP-05 | Phase 4 | Pending |
-| DBIP-06 | Phase 4 | Pending |
-| DBIP-07 | Phase 4 | Pending |
-| NEBL-01 | Phase 4 | Pending |
-| NEBL-02 | Phase 4 | Pending |
-| NEBL-03 | Phase 4 | Pending |
-| NEBL-04 | Phase 4 | Pending |
-| NEBL-05 | Phase 4 | Pending |
-| NEBL-06 | Phase 4 | Pending |
-| TXCR-01 | Phase 4 | Pending |
-| TXCR-02 | Phase 4 | Pending |
-| TXCR-03 | Phase 4 | Pending |
-| TXCR-04 | Phase 4 | Pending |
-| TXCR-05 | Phase 4 | Pending |
-| CRVW-01 | Phase 4 | Pending |
-| CRVW-02 | Phase 4 | Pending |
-| CRVW-03 | Phase 4 | Pending |
-| CRVW-04 | Phase 4 | Pending |
-| CRVW-05 | Phase 4 | Pending |
-| LNCH-01 | Phase 4 | Pending |
-| LNCH-02 | Phase 4 | Pending |
-| LNCH-03 | Phase 4 | Pending |
-| LNCH-04 | Phase 4 | Pending |
-| LNCH-05 | Phase 4 | Pending |
-| LNCH-06 | Phase 4 | Pending |
-| LNCH-07 | Phase 4 | Pending |
-| MISC-01 | Phase 4 | Pending |
-| MISC-02 | Phase 4 | Pending |
-| CLEN-01 | Phase 5 | Pending |
-| CLEN-02 | Phase 5 | Pending |
-| CLEN-03 | Phase 5 | Pending |
-| CLEN-04 | Phase 5 | Pending |
-| POLS-01 | Phase 6 | Pending |
-| POLS-02 | Phase 6 | Pending |
-| POLS-03 | Phase 6 | Pending |
-| POLS-04 | Phase 6 | Pending |
-| POLS-05 | Phase 6 | Pending |
-| POLS-06 | Phase 6 | Pending |
+| DATA-01 | Phase 7 | Pending |
+| DATA-02 | Phase 7 | Pending |
+| DATA-03 | Phase 7 | Pending |
+| DATA-04 | Phase 7 | Pending |
+| DATA-05 | Phase 7 | Pending |
+| SYNC-01 | Phase 8 | Pending |
+| SYNC-02 | Phase 8 | Pending |
+| SYNC-03 | Phase 8 | Pending |
+| SYNC-04 | Phase 8 | Pending |
+| SYNC-05 | Phase 8 | Pending |
+| SYNC-06 | Phase 8 | Pending |
+| SYNC-07 | Phase 8 | Pending |
+| SYNC-08 | Phase 8 | Pending |
+| SYNC-09 | Phase 8 | Pending |
+| SYNC-10 | Phase 8 | Pending |
+| REGION-01 | Phase 8 | Pending |
+| REGION-02 | Phase 9 | Pending |
+| REGION-03 | Phase 9 | Pending |
+| REGION-04 | Phase 9 | Pending |
+| REGION-05 | Phase 9 | Pending |
+| IPC-01 | Phase 7 | Pending |
+| IPC-02 | Phase 8 | Pending |
+| IPC-03 | Phase 8 | Pending |
+| IPC-04 | Phase 8 | Pending |
+| IPC-05 | Phase 7 | Pending |
+| IPC-06 | Phase 7 | Pending |
+| CALC-01 | Phase 9 | Pending |
+| CALC-02 | Phase 9 | Pending |
+| CALC-03 | Phase 9 | Pending |
+| CALC-04 | Phase 9 | Pending |
+| CALC-05 | Phase 9 | Pending |
+| CALC-06 | Phase 9 | Pending |
+| CAT-01 | Phase 10 | Pending |
+| CAT-02 | Phase 10 | Pending |
+| CAT-03 | Phase 10 | Pending |
+| CAT-04 | Phase 10 | Pending |
+| CAT-05 | Phase 10 | Pending |
+| CAT-06 | Phase 10 | Pending |
+| VIZ-01 | Phase 11 | Pending |
+| VIZ-02 | Phase 11 | Pending |
+| VIZ-03 | Phase 11 | Pending |
+| VIZ-04 | Phase 11 | Pending |
+| VIZ-05 | Phase 11 | Pending |
+| VIZ-06 | Phase 11 | Pending |
+| SET-01 | Phase 12 | Pending |
+| SET-02 | Phase 12 | Pending |
+| SET-03 | Phase 12 | Pending |
+| SET-04 | Phase 12 | Pending |
+| SET-05 | Phase 12 | Pending |
+| SET-06 | Phase 12 | Pending |
 
 **Coverage:**
-- v1 requirements: 94 total
-- Mapped to phases: 94
-- Unmapped: 0
+- v1 requirements: 46 total
+- Mapped to phases: 46
+- Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-03-27*
-*Last updated: 2026-03-27 after roadmap creation*
+*Requirements defined: 2026-03-30*
+*Last updated: 2026-03-30 after v2.0 milestone initialization*
