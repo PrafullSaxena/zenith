@@ -23,7 +23,21 @@ export const SERVICE_EQUIVALENCES: Record<string, Record<CloudProvider, string>>
   'data-transfer':{ aws: 'data-transfer', gcp: 'data-transfer',  azure: 'data-transfer'   },
   'api-gateway': { aws: 'api-gateway',   gcp: 'cloud-run',       azure: 'app-service'      },
   eks:           { aws: 'eks',           gcp: 'gke',             azure: 'aks'              },
-  fargate:       { aws: 'fargate',       gcp: 'cloud-run-jobs',  azure: 'azure-container-instances' }
+  fargate:       { aws: 'fargate',       gcp: 'cloud-run-jobs',  azure: 'azure-container-instances' },
+  elasticache:   { aws: 'elasticache',   gcp: 'bigtable',        azure: 'azure-cache-redis'          },
+  redshift:      { aws: 'redshift',      gcp: 'bigquery',        azure: 'azure-synapse'              },
+  sagemaker:     { aws: 'sagemaker',     gcp: 'vertex-ai',       azure: 'azure-machine-learning'     },
+  bedrock:       { aws: 'bedrock',       gcp: 'vertex-ai',       azure: 'azure-openai'               },
+  rekognition:   { aws: 'rekognition',   gcp: 'vision-ai',       azure: 'cognitive-services'         },
+  kinesis:       { aws: 'kinesis',       gcp: 'pub-sub',         azure: 'event-hubs'                 },
+  glue:          { aws: 'glue',          gcp: 'dataflow',        azure: 'azure-data-factory'         },
+  sns:           { aws: 'sns',           gcp: 'pub-sub',         azure: 'azure-notification-hubs'    },
+  sqs:           { aws: 'sqs',           gcp: 'cloud-tasks',     azure: 'service-bus'                },
+  'step-functions': { aws: 'step-functions', gcp: 'workflows',   azure: 'logic-apps'                },
+  cognito:       { aws: 'cognito',       gcp: 'identity-platform', azure: 'azure-active-directory'  },
+  waf:           { aws: 'waf',           gcp: 'cloud-armor',     azure: 'azure-firewall'             },
+  'secrets-manager': { aws: 'secrets-manager', gcp: 'secret-manager', azure: 'azure-key-vault'     },
+  ecr:           { aws: 'ecr',           gcp: 'artifact-registry', azure: 'azure-container-registry' }
 }
 
 /**
