@@ -18,20 +18,20 @@
 
 ### Pricing Sync
 
-- [ ] **SYNC-01**: `PricingSync` service initializes at app startup and schedules daily background sync
-- [ ] **SYNC-02**: AWS public pricing fetched from AWS Bulk Pricing JSON (no auth required)
+- [x] **SYNC-01**: `PricingSync` service initializes at app startup and schedules daily background sync
+- [x] **SYNC-02**: AWS public pricing fetched from AWS Bulk Pricing JSON (no auth required)
 - [x] **SYNC-03**: Azure public pricing fetched from Azure Retail Prices API (no auth required)
 - [x] **SYNC-04**: GCP pricing fetched from Cloud Billing API using user-provided free API key
 - [x] **SYNC-05**: Without GCP API key, GCP uses seeded/cached data (no crash, graceful degradation)
 - [x] **SYNC-06**: Delta sync strategy: only changed rates fetched on subsequent syncs (ETag/lastModified comparison)
-- [ ] **SYNC-07**: Optional AWS reserved pricing via Cost Explorer API (requires access key + secret)
+- [x] **SYNC-07**: Optional AWS reserved pricing via Cost Explorer API (requires access key + secret)
 - [x] **SYNC-08**: Optional GCP committed use pricing via Billing Account API (requires billing account ID)
-- [ ] **SYNC-09**: Sync failures logged to `pricing_sync_log`; partial failures don't block other providers
-- [ ] **SYNC-10**: Main process emits `launchpad:syncComplete` IPC push to renderer when sync finishes
+- [x] **SYNC-09**: Sync failures logged to `pricing_sync_log`; partial failures don't block other providers
+- [x] **SYNC-10**: Main process emits `launchpad:syncComplete` IPC push to renderer when sync finishes
 
 ### Regional Pricing
 
-- [ ] **REGION-01**: Top 12 regions per provider synced and stored as first-class rows in `pricing_rates`
+- [x] **REGION-01**: Top 12 regions per provider synced and stored as first-class rows in `pricing_rates`
 - [ ] **REGION-02**: Default regions set per provider: AWS `us-east-1`, GCP `us-central1`, Azure `eastus`
 - [ ] **REGION-03**: Region picker displayed in EstimationSummary header; single region applies to entire estimation
 - [ ] **REGION-04**: Changing region triggers instant cost recalculation from cached rates (no re-fetch)
@@ -40,9 +40,9 @@
 ### IPC Channels
 
 - [x] **IPC-01**: `launchpad:getPricing` — returns rates for selected services + provider + region from DB
-- [ ] **IPC-02**: `launchpad:syncPricing` — triggers manual sync, returns sync status
-- [ ] **IPC-03**: `launchpad:getSyncStatus` — returns last sync time, next sync, per-provider status
-- [ ] **IPC-04**: `launchpad:getRegions` — returns available regions per provider from DB
+- [x] **IPC-02**: `launchpad:syncPricing` — triggers manual sync, returns sync status
+- [x] **IPC-03**: `launchpad:getSyncStatus` — returns last sync time, next sync, per-provider status
+- [x] **IPC-04**: `launchpad:getRegions` — returns available regions per provider from DB
 - [x] **IPC-05**: `launchpad:saveCredentials` — stores encrypted API keys via safeStorage
 - [x] **IPC-06**: `launchpad:getCatalog` — returns full service catalog grouped by category from DB
 
@@ -121,25 +121,25 @@
 | DATA-03 | Phase 7 | Complete |
 | DATA-04 | Phase 7 | Complete |
 | DATA-05 | Phase 7 | Complete |
-| SYNC-01 | Phase 8 | Pending |
-| SYNC-02 | Phase 8 | Pending |
+| SYNC-01 | Phase 8 | Complete |
+| SYNC-02 | Phase 8 | Complete |
 | SYNC-03 | Phase 8 | Complete |
 | SYNC-04 | Phase 8 | Complete |
 | SYNC-05 | Phase 8 | Complete |
 | SYNC-06 | Phase 8 | Complete |
-| SYNC-07 | Phase 8 | Pending |
+| SYNC-07 | Phase 8 | Complete |
 | SYNC-08 | Phase 8 | Complete |
-| SYNC-09 | Phase 8 | Pending |
-| SYNC-10 | Phase 8 | Pending |
-| REGION-01 | Phase 8 | Pending |
+| SYNC-09 | Phase 8 | Complete |
+| SYNC-10 | Phase 8 | Complete |
+| REGION-01 | Phase 8 | Complete |
 | REGION-02 | Phase 9 | Pending |
 | REGION-03 | Phase 9 | Pending |
 | REGION-04 | Phase 9 | Pending |
 | REGION-05 | Phase 9 | Pending |
 | IPC-01 | Phase 7 | Complete |
-| IPC-02 | Phase 8 | Pending |
-| IPC-03 | Phase 8 | Pending |
-| IPC-04 | Phase 8 | Pending |
+| IPC-02 | Phase 8 | Complete |
+| IPC-03 | Phase 8 | Complete |
+| IPC-04 | Phase 8 | Complete |
 | IPC-05 | Phase 7 | Complete |
 | IPC-06 | Phase 7 | Complete |
 | CALC-01 | Phase 9 | Pending |

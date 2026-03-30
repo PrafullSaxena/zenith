@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 8 — Pricing Sync
-Plan: 08-02 complete — ready for 08-03
-Status: Plan 08-02 executed — Azure and GCP fetchers with paginated APIs, delta sync, and graceful fallbacks complete
-Last activity: 2026-03-30 — 08-02 Azure and GCP fetchers complete
+Plan: 08-03 complete — Phase 8 all plans complete
+Status: Plan 08-03 executed — IPC layer wired: syncPricing, getSyncStatus, getRegions handlers + preload API extensions complete
+Last activity: 2026-03-30 — 08-03 IPC layer wiring complete
 
 Progress: [█░░░░░░░░░] 5% (v2.0 milestone)
 
@@ -24,9 +24,9 @@ Progress: [█░░░░░░░░░] 5% (v2.0 milestone)
 - Total execution time: 0.7 hours
 
 **v2.0 Launchpad Enhancement:**
-- Total plans completed: 2
-- Average duration: 6 min
-- Total execution time: ~12 min
+- Total plans completed: 3
+- Average duration: ~4 min
+- Total execution time: ~14 min
 
 *Updated after each plan completion*
 
@@ -54,6 +54,7 @@ Key decisions for v2.0:
 - [Phase 08-pricing-sync]: Azure armRegionName filter limits API response to 12 target regions; GCP ETag applied to first page only; no new dependencies (built-in Node https)
 - [Phase 08-pricing-sync]: AWS delta check uses pricing-aws-meta.json sidecar (userData path) rather than DB column — simpler, no schema migration required
 - [Phase 08-pricing-sync]: SYNC-07 Cost Explorer skipped with TODO stub — @aws-sdk/client-pricing not in package.json, no new deps added in this plan
+- [Phase 08]: initPricingSync() exported from ipc-handlers.ts and called post-window-creation; onSyncComplete() returns unsubscribe fn (contextBridge-safe pattern)
 
 ### Pending Todos
 
@@ -66,5 +67,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed 08-pricing-sync/08-01-PLAN.md
-Resume file: .planning/phases/08-pricing-sync/08-03-PLAN.md
+Stopped at: Completed 08-pricing-sync/08-03-PLAN.md
+Resume file: Next phase TBD
