@@ -46,10 +46,21 @@ export default function LaunchpadView(): React.JSX.Element {
   const clearEstimation = useLaunchpadStore((s) => s.clearEstimation)
   const estimationHistory = useLaunchpadStore((s) => s.history)
   const loadHistory = useLaunchpadStore((s) => s.loadHistory)
+  const refreshPricingCache = useLaunchpadStore((s) => s.refreshPricingCache)
 
   // Load history on mount
   useEffect(() => {
     loadHistory()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Register syncComplete push listener — triggers pricingCache refresh after a sync
+  useEffect(() => {
+    const unsubscribe = window.api.launchpad.onSyncComplete(() => {
+      refreshPricingCache().catch(() => {})
+    })
+    return () => {
+      unsubscribe()
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleProviderSelect = (selected: CloudProvider) => {
