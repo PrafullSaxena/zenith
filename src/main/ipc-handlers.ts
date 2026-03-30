@@ -33,6 +33,10 @@ import { buildEntityBatches } from './cortex/entity-enricher'
 import { buildValidationPrompt, buildValidationUserPrompt } from './cortex/analysis-validator'
 import path from 'node:path'
 import fs from 'node:fs'
+import { initPricingDb } from './pricing/pricing-db'
+import { pricingRepository } from './pricing/pricing-repository'
+import { saveCredential, CRED_GCP_API_KEY, CRED_AWS_ACCESS_KEY_ID, CRED_AWS_SECRET_ACCESS_KEY, CRED_GCP_BILLING_ACCOUNT_ID } from './pricing/credentials'
+import { seedPricingDb } from './pricing/seed'
 
 /**
  * Separate electron-store instance for credentials.
@@ -53,6 +57,14 @@ let nebulaFs: NoteFileStorage | null = null
 /** Lazy-initialized Cortex instances. */
 let cortexGit: GitService | null = null
 let cortexAnalyzer: CodebaseAnalyzer | null = null
+
+// Initialize pricing DB and seed on first launch
+try {
+  initPricingDb()
+  seedPricingDb()
+} catch (err) {
+  console.error('[Launchpad] Failed to initialize pricing DB:', err)
+}
 
 function getCortexInstances(): { git: GitService; analyzer: CodebaseAnalyzer } {
   if (!cortexGit || !cortexAnalyzer) {
@@ -592,6 +604,58 @@ export function registerIpcHandlers(): void {
     const filePath = await exportPdf(mainWindow, { markdown: md, title: estimation.name })
     return { filePath }
   })
+
+  // --- Launchpad data channels ---
+  ipcMain.handle('launchpad:getCatalog', (_event, provider: string) => {
+    if (!['aws', 'gcp', 'azure'].includes(provider)) {
+      throw new Error(`Invalid provider: ${provider}`)
+    }
+    return pricingRepository.getCatalog(provider as 'aws' | 'gcp' | 'azure')
+  })
+
+  ipcMain.handle(
+    'launchpad:getPricing',
+    (_event, args: { provider: string; region: string; serviceIds: string[] }) => {
+      if (!['aws', 'gcp', 'azure'].includes(args.provider)) {
+        throw new Error(`Invalid provider: ${args.provider}`)
+      }
+      if (typeof args.region !== 'string' || !Array.isArray(args.serviceIds)) {
+        throw new Error('Invalid arguments: region must be string, serviceIds must be array')
+      }
+      return pricingRepository.getRates(
+        args.serviceIds,
+        args.provider as 'aws' | 'gcp' | 'azure',
+        args.region
+      )
+    }
+  )
+
+  ipcMain.handle(
+    'launchpad:saveCredentials',
+    (
+      _event,
+      credentials: {
+        gcpApiKey?: string
+        awsAccessKeyId?: string
+        awsSecretAccessKey?: string
+        gcpBillingAccountId?: string
+      }
+    ) => {
+      if (credentials.gcpApiKey !== undefined) {
+        saveCredential(CRED_GCP_API_KEY, credentials.gcpApiKey)
+      }
+      if (credentials.awsAccessKeyId !== undefined) {
+        saveCredential(CRED_AWS_ACCESS_KEY_ID, credentials.awsAccessKeyId)
+      }
+      if (credentials.awsSecretAccessKey !== undefined) {
+        saveCredential(CRED_AWS_SECRET_ACCESS_KEY, credentials.awsSecretAccessKey)
+      }
+      if (credentials.gcpBillingAccountId !== undefined) {
+        saveCredential(CRED_GCP_BILLING_ACCOUNT_ID, credentials.gcpBillingAccountId)
+      }
+      return { saved: true }
+    }
+  )
 
   // --- TextCraft channels (backward-compatible alias for unified engine) ---
   ipcMain.handle('textcraft:exportPdf', async (_event, data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }) => {
