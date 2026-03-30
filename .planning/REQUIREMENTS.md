@@ -20,12 +20,12 @@
 
 - [ ] **SYNC-01**: `PricingSync` service initializes at app startup and schedules daily background sync
 - [ ] **SYNC-02**: AWS public pricing fetched from AWS Bulk Pricing JSON (no auth required)
-- [ ] **SYNC-03**: Azure public pricing fetched from Azure Retail Prices API (no auth required)
-- [ ] **SYNC-04**: GCP pricing fetched from Cloud Billing API using user-provided free API key
-- [ ] **SYNC-05**: Without GCP API key, GCP uses seeded/cached data (no crash, graceful degradation)
-- [ ] **SYNC-06**: Delta sync strategy: only changed rates fetched on subsequent syncs (ETag/lastModified comparison)
+- [x] **SYNC-03**: Azure public pricing fetched from Azure Retail Prices API (no auth required)
+- [x] **SYNC-04**: GCP pricing fetched from Cloud Billing API using user-provided free API key
+- [x] **SYNC-05**: Without GCP API key, GCP uses seeded/cached data (no crash, graceful degradation)
+- [x] **SYNC-06**: Delta sync strategy: only changed rates fetched on subsequent syncs (ETag/lastModified comparison)
 - [ ] **SYNC-07**: Optional AWS reserved pricing via Cost Explorer API (requires access key + secret)
-- [ ] **SYNC-08**: Optional GCP committed use pricing via Billing Account API (requires billing account ID)
+- [x] **SYNC-08**: Optional GCP committed use pricing via Billing Account API (requires billing account ID)
 - [ ] **SYNC-09**: Sync failures logged to `pricing_sync_log`; partial failures don't block other providers
 - [ ] **SYNC-10**: Main process emits `launchpad:syncComplete` IPC push to renderer when sync finishes
 
@@ -123,12 +123,12 @@
 | DATA-05 | Phase 7 | Complete |
 | SYNC-01 | Phase 8 | Pending |
 | SYNC-02 | Phase 8 | Pending |
-| SYNC-03 | Phase 8 | Pending |
-| SYNC-04 | Phase 8 | Pending |
-| SYNC-05 | Phase 8 | Pending |
-| SYNC-06 | Phase 8 | Pending |
+| SYNC-03 | Phase 8 | Complete |
+| SYNC-04 | Phase 8 | Complete |
+| SYNC-05 | Phase 8 | Complete |
+| SYNC-06 | Phase 8 | Complete |
 | SYNC-07 | Phase 8 | Pending |
-| SYNC-08 | Phase 8 | Pending |
+| SYNC-08 | Phase 8 | Complete |
 | SYNC-09 | Phase 8 | Pending |
 | SYNC-10 | Phase 8 | Pending |
 | REGION-01 | Phase 8 | Pending |

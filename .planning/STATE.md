@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Live, accurate cloud cost estimation with regional pricing and a comprehensive service catalog.
-**Current focus:** Phase 7 — Data Foundation (pricing.db, PricingRepository, IPC handlers, credentials)
+**Current focus:** Phase 8 — Pricing Sync (Azure fetcher, GCP fetcher, PricingSync orchestrator)
 
 ## Current Position
 
-Phase: 7 — Data Foundation
-Plan: 07-02 complete — ready for 07-03
-Status: Plan 07-02 executed — seed.ts, launchpad IPC handlers, preload contextBridge exposure complete
-Last activity: 2026-03-30 — 07-02 IPC wiring and seed complete
+Phase: 8 — Pricing Sync
+Plan: 08-02 complete — ready for 08-03
+Status: Plan 08-02 executed — Azure and GCP fetchers with paginated APIs, delta sync, and graceful fallbacks complete
+Last activity: 2026-03-30 — 08-02 Azure and GCP fetchers complete
 
 Progress: [█░░░░░░░░░] 5% (v2.0 milestone)
 
@@ -51,6 +51,7 @@ Key decisions for v2.0:
 - [Phase 07-data-foundation]: Dedicated 'zenith-launchpad-credentials' electron-store isolates Launchpad credentials from other plugin credentials
 - [Phase 07-data-foundation]: tsconfig.node.json include extended to cover renderer catalog/type files — required for seed.ts to import AWS/GCP/Azure TS catalogs in the main process
 - [Phase 07-data-foundation]: Seed region per provider: us-east-1 (AWS), us-central1 (GCP), eastus (Azure)
+- [Phase 08-pricing-sync]: Azure armRegionName filter limits API response to 12 target regions; GCP ETag applied to first page only; no new dependencies (built-in Node https)
 
 ### Pending Todos
 
@@ -63,5 +64,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed 07-data-foundation/07-02-PLAN.md
-Resume file: .planning/phases/07-data-foundation/07-03-PLAN.md
+Stopped at: Completed 08-pricing-sync/08-02-PLAN.md
+Resume file: .planning/phases/08-pricing-sync/08-03-PLAN.md
