@@ -187,11 +187,12 @@ Plans:
   3. Selecting a service for the first time loads its rates from DB; selecting it again uses the memoized result (no duplicate IPC calls)
   4. With no DB rates available, the UI shows "Pricing unavailable" per service rather than crashing or showing $0
   5. Selected region is persisted per provider and restored on next app launch
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
 - [ ] 09-01-PLAN.md -- Fix pricing-sync.ts stubs + refactor calculator to pure RateMap-driven function
 - [ ] 09-02-PLAN.md -- launchpad-store pricingCache + lazy loading + memoization + region picker UI
+- [ ] 09-03-PLAN.md -- Gap closure: wire memoCache read/write path into getTotalCost (CALC-04)
 
 ### Phase 10: Service Catalog
 **Goal**: The service catalog contains ~100 services across 8 categories for all 3 providers, is served from the DB, renders smoothly regardless of catalog size, and supports instant text filtering
@@ -252,11 +253,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 6. Polish | 0/3 | Not started | - |
 | 7. Data Foundation | 2/2 | Complete    | 2026-03-30 |
 | 8. Pricing Sync | 3/3 | Complete    | 2026-03-30 |
-| 9. Calculator & Store | 2/2 | Complete   | 2026-03-30 |
+| 9. Calculator & Store | 2/3 | Gap closure in progress | 2026-03-30 |
 | 10. Service Catalog | 0/1 | Not started | - |
 | 11. Visualizations | 0/1 | Not started | - |
 | 12. Settings & Polish | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-03-27*
-*Last updated: 2026-03-30 — Phase 9 plans created (09-01, 09-02)*
+*Last updated: 2026-03-30 — Phase 9 gap closure plan 09-03 created (CALC-04 memoCache wiring)*
