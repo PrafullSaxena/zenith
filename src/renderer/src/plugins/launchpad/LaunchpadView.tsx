@@ -30,6 +30,7 @@ import EstimationSummary from './EstimationSummary'
 import AiAdvisor from './AiAdvisor'
 import EstimationHistory from './EstimationHistory'
 import ComparisonView from './ComparisonView'
+import SyncStatusBadge from './SyncStatusBadge'
 
 const TABS = [
   { id: 'estimator', label: 'Estimator', icon: Calculator },
@@ -78,20 +79,23 @@ export default function LaunchpadView(): React.JSX.Element {
         activeTab={activeTab}
         onTabChange={(id) => setActiveTab(id as LaunchpadTab)}
         statusIndicator={
-          provider ? (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-[hsl(var(--muted-foreground))] bg-white/4 border border-white/6 rounded-lg px-2 py-0.5">
-                {PROVIDER_INFO[provider].displayName}
-              </span>
-              <button
-                type="button"
-                onClick={clearEstimation}
-                className="text-xs text-[hsl(var(--muted-foreground))] hover:text-(--primary) transition-colors underline underline-offset-2"
-              >
-                Change Provider
-              </button>
-            </div>
-          ) : undefined
+          <div className="flex items-center gap-3">
+            {provider && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[hsl(var(--muted-foreground))] bg-white/4 border border-white/6 rounded-lg px-2 py-0.5">
+                  {PROVIDER_INFO[provider].displayName}
+                </span>
+                <button
+                  type="button"
+                  onClick={clearEstimation}
+                  className="text-xs text-[hsl(var(--muted-foreground))] hover:text-(--primary) transition-colors underline underline-offset-2"
+                >
+                  Change Provider
+                </button>
+              </div>
+            )}
+            <SyncStatusBadge />
+          </div>
         }
       />
 
