@@ -1,256 +1,158 @@
 /**
- * ServiceCatalog — Browsable cloud service catalog with category grouping and fuzzy search.
+ * ServiceCatalog — DB-driven, virtualized cloud service catalog.
  *
- * Renders services grouped by category with collapsible sections.
- * Each service has a toggle checkbox to add/remove it from the estimation.
- * Selected services are highlighted with an accent border.
- * Uses Card for category containers, Badge for selected count,
- * Skeleton for loading, and Input for search.
+ * Loads catalog from DB via IPC (window.api.launchpad.getCatalog).
+ * Uses @tanstack/react-virtual for virtualized list rendering — only visible rows in DOM.
+ * In-memory search index built once on catalog load — no DB query per keystroke.
+ * Horizontal filter chips (All + category chips) for category filtering.
+ * Row-tint selection with checkmark indicator.
  */
-import { useState, useMemo } from 'react'
-import { ChevronDown, ChevronRight, Search, X } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
+import { Search, X, Check } from 'lucide-react'
+import { Input } from '@renderer/components/ui/input'
 import { Badge } from '@renderer/components/ui/badge'
 import { Skeleton } from '@renderer/components/ui/skeleton'
-import { Input } from '@renderer/components/ui/input'
-import type { CloudProvider } from '../../types/launchpad'
-import type { ServiceDefinition } from '../../data/cloud-pricing/types'
-import { getCatalog } from '../../data/cloud-pricing/index'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
+import type { CloudProvider } from '../../types/launchpad'
 
 interface ServiceCatalogProps {
   provider: CloudProvider
 }
 
-/**
- * Simple fuzzy match: checks if all characters of the query appear in order
- * within the target string (case-insensitive).
- */
-function fuzzyMatch(query: string, target: string): boolean {
-  const q = query.toLowerCase()
-  const t = target.toLowerCase()
-
-  if (t.includes(q)) return true
-
-  let qi = 0
-  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
-    if (t[ti] === q[qi]) qi++
-  }
-  return qi === q.length
-}
-
 export default function ServiceCatalog({ provider }: ServiceCatalogProps): React.JSX.Element {
-  const catalog = getCatalog(provider)
-
-  const selectedServices = useLaunchpadStore((s) => s.selectedServices)
-  const addService = useLaunchpadStore((s) => s.addService)
-  const removeService = useLaunchpadStore((s) => s.removeService)
+  const dbCatalog = useLaunchpadStore(s => s.dbCatalog)
+  const loadDbCatalog = useLaunchpadStore(s => s.loadDbCatalog)
+  const selectedServices = useLaunchpadStore(s => s.selectedServices)
+  const addService = useLaunchpadStore(s => s.addService)
+  const removeService = useLaunchpadStore(s => s.removeService)
 
   const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<string>('All')
+  const parentRef = useRef<HTMLDivElement>(null)
 
-  // Track which categories are expanded; default all open
-  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {}
-    for (const cat of catalog.categories) {
-      initial[cat.id] = true
+  // Load catalog on provider change
+  useEffect(() => {
+    loadDbCatalog(provider)
+    setSearchQuery('')
+    setActiveCategory('All')
+  }, [provider, loadDbCatalog])
+
+  // Filtered items derived from in-memory search index
+  const filteredItems = useMemo(() => {
+    const { services, searchIndex } = dbCatalog
+    let items = services
+
+    if (searchQuery.trim()) {
+      // Search overrides category chip — flat results
+      const q = searchQuery.toLowerCase().trim()
+      items = services.filter((_, i) => searchIndex[i]?.includes(q))
+    } else if (activeCategory !== 'All') {
+      items = services.filter(s => s.category === activeCategory)
     }
-    return initial
+    return items
+  }, [dbCatalog, searchQuery, activeCategory])
+
+  // Virtualizer setup — row height 40px
+  const rowVirtualizer = useVirtualizer({
+    count: filteredItems.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 40,
+    overscan: 5,
   })
-
-  // Filter services based on search query
-  const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return catalog.categories
-
-    return catalog.categories
-      .map((category) => {
-        const matchingServices = category.services.filter(
-          (service: ServiceDefinition) =>
-            fuzzyMatch(searchQuery, service.name) ||
-            fuzzyMatch(searchQuery, service.description) ||
-            fuzzyMatch(searchQuery, service.id)
-        )
-        return { ...category, services: matchingServices }
-      })
-      .filter((category) => category.services.length > 0)
-  }, [catalog.categories, searchQuery])
-
-  const totalServices = catalog.categories.reduce((sum, cat) => sum + cat.services.length, 0)
-
-  const toggleCategory = (categoryId: string) => {
-    setExpanded((prev) => ({ ...prev, [categoryId]: !prev[categoryId] }))
-  }
-
-  const isSelected = (serviceId: string) =>
-    selectedServices.some((s) => s.serviceId === serviceId)
-
-  const handleToggle = (categoryId: string, serviceId: string) => {
-    if (isSelected(serviceId)) {
-      removeService(serviceId)
-    } else {
-      addService(categoryId, serviceId)
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="p-3 space-y-3">
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-      </div>
-    )
-  }
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with search */}
-      <div className="sticky top-0 z-10 bg-[hsl(var(--card))] p-3 border-b border-white/6">
-        <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]/60">
-          Service Catalog
-          <span className="ml-1 text-[hsl(var(--muted-foreground))]/40">({totalServices})</span>
-        </p>
-
-        {/* Search input */}
+      {/* Sticky header: search + filter chips */}
+      <div className="shrink-0 sticky top-0 z-10 bg-[hsl(var(--card))] border-b border-white/6 p-3 space-y-2">
+        {/* Search */}
         <div className="relative">
-          <Search
-            size={12}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]/40 z-10 pointer-events-none"
-          />
+          <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none" />
           <Input
-            type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search services..."
-            className="pl-7 pr-7 py-1.5 text-xs bg-black/40 border-white/5 shadow-inner"
+            className="pl-7 pr-7 py-1.5 text-xs bg-black/40 border-white/5"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors"
             >
               <X size={12} />
             </button>
           )}
         </div>
+        {/* Category chips */}
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+          {['All', ...dbCatalog.categories].map(cat => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => { setActiveCategory(cat); setSearchQuery('') }}
+              className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                activeCategory === cat && !searchQuery
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'bg-white/5 text-muted-foreground hover:bg-white/10 border border-transparent'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Service list */}
-      <div className="flex-1 overflow-y-auto p-2">
-        {filteredCategories.length === 0 ? (
-          <div className="flex items-center justify-center py-8">
-            <p className="text-xs text-[hsl(var(--muted-foreground))]/50 italic">
-              No services match &ldquo;{searchQuery}&rdquo;
-            </p>
+      {/* Virtualized list */}
+      <div ref={parentRef} className="flex-1 overflow-y-auto">
+        {dbCatalog.status === 'loading' ? (
+          <div className="p-2 space-y-1">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-md" />
+            ))}
           </div>
+        ) : filteredItems.length === 0 ? (
+          <p className="text-xs text-muted-foreground/50 p-4">
+            {searchQuery ? `No services match "${searchQuery}"` : 'No services available.'}
+          </p>
         ) : (
-          <div className="flex flex-col gap-1.5">
-            {filteredCategories.map((category) => {
-              const isOpen = expanded[category.id] ?? true
-              const selectedCount = category.services.filter((s: ServiceDefinition) =>
-                isSelected(s.id)
-              ).length
-
+          <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+            {rowVirtualizer.getVirtualItems().map(virtualItem => {
+              const service = filteredItems[virtualItem.index]
+              const selected = selectedServices.some(s => s.serviceId === service.id)
               return (
-                <div key={category.id} className="overflow-hidden rounded-xl border border-white/5 bg-black/20 backdrop-blur-md shadow-lg">
-                  {/* Category header */}
-                  <button
-                    type="button"
-                    onClick={() => toggleCategory(category.id)}
-                    className="flex w-full items-center justify-between px-3 py-2 text-left transition-colors hover:bg-white/5"
+                <button
+                  key={virtualItem.key}
+                  type="button"
+                  data-index={virtualItem.index}
+                  ref={rowVirtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${virtualItem.size}px`,
+                    transform: `translateY(${virtualItem.start}px)`
+                  }}
+                  onClick={() => selected ? removeService(service.id) : addService(service.category, service.id)}
+                  className={`flex items-center gap-2 px-3 text-left w-full transition-colors border-b border-white/4 ${
+                    selected ? 'bg-primary/10 hover:bg-primary/15' : 'hover:bg-white/5'
+                  }`}
+                >
+                  {/* Category badge */}
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] shrink-0 px-1.5 py-0 h-4 leading-4 border-white/10 text-muted-foreground/60 font-normal"
                   >
-                    <div className="flex items-center gap-2">
-                      {isOpen ? (
-                        <ChevronDown
-                          size={14}
-                          className="text-muted-foreground shrink-0"
-                        />
-                      ) : (
-                        <ChevronRight
-                          size={14}
-                          className="text-muted-foreground shrink-0"
-                        />
-                      )}
-                      <span className="text-sm font-semibold text-foreground">
-                        {category.name}
-                      </span>
-                      {selectedCount > 0 && (
-                        <Badge variant="default" className="scale-90">{selectedCount}</Badge>
-                      )}
-                    </div>
-                    <span className="text-xs font-medium text-muted-foreground/60">
-                      {category.services.length}
-                    </span>
-                  </button>
-
-                  {/* Service rows */}
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div 
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                        className="divide-y divide-white/5 border-t border-white/5"
-                      >
-                        {category.services.map((service: ServiceDefinition) => {
-                          const selected = isSelected(service.id)
-
-                          return (
-                            <button
-                              key={service.id}
-                              type="button"
-                              onClick={() => handleToggle(category.id, service.id)}
-                              className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors ${
-                                selected
-                                  ? 'border-l-2 border-l-primary bg-primary/10 hover:bg-primary/20 backdrop-blur-sm'
-                                  : 'border-l-2 border-l-transparent hover:bg-white/5'
-                              }`}
-                            >
-                              {/* Checkbox visual */}
-                              <div
-                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border transition-all ${
-                                  selected
-                                    ? 'border-primary bg-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.3)]'
-                                    : 'border-white/20 bg-black/40 shadow-inner'
-                                }`}
-                              >
-                                {selected && (
-                                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                    <path
-                                      d="M1 4L3.5 6.5L9 1"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  </svg>
-                                )}
-                              </div>
-
-                              {/* Service info */}
-                              <div className="flex-1 min-w-0">
-                                <p
-                                  className={`text-xs font-semibold tracking-wide ${
-                                    selected
-                                      ? 'text-primary'
-                                      : 'text-foreground'
-                                  }`}
-                                >
-                                  {service.name}
-                                </p>
-                                <p className="text-[11px] text-muted-foreground/70 leading-relaxed mt-0.5 line-clamp-2">
-                                  {service.description}
-                                </p>
-                              </div>
-                            </button>
-                          )
-                        })}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                    {service.category}
+                  </Badge>
+                  {/* Service name */}
+                  <span className={`flex-1 text-xs font-medium truncate ${selected ? 'text-primary' : 'text-foreground/90'}`}>
+                    {service.name}
+                  </span>
+                  {/* Checkmark — only when selected */}
+                  {selected && <Check size={11} className="shrink-0 text-primary" />}
+                </button>
               )
             })}
           </div>
