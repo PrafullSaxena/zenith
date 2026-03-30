@@ -8,6 +8,8 @@
  */
 import React, { useState } from 'react'
 import { DollarSign, Download, Trash2, Save } from 'lucide-react'
+import CostTreemap from './charts/CostTreemap'
+import CategoryDonut from './charts/CategoryDonut'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
@@ -72,50 +74,6 @@ const REGION_OPTIONS: Record<string, Array<{ value: string; label: string }>> = 
   ],
 }
 
-// ---- 2D fallback for cost treemap ──────────────────────────────────────────
-
-const FALLBACK_CATEGORY_COLORS: Record<string, string> = {
-  compute: '#3b82f6',
-  storage: '#10b981',
-  network: '#8b5cf6',
-  database: '#f59e0b'
-}
-const FALLBACK_DEFAULT_COLOR = '#94a3b8'
-
-function CostTreemapFallback({
-  items
-}: {
-  items: Array<{ serviceId: string; serviceName: string; monthly: number; categoryId?: string }>
-}): React.JSX.Element {
-  const maxCost = Math.max(...items.map((i) => i.monthly), 0.01)
-
-  return (
-    <div className="flex h-full flex-col justify-center gap-1 py-2">
-      {items.slice(0, 10).map((item) => {
-        const pct = Math.max((item.monthly / maxCost) * 100, 4)
-        const color =
-          FALLBACK_CATEGORY_COLORS[item.categoryId?.toLowerCase() ?? ''] ?? FALLBACK_DEFAULT_COLOR
-
-        return (
-          <div key={item.serviceId} className="flex items-center gap-2">
-            <span className="w-20 truncate text-[9px] text-[hsl(var(--muted-foreground))]">
-              {item.serviceName}
-            </span>
-            <div className="flex-1 h-3 rounded-full bg-white/3 overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${pct}%`, backgroundColor: color, opacity: 0.7 }}
-              />
-            </div>
-            <span className="text-[9px] text-[hsl(var(--muted-foreground))] w-14 text-right">
-              ${item.monthly.toFixed(2)}
-            </span>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
 
 export default function EstimationSummary(): React.JSX.Element {
   const provider = useLaunchpadStore((s) => s.provider)
@@ -131,6 +89,7 @@ export default function EstimationSummary(): React.JSX.Element {
   const [showSaveInput, setShowSaveInput] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [highlightCategory, setHighlightCategory] = useState<string | null>(null)
 
   // Compute full result for line items (pure function, using pricingCache)
   const fullResult = (provider && selectedServices.length > 0 && pricingCache.rates)
@@ -139,6 +98,14 @@ export default function EstimationSummary(): React.JSX.Element {
 
   const totalMonthly = fullResult?.totalMonthly ?? 0
   const totalYearly = fullResult?.totalYearly ?? 0
+
+  // Enrich items with categoryId from selectedServices for chart color-coding
+  const enrichedItems = fullResult
+    ? fullResult.items.map((item) => ({
+        ...item,
+        categoryId: selectedServices.find((s) => s.serviceId === item.serviceId)?.categoryId,
+      }))
+    : []
 
   // Region options for the current provider
   const regions = provider ? (REGION_OPTIONS[provider] ?? []) : []
@@ -302,12 +269,25 @@ export default function EstimationSummary(): React.JSX.Element {
         )}
       </div>
 
-      {/* Cost Distribution (2D fallback) */}
+      {/* Charts — treemap ~60% width, donut ~40% per user decision */}
       {fullResult && selectedServices.length > 0 && (
-        <div className="border-t border-white/6 px-4 pt-2 pb-1">
-          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mb-1">Cost Distribution</p>
-          <div className="h-[200px]">
-            <CostTreemapFallback items={fullResult.items} />
+        <div className="border-t border-white/6 px-4 pt-3 pb-2">
+          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mb-2">Cost Distribution</p>
+          <div className="flex gap-4">
+            <div className="w-[60%]">
+              <CostTreemap
+                items={enrichedItems}
+                highlightCategory={highlightCategory}
+                onCategoryHover={setHighlightCategory}
+              />
+            </div>
+            <div className="w-[40%]">
+              <CategoryDonut
+                items={enrichedItems}
+                highlightCategory={highlightCategory}
+                onCategoryHover={setHighlightCategory}
+              />
+            </div>
           </div>
         </div>
       )}
