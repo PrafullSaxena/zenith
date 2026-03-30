@@ -175,7 +175,18 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
     if (selectedServices.length === 0 || !pricingCache.rates) {
       return { monthly: 0, yearly: 0 }
     }
+    // Build composite cache key: each selection's serviceId + stableHash(config), joined with '|', plus current region
+    const key = selectedServices
+      .map((s) => `${s.serviceId}:${stableHash(s.config)}`)
+      .join('|') + `:${pricingCache.region}`
+    // Cache read path — return memoized result if available
+    const cached = memoCache.get(key)
+    if (cached) {
+      return { monthly: cached.monthly, yearly: cached.yearly }
+    }
+    // Cache miss — compute and store result
     const result = calculateTotalCost(selectedServices, pricingCache.rates, pricingCache.region)
+    memoCache.set(key, { monthly: result.totalMonthly, yearly: result.totalYearly, breakdown: result.items })
     return { monthly: result.totalMonthly, yearly: result.totalYearly }
   },
 

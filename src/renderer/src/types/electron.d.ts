@@ -253,6 +253,55 @@ export interface ElectronAPI {
   }
   launchpad: {
     exportPdf: (estimation: import('./launchpad').EstimationExport) => Promise<{ filePath: string | null }>
+    getPricing: (args: {
+      provider: string
+      region: string
+      serviceIds: string[]
+    }) => Promise<Record<string, Record<string, number>>>
+    saveCredentials: (credentials: {
+      gcpApiKey?: string
+      awsAccessKeyId?: string
+      awsSecretAccessKey?: string
+      gcpBillingAccountId?: string
+    }) => Promise<{ saved: boolean }>
+    syncPricing: () => Promise<{
+      success: boolean
+      result?: {
+        startedAt: number
+        completedAt: number
+        providers: Array<{
+          provider: 'aws' | 'gcp' | 'azure'
+          status: 'success' | 'error' | 'skipped'
+          servicesUpdated: number
+          error?: string
+          deltaSkipped?: boolean
+        }>
+      }
+      error?: string
+    }>
+    getSyncStatus: () => Promise<{
+      success: boolean
+      statuses?: Array<{
+        provider: 'aws' | 'gcp' | 'azure'
+        lastSyncAt: number | null
+        status: string | null
+        servicesUpdated: number | null
+        error: string | null
+      }>
+      error?: string
+    }>
+    getRegions: (provider: string) => Promise<{
+      success: boolean
+      regions?: Array<{ regionId: string; displayName: string }>
+      error?: string
+    }>
+    onSyncComplete: (
+      cb: (data: {
+        provider: 'aws' | 'gcp' | 'azure'
+        servicesUpdated: number
+        status: 'success' | 'error' | 'skipped'
+      }) => void
+    ) => () => void
   }
   nebula: {
     saveNote: (note: unknown) => Promise<{ saved: boolean }>
