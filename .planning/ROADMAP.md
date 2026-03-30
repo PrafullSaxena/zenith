@@ -170,10 +170,12 @@ Plans:
   3. A second sync run fetches only changed rates (delta strategy) -- the sync log shows a smaller byte count than the initial full sync
   4. If one provider's sync endpoint returns an error, the other two providers' data is still updated and the failure is recorded in pricing_sync_log
   5. The renderer receives a launchpad:syncComplete push event and the sync status badge updates immediately after any sync completes
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md -- TBD
+- [ ] 08-01-PLAN.md -- PricingSync orchestrator + AWS fetcher (bulk JSON, delta, optional Cost Explorer stub)
+- [ ] 08-02-PLAN.md -- Azure fetcher (paginated Retail Prices API, delta) + GCP fetcher (API key, graceful skip, ETag delta)
+- [ ] 08-03-PLAN.md -- Wire IPC handlers (syncPricing, getSyncStatus, getRegions) + preload exposure + push notification
 
 ### Phase 9: Calculator & Store
 **Goal**: Cost calculations are driven entirely by live DB rates -- the calculator is a pure function, rates load lazily per selected service, results are memoized, and region changes recalculate instantly without a network round-trip
@@ -248,7 +250,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5. 3D Removal & Cleanup | 0/1 | Not started | - |
 | 6. Polish | 0/3 | Not started | - |
 | 7. Data Foundation | 2/2 | Complete    | 2026-03-30 |
-| 8. Pricing Sync | 0/1 | Not started | - |
+| 8. Pricing Sync | 0/3 | Not started | - |
 | 9. Calculator & Store | 0/1 | Not started | - |
 | 10. Service Catalog | 0/1 | Not started | - |
 | 11. Visualizations | 0/1 | Not started | - |
@@ -256,4 +258,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-03-27*
-*Last updated: 2026-03-30 — v2.0 Launchpad Enhancement phases 7-12 appended*
+*Last updated: 2026-03-30 — Phase 8 plans created (08-01, 08-02, 08-03)*
