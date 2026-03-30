@@ -220,10 +220,11 @@ Plans:
   3. ComparisonView renders a grouped bar chart with one group per service family; the cheapest provider's bar is highlighted green
   4. The History tab renders a trend line plotting saved estimations over time; hovering a point shows the estimation name and cost breakdown
   5. All charts render correctly in dark mode using CSS custom properties -- no hardcoded colors visible
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01-PLAN.md -- TBD
+- [ ] 11-01-PLAN.md -- Install recharts, CostTreemap + CategoryDonut charts, wire into EstimationSummary with cross-highlighting
+- [ ] 11-02-PLAN.md -- ComparisonBarChart for ComparisonView + HistoryTrendLine for History tab
 
 ### Phase 12: Settings & Polish
 **Goal**: Users can manage credentials, configure sync preferences, inspect per-provider sync health, and see live sync status from the Launchpad header -- the plugin feels production-ready
@@ -257,9 +258,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 8. Pricing Sync | 3/3 | Complete    | 2026-03-30 |
 | 9. Calculator & Store | 3/3 | Complete   | 2026-03-30 |
 | 10. Service Catalog | 0/3 | Not started | - |
-| 11. Visualizations | 0/1 | Not started | - |
+| 11. Visualizations | 0/2 | Not started | - |
 | 12. Settings & Polish | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-03-27*
-*Last updated: 2026-03-31 — Phase 10 plans created (CAT-01 through CAT-06)*
+*Last updated: 2026-03-31 — Phase 11 plans created (VIZ-01 through VIZ-06)*
