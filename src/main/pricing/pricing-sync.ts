@@ -8,6 +8,8 @@
 import { BrowserWindow } from 'electron'
 import { pricingRepository } from './pricing-repository'
 import { fetchAwsPricing } from './fetchers/aws-fetcher'
+import { fetchAzurePricing } from './fetchers/azure-fetcher'
+import { fetchGcpPricing } from './fetchers/gcp-fetcher'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -25,14 +27,6 @@ export interface SyncResult {
   completedAt: number
   providers: ProviderSyncResult[]
 }
-
-// ── Inline stubs — replaced by real fetchers once 08-02 files exist. ──
-// These satisfy TypeScript at wave-1 compile time without dynamic imports.
-const fetchAzurePricing = async (): Promise<{ servicesUpdated: number; deltaSkipped: boolean }> =>
-  ({ servicesUpdated: 0, deltaSkipped: false })
-
-const fetchGcpPricing = async (): Promise<{ servicesUpdated: number; deltaSkipped: boolean; skipped: true }> =>
-  ({ servicesUpdated: 0, deltaSkipped: false, skipped: true })
 
 // ── PricingSync class ──────────────────────────────────────────────────
 
@@ -140,17 +134,26 @@ export class PricingSync {
         bytesDownloaded = result.bytesDownloaded
       } else if (provider === 'azure') {
         const result = await fetchAzurePricing()
+        if (result.error) {
+          pricingRepository.logSync(provider, 'error', 0, result.error)
+          return { provider, status: 'error', servicesUpdated: 0, error: result.error, deltaSkipped: result.deltaSkipped }
+        }
         servicesUpdated = result.servicesUpdated
         deltaSkipped = result.deltaSkipped
+        bytesDownloaded = result.bytesDownloaded
       } else if (provider === 'gcp') {
         const result = await fetchGcpPricing()
-        servicesUpdated = result.servicesUpdated
-        deltaSkipped = result.deltaSkipped
-
-        if (result.skipped) {
+        if (result.error) {
+          pricingRepository.logSync(provider, 'error', 0, result.error)
+          return { provider, status: 'error', servicesUpdated: 0, error: result.error, deltaSkipped: result.deltaSkipped }
+        }
+        if (result.deltaSkipped && result.servicesUpdated === 0) {
           pricingRepository.logSync(provider, 'skipped', 0, null)
           return { provider, status: 'skipped', servicesUpdated: 0, deltaSkipped: true }
         }
+        servicesUpdated = result.servicesUpdated
+        deltaSkipped = result.deltaSkipped
+        bytesDownloaded = result.bytesDownloaded
       }
 
       pricingRepository.logSync(provider, 'success', servicesUpdated, null)
