@@ -154,10 +154,11 @@ Plans:
   2. PricingRepository can be called from any main-process handler and returns catalog, rates, regions, and sync status without error
   3. A GCP API key entered in settings is stored encrypted and survives app restart (confirmed via safeStorage round-trip)
   4. Calling launchpad:getPricing and launchpad:getCatalog from the renderer returns structured data from the DB within 5ms
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md -- TBD
+- [ ] 07-01-PLAN.md -- DB init, PricingRepository class, safeStorage credentials helper
+- [ ] 07-02-PLAN.md -- Seed from TS catalogs, IPC handlers (getPricing/getCatalog/saveCredentials), preload exposure
 
 ### Phase 8: Pricing Sync
 **Goal**: Live pricing is fetched from AWS, Azure, and GCP on a daily schedule; delta sync keeps the DB current; sync failures are isolated per provider and logged; the renderer is notified on completion
@@ -246,7 +247,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Screen Migration | 0/10 | Not started | - |
 | 5. 3D Removal & Cleanup | 0/1 | Not started | - |
 | 6. Polish | 0/3 | Not started | - |
-| 7. Data Foundation | 0/1 | Not started | - |
+| 7. Data Foundation | 0/2 | Not started | - |
 | 8. Pricing Sync | 0/1 | Not started | - |
 | 9. Calculator & Store | 0/1 | Not started | - |
 | 10. Service Catalog | 0/1 | Not started | - |
