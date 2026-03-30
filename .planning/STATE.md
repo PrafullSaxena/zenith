@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 9 — Calculator Store
-Plan: 09-02 complete — pricingCache wired into store; lazy IPC rate loading; setRegion instant recalc; region picker in EstimationSummary
-Status: Plan 09-02 executed — DB rates connected to calculator; region Select dropdown live
-Last activity: 2026-03-30 — 09-02 calculator store integration complete
+Plan: 09-03 complete — memoCache read/write path wired into getTotalCost; CALC-04 satisfied; phase 09 complete (10/10 truths)
+Status: Plan 09-03 executed — calculator result memoization active; phase 09 fully complete
+Last activity: 2026-03-30 — 09-03 gap closure complete
 
 Progress: [██░░░░░░░░] 8% (v2.0 milestone)
 
@@ -60,6 +60,8 @@ Key decisions for v2.0:
 - [Phase 09-calculator-store]: Callers (launchpad-store, EstimationSummary, ComparisonView) pass empty RateMap {} — actual DB rate injection in subsequent plan
 - [Phase 09-calculator-store]: index.d.ts extended with full launchpad API surface — was missing despite preload implementation existing since phase 08
 - [Phase 09-calculator-store]: Region dropdown uses 12 hardcoded regions per provider — matches the 12 regions seeded and synced by the pricing pipeline
+- [Phase 09-calculator-store]: Composite memoCache key covers all active selections joined with '|' plus region — single Map lookup per getTotalCost invocation
+- [Phase 09-calculator-store]: electron.d.ts (renderer-side) takes precedence over preload/index.d.ts for Window.api types — phase-08 API additions must be mirrored in electron.d.ts
 
 ### Pending Todos
 
@@ -72,5 +74,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed 09-calculator-store/09-02-PLAN.md
-Resume file: Next plan in phase 09-calculator-store
+Stopped at: Completed 09-calculator-store/09-03-PLAN.md
+Resume file: Next phase after 09-calculator-store
