@@ -261,6 +261,18 @@ export class PricingRepository {
   }
 
   /**
+   * Log a sync run result to pricing_sync_log.
+   * Called by PricingSync.syncProvider() after each provider fetch completes.
+   */
+  logSync(provider: CloudProvider, status: string, servicesUpdated: number, error: string | null): void {
+    const db = getPricingDb()
+    db.prepare(`
+      INSERT INTO pricing_sync_log (provider, status, services_updated, error, started_at, completed_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(provider, status, servicesUpdated, error, Date.now(), Date.now())
+  }
+
+  /**
    * Stub — Called by seed.ts — see src/main/pricing/seed.ts
    * seed.ts calls upsertService/upsertRegion/upsertRates directly.
    */
