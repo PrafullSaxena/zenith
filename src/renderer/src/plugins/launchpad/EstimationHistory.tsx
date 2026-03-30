@@ -15,6 +15,7 @@ import { staggerContainer, staggerItem } from '@renderer/lib/motion'
 import { useLaunchpadStore } from '../../stores/launchpad-store'
 import type { EstimationEntry } from '../../types/launchpad'
 import { PROVIDER_INFO } from '../../data/cloud-pricing/index'
+import HistoryTrendLine from './charts/HistoryTrendLine'
 
 function formatDate(isoString: string): string {
   try {
@@ -169,23 +170,32 @@ export default function EstimationHistory(): React.JSX.Element {
             description="Your cost estimates will appear here. Save an estimation from the Estimator tab to get started."
           />
         ) : (
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="space-y-2"
-          >
-            <AnimatePresence>
-              {history.map((entry) => (
-                <HistoryEntryCard
-                  key={entry.id}
-                  entry={entry}
-                  onLoad={handleLoad}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <>
+            {/* Trend line chart — sits above card list */}
+            <div className="mb-4 rounded-xl border border-white/5 bg-black/20 backdrop-blur-md p-4">
+              <p className="text-xs font-semibold text-[hsl(var(--foreground))] mb-3">Cost Trend</p>
+              <HistoryTrendLine entries={history} />
+            </div>
+
+            {/* History cards */}
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="space-y-2"
+            >
+              <AnimatePresence>
+                {history.map((entry) => (
+                  <HistoryEntryCard
+                    key={entry.id}
+                    entry={entry}
+                    onLoad={handleLoad}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          </>
         )}
       </div>
     </div>
