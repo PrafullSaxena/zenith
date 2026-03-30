@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 10 — Service Catalog
-Plan: 10-01 complete — AWS/GCP/Azure catalogs expanded to 8 categories/~34 services each; SERVICE_EQUIVALENCES at 25 families
-Status: Plan 10-01 executed — all 3 provider catalogs at full 8-category structure; equivalences map expanded
-Last activity: 2026-03-31 — 10-01 catalog expansion complete
+Plan: 10-03 complete — FAMILY_LABELS + getProviderServiceName added to equivalences.ts; ComparisonView has cross-provider equivalence reference table
+Status: Plan 10-03 executed — equivalence table (25 rows, alphabetically sorted) visible in ComparisonView
+Last activity: 2026-03-31 — 10-03 equivalence table complete
 
 Progress: [██░░░░░░░░] 8% (v2.0 milestone)
 
@@ -65,6 +65,8 @@ Key decisions for v2.0:
 - [Phase 10-service-catalog]: 8-category canonical structure (compute, storage, database, networking, mlai, analytics, messaging, security) — all 3 providers mirror this; no separate containers category
 - [Phase 10-service-catalog]: azure managed-disk and data-transfer IDs preserved in azure.ts to avoid breaking existing equivalences
 - [Phase 10-service-catalog]: bedrock and sagemaker both map to vertex-ai for GCP equivalence; kinesis and sns both map to pub-sub
+- [Phase 10-service-catalog]: equivalence table in ComparisonView renders unconditionally — cost comparison cards are conditional on selections
+- [Phase 10-service-catalog]: DISPLAY_NAMES in getProviderServiceName covers legacy 'managed-disk' ID to avoid lookup misses
 
 ### Pending Todos
 
@@ -77,5 +79,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 10-service-catalog/10-01-PLAN.md
+Stopped at: Completed 10-service-catalog/10-03-PLAN.md
 Resume file: Next plan in 10-service-catalog
