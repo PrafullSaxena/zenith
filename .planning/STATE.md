@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 11 — Visualizations
-Plan: 11-01 complete — Recharts CostTreemap + CategoryDonut replacing CostTreemapFallback bar chart in EstimationSummary
-Status: Plan 11-01 executed — treemap (60%) + donut (40%) side-by-side with cross-highlight; recharts ^3.8.1 installed
-Last activity: 2026-03-31 — 11-01 visualizations complete
+Plan: 11-02 complete — ComparisonBarChart + HistoryTrendLine wired into ComparisonView and EstimationHistory
+Status: Plan 11-02 executed — horizontal grouped bar chart for provider comparison; multi-line trend chart for estimation history
+Last activity: 2026-03-31 — 11-02 visualizations complete
 
 Progress: [██░░░░░░░░] 9% (v2.0 milestone)
 
@@ -71,6 +71,7 @@ Key decisions for v2.0:
 - [Phase 10-02-service-catalog]: dbCatalog parallel searchIndex string[] enables O(n) in-memory filter — no object traversal per keystroke
 - [Phase 10-02-service-catalog]: loadDbCatalog triggered from setProvider and ServiceCatalog useEffect — catalog loads on any provider change regardless of component mount state
 - [Phase 11-visualizations]: recharts ^3.8.1 for all chart components; center label as CSS overlay div; enrichedItems join pattern for categoryId propagation
+- [Phase 11-02-visualizations]: cheapest-bar Cell highlight via useMemo Map; muted brand colors for non-cheapest bars; _provider metadata keys in trend chart data for tooltip access; connectNulls=false on trend lines shows gaps explicitly
 
 ### Pending Todos
 
@@ -83,5 +84,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 11-visualizations/11-01-PLAN.md
+Stopped at: Completed 11-visualizations/11-02-PLAN.md
 Resume file: Next plan in 11-visualizations
