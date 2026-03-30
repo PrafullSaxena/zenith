@@ -37,6 +37,7 @@ import { initPricingDb } from './pricing/pricing-db'
 import { pricingRepository } from './pricing/pricing-repository'
 import { saveCredential, CRED_GCP_API_KEY, CRED_AWS_ACCESS_KEY_ID, CRED_AWS_SECRET_ACCESS_KEY, CRED_GCP_BILLING_ACCOUNT_ID } from './pricing/credentials'
 import { seedPricingDb } from './pricing/seed'
+import { pricingSync } from './pricing/pricing-sync'
 
 /**
  * Separate electron-store instance for credentials.
@@ -95,6 +96,18 @@ function getNebulaInstances(): { db: NebulaDatabase; fs: NoteFileStorage } {
     nebulaFs = new NoteFileStorage(storagePath)
   }
   return { db: nebulaDb, fs: nebulaFs }
+}
+
+/**
+ * Called from main/index.ts after BrowserWindow is created.
+ * Starts the daily pricing sync schedule and connects the push notification target.
+ */
+export function initPricingSync(mainWindow: BrowserWindow): void {
+  try {
+    pricingSync.init(mainWindow)
+  } catch (err) {
+    console.error('[Launchpad] Failed to start pricing sync:', err)
+  }
 }
 
 /**
@@ -656,6 +669,44 @@ export function registerIpcHandlers(): void {
       return { saved: true }
     }
   )
+
+  // ── launchpad:syncPricing ──────────────────────────────────────────────
+  ipcMain.handle('launchpad:syncPricing', async () => {
+    try {
+      const result = await pricingSync.syncAll()
+      return { success: true, result }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      return { success: false, error: message }
+    }
+  })
+
+  // ── launchpad:getSyncStatus ────────────────────────────────────────────
+  ipcMain.handle('launchpad:getSyncStatus', async () => {
+    try {
+      const providers: Array<'aws' | 'gcp' | 'azure'> = ['aws', 'gcp', 'azure']
+      const statuses = providers.map(p => pricingRepository.getSyncStatus(p))
+      return { success: true, statuses }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      return { success: false, error: message }
+    }
+  })
+
+  // ── launchpad:getRegions ───────────────────────────────────────────────
+  ipcMain.handle('launchpad:getRegions', async (_event, provider: string) => {
+    const validProviders = ['aws', 'gcp', 'azure']
+    if (!validProviders.includes(provider)) {
+      return { success: false, error: `Invalid provider: ${provider}` }
+    }
+    try {
+      const regions = pricingRepository.getRegions(provider as 'aws' | 'gcp' | 'azure')
+      return { success: true, regions }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      return { success: false, error: message }
+    }
+  })
 
   // --- TextCraft channels (backward-compatible alias for unified engine) ---
   ipcMain.handle('textcraft:exportPdf', async (_event, data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }) => {

@@ -1,7 +1,7 @@
 import { app, BrowserWindow, Menu, nativeImage, session, systemPreferences } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
-import { registerIpcHandlers } from './ipc-handlers'
+import { registerIpcHandlers, initPricingSync } from './ipc-handlers'
 import { getSetting } from './settings-store'
 import { installLogCollector } from './log-collector'
 import WinStateModule from 'electron-win-state'
@@ -142,6 +142,9 @@ app.whenReady().then(() => {
   registerIpcHandlers()
   createWindow()
   buildMenu()
+  if (mainWindow) {
+    initPricingSync(mainWindow)
+  }
 
   app.on('activate', () => {
     // On macOS re-create a window when dock icon is clicked and no windows open.
