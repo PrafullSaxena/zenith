@@ -82,6 +82,23 @@ function parseSuggestions(rawText: string): AiSuggestion | null {
   }
 }
 
+// ── DB Catalog types ─────────────────────────────────────────────────
+
+interface DbService {
+  id: string
+  name: string
+  category: string       // raw category string from DB (e.g. "Compute", "ML/AI")
+  description: string | null
+  equivalenceId: string | null
+}
+
+interface DbCatalogState {
+  services: DbService[]           // flat list of all services for provider
+  categories: string[]            // ordered unique category names
+  searchIndex: string[]           // parallel array — lowercased "name category" for each service
+  status: 'idle' | 'loading' | 'ready' | 'error'
+}
+
 // ── PricingCache interface ───────────────────────────────────────────
 
 interface PricingCache {
@@ -116,6 +133,7 @@ interface LaunchpadStore {
   pendingSuggestions: AiSuggestion | null
   comparisonProviders: CloudProvider[]
   pricingCache: PricingCache
+  dbCatalog: DbCatalogState
 
   // Computed getters
   getCurrentCatalog: () => ReturnType<typeof getCatalog> | null
@@ -123,6 +141,7 @@ interface LaunchpadStore {
 
   // Actions
   setProvider: (provider: CloudProvider) => void
+  loadDbCatalog: (provider: CloudProvider) => Promise<void>
   setActiveTab: (tab: LaunchpadTab) => void
   addService: (categoryId: string, serviceId: string) => void
   removeService: (serviceId: string) => void
@@ -159,6 +178,12 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
     rates: null,
     region: 'us-east-1',    // overridden on mount from settings
     lastFetched: 0,
+    status: 'idle'
+  },
+  dbCatalog: {
+    services: [],
+    categories: [],
+    searchIndex: [],
     status: 'idle'
   },
 
@@ -204,6 +229,38 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
         memoCache.clear()
       })
       .catch(() => {})
+    // Load DB catalog for the new provider
+    get().loadDbCatalog(provider).catch(() => {})
+  },
+
+  loadDbCatalog: async (provider) => {
+    set({ dbCatalog: { services: [], categories: [], searchIndex: [], status: 'loading' } })
+    try {
+      const rawCategories = await window.api.launchpad.getCatalog(provider)
+      // Flatten to DbService[] sorted by category then name (DB already sorts by category, name)
+      const flat: DbService[] = rawCategories.flatMap(cat =>
+        cat.services.map(s => ({
+          id: s.id,
+          name: s.name,
+          category: cat.name,
+          description: s.description,
+          equivalenceId: s.equivalenceId
+        }))
+      )
+      // Unique category names in order they appear
+      const categories: string[] = []
+      for (const cat of rawCategories) {
+        if (!categories.includes(cat.name)) {
+          categories.push(cat.name)
+        }
+      }
+      // Build parallel search index
+      const searchIndex: string[] = flat.map(s => `${s.name.toLowerCase()} ${s.category.toLowerCase()}`)
+      set({ dbCatalog: { services: flat, categories, searchIndex, status: 'ready' } })
+    } catch (err) {
+      console.error('[launchpad-store] loadDbCatalog failed:', err)
+      set({ dbCatalog: { services: [], categories: [], searchIndex: [], status: 'error' } })
+    }
   },
 
   setActiveTab: (tab) => {

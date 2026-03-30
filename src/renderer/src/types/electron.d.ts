@@ -258,6 +258,20 @@ export interface ElectronAPI {
       region: string
       serviceIds: string[]
     }) => Promise<Record<string, Record<string, number>>>
+    getCatalog: (provider: string) => Promise<Array<{
+      id: string
+      name: string
+      services: Array<{
+        id: string
+        provider: string
+        category: string
+        name: string
+        description: string | null
+        configSchema: string
+        equivalenceId: string | null
+        updatedAt: number
+      }>
+    }>>
     saveCredentials: (credentials: {
       gcpApiKey?: string
       awsAccessKeyId?: string
