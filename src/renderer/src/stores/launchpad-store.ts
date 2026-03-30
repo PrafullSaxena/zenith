@@ -82,6 +82,28 @@ function parseSuggestions(rawText: string): AiSuggestion | null {
   }
 }
 
+// ── PricingCache interface ───────────────────────────────────────────
+
+interface PricingCache {
+  rates: RateMap | null         // serviceId → rateKey → value
+  region: string                // current selected region
+  lastFetched: number           // Date.now() of last IPC fetch
+  status: 'idle' | 'loading' | 'ready' | 'stale'
+}
+
+// ── Module-level memoization cache ──────────────────────────────────
+// Key: `${serviceId}:${stableHash(config)}:${region}`
+const memoCache = new Map<string, { monthly: number; yearly: number; breakdown: unknown[] }>()
+
+function stableHash(config: ResourceConfig): string {
+  // Simple stable hash: sort keys alphabetically, stringify
+  const sorted = Object.keys(config).sort().reduce<ResourceConfig>((acc, k) => {
+    acc[k] = config[k]
+    return acc
+  }, {})
+  return JSON.stringify(sorted)
+}
+
 // ── Store interface ──────────────────────────────────────────────────
 
 interface LaunchpadStore {
@@ -93,6 +115,7 @@ interface LaunchpadStore {
   aiSession: AiAdvisorSession | null
   pendingSuggestions: AiSuggestion | null
   comparisonProviders: CloudProvider[]
+  pricingCache: PricingCache
 
   // Computed getters
   getCurrentCatalog: () => ReturnType<typeof getCatalog> | null
@@ -115,6 +138,9 @@ interface LaunchpadStore {
   dismissSuggestions: () => void
   setComparisonProviders: (providers: CloudProvider[]) => void
   exportPdf: () => Promise<string | null>
+  loadRatesForService: (serviceId: string) => Promise<void>
+  setRegion: (region: string) => void
+  refreshPricingCache: () => Promise<void>
 }
 
 // ── Store creation ───────────────────────────────────────────────────
@@ -129,6 +155,12 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
   aiSession: null,
   pendingSuggestions: null,
   comparisonProviders: [],
+  pricingCache: {
+    rates: null,
+    region: 'us-east-1',    // overridden on mount from settings
+    lastFetched: 0,
+    status: 'idle'
+  },
 
   // ── Computed getters ─────────────────────────────────────────────
 
@@ -139,12 +171,11 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
   },
 
   getTotalCost: () => {
-    const { provider, selectedServices } = get()
-    if (!provider || selectedServices.length === 0) {
+    const { selectedServices, pricingCache } = get()
+    if (selectedServices.length === 0 || !pricingCache.rates) {
       return { monthly: 0, yearly: 0 }
     }
-    const rates: RateMap = {}
-    const result = calculateTotalCost(selectedServices, rates, '')
+    const result = calculateTotalCost(selectedServices, pricingCache.rates, pricingCache.region)
     return { monthly: result.totalMonthly, yearly: result.totalYearly }
   },
 
@@ -152,6 +183,16 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
 
   setProvider: (provider) => {
     set({ provider, selectedServices: [] })
+    // Load persisted region for this provider
+    window.api.settings.get(`launchpad.defaultRegion.${provider}`)
+      .then((saved) => {
+        const region = typeof saved === 'string' && saved.length > 0
+          ? saved
+          : (provider === 'aws' ? 'us-east-1' : provider === 'gcp' ? 'us-central1' : 'eastus')
+        set({ pricingCache: { ...get().pricingCache, region, rates: null, status: 'idle' } })
+        memoCache.clear()
+      })
+      .catch(() => {})
   },
 
   setActiveTab: (tab) => {
@@ -193,6 +234,8 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
     }
 
     set({ selectedServices: [...selectedServices, newSelection] })
+    // Lazy load rates for this service if not already cached
+    get().loadRatesForService(serviceId).catch(() => {})
   },
 
   removeService: (serviceId) => {
@@ -210,11 +253,10 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
   },
 
   saveEstimation: async (name) => {
-    const { provider, selectedServices } = get()
+    const { provider, selectedServices, pricingCache } = get()
     if (!provider) return
 
-    const rates: RateMap = {}
-    const result = calculateTotalCost(selectedServices, rates, '')
+    const result = calculateTotalCost(selectedServices, pricingCache.rates ?? {}, pricingCache.region)
 
     const entry: EstimationEntry = {
       id: `est-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -368,11 +410,10 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
   },
 
   exportPdf: async () => {
-    const { provider, selectedServices, aiSession } = get()
+    const { provider, selectedServices, aiSession, pricingCache } = get()
     if (!provider) return null
 
-    const rates: RateMap = {}
-    const result = calculateTotalCost(selectedServices, rates, '')
+    const result = calculateTotalCost(selectedServices, pricingCache.rates ?? {}, pricingCache.region)
 
     // Build line items for PDF from calculator results
     const serviceConfigMap: Record<string, ResourceConfig> = {}
@@ -405,5 +446,79 @@ export const useLaunchpadStore = create<LaunchpadStore>((set, get) => ({
       console.error('[launchpad-store] PDF export failed:', err)
       return null
     }
+  },
+
+  // ── Pricing cache actions ────────────────────────────────────────
+
+  loadRatesForService: async (serviceId) => {
+    const { provider, pricingCache } = get()
+    if (!provider) return
+
+    // Check if rates for this service are already cached
+    const existingRates = pricingCache.rates
+    if (existingRates && existingRates[serviceId] !== undefined) return
+
+    set({ pricingCache: { ...pricingCache, status: 'loading' } })
+    try {
+      const result = await window.api.launchpad.getPricing({
+        provider,
+        region: pricingCache.region,
+        serviceIds: [serviceId]
+      })
+      // Merge new rates into existing cache (don't replace all rates)
+      const merged: RateMap = { ...(pricingCache.rates ?? {}), ...result }
+      set({
+        pricingCache: {
+          ...get().pricingCache,
+          rates: merged,
+          lastFetched: Date.now(),
+          status: 'ready'
+        }
+      })
+    } catch (err) {
+      console.error('[launchpad-store] loadRatesForService failed:', err)
+      set({ pricingCache: { ...get().pricingCache, status: 'stale' } })
+    }
+  },
+
+  setRegion: (region) => {
+    const { provider, pricingCache } = get()
+    // Update region — rates stay cached, just recalculate (pure function, instant)
+    set({ pricingCache: { ...pricingCache, region } })
+    // Clear memoization cache so next getTotalCost recomputes with new region
+    memoCache.clear()
+    // Persist to settings
+    if (provider) {
+      window.api.settings.set(`launchpad.defaultRegion.${provider}`, region).catch(() => {})
+    }
+  },
+
+  refreshPricingCache: async () => {
+    const { provider, selectedServices, pricingCache } = get()
+    if (!provider || selectedServices.length === 0) return
+    const serviceIds = selectedServices.map((s) => s.serviceId)
+    set({ pricingCache: { ...pricingCache, status: 'loading' } })
+    try {
+      const result = await window.api.launchpad.getPricing({
+        provider,
+        region: pricingCache.region,
+        serviceIds
+      })
+      memoCache.clear()
+      set({
+        pricingCache: {
+          ...get().pricingCache,
+          rates: result as RateMap,
+          lastFetched: Date.now(),
+          status: 'ready'
+        }
+      })
+    } catch (err) {
+      console.error('[launchpad-store] refreshPricingCache failed:', err)
+      set({ pricingCache: { ...get().pricingCache, status: 'stale' } })
+    }
   }
 }))
+
+// ── Memoization helper (exported for testing) ────────────────────────
+export { stableHash }

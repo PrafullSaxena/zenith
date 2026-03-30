@@ -148,6 +148,56 @@ export interface ElectronAPI {
   }
   launchpad: {
     exportPdf: (estimation: unknown) => Promise<{ filePath: string | null }>
+    getCatalog: (provider: string) => Promise<unknown[]>
+    getPricing: (args: {
+      provider: string
+      region: string
+      serviceIds: string[]
+    }) => Promise<Record<string, Record<string, number>>>
+    saveCredentials: (credentials: {
+      gcpApiKey?: string
+      awsAccessKeyId?: string
+      awsSecretAccessKey?: string
+      gcpBillingAccountId?: string
+    }) => Promise<{ saved: boolean }>
+    syncPricing: () => Promise<{
+      success: boolean
+      result?: {
+        startedAt: number
+        completedAt: number
+        providers: Array<{
+          provider: 'aws' | 'gcp' | 'azure'
+          status: 'success' | 'error' | 'skipped'
+          servicesUpdated: number
+          error?: string
+          deltaSkipped?: boolean
+        }>
+      }
+      error?: string
+    }>
+    getSyncStatus: () => Promise<{
+      success: boolean
+      statuses?: Array<{
+        provider: 'aws' | 'gcp' | 'azure'
+        lastSyncAt: number | null
+        status: string | null
+        servicesUpdated: number | null
+        error: string | null
+      }>
+      error?: string
+    }>
+    getRegions: (provider: string) => Promise<{
+      success: boolean
+      regions?: Array<{ regionId: string; displayName: string }>
+      error?: string
+    }>
+    onSyncComplete: (
+      callback: (result: {
+        startedAt: number
+        completedAt: number
+        providers: Array<{ provider: string; status: string; servicesUpdated: number }>
+      }) => void
+    ) => (() => void)
   }
   textcraft: {
     exportPdf: (data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }) => Promise<{ filePath: string | null }>
