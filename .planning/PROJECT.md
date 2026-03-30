@@ -1,8 +1,21 @@
-# Zenith Full UI Revamp
+# Zenith
+
+## Current Milestone: v2.0 — Launchpad Enhancement
+
+**Goal:** Transform Launchpad from a static hardcoded cost estimator into a live, data-driven pricing engine with regional pricing, an expanded 100-service catalog, and rich visualizations.
+
+**Target features:**
+- Live pricing data via hybrid public sync + optional credentials (AWS/Azure public, GCP API key)
+- Regional pricing as first-class input (12 regions per provider)
+- Expanded service catalog: ~100 services across 8 categories for all 3 providers
+- Rich visualization layer: treemap, donut chart, comparison bars, history trend (Recharts)
+- PricingRepository + pricing.db (SQLite) data layer in main process
+- Virtualized service catalog list + memoized calculator for performance
+- Settings UI: credentials management, sync status badge, region persistence
 
 ## What This Is
 
-A complete UI migration of the Zenith desktop developer toolkit from a custom Glass Design System to shadcn/ui + Animate-UI. Covers all 6 plugins (Cortex, DB Inspector, Nebula, TextCraft, Code Review Bot, Launchpad) and 4 system screens (Dashboard, Settings, Activity, About). Targets a modern SaaS aesthetic (Linear/Vercel/Raycast) with a violet accent palette, dark-only theme, and 9 shared cross-plugin components.
+A Zenith desktop developer toolkit combining a modern UI (shadcn/ui + Animate-UI, completed in v1.0) with a powerful Launchpad cloud cost estimator backed by live pricing data, regional rates, and a comprehensive 100-service catalog across AWS, GCP, and Azure.
 
 ## Core Value
 
@@ -30,56 +43,68 @@ A complete UI migration of the Zenith desktop developer toolkit from a custom Gl
 
 ### Active
 
-<!-- Current scope — building toward these -->
+<!-- v2.0 Launchpad Enhancement scope -->
 
-- [ ] Replace all 15 Glass components with shadcn/ui + Animate-UI equivalents
-- [ ] Build 9 shared cross-plugin components (RichTextEditor, ContentRenderer, ChatInterface, DataTable, HistoryList, PdfExporter, SearchInput, CodeEditor, FileTree)
-- [ ] Implement collapsible sidebar (56px icon rail ↔ 240px expanded, Cmd+B toggle)
-- [ ] Add command palette (Cmd+K) for global search
-- [ ] Replace all 5 Three.js 3D views with 2D alternatives
-- [ ] Apply violet accent palette with CSS custom property theming
-- [ ] Migrate all 10 screens/plugins to use shared components
-- [ ] Inter + JetBrains Mono font system
-- [ ] Animate-UI micro-interactions on all interactive elements
-- [ ] Empty states for every plugin
+- [ ] PricingRepository class backed by pricing.db (SQLite) in main process
+- [ ] PricingSync service: AWS bulk JSON + Azure Retail API (public), GCP API key
+- [ ] Delta sync strategy: only fetch changed rates on subsequent syncs
+- [ ] Regional pricing: 12 regions per provider stored as first-class rows
+- [ ] Calculator refactored to pure function (RateMap input, no hardcoded imports)
+- [ ] pricingCache in launchpad-store with lazy rate loading per selected service
+- [ ] Expanded catalog: ~100 services across 8 categories, DB-driven
+- [ ] Virtualized ServiceCatalog list (@tanstack/react-virtual)
+- [ ] In-memory search index for instant catalog filtering
+- [ ] Memoized calculator (cache key: serviceId + config hash + region)
+- [ ] 6 new IPC channels: getPricing, syncPricing, getSyncStatus, getRegions, saveCredentials, getCatalog
+- [ ] Recharts visualization: treemap, donut, comparison bar chart, history trend line
+- [ ] Region picker in EstimationSummary header
+- [ ] Sync status badge in Launchpad header
+- [ ] Settings panel: credentials (masked), sync frequency, default regions
 
 ### Out of Scope
 
-- Light mode — dark-only for this milestone
-- Multiple themes — single polished theme, architecture supports future addition
-- New plugin features — UI-only revamp, no new functionality
-- Store/IPC changes — visual layer only, all business logic untouched
-- Mobile/responsive — desktop app, existing responsive patterns sufficient
+- Light mode — dark-only
+- Azure EA/MCA pricing — requires portal auth, not API-accessible
+- Real-time cloud account import — cost estimation only, not monitoring
+- Custom pricing overrides — deferred to v3
+- Cost allocation tags — deferred to v3
+- All 30+ regions per provider — top 12 covers 95% usage; full sync on demand
 
 ## Context
 
-- **Branch:** feature/ui-revamp
-- **Approved spec:** docs/superpowers/specs/2026-03-27-full-ui-revamp-design.md
-- **Design system:** design-system/zenith/MASTER.md
-- **Stitch mockups:** Stitch project 6340038692039928729 (8 screens)
-- **Reference palette:** violet hsl(263 70% 58%) with radial gradient, 28px rounded cards, backdrop blur on sidebar/header, glowing status dots, 3-tier depth
-- **Current stack:** React 19, Tailwind v4, Framer Motion 12, Zustand 5, React Router 7 (HashRouter), Electron 39
-- **~100 component files** across 15 Glass UI components, 6 plugins, 4 system screens
+- **Branch:** feature/ui-revamp-air-2
+- **Approved spec (v2.0):** docs/superpowers/specs/2026-03-30-launchpad-enhancement-design.md
+- **Approved spec (v1.0):** docs/superpowers/specs/2026-03-27-full-ui-revamp-design.md
+- **Current stack:** React 19, Tailwind v4, Framer Motion 12, Zustand 5, React Router 7, Electron 39, better-sqlite3, electron-store
+- **Existing DBs:** nebula.db (notes + FTS5), cortex.db (cache) — pricing.db will be new
+- **Pricing data location:** src/renderer/src/data/cloud-pricing/ (to become seed-only)
+- **GCP API note:** Cloud Billing API requires API key even for public prices (free key, user-provided)
 
 ## Constraints
 
-- **Tech stack:** Must use shadcn/ui + Animate-UI (user requirement)
-- **No store changes:** All Zustand stores and IPC channels must remain untouched
-- **No logic changes:** Business logic, AI streaming, database queries — all unchanged
-- **Backward compatible:** Plugin registry, route structure, settings persistence unchanged
-- **Bundle size:** Should decrease (removing Three.js ~500KB+)
+- **New dependency:** Recharts (charts), @tanstack/react-virtual (virtualization)
+- **No breaking changes:** Existing estimation history, PDF export, AI advisor must continue working
+- **Seed fallback:** App must work on first launch without network (seed from hardcoded data)
+- **Credentials security:** API keys via safeStorage (same pattern as agent keys)
+- **Performance:** Rate lookup < 5ms, catalog render < 16ms, search < 10ms
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| shadcn/ui + Animate-UI over keeping Glass | User wants modern SaaS aesthetic, better community support, future-proof | — Pending |
-| Dark only, single theme | Reduces scope, architecture supports future themes via CSS vars | — Pending |
-| Replace all 3D with 2D | Reduces bundle size, improves accessibility, less maintenance | — Pending |
-| 9 shared components | Eliminates ~15 duplicate implementations across plugins | — Pending |
-| Violet accent hsl(263 70% 58%) | User approved after visual reference review | — Pending |
-| Inter + JetBrains Mono | Better readability at small sizes, standard SaaS/dev tool fonts | — Pending |
-| Bottom-up migration (Approach A) | Foundation → tokens → shared → screens. Low risk, max parallelism | — Pending |
+| shadcn/ui + Animate-UI over keeping Glass | User wants modern SaaS aesthetic, better community support, future-proof | ✓ Good |
+| Dark only, single theme | Reduces scope, architecture supports future themes via CSS vars | ✓ Good |
+| Replace all 3D with 2D | Reduces bundle size, improves accessibility, less maintenance | ✓ Good |
+| 9 shared components | Eliminates ~15 duplicate implementations across plugins | ✓ Good |
+| Violet accent hsl(263 70% 58%) | User approved after visual reference review | ✓ Good |
+| Inter + JetBrains Mono | Better readability at small sizes, standard SaaS/dev tool fonts | ✓ Good |
+| Bottom-up migration (Approach A) | Foundation → tokens → shared → screens. Low risk, max parallelism | ✓ Good |
+| Separate pricing.db | Keeps pricing data isolated from Nebula/Cortex, easier to wipe/reseed | — Pending |
+| GCP requires API key | GCP Cloud Billing API returns 403 without auth — free key, user-provided | — Pending |
+| Top 12 regions per provider | Covers ~95% of usage, keeps DB size manageable | — Pending |
+| Recharts for visualization | Declarative React API, works in Electron renderer, all chart types in one package | — Pending |
+| Lazy rate loading | Only load rates for selected services, not full 18k-row table | — Pending |
+| Seed from hardcoded on first launch | Zero-network-dependency on first run, sync in background | — Pending |
 
 ---
-*Last updated: 2026-03-27 after initialization*
+*Last updated: 2026-03-30 after v2.0 milestone start*
