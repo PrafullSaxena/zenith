@@ -203,10 +203,12 @@ Plans:
   2. Scrolling through the full catalog (100+ items) maintains 60fps -- only visible rows are rendered in the DOM
   3. Typing in the catalog search box filters results within 10ms with no perceptible lag on each keystroke
   4. ComparisonView shows cross-provider equivalences for ~25 service families (e.g., EC2 / Compute Engine / Azure VMs)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 10-01-PLAN.md -- TBD
+- [ ] 10-01-PLAN.md -- Expand TS catalogs to ~34 services/provider across 8 categories + equivalences to 25 families
+- [ ] 10-02-PLAN.md -- DB-driven ServiceCatalog: IPC load, useVirtualizer, filter chips, flat search, row-tint selection
+- [ ] 10-03-PLAN.md -- ComparisonView equivalence reference table: 25 families, alphabetical, read-only, partial matches show "—"
 
 ### Phase 11: Visualizations
 **Goal**: EstimationSummary and ComparisonView display rich Recharts charts that make cost distribution and provider comparisons immediately scannable; history trend is visible in the History tab
@@ -254,10 +256,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Data Foundation | 2/2 | Complete    | 2026-03-30 |
 | 8. Pricing Sync | 3/3 | Complete    | 2026-03-30 |
 | 9. Calculator & Store | 3/3 | Complete   | 2026-03-30 |
-| 10. Service Catalog | 0/1 | Not started | - |
+| 10. Service Catalog | 0/3 | Not started | - |
 | 11. Visualizations | 0/1 | Not started | - |
 | 12. Settings & Polish | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-03-27*
-*Last updated: 2026-03-30 — Phase 9 gap closure plan 09-03 created (CALC-04 memoCache wiring)*
+*Last updated: 2026-03-31 — Phase 10 plans created (CAT-01 through CAT-06)*
