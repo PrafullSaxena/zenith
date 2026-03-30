@@ -10,11 +10,11 @@
 
 ### Data Layer
 
-- [ ] **DATA-01**: Main process initializes `pricing.db` with `pricing_services`, `pricing_rates`, `pricing_regions`, and `pricing_sync_log` tables on app startup
-- [ ] **DATA-02**: `PricingRepository` class exposes `getCatalog()`, `getRates()`, `getRegions()`, `getSyncStatus()`, `upsertRates()`, and `seedFromFallback()` methods
+- [x] **DATA-01**: Main process initializes `pricing.db` with `pricing_services`, `pricing_rates`, `pricing_regions`, and `pricing_sync_log` tables on app startup
+- [x] **DATA-02**: `PricingRepository` class exposes `getCatalog()`, `getRates()`, `getRegions()`, `getSyncStatus()`, `upsertRates()`, and `seedFromFallback()` methods
 - [ ] **DATA-03**: App seeds `pricing.db` from existing hardcoded TypeScript data on first launch (zero network dependency)
-- [ ] **DATA-04**: DB queries use indexes on `(provider, region, service_id)` and `(service_id, provider)` for sub-millisecond lookups
-- [ ] **DATA-05**: Credentials (GCP API key, AWS keys, GCP billing account) stored encrypted via Electron `safeStorage`
+- [x] **DATA-04**: DB queries use indexes on `(provider, region, service_id)` and `(service_id, provider)` for sub-millisecond lookups
+- [x] **DATA-05**: Credentials (GCP API key, AWS keys, GCP billing account) stored encrypted via Electron `safeStorage`
 
 ### Pricing Sync
 
@@ -116,11 +116,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 7 | Pending |
-| DATA-02 | Phase 7 | Pending |
+| DATA-01 | Phase 7 | Complete |
+| DATA-02 | Phase 7 | Complete |
 | DATA-03 | Phase 7 | Pending |
-| DATA-04 | Phase 7 | Pending |
-| DATA-05 | Phase 7 | Pending |
+| DATA-04 | Phase 7 | Complete |
+| DATA-05 | Phase 7 | Complete |
 | SYNC-01 | Phase 8 | Pending |
 | SYNC-02 | Phase 8 | Pending |
 | SYNC-03 | Phase 8 | Pending |
