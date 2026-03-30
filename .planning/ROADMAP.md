@@ -18,6 +18,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Screen Migration** - Migrate all 10 screens/plugins to use shared components (parallel agents)
 - [ ] **Phase 5: 3D Removal & Cleanup** - Delete Glass components, Three.js code, and old dependencies
 - [ ] **Phase 6: Polish** - Micro-interactions, empty states, command palette wiring, a11y audit, bundle audit
+- [ ] **Phase 7: Data Foundation** - Initialize pricing.db, PricingRepository, core IPC handlers, and credential storage
+- [ ] **Phase 8: Pricing Sync** - PricingSync service, AWS/Azure/GCP fetchers, delta sync, regional data, sync IPC channels
+- [ ] **Phase 9: Calculator & Store** - Pure calculator function, pricingCache, lazy loading, memoization, region picker
+- [ ] **Phase 10: Service Catalog** - 100-service DB-driven catalog, virtualized list, in-memory search, cross-provider equivalences
+- [ ] **Phase 11: Visualizations** - Recharts integration, treemap, donut, comparison bar, history trend line
+- [ ] **Phase 12: Settings & Polish** - Settings panel, credentials UI, sync status badge, region persistence
 
 ## Phase Details
 
@@ -135,10 +141,102 @@ Plans:
 - [ ] 06-02-PLAN.md -- Wire CommandPalette to all routes/activity/settings + keyboard shortcuts audit
 - [ ] 06-03-PLAN.md -- Accessibility audit (focus rings, ARIA, reduced motion) + bundle size audit
 
+---
+
+## v2.0 — Launchpad Enhancement
+
+### Phase 7: Data Foundation
+**Goal**: The Launchpad has a persistent pricing database in the main process, a repository API, encrypted credential storage, and the core IPC channels wired -- app boots without network and serves rates from DB
+**Depends on**: Phase 6 (v1.0 complete)
+**Requirements**: DATA-01, DATA-02, DATA-03, DATA-04, DATA-05, IPC-01, IPC-05, IPC-06
+**Success Criteria** (what must be TRUE):
+  1. App boots on first launch with no network and Launchpad renders using seeded pricing data from pricing.db
+  2. PricingRepository can be called from any main-process handler and returns catalog, rates, regions, and sync status without error
+  3. A GCP API key entered in settings is stored encrypted and survives app restart (confirmed via safeStorage round-trip)
+  4. Calling launchpad:getPricing and launchpad:getCatalog from the renderer returns structured data from the DB within 5ms
+**Plans**: TBD
+
+Plans:
+- [ ] 07-01-PLAN.md -- TBD
+
+### Phase 8: Pricing Sync
+**Goal**: Live pricing is fetched from AWS, Azure, and GCP on a daily schedule; delta sync keeps the DB current; sync failures are isolated per provider and logged; the renderer is notified on completion
+**Depends on**: Phase 7
+**Requirements**: SYNC-01, SYNC-02, SYNC-03, SYNC-04, SYNC-05, SYNC-06, SYNC-07, SYNC-08, SYNC-09, SYNC-10, REGION-01, IPC-02, IPC-03, IPC-04
+**Success Criteria** (what must be TRUE):
+  1. On first manual sync, AWS and Azure pricing data populates pricing.db for all 12 supported regions per provider without requiring any credentials
+  2. GCP pricing syncs successfully when a valid API key is configured; with no key, the UI displays "Using cached data" without crashing
+  3. A second sync run fetches only changed rates (delta strategy) -- the sync log shows a smaller byte count than the initial full sync
+  4. If one provider's sync endpoint returns an error, the other two providers' data is still updated and the failure is recorded in pricing_sync_log
+  5. The renderer receives a launchpad:syncComplete push event and the sync status badge updates immediately after any sync completes
+**Plans**: TBD
+
+Plans:
+- [ ] 08-01-PLAN.md -- TBD
+
+### Phase 9: Calculator & Store
+**Goal**: Cost calculations are driven entirely by live DB rates -- the calculator is a pure function, rates load lazily per selected service, results are memoized, and region changes recalculate instantly without a network round-trip
+**Depends on**: Phase 8
+**Requirements**: REGION-02, REGION-03, REGION-04, REGION-05, CALC-01, CALC-02, CALC-03, CALC-04, CALC-05, CALC-06
+**Success Criteria** (what must be TRUE):
+  1. Selecting a different region in EstimationSummary recalculates all service costs instantly (no loading spinner, no IPC call on region change)
+  2. The calculator produces identical results whether called with AWS, GCP, or Azure rates -- no provider-specific logic inside the function
+  3. Selecting a service for the first time loads its rates from DB; selecting it again uses the memoized result (no duplicate IPC calls)
+  4. With no DB rates available, the UI shows "Pricing unavailable" per service rather than crashing or showing $0
+  5. Selected region is persisted per provider and restored on next app launch
+**Plans**: TBD
+
+Plans:
+- [ ] 09-01-PLAN.md -- TBD
+
+### Phase 10: Service Catalog
+**Goal**: The service catalog contains ~100 services across 8 categories for all 3 providers, is served from the DB, renders smoothly regardless of catalog size, and supports instant text filtering
+**Depends on**: Phase 9
+**Requirements**: CAT-01, CAT-02, CAT-03, CAT-04, CAT-05, CAT-06
+**Success Criteria** (what must be TRUE):
+  1. The ServiceCatalog list displays ~100 services grouped into 8 categories for any selected provider, all loaded from the DB
+  2. Scrolling through the full catalog (100+ items) maintains 60fps -- only visible rows are rendered in the DOM
+  3. Typing in the catalog search box filters results within 10ms with no perceptible lag on each keystroke
+  4. ComparisonView shows cross-provider equivalences for ~25 service families (e.g., EC2 / Compute Engine / Azure VMs)
+**Plans**: TBD
+
+Plans:
+- [ ] 10-01-PLAN.md -- TBD
+
+### Phase 11: Visualizations
+**Goal**: EstimationSummary and ComparisonView display rich Recharts charts that make cost distribution and provider comparisons immediately scannable; history trend is visible in the History tab
+**Depends on**: Phase 10
+**Requirements**: VIZ-01, VIZ-02, VIZ-03, VIZ-04, VIZ-05, VIZ-06
+**Success Criteria** (what must be TRUE):
+  1. EstimationSummary renders a treemap showing cost distribution by service with category color-coding; hovering a cell shows service name, cost, and percentage of total
+  2. EstimationSummary renders a donut chart showing spending split by category alongside the treemap
+  3. ComparisonView renders a grouped bar chart with one group per service family; the cheapest provider's bar is highlighted green
+  4. The History tab renders a trend line plotting saved estimations over time; hovering a point shows the estimation name and cost breakdown
+  5. All charts render correctly in dark mode using CSS custom properties -- no hardcoded colors visible
+**Plans**: TBD
+
+Plans:
+- [ ] 11-01-PLAN.md -- TBD
+
+### Phase 12: Settings & Polish
+**Goal**: Users can manage credentials, configure sync preferences, inspect per-provider sync health, and see live sync status from the Launchpad header -- the plugin feels production-ready
+**Depends on**: Phase 11
+**Requirements**: SET-01, SET-02, SET-03, SET-04, SET-05, SET-06
+**Success Criteria** (what must be TRUE):
+  1. The Zenith Settings screen has a Launchpad section where users can set sync frequency, default region per provider, and trigger a manual sync
+  2. The settings panel shows provider status (Live / No Key / Stale) with last-sync timestamp for each of AWS, GCP, and Azure
+  3. AWS access key, GCP API key, and GCP billing account fields are displayed masked with Edit and Clear actions per field
+  4. The GCP API key field is labeled "Required for live pricing" with a link to the GCP Console API key setup page
+  5. The Launchpad plugin header displays a sync status badge (Live / Partial / Cached / Stale) that opens a per-provider detail popover on click
+**Plans**: TBD
+
+Plans:
+- [ ] 12-01-PLAN.md -- TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -148,7 +246,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 4. Screen Migration | 0/10 | Not started | - |
 | 5. 3D Removal & Cleanup | 0/1 | Not started | - |
 | 6. Polish | 0/3 | Not started | - |
+| 7. Data Foundation | 0/1 | Not started | - |
+| 8. Pricing Sync | 0/1 | Not started | - |
+| 9. Calculator & Store | 0/1 | Not started | - |
+| 10. Service Catalog | 0/1 | Not started | - |
+| 11. Visualizations | 0/1 | Not started | - |
+| 12. Settings & Polish | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-03-27*
-*Last updated: 2026-03-27*
+*Last updated: 2026-03-30 — v2.0 Launchpad Enhancement phases 7-12 appended*
