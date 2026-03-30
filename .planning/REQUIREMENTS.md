@@ -32,10 +32,10 @@
 ### Regional Pricing
 
 - [x] **REGION-01**: Top 12 regions per provider synced and stored as first-class rows in `pricing_rates`
-- [ ] **REGION-02**: Default regions set per provider: AWS `us-east-1`, GCP `us-central1`, Azure `eastus`
-- [ ] **REGION-03**: Region picker displayed in EstimationSummary header; single region applies to entire estimation
-- [ ] **REGION-04**: Changing region triggers instant cost recalculation from cached rates (no re-fetch)
-- [ ] **REGION-05**: Selected region persisted per provider in settings (`launchpad.defaultRegion.*`)
+- [x] **REGION-02**: Default regions set per provider: AWS `us-east-1`, GCP `us-central1`, Azure `eastus`
+- [x] **REGION-03**: Region picker displayed in EstimationSummary header; single region applies to entire estimation
+- [x] **REGION-04**: Changing region triggers instant cost recalculation from cached rates (no re-fetch)
+- [x] **REGION-05**: Selected region persisted per provider in settings (`launchpad.defaultRegion.*`)
 
 ### IPC Channels
 
@@ -49,11 +49,11 @@
 ### Calculator
 
 - [x] **CALC-01**: Calculator refactored to pure function — accepts `RateMap`, `ServiceSelection[]`, `region` as inputs, no internal hardcoded imports
-- [ ] **CALC-02**: `launchpad-store` gains `pricingCache` field: `{ rates: RateMap, region, lastFetched, status }`
-- [ ] **CALC-03**: Rates loaded lazily — only fetched for currently selected services, not entire catalog
-- [ ] **CALC-04**: Calculator results memoized with cache key `${serviceId}:${hashConfig(config)}:${region}`
-- [ ] **CALC-05**: Fallback chain: DB rates → seeded fallback → "pricing unavailable" shown in UI
-- [ ] **CALC-06**: `pricingCache` refreshed automatically when `launchpad:syncComplete` event received
+- [x] **CALC-02**: `launchpad-store` gains `pricingCache` field: `{ rates: RateMap, region, lastFetched, status }`
+- [x] **CALC-03**: Rates loaded lazily — only fetched for currently selected services, not entire catalog
+- [x] **CALC-04**: Calculator results memoized with cache key `${serviceId}:${hashConfig(config)}:${region}`
+- [x] **CALC-05**: Fallback chain: DB rates → seeded fallback → "pricing unavailable" shown in UI
+- [x] **CALC-06**: `pricingCache` refreshed automatically when `launchpad:syncComplete` event received
 
 ### Service Catalog
 
@@ -132,10 +132,10 @@
 | SYNC-09 | Phase 8 | Complete |
 | SYNC-10 | Phase 8 | Complete |
 | REGION-01 | Phase 8 | Complete |
-| REGION-02 | Phase 9 | Pending |
-| REGION-03 | Phase 9 | Pending |
-| REGION-04 | Phase 9 | Pending |
-| REGION-05 | Phase 9 | Pending |
+| REGION-02 | Phase 9 | Complete |
+| REGION-03 | Phase 9 | Complete |
+| REGION-04 | Phase 9 | Complete |
+| REGION-05 | Phase 9 | Complete |
 | IPC-01 | Phase 7 | Complete |
 | IPC-02 | Phase 8 | Complete |
 | IPC-03 | Phase 8 | Complete |
@@ -143,11 +143,11 @@
 | IPC-05 | Phase 7 | Complete |
 | IPC-06 | Phase 7 | Complete |
 | CALC-01 | Phase 9 | Complete |
-| CALC-02 | Phase 9 | Pending |
-| CALC-03 | Phase 9 | Pending |
-| CALC-04 | Phase 9 | Pending |
-| CALC-05 | Phase 9 | Pending |
-| CALC-06 | Phase 9 | Pending |
+| CALC-02 | Phase 9 | Complete |
+| CALC-03 | Phase 9 | Complete |
+| CALC-04 | Phase 9 | Complete |
+| CALC-05 | Phase 9 | Complete |
+| CALC-06 | Phase 9 | Complete |
 | CAT-01 | Phase 10 | Pending |
 | CAT-02 | Phase 10 | Pending |
 | CAT-03 | Phase 10 | Pending |

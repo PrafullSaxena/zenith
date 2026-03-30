@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 9 — Calculator Store
-Plan: 09-01 complete — pricing-sync.ts wired to real fetchers; calculator refactored to RateMap-driven pure function
-Status: Plan 09-01 executed — inline stubs removed; calculator API decoupled from ProviderCatalog
-Last activity: 2026-03-30 — 09-01 calculator/sync refactor complete
+Plan: 09-02 complete — pricingCache wired into store; lazy IPC rate loading; setRegion instant recalc; region picker in EstimationSummary
+Status: Plan 09-02 executed — DB rates connected to calculator; region Select dropdown live
+Last activity: 2026-03-30 — 09-02 calculator store integration complete
 
 Progress: [██░░░░░░░░] 8% (v2.0 milestone)
 
@@ -24,9 +24,9 @@ Progress: [██░░░░░░░░] 8% (v2.0 milestone)
 - Total execution time: 0.7 hours
 
 **v2.0 Launchpad Enhancement:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: ~4 min
-- Total execution time: ~18 min
+- Total execution time: ~23 min
 
 *Updated after each plan completion*
 
@@ -58,6 +58,8 @@ Key decisions for v2.0:
 - [Phase 09-calculator-store]: calculator.ts keeps SelectOption.pricePerHour as primary price for compute/db/k8s — rates RateMap is fallback for services that used hardcoded constants
 - [Phase 09-calculator-store]: GCP skip detection updated from result.skipped to result.deltaSkipped && result.servicesUpdated === 0 to match real GcpFetchResult shape
 - [Phase 09-calculator-store]: Callers (launchpad-store, EstimationSummary, ComparisonView) pass empty RateMap {} — actual DB rate injection in subsequent plan
+- [Phase 09-calculator-store]: index.d.ts extended with full launchpad API surface — was missing despite preload implementation existing since phase 08
+- [Phase 09-calculator-store]: Region dropdown uses 12 hardcoded regions per provider — matches the 12 regions seeded and synced by the pricing pipeline
 
 ### Pending Todos
 
@@ -70,5 +72,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed 09-calculator-store/09-01-PLAN.md
-Resume file: Next phase TBD
+Stopped at: Completed 09-calculator-store/09-02-PLAN.md
+Resume file: Next plan in phase 09-calculator-store
