@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 11 — Visualizations
-Plan: 11-02 complete — ComparisonBarChart + HistoryTrendLine wired into ComparisonView and EstimationHistory
-Status: Plan 11-02 executed — horizontal grouped bar chart for provider comparison; multi-line trend chart for estimation history
-Last activity: 2026-03-31 — 11-02 visualizations complete
+Phase: 12 — Settings Polish
+Plan: 12-01 complete — LaunchpadSettings panel with sync prefs, credentials, provider status
+Status: Plan 12-01 executed — custom settings panel with credential management and sync controls
+Last activity: 2026-03-31 — 12-01 settings-polish complete
 
 Progress: [██░░░░░░░░] 9% (v2.0 milestone)
 
@@ -24,9 +24,9 @@ Progress: [██░░░░░░░░] 9% (v2.0 milestone)
 - Total execution time: 0.7 hours
 
 **v2.0 Launchpad Enhancement:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: ~4 min
-- Total execution time: ~23 min
+- Total execution time: ~27 min
 
 *Updated after each plan completion*
 
@@ -72,6 +72,8 @@ Key decisions for v2.0:
 - [Phase 10-02-service-catalog]: loadDbCatalog triggered from setProvider and ServiceCatalog useEffect — catalog loads on any provider change regardless of component mount state
 - [Phase 11-visualizations]: recharts ^3.8.1 for all chart components; center label as CSS overlay div; enrichedItems join pattern for categoryId propagation
 - [Phase 11-02-visualizations]: cheapest-bar Cell highlight via useMemo Map; muted brand colors for non-cheapest bars; _provider metadata keys in trend chart data for tooltip access; connectNulls=false on trend lines shows gaps explicitly
+- [Phase 12-settings-polish]: Custom plugin settings panel via pluginId detection in PluginSettings — avoids new SettingsFieldType, keeps LaunchpadSettings self-contained
+- [Phase 12-settings-polish]: getCredentialMasked uses unicode bullets + last 4 chars — never sends full secret to renderer; provider staleness threshold = 2x sync frequency
 
 ### Pending Todos
 
@@ -84,5 +86,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 11-visualizations/11-02-PLAN.md
-Resume file: Next plan in 11-visualizations
+Stopped at: Completed 12-settings-polish/12-01-PLAN.md
+Resume file: Next plan in 12-settings-polish

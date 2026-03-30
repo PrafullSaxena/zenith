@@ -75,10 +75,10 @@
 
 ### Settings & Credentials UI
 
-- [ ] **SET-01**: Launchpad settings panel added (Zenith Settings → Plugins → Launchpad): sync frequency, default region per provider, manual sync trigger
-- [ ] **SET-02**: Provider status displayed in settings: Live / No Key / Stale with last-sync timestamp
-- [ ] **SET-03**: Credentials section in settings: AWS access key + secret, GCP API key, GCP billing account — all masked, with Edit/Clear per field
-- [ ] **SET-04**: GCP API key labeled "Required for live pricing" with link to GCP Console setup
+- [x] **SET-01**: Launchpad settings panel added (Zenith Settings → Plugins → Launchpad): sync frequency, default region per provider, manual sync trigger
+- [x] **SET-02**: Provider status displayed in settings: Live / No Key / Stale with last-sync timestamp
+- [x] **SET-03**: Credentials section in settings: AWS access key + secret, GCP API key, GCP billing account — all masked, with Edit/Clear per field
+- [x] **SET-04**: GCP API key labeled "Required for live pricing" with link to GCP Console setup
 - [ ] **SET-05**: Sync status badge in Launchpad plugin header: Live / Partial / Cached / Stale
 - [ ] **SET-06**: Clicking sync status badge opens popover with per-provider detail + link to settings
 
@@ -160,10 +160,10 @@
 | VIZ-04 | Phase 11 | Complete |
 | VIZ-05 | Phase 11 | Complete |
 | VIZ-06 | Phase 11 | Complete |
-| SET-01 | Phase 12 | Pending |
-| SET-02 | Phase 12 | Pending |
-| SET-03 | Phase 12 | Pending |
-| SET-04 | Phase 12 | Pending |
+| SET-01 | Phase 12 | Complete |
+| SET-02 | Phase 12 | Complete |
+| SET-03 | Phase 12 | Complete |
+| SET-04 | Phase 12 | Complete |
 | SET-05 | Phase 12 | Pending |
 | SET-06 | Phase 12 | Pending |
 
