@@ -99,6 +99,92 @@ export function getAllCanonicalIds(): string[] {
 }
 
 /**
+ * Human-readable display names for each canonical service family key.
+ */
+export const FAMILY_LABELS: Record<string, string> = {
+  ec2:              'Virtual Machines',
+  s3:               'Object Storage',
+  rds:              'Relational Database',
+  lambda:           'Serverless Functions',
+  dynamodb:         'NoSQL Database',
+  ebs:              'Block Storage',
+  cloudfront:       'CDN',
+  'data-transfer':  'Data Transfer',
+  'api-gateway':    'API Gateway',
+  eks:              'Kubernetes',
+  fargate:          'Serverless Containers',
+  elasticache:      'In-Memory Cache',
+  redshift:         'Data Warehouse',
+  sagemaker:        'ML Training & Inference',
+  bedrock:          'Generative AI',
+  rekognition:      'Image/Vision AI',
+  kinesis:          'Event Streaming',
+  glue:             'ETL / Data Integration',
+  sns:              'Push Notifications',
+  sqs:              'Message Queue',
+  'step-functions': 'Workflow Orchestration',
+  cognito:          'Identity & Auth',
+  waf:              'Web Application Firewall',
+  'secrets-manager':'Secrets Management',
+  ecr:              'Container Registry',
+}
+
+/**
+ * Returns a short display name for a provider's equivalent service,
+ * or null if the canonical ID is not in the equivalence map.
+ *
+ * @param canonicalId - Canonical service family key (AWS-centric)
+ * @param provider - Target cloud provider
+ * @returns Short display name string, or null
+ */
+export function getProviderServiceName(canonicalId: string, provider: CloudProvider): string | null {
+  const entry = SERVICE_EQUIVALENCES[canonicalId]
+  if (!entry) return null
+  const serviceId = entry[provider]
+  if (!serviceId) return null
+  // Map known serviceIds to short display names
+  const DISPLAY_NAMES: Record<string, string> = {
+    // AWS
+    ec2: 'EC2', s3: 'S3', rds: 'RDS', lambda: 'Lambda', dynamodb: 'DynamoDB',
+    ebs: 'EBS', cloudfront: 'CloudFront', 'data-transfer': 'Data Transfer',
+    'api-gateway': 'API Gateway', eks: 'EKS', fargate: 'Fargate',
+    elasticache: 'ElastiCache', redshift: 'Redshift', sagemaker: 'SageMaker',
+    bedrock: 'Bedrock', rekognition: 'Rekognition', kinesis: 'Kinesis',
+    glue: 'Glue', sns: 'SNS', sqs: 'SQS', 'step-functions': 'Step Functions',
+    cognito: 'Cognito', waf: 'WAF', 'secrets-manager': 'Secrets Manager', ecr: 'ECR',
+    // GCP
+    'compute-engine': 'Compute Engine', 'cloud-storage': 'Cloud Storage',
+    'cloud-sql': 'Cloud SQL', 'cloud-functions': 'Cloud Functions',
+    firestore: 'Firestore', 'persistent-disk': 'Persistent Disk',
+    'cloud-cdn': 'Cloud CDN', 'gcp-data-transfer-out': 'Data Transfer',
+    'cloud-run': 'Cloud Run', gke: 'GKE', 'cloud-run-jobs': 'Cloud Run Jobs',
+    bigtable: 'Bigtable', bigquery: 'BigQuery', 'vertex-ai': 'Vertex AI',
+    'vertex-ai-genai': 'Vertex AI', 'vision-ai': 'Vision AI',
+    'pub-sub': 'Pub/Sub', dataflow: 'Dataflow', 'cloud-tasks': 'Cloud Tasks',
+    workflows: 'Workflows', 'identity-platform': 'Identity Platform',
+    'cloud-armor': 'Cloud Armor', 'secret-manager': 'Secret Manager',
+    'artifact-registry': 'Artifact Registry',
+    // Azure
+    'azure-vm': 'Azure VMs', 'blob-storage': 'Blob Storage', 'azure-sql': 'Azure SQL',
+    'azure-functions': 'Azure Functions', 'cosmos-db': 'Cosmos DB',
+    'premium-ssd': 'Premium SSD', 'azure-cdn': 'Azure CDN',
+    'azure-data-transfer-out': 'Data Transfer', 'app-service': 'App Service',
+    aks: 'AKS', 'azure-container-instances': 'Container Instances',
+    'azure-cache-redis': 'Azure Cache (Redis)', 'azure-synapse': 'Azure Synapse',
+    'azure-machine-learning': 'Azure ML', 'azure-openai': 'Azure OpenAI',
+    'cognitive-services': 'Cognitive Services', 'event-hubs': 'Event Hubs',
+    'azure-data-factory': 'Data Factory', 'service-bus': 'Service Bus',
+    'logic-apps': 'Logic Apps', 'azure-active-directory': 'Azure AD',
+    'azure-firewall': 'Azure Firewall', 'azure-key-vault': 'Key Vault',
+    'azure-container-registry': 'Container Registry',
+    'azure-notification-hubs': 'Notification Hubs',
+    // Legacy IDs preserved in azure.ts
+    'managed-disk': 'Managed Disk',
+  }
+  return DISPLAY_NAMES[serviceId] ?? serviceId
+}
+
+/**
  * Returns the equivalent service IDs for all providers given a source service ID.
  * Returns null if the source service is not in the equivalence map.
  *
