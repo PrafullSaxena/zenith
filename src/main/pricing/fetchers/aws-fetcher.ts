@@ -1,9 +1,12 @@
 /**
  * aws-fetcher.ts — AWS bulk JSON pricing fetcher.
  *
- * Downloads the AWS EC2 bulk pricing JSON, filters to 12 regions,
+ * Downloads per-region AWS EC2 pricing JSON (one URL per region),
  * performs a delta check via a sidecar file, and upserts rates into
  * pricing_rates via pricingRepository.
+ *
+ * Per-region URLs are ~5-15MB each vs the global index (~300-500MB),
+ * which prevents OOM / RangeError: Array buffer allocation failed.
  *
  * Optional: If AWS credentials are present, reserved pricing metadata
  * could be fetched via Cost Explorer. Requires @aws-sdk/client-pricing.
@@ -30,8 +33,12 @@ export interface AwsFetchResult {
 
 // ── Constants ──────────────────────────────────────────────────────────
 
-const AWS_BULK_URL =
-  'https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json'
+/**
+ * Per-region pricing URL template. Each file is ~5-15MB vs the global
+ * index (~300-500MB). Fetching per-region avoids OOM on Buffer.concat.
+ */
+const AWS_REGION_PRICING_URL = (region: string): string =>
+  `https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/${region}/index.json`
 
 const AWS_REGIONS = [
   'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2',
@@ -54,21 +61,17 @@ const AWS_REGION_TO_LOCATION: Record<string, string> = {
   'ap-south-1': 'Asia Pacific (Mumbai)'
 }
 
-/** Reverse lookup: location string → region code */
-const LOCATION_TO_REGION: Record<string, string> = Object.fromEntries(
-  Object.entries(AWS_REGION_TO_LOCATION).map(([region, location]) => [location, region])
-)
-
-/** The set of location strings we care about */
-const TARGET_LOCATIONS = new Set(Object.values(AWS_REGION_TO_LOCATION))
-
 /** EC2 service id used in the seed catalog */
 const EC2_SERVICE_ID = 'ec2-on-demand'
 
 // ── Sidecar meta file ──────────────────────────────────────────────────
 
+/**
+ * Tracks per-region publicationDate so we can skip regions that haven't
+ * been updated since the last sync.
+ */
 interface AwsMeta {
-  publicationDate: string
+  regionDates: Record<string, string>
 }
 
 function getMetaFilePath(): string {
@@ -148,7 +151,6 @@ interface AwsProduct {
   sku: string
   productFamily?: string
   attributes?: {
-    location?: string
     instanceType?: string
     operatingSystem?: string
   }
@@ -165,85 +167,122 @@ interface AwsPriceDimension {
   }
 }
 
-// ── Main export ─────────────────────────────────────────────────────────
+// ── Per-region fetch helper ─────────────────────────────────────────────
 
-export async function fetchAwsPricing(): Promise<AwsFetchResult> {
+/**
+ * Fetch and parse pricing for a single region. Returns the number of rate
+ * rows upserted and the publicationDate found in the response.
+ */
+async function fetchRegion(
+  region: string,
+  knownDate: string | undefined,
+  now: number
+): Promise<{ rateRows: RateRow[]; publicationDate: string; bytesDownloaded: number; skipped: boolean }> {
+  const url = AWS_REGION_PRICING_URL(region)
+  const { body, bytesDownloaded } = await downloadJson(url)
+
+  let data: AwsBulkJson
   try {
-    // Download bulk pricing JSON
-    const { body, bytesDownloaded } = await downloadJson(AWS_BULK_URL)
+    data = JSON.parse(body) as AwsBulkJson
+  } catch {
+    throw new Error(`Failed to parse AWS pricing JSON for region ${region}`)
+  }
 
-    let data: AwsBulkJson
-    try {
-      data = JSON.parse(body) as AwsBulkJson
-    } catch {
-      return {
-        servicesUpdated: 0,
-        deltaSkipped: false,
-        bytesDownloaded,
-        error: 'Failed to parse AWS bulk pricing JSON'
-      }
-    }
+  const publicationDate = data.publicationDate ?? ''
 
-    // Delta check: compare publicationDate with sidecar
-    const currentPublicationDate = data.publicationDate ?? ''
-    const meta = readMeta()
-    if (meta && meta.publicationDate && meta.publicationDate === currentPublicationDate) {
-      return { servicesUpdated: 0, deltaSkipped: true, bytesDownloaded }
-    }
+  // Delta check: skip region if publicationDate hasn't changed
+  if (knownDate && publicationDate && knownDate === publicationDate) {
+    return { rateRows: [], publicationDate, bytesDownloaded, skipped: true }
+  }
 
-    // Parse products — only Compute Instance family in target locations
-    const products = data.products ?? {}
-    const onDemandTerms = data.terms?.OnDemand ?? {}
+  const products = data.products ?? {}
+  const onDemandTerms = data.terms?.OnDemand ?? {}
 
-    // Build a map of SKU → price (USD/hr) for on-demand terms
-    const skuToPrice = new Map<string, number>()
-    for (const [sku, termVariants] of Object.entries(onDemandTerms)) {
-      for (const term of Object.values(termVariants)) {
-        const dims = term.priceDimensions ?? {}
-        for (const dim of Object.values(dims)) {
-          const usdStr = dim.pricePerUnit?.USD
-          if (usdStr !== undefined) {
-            const usd = parseFloat(usdStr)
-            if (!isNaN(usd) && usd > 0) {
-              skuToPrice.set(sku, usd)
-            }
+  // Build SKU → price map
+  const skuToPrice = new Map<string, number>()
+  for (const [sku, termVariants] of Object.entries(onDemandTerms)) {
+    for (const term of Object.values(termVariants)) {
+      const dims = term.priceDimensions ?? {}
+      for (const dim of Object.values(dims)) {
+        const usdStr = dim.pricePerUnit?.USD
+        if (usdStr !== undefined) {
+          const usd = parseFloat(usdStr)
+          if (!isNaN(usd) && usd > 0) {
+            skuToPrice.set(sku, usd)
           }
         }
       }
     }
+  }
 
-    // Collect rate rows for target regions
+  // Collect rate rows — per-region JSON contains only Compute Instance products
+  const rateRows: RateRow[] = []
+  for (const product of Object.values(products)) {
+    if (product.productFamily !== 'Compute Instance') continue
+
+    const price = skuToPrice.get(product.sku)
+    if (price === undefined) continue
+
+    rateRows.push({
+      service_id: EC2_SERVICE_ID,
+      provider: 'aws',
+      region,
+      rate_key: 'pricePerHour',
+      value: price,
+      unit: 'Hrs',
+      tier: 'onDemand',
+      fetched_at: now
+    })
+  }
+
+  return { rateRows, publicationDate, bytesDownloaded, skipped: false }
+}
+
+// ── Main export ─────────────────────────────────────────────────────────
+
+export async function fetchAwsPricing(): Promise<AwsFetchResult> {
+  try {
+    const meta = readMeta()
+    const regionDates: Record<string, string> = meta?.regionDates ?? {}
+    const updatedRegionDates: Record<string, string> = { ...regionDates }
+
     const now = Date.now()
-    const rateRows: RateRow[] = []
+    let totalRateRows = 0
+    let totalBytesDownloaded = 0
+    let allSkipped = true
 
-    for (const product of Object.values(products)) {
-      if (product.productFamily !== 'Compute Instance') continue
+    // Fetch each region sequentially to avoid concurrent heap pressure.
+    // Each per-region JSON is ~5-15MB; sequential fetch + GC keeps memory low.
+    for (const region of AWS_REGIONS) {
+      try {
+        const { rateRows, publicationDate, bytesDownloaded, skipped } = await fetchRegion(
+          region,
+          regionDates[region],
+          now
+        )
 
-      const location = product.attributes?.location
-      if (!location || !TARGET_LOCATIONS.has(location)) continue
+        totalBytesDownloaded += bytesDownloaded
 
-      const region = LOCATION_TO_REGION[location]
-      if (!region) continue
+        if (!skipped && rateRows.length > 0) {
+          allSkipped = false
 
-      const price = skuToPrice.get(product.sku)
-      if (price === undefined) continue
+          // Upsert in batches of 500
+          const BATCH_SIZE = 500
+          for (let i = 0; i < rateRows.length; i += BATCH_SIZE) {
+            pricingRepository.upsertRates(rateRows.slice(i, i + BATCH_SIZE))
+          }
+          totalRateRows += rateRows.length
+        } else if (skipped) {
+          // Count skipped bytes (HEAD-only cost) but don't clear allSkipped
+        }
 
-      rateRows.push({
-        service_id: EC2_SERVICE_ID,
-        provider: 'aws',
-        region,
-        rate_key: 'pricePerHour',
-        value: price,
-        unit: 'Hrs',
-        tier: 'onDemand',
-        fetched_at: now
-      })
-    }
-
-    // Upsert in batches of 500
-    const BATCH_SIZE = 500
-    for (let i = 0; i < rateRows.length; i += BATCH_SIZE) {
-      pricingRepository.upsertRates(rateRows.slice(i, i + BATCH_SIZE))
+        if (publicationDate) {
+          updatedRegionDates[region] = publicationDate
+        }
+      } catch (regionErr) {
+        // Log per-region errors but continue with remaining regions
+        console.warn(`[aws-fetcher] Failed to fetch region ${region}:`, regionErr)
+      }
     }
 
     // Ensure all 12 regions exist in pricing_regions
@@ -252,10 +291,8 @@ export async function fetchAwsPricing(): Promise<AwsFetchResult> {
       pricingRepository.upsertRegion('aws', region, displayName)
     }
 
-    // Write updated publicationDate to sidecar
-    if (currentPublicationDate) {
-      writeMeta({ publicationDate: currentPublicationDate })
-    }
+    // Persist updated region dates
+    writeMeta({ regionDates: updatedRegionDates })
 
     // Optional Cost Explorer reserved pricing enhancement (SYNC-07)
     if (
@@ -268,7 +305,11 @@ export async function fetchAwsPricing(): Promise<AwsFetchResult> {
       // from https://ce.us-east-1.amazonaws.com/ and merge them into pricing_rates with tier='reserved'.
     }
 
-    return { servicesUpdated: rateRows.length, deltaSkipped: false, bytesDownloaded }
+    return {
+      servicesUpdated: totalRateRows,
+      deltaSkipped: allSkipped,
+      bytesDownloaded: totalBytesDownloaded
+    }
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err)
     return { servicesUpdated: 0, deltaSkipped: false, bytesDownloaded: 0, error: errorMessage }
