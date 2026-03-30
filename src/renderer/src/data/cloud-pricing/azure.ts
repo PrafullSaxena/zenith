@@ -81,13 +81,7 @@ export const AZURE_CATALOG: ProviderCatalog = {
             // $0.20 per million executions (after 1M free/month)
             // $0.000016 per GB-second (after 400,000 free GB-seconds/month)
           }
-        }
-      ]
-    },
-    {
-      id: 'containers',
-      name: 'Containers',
-      services: [
+        },
         {
           id: 'aks',
           name: 'AKS',
@@ -164,6 +158,77 @@ export const AZURE_CATALOG: ProviderCatalog = {
               max: 744
             }
           }
+        },
+        {
+          id: 'app-service',
+          name: 'App Service',
+          description: 'Fully managed platform for building, deploying, and scaling web apps',
+          configSchema: {
+            tier: {
+              type: 'select',
+              label: 'Pricing Tier',
+              options: [
+                // As of 2026-01, source: https://azure.microsoft.com/pricing/details/app-service/linux/
+                { label: 'B1 (1 core, 1.75 GB) — $0.018/hr',  value: 'B1',   pricePerHour: 0.018 },
+                { label: 'B2 (2 core, 3.5 GB)  — $0.036/hr',  value: 'B2',   pricePerHour: 0.036 },
+                { label: 'B3 (4 core, 7 GB)    — $0.072/hr',  value: 'B3',   pricePerHour: 0.072 },
+                { label: 'P1v3 (2 core, 8 GB)  — $0.151/hr',  value: 'P1v3', pricePerHour: 0.151 },
+                { label: 'P2v3 (4 core, 16 GB) — $0.302/hr',  value: 'P2v3', pricePerHour: 0.302 }
+              ]
+            },
+            instances: {
+              type: 'number',
+              label: 'Number of instances',
+              default: 1,
+              min: 1,
+              max: 100
+            }
+          }
+        },
+        {
+          id: 'azure-spring-apps',
+          name: 'Azure Spring Apps',
+          description: 'Fully managed Java PaaS for Spring Boot applications',
+          configSchema: {
+            instances: {
+              type: 'number',
+              label: 'Instances',
+              default: 1,
+              min: 1,
+              max: 100
+            }
+            // spring_apps_hr: $0.05/instance-hour
+          }
+        },
+        {
+          id: 'azure-batch',
+          name: 'Azure Batch',
+          description: 'Cloud-scale job scheduling for parallel and HPC workloads',
+          configSchema: {
+            vcpuHours: {
+              type: 'number',
+              label: 'vCPU-hours/mo',
+              default: 100,
+              min: 1,
+              max: 100000
+            }
+            // batch_vcpu_hr: $0.048/vCPU-hour
+          }
+        },
+        {
+          id: 'azure-container-registry',
+          name: 'Azure Container Registry',
+          description: 'Managed private container registry for Docker images',
+          configSchema: {
+            storageGB: {
+              type: 'number',
+              label: 'Storage (GB)',
+              default: 10,
+              min: 1,
+              max: 10000
+            }
+            // acr_gb: $0.10/GB/month
+          }
         }
       ]
     },
@@ -217,6 +282,36 @@ export const AZURE_CATALOG: ProviderCatalog = {
               min: 1,
               max: 1000
             }
+          }
+        },
+        {
+          id: 'azure-files',
+          name: 'Azure Files',
+          description: 'Fully managed SMB file shares in the cloud',
+          configSchema: {
+            storageGB: {
+              type: 'number',
+              label: 'Storage (GB)',
+              default: 100,
+              min: 1,
+              max: 1000000
+            }
+            // files_gb: $0.20/GB/month (hot tier)
+          }
+        },
+        {
+          id: 'archive-storage',
+          name: 'Archive Storage',
+          description: 'Ultra-low-cost cold tier storage for rarely accessed data',
+          configSchema: {
+            storageGB: {
+              type: 'number',
+              label: 'Storage (GB)',
+              default: 500,
+              min: 1,
+              max: 10000000
+            }
+            // archive_gb: $0.002/GB/month
           }
         }
       ]
@@ -272,6 +367,38 @@ export const AZURE_CATALOG: ProviderCatalog = {
             // Provisioned throughput: $0.008 per RU/s per hour (100 RU/s = $0.80/hour or $58.40/month minimum)
             // Simplified: $0.00008/RU-hour for reads and writes combined
           }
+        },
+        {
+          id: 'azure-cache-redis',
+          name: 'Azure Cache for Redis',
+          description: 'Fully managed in-memory data store based on Redis',
+          configSchema: {
+            tier: {
+              type: 'select',
+              label: 'Tier',
+              options: [
+                { label: 'Basic C0 (250 MB)  — $0.017/hr', value: 'c0', pricePerHour: 0.017  },
+                { label: 'Standard C1 (1 GB) — $0.05/hr',  value: 'c1', pricePerHour: 0.05   },
+                { label: 'Premium P1 (6 GB)  — $0.323/hr', value: 'p1', pricePerHour: 0.323  }
+              ]
+            }
+          }
+        },
+        {
+          id: 'azure-synapse',
+          name: 'Azure Synapse Analytics',
+          description: 'Analytics service for enterprise data warehousing and big data',
+          configSchema: {
+            dwu: {
+              type: 'select',
+              label: 'DWU',
+              options: [
+                { label: 'DW100c  — $1.51/hr',  value: 'dw100c',  pricePerHour: 1.51  },
+                { label: 'DW300c  — $4.52/hr',  value: 'dw300c',  pricePerHour: 4.52  },
+                { label: 'DW1000c — $15.07/hr', value: 'dw1000c', pricePerHour: 15.07 }
+              ]
+            }
+          }
         }
       ]
     },
@@ -308,37 +435,337 @@ export const AZURE_CATALOG: ProviderCatalog = {
             // As of 2026-01, source: https://azure.microsoft.com/pricing/details/cdn/
             // Standard Microsoft CDN: $0.087/GB (first 10 TB from North America/Europe)
           }
+        },
+        {
+          id: 'azure-nat-gateway',
+          name: 'Azure NAT Gateway',
+          description: 'Managed NAT for outbound internet connectivity from virtual networks',
+          configSchema: {
+            quantity: {
+              type: 'number',
+              label: 'Gateways',
+              default: 1,
+              min: 1,
+              max: 10
+            },
+            dataGB: {
+              type: 'number',
+              label: 'Data processed (GB/mo)',
+              default: 100,
+              min: 0,
+              max: 100000
+            }
+            // nat_hr: $0.045/hr, nat_data_gb: $0.045/GB
+          }
+        },
+        {
+          id: 'azure-dns',
+          name: 'Azure DNS',
+          description: 'Reliable, secure DNS hosting within Azure infrastructure',
+          configSchema: {
+            zones: {
+              type: 'number',
+              label: 'DNS Zones',
+              default: 1,
+              min: 1,
+              max: 10000
+            },
+            queriesMillions: {
+              type: 'number',
+              label: 'Queries (millions/mo)',
+              default: 1,
+              min: 0.1,
+              max: 100000
+            }
+            // dns_zone: $0.50/zone/month, dns_m_queries: $0.40/million
+          }
         }
       ]
     },
     {
-      id: 'serverless',
-      name: 'Serverless',
+      id: 'mlai',
+      name: 'ML/AI',
       services: [
         {
-          id: 'app-service',
-          name: 'App Service',
-          description: 'Fully managed platform for building, deploying, and scaling web apps',
+          id: 'azure-openai',
+          name: 'Azure OpenAI',
+          description: 'OpenAI models (GPT-4, DALL-E, etc.) via Azure infrastructure',
+          configSchema: {
+            model: {
+              type: 'select',
+              label: 'Model',
+              options: [
+                { label: 'GPT-3.5 Turbo', value: 'gpt35',  pricePerHour: 0 },
+                { label: 'GPT-4',         value: 'gpt4',   pricePerHour: 0 },
+                { label: 'GPT-4o',        value: 'gpt4o',  pricePerHour: 0 }
+              ]
+            },
+            inputTokensMillions: {
+              type: 'number',
+              label: 'Input tokens (millions/mo)',
+              default: 1,
+              min: 0.1,
+              max: 10000
+            },
+            outputTokensMillions: {
+              type: 'number',
+              label: 'Output tokens (millions/mo)',
+              default: 0.5,
+              min: 0.1,
+              max: 10000
+            }
+            // openai_input_m: $0.50/million input tokens, openai_output_m: $1.50/million output tokens
+          }
+        },
+        {
+          id: 'azure-machine-learning',
+          name: 'Azure Machine Learning',
+          description: 'End-to-end ML platform for model development and deployment',
+          configSchema: {
+            computeHours: {
+              type: 'number',
+              label: 'Compute hours/mo',
+              default: 100,
+              min: 1,
+              max: 730
+            }
+            // aml_hr: $0.18/compute-hour
+          }
+        },
+        {
+          id: 'cognitive-services',
+          name: 'Azure Cognitive Services',
+          description: 'Pre-built Vision, Speech, and NLP APIs for intelligent apps',
+          configSchema: {
+            callsThousands: {
+              type: 'number',
+              label: 'API calls (thousands/mo)',
+              default: 10,
+              min: 1,
+              max: 1000000
+            }
+            // cog_k_calls: $1.50/thousand calls
+          }
+        },
+        {
+          id: 'azure-bot-service',
+          name: 'Azure Bot Service',
+          description: 'Managed platform for building and deploying intelligent bots',
+          configSchema: {
+            messagesThousands: {
+              type: 'number',
+              label: 'Messages (thousands/mo)',
+              default: 10,
+              min: 1,
+              max: 1000000
+            }
+            // bot_k_msg: $0.50/thousand messages
+          }
+        }
+      ]
+    },
+    {
+      id: 'analytics',
+      name: 'Analytics & Streaming',
+      services: [
+        {
+          id: 'event-hubs',
+          name: 'Event Hubs',
+          description: 'Big data streaming platform and event ingestion service (Kafka-compatible)',
+          configSchema: {
+            throughputUnits: {
+              type: 'number',
+              label: 'Throughput Units',
+              default: 1,
+              min: 1,
+              max: 40
+            }
+            // eh_tu_hr: $0.028/TU-hour, eh_ingress_m: $0.028/million events
+          }
+        },
+        {
+          id: 'stream-analytics',
+          name: 'Stream Analytics',
+          description: 'Real-time analytics processing on streaming data',
+          configSchema: {
+            streamingUnits: {
+              type: 'number',
+              label: 'Streaming Units',
+              default: 1,
+              min: 1,
+              max: 192
+            }
+            // sa_su_hr: $0.031/streaming-unit-hour
+          }
+        },
+        {
+          id: 'azure-data-factory',
+          name: 'Azure Data Factory',
+          description: 'Cloud ETL and data integration service for pipeline orchestration',
+          configSchema: {
+            pipelineRuns: {
+              type: 'number',
+              label: 'Pipeline runs/mo',
+              default: 100,
+              min: 1,
+              max: 100000
+            }
+            // adf_run: $0.001/pipeline run
+          }
+        },
+        {
+          id: 'hdinsight',
+          name: 'HDInsight',
+          description: 'Managed Hadoop, Spark, and Kafka cluster service',
+          configSchema: {
+            nodeHours: {
+              type: 'number',
+              label: 'Node-hours/mo',
+              default: 200,
+              min: 1,
+              max: 100000
+            }
+            // hdi_node_hr: $0.192/node-hour
+          }
+        }
+      ]
+    },
+    {
+      id: 'messaging',
+      name: 'Messaging/Integration',
+      services: [
+        {
+          id: 'service-bus',
+          name: 'Service Bus',
+          description: 'Enterprise message broker for reliable asynchronous messaging',
+          configSchema: {
+            messagesMillions: {
+              type: 'number',
+              label: 'Messages (millions/mo)',
+              default: 1,
+              min: 0.1,
+              max: 100000
+            }
+            // sb_m_msg: $0.80/million messages
+          }
+        },
+        {
+          id: 'azure-notification-hubs',
+          name: 'Azure Notification Hubs',
+          description: 'Cross-platform push notification service at scale',
+          configSchema: {
+            pushesMillions: {
+              type: 'number',
+              label: 'Pushes (millions/mo)',
+              default: 1,
+              min: 0.1,
+              max: 10000
+            }
+            // anh_m_push: $0.50/million pushes
+          }
+        },
+        {
+          id: 'logic-apps',
+          name: 'Logic Apps',
+          description: 'Automated workflow integration across apps and services',
+          configSchema: {
+            actionsThousands: {
+              type: 'number',
+              label: 'Actions (thousands/mo)',
+              default: 10,
+              min: 1,
+              max: 1000000
+            }
+            // logic_apps_k_actions: $0.25/thousand actions
+          }
+        },
+        {
+          id: 'api-management',
+          name: 'API Management',
+          description: 'Full lifecycle API gateway for publishing and securing APIs',
           configSchema: {
             tier: {
               type: 'select',
-              label: 'Pricing Tier',
+              label: 'Tier',
               options: [
-                // As of 2026-01, source: https://azure.microsoft.com/pricing/details/app-service/linux/
-                { label: 'B1 (1 core, 1.75 GB) — $0.018/hr',  value: 'B1', pricePerHour: 0.018 },
-                { label: 'B2 (2 core, 3.5 GB)  — $0.036/hr',  value: 'B2', pricePerHour: 0.036 },
-                { label: 'B3 (4 core, 7 GB)    — $0.072/hr',  value: 'B3', pricePerHour: 0.072 },
-                { label: 'P1v3 (2 core, 8 GB)  — $0.151/hr',  value: 'P1v3', pricePerHour: 0.151 },
-                { label: 'P2v3 (4 core, 16 GB) — $0.302/hr',  value: 'P2v3', pricePerHour: 0.302 }
+                { label: 'Developer  — $0.07/hr',  value: 'developer', pricePerHour: 0.07  },
+                { label: 'Basic      — $0.21/hr',  value: 'basic',     pricePerHour: 0.21  },
+                { label: 'Standard   — $0.95/hr',  value: 'standard',  pricePerHour: 0.95  }
               ]
-            },
-            instances: {
-              type: 'number',
-              label: 'Number of instances',
-              default: 1,
-              min: 1,
-              max: 100
             }
+          }
+        }
+      ]
+    },
+    {
+      id: 'security',
+      name: 'Security & Identity',
+      services: [
+        {
+          id: 'azure-active-directory',
+          name: 'Azure Active Directory',
+          description: 'Cloud identity and access management for users and applications',
+          configSchema: {
+            mau: {
+              type: 'number',
+              label: 'MAU (Premium P1)',
+              default: 1000,
+              min: 0,
+              max: 10000000
+            }
+            // aad_mau: $0.006/MAU
+          }
+        },
+        {
+          id: 'azure-key-vault',
+          name: 'Azure Key Vault',
+          description: 'Safeguard secrets, keys, and certificates in the cloud',
+          configSchema: {
+            operations: {
+              type: 'number',
+              label: 'Operations (thousands/mo)',
+              default: 10,
+              min: 1,
+              max: 1000000
+            }
+            // kv_k_ops: $0.03/thousand operations
+          }
+        },
+        {
+          id: 'microsoft-defender',
+          name: 'Microsoft Defender for Cloud',
+          description: 'Unified security management and threat protection for cloud workloads',
+          configSchema: {
+            servers: {
+              type: 'number',
+              label: 'Servers protected',
+              default: 10,
+              min: 1,
+              max: 10000
+            }
+            // defender_server: $15.00/server/month
+          }
+        },
+        {
+          id: 'azure-firewall',
+          name: 'Azure Firewall',
+          description: 'Managed cloud-native network security for virtual networks',
+          configSchema: {
+            deploymentHours: {
+              type: 'number',
+              label: 'Deployment hours/mo',
+              default: 730,
+              min: 1,
+              max: 730
+            },
+            dataGB: {
+              type: 'number',
+              label: 'Data processed (GB/mo)',
+              default: 100,
+              min: 0,
+              max: 100000
+            }
+            // fw_hr: $1.25/hr, fw_data_gb: $0.016/GB
           }
         }
       ]

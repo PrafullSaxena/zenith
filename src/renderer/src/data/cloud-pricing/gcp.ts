@@ -81,13 +81,37 @@ export const GCP_CATALOG: ProviderCatalog = {
             // $0.40 per million invocations (after 2M free/month)
             // $0.0000025 per GB-second (after 400,000 free GB-seconds)
           }
-        }
-      ]
-    },
-    {
-      id: 'containers',
-      name: 'Containers',
-      services: [
+        },
+        {
+          id: 'cloud-run',
+          name: 'Cloud Run',
+          description: 'Fully managed serverless platform for containerized applications',
+          configSchema: {
+            requestsPerMonth: {
+              type: 'number',
+              label: 'Requests per month (millions)',
+              default: 1,
+              min: 0
+            },
+            vcpu: {
+              type: 'number',
+              label: 'vCPU per instance',
+              default: 1,
+              min: 0.08,
+              max: 8
+            },
+            memoryGb: {
+              type: 'number',
+              label: 'Memory per instance (GB)',
+              default: 0.5,
+              min: 0.128,
+              max: 32
+            }
+            // As of 2026-01, source: https://cloud.google.com/run/pricing
+            // $0.00002400 per vCPU-second, $0.00000250 per GB-second
+            // $0.40 per million requests (after 2M free)
+          }
+        },
         {
           id: 'gke',
           name: 'GKE',
@@ -126,8 +150,8 @@ export const GCP_CATALOG: ProviderCatalog = {
         },
         {
           id: 'cloud-run-jobs',
-          name: 'Cloud Run (Containers)',
-          description: 'Serverless containers — deploy and run containers without cluster management',
+          name: 'Cloud Run (Jobs)',
+          description: 'Serverless containers for batch jobs without cluster management',
           configSchema: {
             tasks: {
               type: 'number',
@@ -165,6 +189,51 @@ export const GCP_CATALOG: ProviderCatalog = {
               min: 1,
               max: 744
             }
+          }
+        },
+        {
+          id: 'app-engine',
+          name: 'App Engine',
+          description: 'Fully managed PaaS for web app deployment and scaling',
+          configSchema: {
+            instances: {
+              type: 'number',
+              label: 'Instances',
+              default: 1,
+              min: 1,
+              max: 100
+            }
+            // app_engine_instance_hr: $0.05/instance-hour
+          }
+        },
+        {
+          id: 'cloud-batch',
+          name: 'Cloud Batch',
+          description: 'Fully managed batch job scheduling and execution',
+          configSchema: {
+            vcpuHours: {
+              type: 'number',
+              label: 'vCPU-hours/mo',
+              default: 100,
+              min: 1,
+              max: 100000
+            }
+            // batch_vcpu_hr: $0.048/vCPU-hour
+          }
+        },
+        {
+          id: 'artifact-registry',
+          name: 'Artifact Registry',
+          description: 'Managed repository for container images and artifacts',
+          configSchema: {
+            storageGB: {
+              type: 'number',
+              label: 'Storage (GB)',
+              default: 10,
+              min: 1,
+              max: 10000
+            }
+            // artifact_gb: $0.10/GB/month
           }
         }
       ]
@@ -209,6 +278,36 @@ export const GCP_CATALOG: ProviderCatalog = {
             }
             // As of 2026-01, source: https://cloud.google.com/compute/disks-image-pricing
             // pd-ssd: $0.17/GB/month (us regions)
+          }
+        },
+        {
+          id: 'filestore',
+          name: 'Filestore',
+          description: 'Managed NFS file system for GCP workloads',
+          configSchema: {
+            storageGB: {
+              type: 'number',
+              label: 'Storage (GB)',
+              default: 1024,
+              min: 1024,
+              max: 100000
+            }
+            // filestore_gb: $0.20/GB/month
+          }
+        },
+        {
+          id: 'cloud-backup',
+          name: 'Cloud Backup',
+          description: 'Centralized backup storage for GCP resources',
+          configSchema: {
+            storageGB: {
+              type: 'number',
+              label: 'Backup storage (GB)',
+              default: 100,
+              min: 1,
+              max: 1000000
+            }
+            // backup_gb: $0.023/GB/month
           }
         }
       ]
@@ -270,6 +369,43 @@ export const GCP_CATALOG: ProviderCatalog = {
             // $0.06 per 100,000 document reads
             // $0.18 per 100,000 document writes
           }
+        },
+        {
+          id: 'bigtable',
+          name: 'Bigtable',
+          description: 'Scalable wide-column NoSQL for high-throughput workloads',
+          configSchema: {
+            nodes: {
+              type: 'number',
+              label: 'Nodes',
+              default: 1,
+              min: 1,
+              max: 100
+            },
+            storageGB: {
+              type: 'number',
+              label: 'Storage (GB)',
+              default: 100,
+              min: 1,
+              max: 1000000
+            }
+            // bigtable_node_hr: $0.65/node-hour, bigtable_gb: $0.017/GB/month
+          }
+        },
+        {
+          id: 'spanner',
+          name: 'Cloud Spanner',
+          description: 'Globally distributed, strongly consistent relational database',
+          configSchema: {
+            processingUnits: {
+              type: 'number',
+              label: 'Processing Units',
+              default: 100,
+              min: 100,
+              max: 10000
+            }
+            // spanner_pu_hr: $0.09/processing-unit-hour
+          }
         }
       ]
     },
@@ -306,41 +442,349 @@ export const GCP_CATALOG: ProviderCatalog = {
             // As of 2026-01, source: https://cloud.google.com/cdn/pricing
             // $0.08/GB cache egress from North America
           }
+        },
+        {
+          id: 'cloud-nat',
+          name: 'Cloud NAT',
+          description: 'Managed NAT for private subnet outbound internet access',
+          configSchema: {
+            gatewayHours: {
+              type: 'number',
+              label: 'Gateway hours/mo',
+              default: 730,
+              min: 1,
+              max: 730
+            },
+            dataGB: {
+              type: 'number',
+              label: 'Data processed (GB)',
+              default: 100,
+              min: 0,
+              max: 100000
+            }
+            // nat_hr: $0.044/hr, nat_data_gb: $0.045/GB
+          }
+        },
+        {
+          id: 'cloud-dns',
+          name: 'Cloud DNS',
+          description: 'Scalable, reliable and managed DNS service',
+          configSchema: {
+            zones: {
+              type: 'number',
+              label: 'Managed Zones',
+              default: 1,
+              min: 1,
+              max: 10000
+            },
+            queriesMillions: {
+              type: 'number',
+              label: 'Queries (millions/mo)',
+              default: 1,
+              min: 0.1,
+              max: 100000
+            }
+            // dns_zone: $0.20/zone/month, dns_m_queries: $0.40/million
+          }
         }
       ]
     },
     {
-      id: 'serverless',
-      name: 'Serverless',
+      id: 'mlai',
+      name: 'ML/AI',
       services: [
         {
-          id: 'cloud-run',
-          name: 'Cloud Run',
-          description: 'Fully managed serverless platform for containerized applications',
+          id: 'vertex-ai',
+          name: 'Vertex AI',
+          description: 'Unified ML platform for training and serving models',
           configSchema: {
-            requestsPerMonth: {
-              type: 'number',
-              label: 'Requests per month (millions)',
-              default: 1,
-              min: 0
+            machineType: {
+              type: 'select',
+              label: 'Machine Type',
+              options: [
+                { label: 'n1-standard-4             — $0.19/hr',  value: 'n1-std-4',     pricePerHour: 0.19  },
+                { label: 'n1-highmem-8              — $0.57/hr',  value: 'n1-highmem-8', pricePerHour: 0.57  },
+                { label: 'a2-highgpu-1g (A100 GPU)  — $3.67/hr',  value: 'a2-highgpu-1g', pricePerHour: 3.67 }
+              ]
             },
-            vcpu: {
+            usageHoursPerMonth: {
               type: 'number',
-              label: 'vCPU per instance',
-              default: 1,
-              min: 0.08,
-              max: 8
-            },
-            memoryGb: {
-              type: 'number',
-              label: 'Memory per instance (GB)',
-              default: 0.5,
-              min: 0.128,
-              max: 32
+              label: 'Usage hours/mo',
+              default: 100,
+              min: 1,
+              max: 730
             }
-            // As of 2026-01, source: https://cloud.google.com/run/pricing
-            // $0.00002400 per vCPU-second, $0.00000250 per GB-second
-            // $0.40 per million requests (after 2M free)
+          }
+        },
+        {
+          id: 'vision-ai',
+          name: 'Vision AI',
+          description: 'ML-powered image analysis and content classification',
+          configSchema: {
+            unitsThousands: {
+              type: 'number',
+              label: 'Images (thousands/mo)',
+              default: 10,
+              min: 1,
+              max: 1000000
+            }
+            // vision_k: $1.50/thousand images
+          }
+        },
+        {
+          id: 'natural-language-ai',
+          name: 'Natural Language AI',
+          description: 'NLP API for text analysis, sentiment, and entity recognition',
+          configSchema: {
+            unitsThousands: {
+              type: 'number',
+              label: 'Text units (thousands/mo)',
+              default: 10,
+              min: 1,
+              max: 1000000
+            }
+            // nlp_k: $1.00/thousand units
+          }
+        },
+        {
+          id: 'translation-ai',
+          name: 'Translation AI',
+          description: 'Neural machine translation for 100+ languages',
+          configSchema: {
+            charsMillions: {
+              type: 'number',
+              label: 'Characters (millions/mo)',
+              default: 1,
+              min: 0.1,
+              max: 10000
+            }
+            // translate_m_chars: $20.00/million characters
+          }
+        }
+      ]
+    },
+    {
+      id: 'analytics',
+      name: 'Analytics & Streaming',
+      services: [
+        {
+          id: 'bigquery',
+          name: 'BigQuery',
+          description: 'Serverless, highly scalable data warehouse and analytics engine',
+          configSchema: {
+            queryTB: {
+              type: 'number',
+              label: 'Query data scanned (TB/mo)',
+              default: 1,
+              min: 0.01,
+              max: 1000
+            },
+            storageGB: {
+              type: 'number',
+              label: 'Storage (GB)',
+              default: 100,
+              min: 1,
+              max: 1000000
+            }
+            // bq_query_tb: $5.00/TB, bq_storage_gb: $0.02/GB/month
+          }
+        },
+        {
+          id: 'pub-sub',
+          name: 'Pub/Sub',
+          description: 'Asynchronous messaging service for event-driven systems',
+          configSchema: {
+            dataGB: {
+              type: 'number',
+              label: 'Message data (GB/mo)',
+              default: 10,
+              min: 0.1,
+              max: 100000
+            }
+            // pubsub_gb: $0.04/GB
+          }
+        },
+        {
+          id: 'dataflow',
+          name: 'Dataflow',
+          description: 'Managed stream and batch data processing with Apache Beam',
+          configSchema: {
+            vcpuHours: {
+              type: 'number',
+              label: 'vCPU-hours/mo',
+              default: 100,
+              min: 1,
+              max: 100000
+            }
+            // dataflow_vcpu_hr: $0.056/vCPU-hour
+          }
+        },
+        {
+          id: 'looker-studio',
+          name: 'Looker Studio',
+          description: 'Free BI and data visualization tool (Looker Studio Pro for advanced features)',
+          configSchema: {
+            reportCount: {
+              type: 'number',
+              label: 'Reports',
+              default: 1,
+              min: 1,
+              max: 1000
+            }
+            // Free tier — $0/report for standard use
+          }
+        }
+      ]
+    },
+    {
+      id: 'messaging',
+      name: 'Messaging/Integration',
+      services: [
+        {
+          id: 'cloud-tasks',
+          name: 'Cloud Tasks',
+          description: 'Managed task queue for asynchronous workload distribution',
+          configSchema: {
+            tasksMillions: {
+              type: 'number',
+              label: 'Tasks (millions/mo)',
+              default: 10,
+              min: 0.1,
+              max: 100000
+            }
+            // cloud_tasks_m: $0.40/million tasks
+          }
+        },
+        {
+          id: 'cloud-scheduler',
+          name: 'Cloud Scheduler',
+          description: 'Fully managed cron job service for triggering workloads',
+          configSchema: {
+            jobs: {
+              type: 'number',
+              label: 'Jobs',
+              default: 3,
+              min: 1,
+              max: 1000
+            }
+            // scheduler_job: $0.10/job/month
+          }
+        },
+        {
+          id: 'eventarc',
+          name: 'Eventarc',
+          description: 'Event routing service for connecting Google Cloud services',
+          configSchema: {
+            eventsMillions: {
+              type: 'number',
+              label: 'Events (millions/mo)',
+              default: 1,
+              min: 0.1,
+              max: 100000
+            }
+            // eventarc_m: $0.40/million events
+          }
+        },
+        {
+          id: 'workflows',
+          name: 'Workflows',
+          description: 'Serverless workflow orchestration for Google Cloud services',
+          configSchema: {
+            stepsThousands: {
+              type: 'number',
+              label: 'Steps executed (thousands/mo)',
+              default: 10,
+              min: 1,
+              max: 1000000
+            }
+            // workflows_k_steps: $0.01/thousand steps
+          }
+        }
+      ]
+    },
+    {
+      id: 'security',
+      name: 'Security & Identity',
+      services: [
+        {
+          id: 'cloud-armor',
+          name: 'Cloud Armor',
+          description: 'DDoS protection and WAF for Google Cloud applications',
+          configSchema: {
+            policies: {
+              type: 'number',
+              label: 'Security Policies',
+              default: 1,
+              min: 1,
+              max: 100
+            },
+            requestsMillions: {
+              type: 'number',
+              label: 'Requests (millions/mo)',
+              default: 10,
+              min: 0.1,
+              max: 100000
+            }
+            // armor_policy: $5.00/policy/month, armor_m_req: $0.75/million requests
+          }
+        },
+        {
+          id: 'secret-manager',
+          name: 'Secret Manager',
+          description: 'Secure secret storage with versioning and access control',
+          configSchema: {
+            secrets: {
+              type: 'number',
+              label: 'Secrets stored',
+              default: 10,
+              min: 1,
+              max: 100000
+            },
+            accessesThousands: {
+              type: 'number',
+              label: 'Secret accesses (thousands/mo)',
+              default: 10,
+              min: 0,
+              max: 1000000
+            }
+            // secret_version: $0.06/version/month, secret_k_access: $0.03/thousand accesses
+          }
+        },
+        {
+          id: 'cloud-kms',
+          name: 'Cloud KMS',
+          description: 'Cloud-hosted key management service for cryptographic operations',
+          configSchema: {
+            keyVersions: {
+              type: 'number',
+              label: 'Key versions',
+              default: 5,
+              min: 1,
+              max: 10000
+            },
+            operationsThousands: {
+              type: 'number',
+              label: 'Crypto operations (thousands/mo)',
+              default: 10,
+              min: 0,
+              max: 1000000
+            }
+            // kms_version: $0.06/version/month, kms_k_ops: $0.03/thousand operations
+          }
+        },
+        {
+          id: 'identity-platform',
+          name: 'Identity Platform',
+          description: 'Customer identity and access management for web and mobile',
+          configSchema: {
+            mau: {
+              type: 'number',
+              label: 'Monthly Active Users',
+              default: 1000,
+              min: 0,
+              max: 10000000
+            }
+            // idp_mau: $0.0055/MAU
           }
         }
       ]
