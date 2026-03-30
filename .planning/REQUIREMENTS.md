@@ -66,12 +66,12 @@
 
 ### Visualizations
 
-- [ ] **VIZ-01**: `recharts` added as project dependency
-- [ ] **VIZ-02**: Treemap chart replaces current fallback bar chart in EstimationSummary — shows cost distribution by service, color-coded by category, hover shows cost + % of total
-- [ ] **VIZ-03**: Donut chart added to EstimationSummary showing spending split by category
+- [x] **VIZ-01**: `recharts` added as project dependency
+- [x] **VIZ-02**: Treemap chart replaces current fallback bar chart in EstimationSummary — shows cost distribution by service, color-coded by category, hover shows cost + % of total
+- [x] **VIZ-03**: Donut chart added to EstimationSummary showing spending split by category
 - [ ] **VIZ-04**: Grouped bar chart in ComparisonView replaces static text table — one group per service family, three bars (AWS/GCP/Azure), green = cheapest
 - [ ] **VIZ-05**: Trend line in History tab plots saved estimations over time — hover shows name + cost breakdown
-- [ ] **VIZ-06**: All charts use CSS custom properties for dark theme compatibility
+- [x] **VIZ-06**: All charts use CSS custom properties for dark theme compatibility
 
 ### Settings & Credentials UI
 
@@ -154,12 +154,12 @@
 | CAT-04 | Phase 10 | Complete |
 | CAT-05 | Phase 10 | Complete |
 | CAT-06 | Phase 10 | Complete |
-| VIZ-01 | Phase 11 | Pending |
-| VIZ-02 | Phase 11 | Pending |
-| VIZ-03 | Phase 11 | Pending |
+| VIZ-01 | Phase 11 | Complete |
+| VIZ-02 | Phase 11 | Complete |
+| VIZ-03 | Phase 11 | Complete |
 | VIZ-04 | Phase 11 | Pending |
 | VIZ-05 | Phase 11 | Pending |
-| VIZ-06 | Phase 11 | Pending |
+| VIZ-06 | Phase 11 | Complete |
 | SET-01 | Phase 12 | Pending |
 | SET-02 | Phase 12 | Pending |
 | SET-03 | Phase 12 | Pending |

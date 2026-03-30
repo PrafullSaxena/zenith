@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 10 — Service Catalog
-Plan: 10-03 complete — FAMILY_LABELS + getProviderServiceName added to equivalences.ts; ComparisonView has cross-provider equivalence reference table
-Status: Plan 10-03 executed — equivalence table (25 rows, alphabetically sorted) visible in ComparisonView
-Last activity: 2026-03-31 — 10-03 equivalence table complete
+Phase: 11 — Visualizations
+Plan: 11-01 complete — Recharts CostTreemap + CategoryDonut replacing CostTreemapFallback bar chart in EstimationSummary
+Status: Plan 11-01 executed — treemap (60%) + donut (40%) side-by-side with cross-highlight; recharts ^3.8.1 installed
+Last activity: 2026-03-31 — 11-01 visualizations complete
 
-Progress: [██░░░░░░░░] 8% (v2.0 milestone)
+Progress: [██░░░░░░░░] 9% (v2.0 milestone)
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Key decisions for v2.0:
 - [Phase 10-02-service-catalog]: getCatalog declared inline in electron.d.ts — main-process types must not be imported from renderer
 - [Phase 10-02-service-catalog]: dbCatalog parallel searchIndex string[] enables O(n) in-memory filter — no object traversal per keystroke
 - [Phase 10-02-service-catalog]: loadDbCatalog triggered from setProvider and ServiceCatalog useEffect — catalog loads on any provider change regardless of component mount state
+- [Phase 11-visualizations]: recharts ^3.8.1 for all chart components; center label as CSS overlay div; enrichedItems join pattern for categoryId propagation
 
 ### Pending Todos
 
@@ -82,5 +83,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 10-service-catalog/10-03-PLAN.md
-Resume file: Next plan in 10-service-catalog
+Stopped at: Completed 11-visualizations/11-01-PLAN.md
+Resume file: Next plan in 11-visualizations
