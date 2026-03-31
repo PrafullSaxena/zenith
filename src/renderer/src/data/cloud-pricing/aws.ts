@@ -851,6 +851,223 @@ export const AWS_CATALOG: ProviderCatalog = {
           }
         }
       ]
+    },
+    {
+      id: 'containers',
+      name: 'Containers & CI/CD',
+      services: [
+        {
+          id: 'ecs',
+          name: 'ECS',
+          description: 'Elastic Container Service for running Docker containers',
+          configSchema: {
+            tasks: {
+              type: 'number',
+              label: 'Running tasks',
+              default: 2,
+              min: 1,
+              max: 1000
+            },
+            vcpu: {
+              type: 'select',
+              label: 'vCPU per task',
+              default: '0.5',
+              options: [
+                { label: '0.25 vCPU', value: '0.25', pricePerHour: 0.01013 },
+                { label: '0.5 vCPU', value: '0.5', pricePerHour: 0.02025 },
+                { label: '1 vCPU', value: '1', pricePerHour: 0.0405 },
+                { label: '2 vCPU', value: '2', pricePerHour: 0.081 },
+                { label: '4 vCPU', value: '4', pricePerHour: 0.162 }
+              ]
+            }
+          }
+        },
+        {
+          id: 'codebuild',
+          name: 'CodeBuild',
+          description: 'Fully managed CI/CD build service',
+          configSchema: {
+            buildMinutesPerMonth: {
+              type: 'number',
+              label: 'Build minutes/mo',
+              default: 500,
+              min: 0,
+              max: 100000
+            },
+            computeType: {
+              type: 'select',
+              label: 'Compute type',
+              default: 'general1.small',
+              options: [
+                { label: 'general1.small (3 GB)', value: 'general1.small', pricePerHour: 0.005 },
+                { label: 'general1.medium (7 GB)', value: 'general1.medium', pricePerHour: 0.01 },
+                { label: 'general1.large (15 GB)', value: 'general1.large', pricePerHour: 0.02 }
+              ]
+            }
+          }
+        },
+        {
+          id: 'codepipeline',
+          name: 'CodePipeline',
+          description: 'Continuous delivery service for release automation',
+          configSchema: {
+            pipelines: {
+              type: 'number',
+              label: 'Active pipelines',
+              default: 2,
+              min: 1,
+              max: 500
+            }
+            // $1.00/active pipeline/month
+          }
+        }
+      ]
+    },
+    {
+      id: 'observability',
+      name: 'Observability',
+      services: [
+        {
+          id: 'cloudwatch',
+          name: 'CloudWatch',
+          description: 'Monitoring, logging, and observability service',
+          configSchema: {
+            metricsCount: {
+              type: 'number',
+              label: 'Custom metrics',
+              default: 10,
+              min: 0,
+              max: 10000
+            },
+            logIngestionGb: {
+              type: 'number',
+              label: 'Log ingestion (GB/mo)',
+              default: 50,
+              min: 0,
+              max: 100000
+            }
+            // $0.30/metric (first 10k), $0.50/GB log ingestion
+          }
+        },
+        {
+          id: 'xray',
+          name: 'X-Ray',
+          description: 'Distributed tracing for application analysis',
+          configSchema: {
+            tracesRecordedMillions: {
+              type: 'number',
+              label: 'Traces recorded (millions/mo)',
+              default: 1,
+              min: 0,
+              max: 1000
+            }
+            // $5.00/million traces recorded
+          }
+        }
+      ]
+    },
+    {
+      id: 'search-iot',
+      name: 'Search & IoT',
+      services: [
+        {
+          id: 'opensearch',
+          name: 'OpenSearch Service',
+          description: 'Managed search and analytics engine (Elasticsearch compatible)',
+          configSchema: {
+            instanceType: {
+              type: 'select',
+              label: 'Instance type',
+              default: 'r6g.large',
+              options: [
+                { label: 't3.small.search (2 GB)', value: 't3.small', pricePerHour: 0.036 },
+                { label: 'r6g.large.search (16 GB)', value: 'r6g.large', pricePerHour: 0.167 },
+                { label: 'r6g.xlarge.search (32 GB)', value: 'r6g.xlarge', pricePerHour: 0.335 },
+                { label: 'r6g.2xlarge.search (64 GB)', value: 'r6g.2xlarge', pricePerHour: 0.669 }
+              ]
+            },
+            dataNodes: {
+              type: 'number',
+              label: 'Data nodes',
+              default: 2,
+              min: 1,
+              max: 80
+            }
+          }
+        },
+        {
+          id: 'iot-core',
+          name: 'IoT Core',
+          description: 'Managed service for IoT device connectivity',
+          configSchema: {
+            connectedDevices: {
+              type: 'number',
+              label: 'Connected devices',
+              default: 100,
+              min: 0,
+              max: 10000000
+            },
+            messagesMillions: {
+              type: 'number',
+              label: 'Messages (millions/mo)',
+              default: 1,
+              min: 0,
+              max: 100000
+            }
+            // $0.08-$1.00/million messages depending on size
+          }
+        },
+        {
+          id: 'msk',
+          name: 'MSK (Managed Kafka)',
+          description: 'Fully managed Apache Kafka service',
+          configSchema: {
+            brokerType: {
+              type: 'select',
+              label: 'Broker instance type',
+              default: 'kafka.m5.large',
+              options: [
+                { label: 'kafka.t3.small', value: 'kafka.t3.small', pricePerHour: 0.0456 },
+                { label: 'kafka.m5.large', value: 'kafka.m5.large', pricePerHour: 0.21 },
+                { label: 'kafka.m5.xlarge', value: 'kafka.m5.xlarge', pricePerHour: 0.42 },
+                { label: 'kafka.m5.2xlarge', value: 'kafka.m5.2xlarge', pricePerHour: 0.84 }
+              ]
+            },
+            brokers: {
+              type: 'number',
+              label: 'Number of brokers',
+              default: 3,
+              min: 1,
+              max: 30
+            }
+          }
+        },
+        {
+          id: 'elasticache-redis',
+          name: 'ElastiCache for Redis',
+          description: 'Managed in-memory data store for Redis',
+          configSchema: {
+            nodeType: {
+              type: 'select',
+              label: 'Node type',
+              default: 'cache.r6g.large',
+              options: [
+                { label: 'cache.t3.micro', value: 'cache.t3.micro', pricePerHour: 0.017 },
+                { label: 'cache.t3.small', value: 'cache.t3.small', pricePerHour: 0.034 },
+                { label: 'cache.r6g.large', value: 'cache.r6g.large', pricePerHour: 0.166 },
+                { label: 'cache.r6g.xlarge', value: 'cache.r6g.xlarge', pricePerHour: 0.332 }
+              ]
+            },
+            nodes: {
+              type: 'number',
+              label: 'Number of nodes',
+              default: 2,
+              min: 1,
+              max: 40
+            }
+          }
+        }
+      ]
     }
   ]
 }

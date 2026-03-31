@@ -24,18 +24,15 @@ const SEED_REGION: Record<CloudProvider, string> = {
 
 /**
  * Seed a single provider's catalog and rates into the DB.
- * Skips the provider entirely if already seeded (isSeeded returns true).
+ * Always runs — upsertService/upsertRegion are idempotent, so new services
+ * added to the TS catalogs will be picked up on next app launch.
  */
 function seedProvider(
   catalog: ProviderCatalog,
   regions: { value: string; label: string }[],
   provider: CloudProvider
 ): void {
-  if (pricingRepository.isSeeded(provider)) {
-    return
-  }
-
-  // Seed regions
+  // Seed regions (upsert — safe to re-run)
   for (const region of regions) {
     pricingRepository.upsertRegion(provider, region.value, region.label)
   }

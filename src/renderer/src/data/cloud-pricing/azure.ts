@@ -769,6 +769,131 @@ export const AZURE_CATALOG: ProviderCatalog = {
           }
         }
       ]
+    },
+    {
+      id: 'observability',
+      name: 'Observability',
+      services: [
+        {
+          id: 'azure-monitor',
+          name: 'Azure Monitor',
+          description: 'Full-stack monitoring and diagnostics',
+          configSchema: {
+            logIngestionGb: {
+              type: 'number',
+              label: 'Log ingestion (GB/mo)',
+              default: 50,
+              min: 0,
+              max: 100000
+            }
+            // First 5 GB free, $2.76/GB after (Log Analytics)
+          }
+        },
+        {
+          id: 'application-insights',
+          name: 'Application Insights',
+          description: 'Application performance monitoring (APM)',
+          configSchema: {
+            dataIngestionGb: {
+              type: 'number',
+              label: 'Data ingestion (GB/mo)',
+              default: 5,
+              min: 0,
+              max: 100000
+            }
+            // First 5 GB free, $2.76/GB after
+          }
+        }
+      ]
+    },
+    {
+      id: 'data-services',
+      name: 'Data Services',
+      services: [
+        {
+          id: 'databricks',
+          name: 'Azure Databricks',
+          description: 'Unified analytics platform based on Apache Spark',
+          configSchema: {
+            tier: {
+              type: 'select',
+              label: 'Pricing tier',
+              default: 'standard',
+              options: [
+                { label: 'Standard (Jobs)', value: 'standard-jobs', pricePerHour: 0.15 },
+                { label: 'Standard (All-purpose)', value: 'standard-all', pricePerHour: 0.40 },
+                { label: 'Premium (Jobs)', value: 'premium-jobs', pricePerHour: 0.30 },
+                { label: 'Premium (All-purpose)', value: 'premium-all', pricePerHour: 0.55 }
+              ]
+            },
+            dbuHours: {
+              type: 'number',
+              label: 'DBU hours/mo',
+              default: 500,
+              min: 0,
+              max: 100000
+            }
+          }
+        },
+        {
+          id: 'azure-redis-cache',
+          name: 'Azure Cache for Redis',
+          description: 'Fully managed in-memory data store',
+          configSchema: {
+            tier: {
+              type: 'select',
+              label: 'Cache tier',
+              default: 'standard-c1',
+              options: [
+                { label: 'Basic C0 (250 MB)', value: 'basic-c0', pricePerHour: 0.022 },
+                { label: 'Standard C1 (1 GB)', value: 'standard-c1', pricePerHour: 0.063 },
+                { label: 'Standard C2 (2.5 GB)', value: 'standard-c2', pricePerHour: 0.126 },
+                { label: 'Premium P1 (6 GB)', value: 'premium-p1', pricePerHour: 0.377 }
+              ]
+            }
+          }
+        },
+        {
+          id: 'azure-search',
+          name: 'Azure AI Search',
+          description: 'AI-powered cloud search service',
+          configSchema: {
+            tier: {
+              type: 'select',
+              label: 'Search tier',
+              default: 'basic',
+              options: [
+                { label: 'Free', value: 'free', pricePerHour: 0 },
+                { label: 'Basic', value: 'basic', pricePerHour: 0.101 },
+                { label: 'Standard S1', value: 'standard-s1', pricePerHour: 0.339 },
+                { label: 'Standard S2', value: 'standard-s2', pricePerHour: 1.356 }
+              ]
+            }
+          }
+        },
+        {
+          id: 'azure-devops',
+          name: 'Azure DevOps',
+          description: 'Developer collaboration and CI/CD pipelines',
+          configSchema: {
+            users: {
+              type: 'number',
+              label: 'Basic plan users',
+              default: 5,
+              min: 1,
+              max: 10000
+            },
+            parallelJobs: {
+              type: 'number',
+              label: 'Paid parallel CI/CD jobs',
+              default: 1,
+              min: 0,
+              max: 100
+            }
+            // First 5 users free, $6/user/month; $40/parallel job/month
+          }
+        }
+      ]
     }
   ]
 }

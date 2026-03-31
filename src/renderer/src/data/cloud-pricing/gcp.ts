@@ -788,6 +788,122 @@ export const GCP_CATALOG: ProviderCatalog = {
           }
         }
       ]
+    },
+    {
+      id: 'observability',
+      name: 'Observability',
+      services: [
+        {
+          id: 'cloud-monitoring',
+          name: 'Cloud Monitoring',
+          description: 'Infrastructure and application monitoring',
+          configSchema: {
+            metricsVolumeMib: {
+              type: 'number',
+              label: 'Metrics volume (MiB/mo)',
+              default: 150,
+              min: 0,
+              max: 100000
+            }
+            // First 150 MiB free, $0.2580/MiB after
+          }
+        },
+        {
+          id: 'cloud-logging',
+          name: 'Cloud Logging',
+          description: 'Real-time log management and analysis',
+          configSchema: {
+            ingestionGb: {
+              type: 'number',
+              label: 'Log ingestion (GB/mo)',
+              default: 50,
+              min: 0,
+              max: 100000
+            }
+            // First 50 GB free, $0.50/GB after
+          }
+        },
+        {
+          id: 'cloud-trace',
+          name: 'Cloud Trace',
+          description: 'Distributed tracing for applications',
+          configSchema: {
+            spansMillions: {
+              type: 'number',
+              label: 'Trace spans (millions/mo)',
+              default: 1,
+              min: 0,
+              max: 10000
+            }
+            // First 2.5M spans free, $0.20/million after
+          }
+        }
+      ]
+    },
+    {
+      id: 'data-services',
+      name: 'Data Services',
+      services: [
+        {
+          id: 'memorystore',
+          name: 'Memorystore for Redis',
+          description: 'Fully managed in-memory data store for Redis',
+          configSchema: {
+            tier: {
+              type: 'select',
+              label: 'Tier',
+              default: 'standard',
+              options: [
+                { label: 'Basic (1 GB)', value: 'basic-1gb', pricePerHour: 0.049 },
+                { label: 'Standard (1 GB)', value: 'standard-1gb', pricePerHour: 0.068 },
+                { label: 'Standard (5 GB)', value: 'standard-5gb', pricePerHour: 0.340 },
+                { label: 'Standard (10 GB)', value: 'standard-10gb', pricePerHour: 0.680 }
+              ]
+            }
+          }
+        },
+        {
+          id: 'cloud-composer',
+          name: 'Cloud Composer',
+          description: 'Managed Apache Airflow for workflow orchestration',
+          configSchema: {
+            environmentSize: {
+              type: 'select',
+              label: 'Environment size',
+              default: 'small',
+              options: [
+                { label: 'Small', value: 'small', pricePerHour: 0.35 },
+                { label: 'Medium', value: 'medium', pricePerHour: 0.67 },
+                { label: 'Large', value: 'large', pricePerHour: 1.35 }
+              ]
+            }
+          }
+        },
+        {
+          id: 'dataproc',
+          name: 'Dataproc',
+          description: 'Managed Spark and Hadoop service',
+          configSchema: {
+            workerType: {
+              type: 'select',
+              label: 'Worker machine type',
+              default: 'n2-standard-4',
+              options: [
+                { label: 'n2-standard-2 (8 GB)', value: 'n2-standard-2', pricePerHour: 0.0970 },
+                { label: 'n2-standard-4 (16 GB)', value: 'n2-standard-4', pricePerHour: 0.1940 },
+                { label: 'n2-standard-8 (32 GB)', value: 'n2-standard-8', pricePerHour: 0.3880 }
+              ]
+            },
+            workers: {
+              type: 'number',
+              label: 'Worker nodes',
+              default: 2,
+              min: 0,
+              max: 1000
+            }
+          }
+        }
+      ]
     }
   ]
 }
