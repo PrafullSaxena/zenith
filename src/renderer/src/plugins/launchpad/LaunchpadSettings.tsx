@@ -180,7 +180,7 @@ function getProviderStatus(
 // ── Component ──────────────────────────────────────────────────────────
 
 export default function LaunchpadSettings(): React.JSX.Element {
-  const { getSetting, setSetting, loadSettings } = useSettingsStore()
+  const { getSetting, setSetting } = useSettingsStore()
 
   // Local state
   const [credentialStatus, setCredentialStatus] = useState<CredentialStatus>({})
@@ -214,9 +214,11 @@ export default function LaunchpadSettings(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
-    loadSettings()
+    // Do NOT call loadSettings() here — the parent PluginSettings already loaded settings.
+    // Calling it again sets isLoading=true on the shared store, which causes PluginSettings
+    // to unmount this component (showing "Loading..."), creating an infinite mount/unmount loop.
     refreshStatus()
-  }, [loadSettings, refreshStatus])
+  }, [refreshStatus])
 
   // ── Handlers ───────────────────────────────────────────────────────
 

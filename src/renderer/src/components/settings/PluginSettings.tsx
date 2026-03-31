@@ -16,15 +16,15 @@ interface PluginSettingsProps {
  * Reads/writes 'plugins.{pluginId}.{field.key}' via the settings store.
  */
 export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Element {
-  const { isLoading, loadSettings, getSetting, setSetting } = useSettingsStore()
+  const { loadSettings, getSetting, setSetting } = useSettingsStore()
   const { providers, loadProviders } = useAgentStore()
   // Derive configured providers from reactive providers array for proper re-renders
   const configuredProviders = providers.filter((p) => p.status === 'connected' || p.hasApiKey)
   const [errors, setErrors] = useState<Record<string, string | null>>({})
+  const [initialLoaded, setInitialLoaded] = useState(false)
 
   useEffect(() => {
-    loadSettings()
-    loadProviders()
+    Promise.all([loadSettings(), loadProviders()]).finally(() => setInitialLoaded(true))
   }, [loadSettings, loadProviders])
 
   const plugin = getPluginById(pluginId)
@@ -52,7 +52,7 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
     )
   }
 
-  if (isLoading) {
+  if (!initialLoaded) {
     return (
       <div className="flex items-center justify-center py-12">
         <span className="text-sm text-muted-foreground">Loading settings...</span>

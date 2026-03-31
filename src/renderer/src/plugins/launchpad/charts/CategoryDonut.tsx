@@ -3,7 +3,7 @@
  *
  * Aggregates service items by categoryId and renders as a donut.
  * Cross-highlight: cells not matching highlightCategory render at 30% opacity.
- * Center label shows total cost.
+ * Center label shows total cost overlaid via absolute-positioned div.
  */
 import React from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
@@ -29,10 +29,12 @@ interface CategoryTotal {
   name: string
   value: number
   fill: string
+  totalMonthly: number
 }
 
 function aggregateByCategory(
-  items: CategoryDonutProps['items']
+  items: CategoryDonutProps['items'],
+  totalMonthly: number
 ): CategoryTotal[] {
   const map = new Map<string, number>()
   for (const item of items) {
@@ -46,29 +48,24 @@ function aggregateByCategory(
     name: getCategoryDisplayName(categoryId),
     value,
     fill: getCategoryColor(categoryId, index),
+    totalMonthly,
   }))
 }
 
 // ── Custom tooltip ───────────────────────────────────────────────────────────
-
-interface TooltipPayload {
-  name: string
-  value: number
-  payload?: CategoryTotal & { totalMonthly?: number }
-}
 
 function CustomTooltipContent({
   active,
   payload,
 }: {
   active?: boolean
-  payload?: TooltipPayload[]
+  payload?: Array<{ name: string; value: number; payload?: CategoryTotal }>
 }) {
   if (!active || !payload?.length) return null
 
   const entry = payload[0]
   const value = entry.value ?? 0
-  const total = (entry.payload as CategoryTotal & { totalMonthly?: number })?.totalMonthly ?? 0
+  const total = entry.payload?.totalMonthly ?? 0
   const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0'
 
   return (
@@ -83,44 +80,6 @@ function CustomTooltipContent({
   )
 }
 
-// ── Center label ─────────────────────────────────────────────────────────────
-
-interface CenterLabelProps {
-  cx?: number
-  cy?: number
-  totalMonthly: number
-}
-
-function CenterLabel({ cx = 0, cy = 0, totalMonthly }: CenterLabelProps) {
-  const formatted =
-    totalMonthly >= 1000
-      ? `$${Math.round(totalMonthly / 1000)}k`
-      : `$${Math.round(totalMonthly)}`
-
-  return (
-    <g>
-      <text
-        x={cx}
-        y={cy - 6}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        style={{ fill: 'rgba(255,255,255,0.9)', fontSize: 16, fontWeight: 700 }}
-      >
-        {formatted}
-      </text>
-      <text
-        x={cx}
-        y={cy + 12}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        style={{ fill: 'rgba(255,255,255,0.4)', fontSize: 9 }}
-      >
-        / month
-      </text>
-    </g>
-  )
-}
-
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function CategoryDonut({
@@ -128,47 +87,60 @@ export default function CategoryDonut({
   highlightCategory,
   onCategoryHover,
 }: CategoryDonutProps) {
-  const categories = aggregateByCategory(items)
-  const totalMonthly = categories.reduce((sum, c) => sum + c.value, 0)
-
-  // Attach totalMonthly to each entry for tooltip percentage calculation
-  const enrichedCategories = categories.map((c) => ({ ...c, totalMonthly }))
+  const totalMonthly = items.reduce((sum, i) => (i.monthly > 0 ? sum + i.monthly : sum), 0)
+  const categories = aggregateByCategory(items, totalMonthly)
 
   if (categories.length === 0) return null
 
+  const formatted =
+    totalMonthly >= 1000
+      ? `$${Math.round(totalMonthly / 1000)}k`
+      : `$${Math.round(totalMonthly)}`
+
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <PieChart>
-        <Pie
-          data={enrichedCategories}
-          cx="50%"
-          cy="50%"
-          innerRadius="55%"
-          outerRadius="85%"
-          dataKey="value"
-          isAnimationActive={false}
-          onMouseLeave={() => onCategoryHover(null)}
-        >
-          {enrichedCategories.map((entry, index) => {
-            const isHighlighted =
-              highlightCategory === null || entry.categoryId === highlightCategory
-            return (
-              <Cell
-                key={`cell-${entry.categoryId}-${index}`}
-                fill={entry.fill}
-                opacity={isHighlighted ? 1 : 0.15}
-                stroke="rgba(0,0,0,0.3)"
-                strokeWidth={1}
-                onMouseEnter={() => onCategoryHover(entry.categoryId)}
-                onMouseLeave={() => onCategoryHover(null)}
-                style={{ cursor: 'default', outline: 'none' }}
-              />
-            )
-          })}
-        </Pie>
-        <Tooltip content={<CustomTooltipContent />} />
-        <CenterLabel cx={undefined} cy={undefined} totalMonthly={totalMonthly} />
-      </PieChart>
-    </ResponsiveContainer>
+    <div className="relative" style={{ height: 350 }}>
+      {/* Center label — absolutely positioned over the donut hole */}
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+        style={{ zIndex: 1 }}
+      >
+        <span className="text-base font-bold text-white leading-none">{formatted}</span>
+        <span className="text-[9px] text-white/40 mt-1">/ month</span>
+      </div>
+
+      <ResponsiveContainer width="100%" height={350}>
+        <PieChart>
+          <Pie
+            data={categories}
+            cx="50%"
+            cy="50%"
+            innerRadius="55%"
+            outerRadius="85%"
+            dataKey="value"
+            isAnimationActive={false}
+            labelLine={false}
+            onMouseLeave={() => onCategoryHover(null)}
+          >
+            {categories.map((entry, index) => {
+              const isHighlighted =
+                highlightCategory === null || entry.categoryId === highlightCategory
+              return (
+                <Cell
+                  key={`cell-${entry.categoryId}-${index}`}
+                  fill={entry.fill}
+                  opacity={isHighlighted ? 1 : 0.15}
+                  stroke="rgba(0,0,0,0.3)"
+                  strokeWidth={1}
+                  onMouseEnter={() => onCategoryHover(entry.categoryId)}
+                  onMouseLeave={() => onCategoryHover(null)}
+                  style={{ cursor: 'default', outline: 'none' }}
+                />
+              )
+            })}
+          </Pie>
+          <Tooltip content={<CustomTooltipContent />} />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
