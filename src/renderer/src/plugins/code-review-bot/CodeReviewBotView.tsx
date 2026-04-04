@@ -67,6 +67,10 @@ export default function CodeReviewBotView(): React.JSX.Element {
   const updateComment = useReviewStore((s) => s.updateComment)
   const loadPersistedSessions = useReviewStore((s) => s.loadPersistedSessions)
   const restoreSessionFromHistory = useReviewStore((s) => s.restoreSessionFromHistory)
+  const userComments = useReviewStore((s) => s.userComments)
+  const addUserComment = useReviewStore((s) => s.addUserComment)
+  const deleteUserComment = useReviewStore((s) => s.deleteUserComment)
+  const loadUserComments = useReviewStore((s) => s.loadUserComments)
 
   // Settings store for workspace/repo config
   // Subscribe to settings object so component re-renders when settings load asynchronously
@@ -214,9 +218,10 @@ export default function CodeReviewBotView(): React.JSX.Element {
       setActiveTab('diff')
       if (workspace && repoSlug) {
         loadDiff(workspace, repoSlug, pr.id)
+        loadUserComments(workspace, repoSlug, pr.id)
       }
     },
-    [selectPR, loadDiff, workspace, repoSlug]
+    [selectPR, loadDiff, loadUserComments, workspace, repoSlug]
   )
 
   const handleStartReview = useCallback(() => {
@@ -265,6 +270,22 @@ export default function CodeReviewBotView(): React.JSX.Element {
       postComment(workspace, repoSlug, selectedPR.id, comment)
     },
     [postComment, selectedPR, workspace, repoSlug]
+  )
+
+  const handleAddUserComment = useCallback(
+    async (file: string, line: number, body: string) => {
+      if (!selectedPR || !workspace || !repoSlug) return
+      await addUserComment(workspace, repoSlug, selectedPR.id, { file, line, body })
+    },
+    [addUserComment, selectedPR, workspace, repoSlug]
+  )
+
+  const handleDeleteUserComment = useCallback(
+    async (commentId: string) => {
+      if (!selectedPR || !workspace || !repoSlug) return
+      await deleteUserComment(workspace, repoSlug, selectedPR.id, commentId)
+    },
+    [deleteUserComment, selectedPR, workspace, repoSlug]
   )
 
   // Show a status indicator on the Review tab when a session exists
@@ -397,6 +418,9 @@ export default function CodeReviewBotView(): React.JSX.Element {
                   <PRDiffView
                     diffFiles={diffFiles}
                     reviewComments={currentSession?.comments ?? []}
+                    userComments={userComments}
+                    onAddUserComment={handleAddUserComment}
+                    onDeleteUserComment={handleDeleteUserComment}
                     onCommentClick={handleCommentClick}
                   />
                 )}
