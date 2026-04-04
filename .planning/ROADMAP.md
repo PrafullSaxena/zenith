@@ -242,10 +242,27 @@ Plans:
 - [ ] 12-01-PLAN.md -- Launchpad settings panel: IPC for credential status/deletion, sync preferences, credentials UI, provider status cards
 - [ ] 12-02-PLAN.md -- Sync status badge in Launchpad header with per-provider popover and Settings navigation link
 
+### Phase 13: CodeReviewBot User Comments
+**Goal**: Users can annotate any diff line with their own comments without waiting for AI review; user comments are persisted locally, visually distinct from AI comments, included in AI review context when code review runs, and new comments can be added after AI review completes
+**Depends on**: Phase 12
+**Requirements**: UCM-01, UCM-02, UCM-03, UCM-04, UCM-05, UCM-06
+**Success Criteria** (what must be TRUE):
+  1. Clicking any diff line opens an inline comment composer — user can type and save a comment without triggering AI review
+  2. User comments survive app restart (persisted in local DB or store)
+  3. User comments appear inline on the diff with a distinct visual style (different badge color/label from AI comments)
+  4. When AI code review runs on a PR that already has user comments, those comments are included in the AI prompt as context
+  5. After AI code review completes, users can still add new comments to any diff line
+  6. User comments and AI comments coexist on the same diff line without layout breakage
+**Plans**: 2 plans
+
+Plans:
+- [ ] 13-01-PLAN.md -- UserComment type + review-store user comment slice with persistence and AI prompt injection
+- [ ] 13-02-PLAN.md -- PRDiffView inline composer + user comment cards + CodeReviewBotView wiring
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -261,6 +278,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 10. Service Catalog | 3/3 | Complete    | 2026-03-30 |
 | 11. Visualizations | 2/2 | Complete    | 2026-03-30 |
 | 12. Settings & Polish | 2/2 | Complete    | 2026-03-30 |
+| 13. CodeReviewBot User Comments | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-03-27*
