@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 13 — Code Review Bot User Comments
-Plan: 13-01 complete — UserComment type and review-store user comment slice
-Status: Phase 13 in progress — plan 01/02 executed
-Last activity: 2026-04-04 — 13-01 user-comment-type-and-store complete
+Plan: 13-02 complete — Inline composer and user comment cards in PRDiffView
+Status: Phase 13 complete — all 02/02 plans executed
+Last activity: 2026-04-04 — 13-02 inline-composer-and-user-comment-cards complete
 
 Progress: [██░░░░░░░░] 9% (v2.0 milestone)
 
@@ -79,6 +79,9 @@ Key decisions for v2.0:
 - [Phase 13-codereviewbot-user-comments]: UserCommentMap keyed {file}:{line} — same convention as ReviewComment for consistent line addressing
 - [Phase 13-codereviewbot-user-comments]: User annotations injected as PRIOR USER ANNOTATIONS in effectiveGuidelines — AI treats them as known context, not new findings
 - [Phase 13-codereviewbot-user-comments]: Settings key pattern userComments:{workspace}/{repoSlug}/{prId} scopes comments per PR, consistent with existing reviewSessions pattern
+- [Phase 13-02-codereviewbot-user-comments]: activeComposerKey toggles on second click — same key closes the composer (toggle semantics)
+- [Phase 13-02-codereviewbot-user-comments]: New (right) line number td handles click — anchors annotation to new-file line number convention matching ReviewComment.line
+- [Phase 13-02-codereviewbot-user-comments]: User comment and AI comment rows are sibling tr elements in tbody — no nesting to avoid table layout breakage
 
 ### Pending Todos
 
@@ -91,5 +94,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-04
-Stopped at: Completed 13-codereviewbot-user-comments/13-01-PLAN.md
-Resume file: 13-02-PLAN.md
+Stopped at: Completed 13-codereviewbot-user-comments/13-02-PLAN.md
+Resume file: next phase
