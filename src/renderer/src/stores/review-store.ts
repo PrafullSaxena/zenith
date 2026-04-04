@@ -7,7 +7,9 @@ import type {
   ReviewHistoryEntry,
   ReviewSeverity,
   ReviewConfidence,
-  ReviewKind
+  ReviewKind,
+  UserComment,
+  UserCommentMap
 } from '../types/review'
 import {
   SEVERITY_FROM_CODE,
@@ -51,6 +53,9 @@ interface ReviewStoreState {
   // PR file counts (prId → number of files changed)
   prFileCounts: Record<number, number>
 
+  // User comments — persisted per PR via settings
+  userComments: UserCommentMap   // keyed "{file}:{line}" → UserComment[]
+
   // Actions
   connect: () => Promise<void>
   disconnect: () => Promise<void>
@@ -80,6 +85,10 @@ interface ReviewStoreState {
   ) => Promise<void>
   loadPersistedSessions: (workspace: string, repoSlug: string) => Promise<void>
   restoreSessionFromHistory: (entry: ReviewHistoryEntry) => Promise<void>
+  addUserComment: (workspace: string, repoSlug: string, prId: number, comment: Omit<UserComment, 'id' | 'createdAt'>) => Promise<void>
+  deleteUserComment: (workspace: string, repoSlug: string, prId: number, commentId: string) => Promise<void>
+  loadUserComments: (workspace: string, repoSlug: string, prId: number) => Promise<void>
+  getUserCommentsForLine: (file: string, line: number) => UserComment[]
 }
 
 /** Settings key for persisted review history. */
@@ -450,6 +459,11 @@ function toDiffFiles(parsed: ReturnType<typeof parseDiff>): DiffFile[] {
   }))
 }
 
+/** Build the settings key for user comments for a specific PR. */
+function userCommentsKey(workspace: string, repoSlug: string, prId: number): string {
+  return `userComments:${workspace}/${repoSlug}/${prId}`
+}
+
 // ---------------------------------------------------------------------------
 // Zustand store
 // ---------------------------------------------------------------------------
@@ -474,6 +488,7 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
   history: [],
   isLoadingHistory: false,
   prFileCounts: {},
+  userComments: {},
 
   connect: async () => {
     set({ isConnecting: true, connectionError: null })
@@ -597,6 +612,16 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
       throw new Error('No diff loaded. Load a PR diff first.')
     }
 
+    // Inject existing user annotations into the guidelines so the AI treats them as known context
+    const existingAnnotations = Object.entries(get().userComments)
+      .flatMap(([_key, comments]) => comments)
+      .map((uc) => `${uc.file}:${uc.line} — ${uc.body}`)
+      .join('\n')
+
+    const effectiveGuidelines = existingAnnotations.length > 0
+      ? `${guidelines ?? ''}\n\nPRIOR USER ANNOTATIONS (already noted by the developer — treat as known context, do not repeat as findings):\n${existingAnnotations}`.trim()
+      : guidelines
+
     const prId = get().selectedPR?.id ?? 0
     const sessionId = `review-${Date.now()}`
     const session: ReviewSession = {
@@ -677,7 +702,7 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
     })
 
     // Start the review in the main process
-    await window.api.ai.startReview(providerId, modelName, rawDiff, sessionId, command, guidelines)
+    await window.api.ai.startReview(providerId, modelName, rawDiff, sessionId, command, effectiveGuidelines)
   },
 
   cancelReview: () => {
@@ -939,5 +964,50 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
     } catch (err) {
       console.error('[review-store] Failed to restore session from history:', err)
     }
+  },
+
+  getUserCommentsForLine: (file: string, line: number) => {
+    return get().userComments[`${file}:${line}`] ?? []
+  },
+
+  loadUserComments: async (workspace: string, repoSlug: string, prId: number) => {
+    try {
+      const raw = await window.api.settings.get(userCommentsKey(workspace, repoSlug, prId))
+      const loaded = raw as UserCommentMap | null
+      set({ userComments: loaded ?? {} })
+    } catch (err) {
+      console.error('[review-store] Failed to load user comments:', err)
+      set({ userComments: {} })
+    }
+  },
+
+  addUserComment: async (workspace: string, repoSlug: string, prId: number, comment: Omit<UserComment, 'id' | 'createdAt'>) => {
+    const id = `uc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const newComment: UserComment = {
+      ...comment,
+      id,
+      createdAt: new Date().toISOString()
+    }
+    const key = `${comment.file}:${comment.line}`
+    const current = get().userComments
+    const updated: UserCommentMap = {
+      ...current,
+      [key]: [...(current[key] ?? []), newComment]
+    }
+    set({ userComments: updated })
+    await window.api.settings.set(userCommentsKey(workspace, repoSlug, prId), updated)
+  },
+
+  deleteUserComment: async (workspace: string, repoSlug: string, prId: number, commentId: string) => {
+    const current = get().userComments
+    const updated: UserCommentMap = {}
+    for (const [k, comments] of Object.entries(current)) {
+      const filtered = comments.filter((c) => c.id !== commentId)
+      if (filtered.length > 0) {
+        updated[k] = filtered
+      }
+    }
+    set({ userComments: updated })
+    await window.api.settings.set(userCommentsKey(workspace, repoSlug, prId), updated)
   }
 }))
