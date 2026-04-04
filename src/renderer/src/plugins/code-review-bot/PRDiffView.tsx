@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, Copy, Check } from 'lucide-react'
+import { ChevronDown, ChevronRight, Copy, Check, MessageSquarePlus } from 'lucide-react'
 import type { DiffFile, DiffChange } from '../../types/bitbucket'
-import type { ReviewComment } from '../../types/review'
+import type { ReviewComment, UserComment, UserCommentMap } from '../../types/review'
 import { SEVERITY_CONFIG, KIND_CONFIG } from '../../types/review'
 import { highlightCode } from '../../lib/highlight'
 
@@ -33,6 +33,9 @@ function getPathSegments(filePath: string): { dirs: string[]; file: string } {
 interface PRDiffViewProps {
   diffFiles: DiffFile[]
   reviewComments: ReviewComment[]
+  userComments?: UserCommentMap
+  onAddUserComment?: (file: string, line: number, body: string) => void
+  onDeleteUserComment?: (commentId: string) => void
   onCommentClick?: (comment: ReviewComment) => void
 }
 
@@ -40,14 +43,20 @@ interface PRDiffViewProps {
  * GitHub-style unified diff viewer.
  * Renders file-by-file diffs with dual line numbers (old/new),
  * syntax-colored additions/deletions, and inline AI review comment cards.
+ * Also supports user-authored inline annotations with an amber "You" badge.
  */
 export function PRDiffView({
   diffFiles,
   reviewComments,
+  userComments,
+  onAddUserComment,
+  onDeleteUserComment,
   onCommentClick
 }: PRDiffViewProps): React.JSX.Element {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [viewed, setViewed] = useState<Record<string, boolean>>({})
+  const [activeComposerKey, setActiveComposerKey] = useState<string | null>(null)
+  const [composerText, setComposerText] = useState('')
 
   if (!diffFiles || diffFiles.length === 0) {
     return (
@@ -68,6 +77,12 @@ export function PRDiffView({
   /** Find review comments for a specific file and line number. */
   const getCommentsForLine = (file: string, line: number): ReviewComment[] => {
     return reviewComments.filter((c) => c.file === file && c.line === line)
+  }
+
+  /** Find user comments for a specific file and line number. */
+  const getUserCommentsForLine = (file: string, line: number): UserComment[] => {
+    if (!userComments) return []
+    return userComments[`${file}:${line}`] ?? []
   }
 
   /** Get old and new line numbers for a change. */
@@ -208,18 +223,26 @@ export function PRDiffView({
 
                           return (
                             <>
-                              <tr key={`line-${chunkIdx}-${changeIdx}`} className={`${rowBg} hover:brightness-125 transition-[filter] duration-75`}>
+                              <tr key={`line-${chunkIdx}-${changeIdx}`} className={`group ${rowBg} hover:brightness-125 transition-[filter] duration-75`}>
                                 {/* Old line number */}
                                 <td
                                   className={`w-[1px] whitespace-nowrap select-none text-right px-2 ${gutterBg} ${lineNumColor} border-r border-white/[0.04]`}
                                 >
                                   {oldLn ?? ''}
                                 </td>
-                                {/* New line number */}
+                                {/* New line number — clickable to open inline composer */}
                                 <td
-                                  className={`w-[1px] whitespace-nowrap select-none text-right px-2 ${gutterBg} ${lineNumColor} border-r border-white/[0.04]`}
+                                  className={`w-[1px] whitespace-nowrap select-none text-right px-2 ${gutterBg} ${lineNumColor} border-r border-white/[0.04] cursor-pointer hover:text-amber-400 transition-colors`}
+                                  onClick={() => {
+                                    const key = `${filePath}:${activeLn}`
+                                    setActiveComposerKey((prev) => prev === key ? null : key)
+                                    setComposerText('')
+                                  }}
                                 >
                                   {newLn ?? ''}
+                                  <span className="ml-1 opacity-0 group-hover:opacity-60 inline-block">
+                                    <MessageSquarePlus size={9} />
+                                  </span>
                                 </td>
                                 {/* +/- prefix */}
                                 <td
@@ -305,6 +328,84 @@ export function PRDiffView({
                                   </tr>
                                 )
                               })}
+
+                              {/* Inline user comment cards */}
+                              {activeLn != null && getUserCommentsForLine(filePath, activeLn).map((uc) => (
+                                <tr key={`uc-${uc.id}`}>
+                                  <td colSpan={4} className="p-0">
+                                    <div className="mx-3 my-1 rounded-lg border border-amber-500/20 border-l-[3px] border-l-amber-400 bg-amber-500/5 px-3 py-2 flex items-start gap-2">
+                                      <span className="shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/25 mt-0.5">
+                                        You
+                                      </span>
+                                      <p className="flex-1 text-[12px] text-foreground/80 leading-relaxed whitespace-pre-wrap">{uc.body}</p>
+                                      {onDeleteUserComment && (
+                                        <button
+                                          type="button"
+                                          onClick={() => onDeleteUserComment(uc.id)}
+                                          className="shrink-0 text-[10px] text-muted-foreground/40 hover:text-red-400 transition-colors mt-0.5"
+                                          title="Delete comment"
+                                        >
+                                          ✕
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+
+                              {/* Inline composer */}
+                              {activeComposerKey === `${filePath}:${activeLn}` && (
+                                <tr key={`composer-${chunkIdx}-${changeIdx}`}>
+                                  <td colSpan={4} className="p-0">
+                                    <div className="mx-3 my-1.5 rounded-lg border border-amber-500/25 bg-amber-500/5 p-3">
+                                      <div className="mb-1.5 text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
+                                        Add your note
+                                      </div>
+                                      <textarea
+                                        autoFocus
+                                        value={composerText}
+                                        onChange={(e) => setComposerText(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Escape') { setActiveComposerKey(null); setComposerText('') }
+                                          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                            if (composerText.trim() && onAddUserComment && activeLn != null) {
+                                              onAddUserComment(filePath, activeLn, composerText.trim())
+                                              setActiveComposerKey(null)
+                                              setComposerText('')
+                                            }
+                                          }
+                                        }}
+                                        placeholder="Type a note about this line… (Cmd+Enter to save, Esc to cancel)"
+                                        rows={2}
+                                        className="w-full resize-none rounded-md border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[12px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-amber-500/50 transition-colors"
+                                      />
+                                      <div className="mt-1.5 flex items-center gap-2">
+                                        <button
+                                          type="button"
+                                          disabled={!composerText.trim()}
+                                          onClick={() => {
+                                            if (composerText.trim() && onAddUserComment && activeLn != null) {
+                                              onAddUserComment(filePath, activeLn, composerText.trim())
+                                              setActiveComposerKey(null)
+                                              setComposerText('')
+                                            }
+                                          }}
+                                          className="text-[11px] font-medium px-3 py-1 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/25 hover:bg-amber-500/25 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                          Save
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => { setActiveComposerKey(null); setComposerText('') }}
+                                          className="text-[11px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
                             </>
                           )
                         })}
