@@ -193,6 +193,9 @@ export function PRDiffView({
                         {chunk.changes.map((change, changeIdx) => {
                           const { oldLn, newLn } = getLineNumbers(change)
                           const activeLn = change.type === 'add' ? newLn : change.type === 'del' ? oldLn : newLn
+                          // User comments always anchor to the new-file line number.
+                          // del lines have no new line number — never show a composer for them.
+                          const userCommentLn = change.type === 'del' ? null : newLn
                           const lineComments =
                             activeLn != null
                               ? getCommentsForLine(filePath, activeLn)
@@ -230,19 +233,22 @@ export function PRDiffView({
                                 >
                                   {oldLn ?? ''}
                                 </td>
-                                {/* New line number — clickable to open inline composer */}
+                                {/* New line number — clickable to open inline composer (add/normal only) */}
                                 <td
-                                  className={`w-[1px] whitespace-nowrap select-none text-right px-2 ${gutterBg} ${lineNumColor} border-r border-white/[0.04] cursor-pointer hover:text-amber-400 transition-colors`}
+                                  className={`w-[1px] whitespace-nowrap select-none text-right px-2 ${gutterBg} ${lineNumColor} border-r border-white/[0.04] ${userCommentLn != null ? 'cursor-pointer hover:text-amber-400' : ''} transition-colors`}
                                   onClick={() => {
-                                    const key = `${filePath}:${activeLn}`
+                                    if (userCommentLn == null) return
+                                    const key = `${filePath}:${userCommentLn}`
                                     setActiveComposerKey((prev) => prev === key ? null : key)
                                     setComposerText('')
                                   }}
                                 >
                                   {newLn ?? ''}
-                                  <span className="ml-1 opacity-0 group-hover:opacity-60 inline-block">
-                                    <MessageSquarePlus size={9} />
-                                  </span>
+                                  {userCommentLn != null && (
+                                    <span className="ml-1 opacity-0 group-hover:opacity-60 inline-block">
+                                      <MessageSquarePlus size={9} />
+                                    </span>
+                                  )}
                                 </td>
                                 {/* +/- prefix */}
                                 <td
@@ -330,7 +336,7 @@ export function PRDiffView({
                               })}
 
                               {/* Inline user comment cards */}
-                              {activeLn != null && getUserCommentsForLine(filePath, activeLn).map((uc) => (
+                              {userCommentLn != null && getUserCommentsForLine(filePath, userCommentLn).map((uc) => (
                                 <tr key={`uc-${uc.id}`}>
                                   <td colSpan={4} className="p-0">
                                     <div className="mx-3 my-1 rounded-lg border border-amber-500/20 border-l-[3px] border-l-amber-400 bg-amber-500/5 px-3 py-2 flex items-start gap-2">
@@ -354,7 +360,7 @@ export function PRDiffView({
                               ))}
 
                               {/* Inline composer */}
-                              {activeComposerKey === `${filePath}:${activeLn}` && (
+                              {userCommentLn != null && activeComposerKey === `${filePath}:${userCommentLn}` && (
                                 <tr key={`composer-${chunkIdx}-${changeIdx}`}>
                                   <td colSpan={4} className="p-0">
                                     <div className="mx-3 my-1.5 rounded-lg border border-amber-500/25 bg-amber-500/5 p-3">
@@ -368,8 +374,8 @@ export function PRDiffView({
                                         onKeyDown={(e) => {
                                           if (e.key === 'Escape') { setActiveComposerKey(null); setComposerText('') }
                                           if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                                            if (composerText.trim() && onAddUserComment && activeLn != null) {
-                                              onAddUserComment(filePath, activeLn, composerText.trim())
+                                            if (composerText.trim() && onAddUserComment && userCommentLn != null) {
+                                              onAddUserComment(filePath, userCommentLn, composerText.trim())
                                               setActiveComposerKey(null)
                                               setComposerText('')
                                             }
@@ -384,8 +390,8 @@ export function PRDiffView({
                                           type="button"
                                           disabled={!composerText.trim()}
                                           onClick={() => {
-                                            if (composerText.trim() && onAddUserComment && activeLn != null) {
-                                              onAddUserComment(filePath, activeLn, composerText.trim())
+                                            if (composerText.trim() && onAddUserComment && userCommentLn != null) {
+                                              onAddUserComment(filePath, userCommentLn, composerText.trim())
                                               setActiveComposerKey(null)
                                               setComposerText('')
                                             }
