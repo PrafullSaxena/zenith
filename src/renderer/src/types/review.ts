@@ -54,6 +54,18 @@ export interface ReviewHistoryEntry {
   status: 'success' | 'partial' | 'error'
 }
 
+/** A user-authored annotation on a diff line. */
+export interface UserComment {
+  id: string            // nanoid or `uc-${Date.now()}-${Math.random().toString(36).slice(2,7)}`
+  file: string          // same file path convention as ReviewComment
+  line: number          // new-file line number (same convention as ReviewComment)
+  body: string          // user's text
+  createdAt: string     // ISO date string
+}
+
+/** Map of user comments keyed by `{file}:{line}` for O(1) lookup per line. */
+export type UserCommentMap = Record<string, UserComment[]>
+
 // Re-export PullRequest for convenience
 export type { PullRequest }
 
