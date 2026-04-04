@@ -87,6 +87,7 @@ interface ReviewStoreState {
   restoreSessionFromHistory: (entry: ReviewHistoryEntry) => Promise<void>
   addUserComment: (workspace: string, repoSlug: string, prId: number, comment: Omit<UserComment, 'id' | 'createdAt'>) => Promise<void>
   deleteUserComment: (workspace: string, repoSlug: string, prId: number, commentId: string) => Promise<void>
+  updateUserComment: (workspace: string, repoSlug: string, prId: number, commentId: string, newBody: string) => Promise<void>
   loadUserComments: (workspace: string, repoSlug: string, prId: number) => Promise<void>
   getUserCommentsForLine: (file: string, line: number) => UserComment[]
 }
@@ -1006,6 +1007,16 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
       if (filtered.length > 0) {
         updated[k] = filtered
       }
+    }
+    set({ userComments: updated })
+    await window.api.settings.set(userCommentsKey(workspace, repoSlug, prId), updated)
+  },
+
+  updateUserComment: async (workspace: string, repoSlug: string, prId: number, commentId: string, newBody: string) => {
+    const current = get().userComments
+    const updated: UserCommentMap = {}
+    for (const [k, comments] of Object.entries(current)) {
+      updated[k] = comments.map((c) => c.id === commentId ? { ...c, body: newBody } : c)
     }
     set({ userComments: updated })
     await window.api.settings.set(userCommentsKey(workspace, repoSlug, prId), updated)

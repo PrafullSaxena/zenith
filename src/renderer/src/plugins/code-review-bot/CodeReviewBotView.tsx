@@ -70,6 +70,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
   const userComments = useReviewStore((s) => s.userComments)
   const addUserComment = useReviewStore((s) => s.addUserComment)
   const deleteUserComment = useReviewStore((s) => s.deleteUserComment)
+  const updateUserComment = useReviewStore((s) => s.updateUserComment)
   const loadUserComments = useReviewStore((s) => s.loadUserComments)
 
   // Settings store for workspace/repo config
@@ -288,6 +289,14 @@ export default function CodeReviewBotView(): React.JSX.Element {
     [deleteUserComment, selectedPR, workspace, repoSlug]
   )
 
+  const handleUpdateUserComment = useCallback(
+    async (commentId: string, newBody: string) => {
+      if (!selectedPR || !workspace || !repoSlug) return
+      await updateUserComment(workspace, repoSlug, selectedPR.id, commentId, newBody)
+    },
+    [updateUserComment, selectedPR, workspace, repoSlug]
+  )
+
   // Show a status indicator on the Review tab when a session exists
   const reviewTabLabel = currentSession
     ? currentSession.status === 'streaming'
@@ -421,6 +430,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
                     userComments={userComments}
                     onAddUserComment={handleAddUserComment}
                     onDeleteUserComment={handleDeleteUserComment}
+                    onUpdateUserComment={handleUpdateUserComment}
                     onCommentClick={handleCommentClick}
                   />
                 )}
