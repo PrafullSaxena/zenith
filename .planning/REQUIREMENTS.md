@@ -166,12 +166,27 @@
 | SET-04 | Phase 12 | Complete |
 | SET-05 | Phase 12 | Complete |
 | SET-06 | Phase 12 | Complete |
+| UCM-01 | Phase 13 | Pending |
+| UCM-02 | Phase 13 | Pending |
+| UCM-03 | Phase 13 | Pending |
+| UCM-04 | Phase 13 | Pending |
+| UCM-05 | Phase 13 | Pending |
+| UCM-06 | Phase 13 | Pending |
 
 **Coverage:**
-- v1 requirements: 46 total
-- Mapped to phases: 46
+- v1 requirements: 52 total
+- Mapped to phases: 52
 - Unmapped: 0 ✓
+
+### CodeReviewBot User Comments (Phase 13)
+
+- [ ] **UCM-01**: Clicking any diff line in PRDiffView opens an inline comment composer; user can type and save without triggering AI review
+- [ ] **UCM-02**: User comments are persisted locally (survive app restart); stored keyed by `{workspace}/{repoSlug}/{prId}/{file}/{line}`
+- [ ] **UCM-03**: User comments render inline on the diff with a distinct visual badge ("You" label, different accent color) separate from AI comment cards
+- [ ] **UCM-04**: When AI code review runs, existing user comments for the PR are injected into the AI prompt as prior annotations
+- [ ] **UCM-05**: After AI code review completes, the diff remains interactive — users can still add new comments to any line
+- [ ] **UCM-06**: User comments and AI review comments coexist on the same diff line without layout or z-index breakage
 
 ---
 *Requirements defined: 2026-03-30*
-*Last updated: 2026-03-30 after v2.0 milestone initialization*
+*Last updated: 2026-04-04 — Phase 13 UCM requirements added (CodeReviewBot User Comments)*
