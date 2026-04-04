@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 12 — Settings Polish
-Plan: 12-02 complete — SyncStatusBadge in Launchpad header with per-provider popover
-Status: Phase 12 complete — all plans executed (12-01, 12-02)
-Last activity: 2026-03-31 — 12-02 settings-polish complete
+Phase: 13 — Code Review Bot User Comments
+Plan: 13-01 complete — UserComment type and review-store user comment slice
+Status: Phase 13 in progress — plan 01/02 executed
+Last activity: 2026-04-04 — 13-01 user-comment-type-and-store complete
 
 Progress: [██░░░░░░░░] 9% (v2.0 milestone)
 
@@ -76,6 +76,9 @@ Key decisions for v2.0:
 - [Phase 12-settings-polish]: getCredentialMasked uses unicode bullets + last 4 chars — never sends full secret to renderer; provider staleness threshold = 2x sync frequency
 - [Phase 12-settings-polish]: formatRelativeTime extracted to shared utils.ts — single source of truth for SyncStatusBadge and LaunchpadSettings
 - [Phase 12-settings-polish]: SyncStatusBadge always rendered regardless of provider selection — sync health visible even before choosing a provider
+- [Phase 13-codereviewbot-user-comments]: UserCommentMap keyed {file}:{line} — same convention as ReviewComment for consistent line addressing
+- [Phase 13-codereviewbot-user-comments]: User annotations injected as PRIOR USER ANNOTATIONS in effectiveGuidelines — AI treats them as known context, not new findings
+- [Phase 13-codereviewbot-user-comments]: Settings key pattern userComments:{workspace}/{repoSlug}/{prId} scopes comments per PR, consistent with existing reviewSessions pattern
 
 ### Pending Todos
 
@@ -87,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31
-Stopped at: Completed 12-settings-polish/12-02-PLAN.md (phase complete)
-Resume file: Next phase
+Last session: 2026-04-04
+Stopped at: Completed 13-codereviewbot-user-comments/13-01-PLAN.md
+Resume file: 13-02-PLAN.md
