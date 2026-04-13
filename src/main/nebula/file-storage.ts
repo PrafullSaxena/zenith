@@ -19,7 +19,7 @@ interface NoteFileShape {
   id: string
   title: string
   content: object // Tiptap JSON document
-  drawing: object | null // tldraw snapshot
+  drawing: object | null // excalidraw snapshot ({ type: 'excalidraw', elements, appState, files })
   summary: string | null // AI-generated summary
   topics: string[] // AI-extracted topic keywords
   createdAt: string // ISO 8601 timestamp
@@ -92,9 +92,7 @@ export class NoteFileStorage {
   listNoteFiles(): string[] {
     try {
       const files = fs.readdirSync(this.notesDir)
-      return files
-        .filter((f) => f.endsWith('.json'))
-        .map((f) => path.basename(f, '.json'))
+      return files.filter((f) => f.endsWith('.json')).map((f) => path.basename(f, '.json'))
     } catch {
       // Directory doesn't exist or unreadable
       return []

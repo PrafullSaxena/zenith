@@ -37,7 +37,7 @@ let mainWindow: BrowserWindow | null = null
 function createWindow(): void {
   const winState = new WinState({
     defaultWidth: 1280,
-    defaultHeight: 800,
+    defaultHeight: 800
   })
 
   // App icon — used in dev mode & Linux; macOS production uses the .icns in build/
@@ -64,20 +64,20 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.cjs'),
       nodeIntegration: false, // MANDATORY — never enable
       contextIsolation: true, // MANDATORY — never disable
-      sandbox: true, // Additional renderer hardening
-    },
+      sandbox: true // Additional renderer hardening
+    }
   })
 
   // CSP header: strict in production, relaxed in dev for Vite HMR
   mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
     const csp = is.dev
-      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.tldraw.com; font-src 'self' data: https://cdn.tldraw.com; connect-src 'self' ws://localhost:* https://cdn.tldraw.com"
-      : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.tldraw.com; font-src 'self' data: https://cdn.tldraw.com; connect-src 'self' https://cdn.tldraw.com"
+      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ws://localhost:*"
+      : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'"
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [csp],
-      },
+        'Content-Security-Policy': [csp]
+      }
     })
   })
 
@@ -102,12 +102,10 @@ function createWindow(): void {
 function buildMenu(): void {
   const isMac = process.platform === 'darwin'
   const template = Menu.buildFromTemplate([
-    ...(isMac
-      ? [{ role: 'appMenu' as const }]
-      : []),
+    ...(isMac ? [{ role: 'appMenu' as const }] : []),
     { role: 'editMenu' as const },
     { role: 'viewMenu' as const },
-    { role: 'windowMenu' as const },
+    { role: 'windowMenu' as const }
   ])
   Menu.setApplicationMenu(template)
 }

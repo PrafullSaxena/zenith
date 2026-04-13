@@ -1,107 +1,153 @@
 /**
- * DrawingCanvas -- tldraw v4 wrapper component for Nebula note drawings.
+ * DrawingCanvas -- Excalidraw wrapper component for Nebula note drawings.
  *
- * Always-mounted inside the resizable drawing panel. The panel's
- * collapse/expand state controls visibility -- this component no longer
- * has a `visible` prop.
+ * Replaces the previous tldraw v4 implementation with Excalidraw.
  *
  * Key design:
- *  - Uses `snapshot` prop on <Tldraw> for initial data hydration
- *  - Dark mode: CSS safety net in main.css forces dark theme variables,
- *    onMount sets full dark mode via user preferences API
- *  - onMount returns a cleanup function (tldraw v4 supports this)
+ *  - Uses <Excalidraw> for initial data hydration via initialData prop
+ *  - Dark mode: enforced via `theme="dark"` prop
+ *  - onChange fires on every canvas change → debounced 1000ms auto-save
  *  - Parent passes key={noteId} to force remount when switching notes
+ *  - Snapshot stored as `{ type: 'excalidraw', elements, appState, files }`
+ *    to allow format detection and safe upgrade in future
+ *  - Old tldraw snapshots are silently reset (incompatible format)
  *
- * Note: tldraw CSS is imported in main.css (after Tailwind) to ensure
- * deterministic CSS ordering and avoid code-split loading issues.
+ * Note: Excalidraw CSS is imported here (via JS import) so Vite's module
+ * resolver handles the package.json conditional exports (dev vs prod).
+ * A plain CSS @import in main.css uses PostCSS resolution which does NOT
+ * understand conditional exports, causing the stylesheet to silently fail.
  */
 
-import { useCallback, useRef, useEffect, memo } from 'react'
-import { Tldraw } from 'tldraw'
-import type { Editor, TLEditorSnapshot, TLStoreSnapshot } from 'tldraw'
+// Must be first — Vite resolves this via JS resolver (respects exports map)
+import '@excalidraw/excalidraw/index.css'
+
+import { useRef, useEffect, useCallback, memo } from 'react'
+import { Excalidraw, FONT_FAMILY } from '@excalidraw/excalidraw'
+import type {
+  ExcalidrawImperativeAPI,
+  ExcalidrawElement,
+  AppState,
+  BinaryFiles
+} from '@excalidraw/excalidraw/types'
 import { Card } from '@renderer/components/ui/card'
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface ExcalidrawSnapshot {
+  type: 'excalidraw'
+  elements: readonly ExcalidrawElement[]
+  appState: Partial<AppState>
+  files: BinaryFiles
+}
 
 interface DrawingCanvasProps {
   snapshot: object | null
   onSave: (snapshot: object) => void
 }
 
+// ---------------------------------------------------------------------------
+// Format detection
+// ---------------------------------------------------------------------------
+
 /**
- * Type guard: check if snapshot looks like a valid tldraw editor snapshot.
- * A TLEditorSnapshot has { document: { store: {...} }, session: {...} }
+ * Returns a parsed ExcalidrawSnapshot if the stored object is a valid
+ * Excalidraw snapshot produced by this component.
+ * Silently returns null for old tldraw snapshots or null/invalid data.
  */
-function isValidSnapshot(
-  snap: unknown
-): snap is TLEditorSnapshot | TLStoreSnapshot {
-  if (!snap || typeof snap !== 'object') return false
-  const obj = snap as Record<string, unknown>
-  // TLEditorSnapshot shape (from editor.getSnapshot()) — must have document
-  if ('document' in obj && obj.document && typeof obj.document === 'object') return true
-  // TLStoreSnapshot shape (from store.getSnapshot()) — must have store
-  if ('store' in obj && obj.store && typeof obj.store === 'object') return true
-  return false
+function parseSnapshot(raw: object | null): ExcalidrawSnapshot | null {
+  if (!raw || typeof raw !== 'object') return null
+  const obj = raw as Record<string, unknown>
+  if (obj.type !== 'excalidraw') return null // old tldraw data — start fresh
+  if (!Array.isArray(obj.elements)) return null
+  return raw as ExcalidrawSnapshot
 }
 
-function DrawingCanvas({
-  snapshot,
-  onSave
-}: DrawingCanvasProps): React.JSX.Element {
-  const editorRef = useRef<Editor | null>(null)
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+function DrawingCanvas({ snapshot, onSave }: DrawingCanvasProps): React.JSX.Element {
+  const apiRef = useRef<ExcalidrawImperativeAPI | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-  // Use a ref for onSave to avoid stale closures in the store listener
   const onSaveRef = useRef(onSave)
   onSaveRef.current = onSave
 
-  // When the editor mounts, set dark mode and subscribe to changes
-  const handleMount = useCallback((editor: Editor) => {
-    editorRef.current = editor
-
-    // Force dark mode to match app theme.
-    // CSS safety net in main.css ensures icons are visible immediately;
-    // this call applies the full .tl-theme__dark class for all theme variables.
-    editor.user.updateUserPreferences({ colorScheme: 'dark' })
-
-    // Subscribe to user document changes for auto-save
-    const unsubscribe = editor.store.listen(
-      () => {
-        if (timerRef.current) clearTimeout(timerRef.current)
-        timerRef.current = setTimeout(() => {
-          try {
-            const snap = editor.getSnapshot()
-            onSaveRef.current(snap)
-          } catch {
-            // Ignore serialization errors
-          }
-        }, 1000)
-      },
-      { source: 'user', scope: 'document' }
-    )
-
-    // tldraw v4 supports returning a cleanup function from onMount
-    return () => {
-      unsubscribe()
-      if (timerRef.current) clearTimeout(timerRef.current)
-    }
-  }, [])
-
-  // Cleanup timer on unmount (belt-and-suspenders for the onMount cleanup)
   useEffect(() => {
+    // Tell Excalidraw where to load fonts from. Without this it falls back to
+    // fetching from https://esm.sh CDN which is blocked by the app's CSP.
+    // Fonts are copied from node_modules to public/excalidraw-assets/ by the
+    // Vite plugin in electron.vite.config.ts at build/dev-start time.
+    window.EXCALIDRAW_ASSET_PATH = '/excalidraw-assets/'
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
   }, [])
 
-  // Parse snapshot for tldraw — pass undefined if null or invalid
-  const tldrawSnapshot = isValidSnapshot(snapshot) ? snapshot : undefined
+  const handleChange = useCallback(
+    (elements: readonly ExcalidrawElement[], appState: AppState, files: BinaryFiles) => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(() => {
+        const snap: ExcalidrawSnapshot = {
+          type: 'excalidraw',
+          elements,
+          appState: {
+            viewBackgroundColor: appState.viewBackgroundColor,
+            currentItemStrokeColor: appState.currentItemStrokeColor,
+            currentItemBackgroundColor: appState.currentItemBackgroundColor,
+            currentItemFillStyle: appState.currentItemFillStyle,
+            currentItemStrokeWidth: appState.currentItemStrokeWidth,
+            currentItemStrokeStyle: appState.currentItemStrokeStyle,
+            currentItemRoughness: appState.currentItemRoughness,
+            currentItemOpacity: appState.currentItemOpacity,
+            currentItemFontFamily: appState.currentItemFontFamily,
+            currentItemFontSize: appState.currentItemFontSize,
+            currentItemTextAlign: appState.currentItemTextAlign,
+            currentItemStartArrowhead: appState.currentItemStartArrowhead,
+            currentItemEndArrowhead: appState.currentItemEndArrowhead,
+            scrollX: appState.scrollX,
+            scrollY: appState.scrollY,
+            zoom: appState.zoom
+          },
+          files
+        }
+        onSaveRef.current(snap)
+      }, 1000)
+    },
+    []
+  )
+
+  const parsed = parseSnapshot(snapshot)
 
   return (
     <Card className="h-full w-full overflow-hidden rounded-none border-x-0 border-t-0 p-0">
-      <div className="tldraw__editor h-full">
-        <Tldraw
-          snapshot={tldrawSnapshot}
-          onMount={handleMount}
-          inferDarkMode={false}
-          options={{ maxPages: 1 }}
+      <div className="excalidraw-container h-full w-full">
+        <Excalidraw
+          excalidrawAPI={(api) => {
+            apiRef.current = api
+          }}
+          initialData={
+            parsed
+              ? {
+                  elements: parsed.elements,
+                  appState: parsed.appState,
+                  files: parsed.files
+                }
+              : {
+                  // Fresh drawing — default to Excalifont (the sketch/handwritten font)
+                  appState: { currentItemFontFamily: FONT_FAMILY.Excalifont }
+                }
+          }
+          onChange={handleChange}
+          theme="dark"
+          UIOptions={{
+            canvasActions: {
+              saveAsImage: false,
+              loadScene: false,
+              export: false
+            }
+          }}
         />
       </div>
     </Card>

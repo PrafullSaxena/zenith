@@ -7,3 +7,6 @@ out
 
 # Worktrees
 .worktrees/
+
+# Excalidraw fonts — auto-copied from node_modules by Vite plugin at build time
+src/renderer/public/excalidraw-assets/

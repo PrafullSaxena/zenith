@@ -19,7 +19,7 @@ export interface NoteFile {
   id: string
   title: string
   content: object // Tiptap JSON document
-  drawing: object | null // tldraw snapshot
+  drawing: object | null // excalidraw snapshot ({ type: 'excalidraw', elements, appState, files })
   summary: string | null // AI-generated summary
   topics: string[]
   tags: NoteTag[]
