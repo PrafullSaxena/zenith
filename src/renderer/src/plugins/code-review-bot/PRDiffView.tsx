@@ -1,5 +1,6 @@
 import React, { useState, useCallback, memo } from 'react'
 import { ChevronDown, ChevronRight, Copy, Check, Plus, MessageSquare } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { DiffFile, DiffChange } from '../../types/bitbucket'
 import type { ReviewComment, UserComment, UserCommentMap } from '../../types/review'
 import { SEVERITY_CONFIG, KIND_CONFIG } from '../../types/review'
@@ -61,7 +62,7 @@ interface PRDiffViewProps {
 }
 
 // ---------------------------------------------------------------------------
-// InlineComposer — isolated memo: owns text state, zero parent re-renders
+// Elevated InlineComposer
 // ---------------------------------------------------------------------------
 
 interface InlineComposerProps {
@@ -86,61 +87,68 @@ const InlineComposer = memo(function InlineComposer({
 
   return (
     <tr>
-      <td colSpan={4} className="p-0">
-        <div className="mx-0 border-y border-white/[0.06] bg-[hsl(220,14%,8%)]">
-          {/* Left accent bar matching line gutter width */}
-          <div className="flex">
-            <div className="w-[80px] shrink-0 border-r border-white/[0.06] bg-white/[0.02]" />
-            <div className="flex-1 py-2 pr-3 pl-3">
-              <textarea
-                autoFocus
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    e.preventDefault()
-                    onCancel()
-                  }
-                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && trimmed) {
-                    e.preventDefault()
-                    handleSave()
-                  }
-                }}
-                placeholder="Add a note on this line…"
-                rows={2}
-                className="w-full resize-none bg-transparent text-[12.5px] text-foreground/90 placeholder:text-muted-foreground/30 focus:outline-none leading-relaxed"
-              />
-              <div className="mt-1.5 flex items-center gap-2">
-                <Button
-                  size="sm"
-                  className="h-6 px-2.5 text-[11px]"
-                  disabled={!trimmed}
-                  onClick={handleSave}
-                >
-                  Save
-                </Button>
+      <td colSpan={4} className="p-0 border-none bg-transparent">
+        <motion.div
+          initial={{ opacity: 0, y: -4, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: 'auto' }}
+          exit={{ opacity: 0, y: -4, height: 0 }}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className="mx-4 my-2 overflow-hidden rounded-xl border border-primary/30 shadow-lg shadow-black/40 bg-[hsl(224,20%,12%)] relative z-10"
+        >
+          <div className="flex flex-col p-3">
+            <textarea
+              autoFocus
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.preventDefault()
+                  onCancel()
+                }
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && trimmed) {
+                  e.preventDefault()
+                  handleSave()
+                }
+              }}
+              placeholder="Add a custom review note..."
+              rows={3}
+              className="w-full resize-none bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-0 leading-relaxed"
+            />
+            <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-2">
+              <span className="font-mono text-[11px] text-muted-foreground/50 select-none">
+                <kbd className="rounded border border-white/10 bg-white/5 px-1 py-0.5 font-sans shadow-sm mr-1">⌘</kbd>
+                <kbd className="rounded border border-white/10 bg-white/5 px-1 py-0.5 font-sans shadow-sm">↵</kbd> save
+                &nbsp;&middot;&nbsp; 
+                <kbd className="rounded border border-white/10 bg-white/5 px-1 py-0.5 font-sans shadow-sm">esc</kbd> cancel
+              </span>
+              <div className="flex gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 px-2 text-[11px]"
+                  className="h-7 px-3 text-[12px] text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
                   onClick={onCancel}
                 >
                   Cancel
                 </Button>
-                <span className="ml-auto font-mono text-[10px] text-muted-foreground/25 tabular-nums select-none">
-                  ⌘↵ save · esc cancel
-                </span>
+                <Button
+                  size="sm"
+                  className="h-7 px-4 text-[12px] bg-primary text-primary-foreground hover:bg-primary/90"
+                  disabled={!trimmed}
+                  onClick={handleSave}
+                >
+                  Save Note
+                </Button>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </td>
     </tr>
   )
 })
 
 // ---------------------------------------------------------------------------
-// UserCommentCard — compact read-only chip, expandable
+// UserCommentCard
 // ---------------------------------------------------------------------------
 
 interface UserCommentCardProps {
@@ -154,30 +162,25 @@ const UserCommentCard = memo(function UserCommentCard({
 }: UserCommentCardProps): React.JSX.Element {
   return (
     <tr>
-      <td colSpan={4} className="p-0">
-        <div className="flex border-b border-white/[0.04]">
-          {/* Gutter indent */}
-          <div className="w-[80px] shrink-0 border-r border-white/[0.04] bg-white/[0.015]" />
-          {/* Comment body */}
-          <div className="group flex flex-1 items-start gap-2 px-3 py-1.5 bg-amber-500/[0.04]">
-            <span className="mt-0.5 shrink-0 inline-flex items-center rounded bg-amber-500/10 px-1.5 py-px text-[9.5px] font-semibold uppercase tracking-wide text-amber-400/80">
-              You
-            </span>
-            <p className="flex-1 text-[12px] leading-relaxed text-foreground/70 whitespace-pre-wrap">
-              {comment.body}
-            </p>
-            {onDelete && (
-              <button
-                type="button"
-                onClick={() => onDelete(comment.id)}
-                className="mt-0.5 shrink-0 text-[10px] text-muted-foreground/0 transition-colors group-hover:text-muted-foreground/30 hover:!text-rose-400/70"
-                title="Delete"
-                aria-label="Delete comment"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+      <td colSpan={4} className="p-0 border-none bg-transparent">
+        <div className="mx-4 my-1.5 flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 shadow-none">
+          <span className="mt-0.5 shrink-0 inline-flex items-center rounded-sm bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground shadow-none">
+            You
+          </span>
+          <p className="flex-1 text-[13px] leading-relaxed text-foreground/90 whitespace-pre-wrap">
+            {comment.body}
+          </p>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(comment.id)}
+              className="mt-0.5 shrink-0 rounded-sm p-1 text-muted-foreground/50 transition-colors hover:bg-white/10 hover:text-foreground"
+              title="Delete"
+              aria-label="Delete comment"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          )}
         </div>
       </td>
     </tr>
@@ -194,10 +197,10 @@ interface AICommentCardProps {
 }
 
 const SEV_ACCENT: Record<string, string> = {
-  blocking: 'border-l-rose-500/70   bg-rose-500/[0.04]',
-  important: 'border-l-orange-500/60 bg-orange-500/[0.03]',
-  suggestion: 'border-l-blue-500/50   bg-blue-500/[0.03]',
-  info: 'border-l-zinc-500/40   bg-white/[0.015]'
+  blocking: 'border-l-fuchsia-500 bg-white/[0.02] border-y-white/5 border-r-white/5',
+  important: 'border-l-amber-500 bg-white/[0.02] border-y-white/5 border-r-white/5',
+  suggestion: 'border-l-sky-500 bg-white/[0.02] border-y-white/5 border-r-white/5',
+  info: 'border-l-slate-400 bg-white/[0.02] border-y-white/5 border-r-white/5'
 }
 
 const AICommentCard = memo(function AICommentCard({
@@ -209,64 +212,62 @@ const AICommentCard = memo(function AICommentCard({
 
   return (
     <tr>
-      <td colSpan={4} className="p-0">
-        <div className="flex border-b border-white/[0.04]">
-          <div className="w-[80px] shrink-0 border-r border-white/[0.04] bg-white/[0.015]" />
-          <div className={`flex-1 border-l-2 px-3 py-2 ${SEV_ACCENT[comment.severity]}`}>
-            {/* Meta row */}
-            <div className="mb-1 flex items-center gap-1.5">
-              <span
-                className={`text-[10px] font-semibold ${sevConfig.badge
-                  .split(' ')
-                  .filter((c) => c.startsWith('text-'))
-                  .join(' ')}`}
+      <td colSpan={4} className="p-0 border-none bg-transparent">
+        <div className={`mx-4 my-1.5 flex flex-col rounded-lg border-y border-r border-l-2 shadow-none px-4 py-3 ${SEV_ACCENT[comment.severity]}`}>
+          {/* Meta row */}
+          <div className="mb-2 flex items-center gap-2">
+            <span
+              className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${sevConfig.badge
+                .split(' ')
+                .filter((c) => c.startsWith('text-') || c.startsWith('bg-'))
+                .join(' ')}`}
+            >
+              {sevConfig.label}
+            </span>
+            <span className="text-[11px] font-medium text-muted-foreground/60 bg-white/5 px-1.5 py-0.5 rounded">{kindConfig.label}</span>
+            <span className="ml-auto font-mono text-[11px] text-muted-foreground/40">
+              Line {comment.line}
+            </span>
+          </div>
+
+          {/* Title + body */}
+          <p className="text-[14px] font-semibold text-foreground/90 leading-snug mb-1">
+            {comment.title}
+          </p>
+          <p className="text-[13px] leading-relaxed text-foreground/75">
+            {comment.body}
+          </p>
+
+          {/* Suggested fix */}
+          {comment.suggestedFix && (
+            <div className="mt-3 overflow-hidden rounded-md border border-white/10 bg-black/40 relative">
+              <span className="absolute top-0 right-0 bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground rounded-bl-md">
+                SUGGESTED FIX
+              </span>
+              <pre className="p-3 text-[12px] font-mono text-foreground/80 overflow-x-auto">
+                {comment.suggestedFix}
+              </pre>
+            </div>
+          )}
+
+          {/* Action */}
+          <div className="mt-3 flex items-center">
+            {!comment.posted && onPostClick && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPostClick(comment)}
+                className="h-7 text-[11px] font-semibold text-primary border-primary/20 bg-primary/5 hover:bg-primary/10 hover:text-primary transition-colors"
               >
-                {sevConfig.label}
-              </span>
-              <span className="text-muted-foreground/25 text-[10px]">·</span>
-              <span className="text-[10px] text-muted-foreground/45">{kindConfig.label}</span>
-              <span className="ml-auto font-mono text-[10px] text-muted-foreground/30">
-                :{comment.line}
-              </span>
-            </div>
-
-            {/* Title + body */}
-            <p className="text-[12px] font-medium text-foreground/85 leading-snug">
-              {comment.title}
-            </p>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground/65">
-              {comment.body}
-            </p>
-
-            {/* Suggested fix */}
-            {comment.suggestedFix && (
-              <div className="mt-2 rounded-lg border border-emerald-500/15 bg-emerald-500/5 px-2.5 py-1.5">
-                <p className="mb-0.5 text-[9px] font-semibold uppercase tracking-widest text-emerald-500/50">
-                  Fix
-                </p>
-                <p className="text-[11.5px] text-emerald-400/75 leading-relaxed">
-                  {comment.suggestedFix}
-                </p>
-              </div>
+                Post to Bitbucket <ChevronRight size={14} className="ml-1" />
+              </Button>
             )}
-
-            {/* Action */}
-            <div className="mt-1.5">
-              {!comment.posted && onPostClick && (
-                <button
-                  type="button"
-                  onClick={() => onPostClick(comment)}
-                  className="text-[11px] font-medium text-primary/70 transition-colors hover:text-primary"
-                >
-                  Post to Bitbucket →
-                </button>
-              )}
-              {comment.posted && (
-                <span className="flex items-center gap-1 text-[11px] text-emerald-400/70">
-                  <Check size={9} strokeWidth={2.5} /> Posted
-                </span>
-              )}
-            </div>
+            {comment.posted && (
+              <span className="flex items-center gap-1 text-[12px] font-medium text-foreground/70">
+                <Check size={14} strokeWidth={3} className="bg-white/10 rounded-full p-0.5" /> 
+                Successfully Posted
+              </span>
+            )}
           </div>
         </div>
       </td>
@@ -290,7 +291,6 @@ export function PRDiffView({
   const [viewed, setViewed] = useState<Record<string, boolean>>({})
   const [activeComposerKey, setActiveComposerKey] = useState<string | null>(null)
 
-  // All hooks before early return
   const toggleFile = useCallback((path: string) => {
     setCollapsed((p) => ({ ...p, [path]: !p[path] }))
   }, [])
@@ -315,9 +315,13 @@ export function PRDiffView({
 
   if (!diffFiles || diffFiles.length === 0) {
     return (
-      <p className="py-12 text-center text-[13px] text-muted-foreground/40">
-        No diff loaded. Select a pull request to view changes.
-      </p>
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <svg className="w-12 h-12 text-muted-foreground/20 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p className="text-[14px] font-medium text-foreground/60">No diff loaded</p>
+        <p className="text-[13px] text-muted-foreground/50 mt-1">Select a pull request to review changes.</p>
+      </div>
     )
   }
 
@@ -336,7 +340,7 @@ export function PRDiffView({
   return (
     <>
       <style>{DIFF_STYLES}</style>
-      <div className="space-y-2">
+      <div className="space-y-4 px-1 py-2">
         {diffFiles.map((file) => {
           const filePath = file.to || file.from
           const isCollapsed = collapsed[filePath] ?? false
@@ -346,7 +350,6 @@ export function PRDiffView({
           const fileStatus =
             file.from === '/dev/null' ? 'added' : file.to === '/dev/null' ? 'deleted' : 'modified'
 
-          // Count AI comments for this file
           const aiCount = reviewComments.filter((c) => c.file === filePath).length
           const userCount = Object.entries(userComments ?? {})
             .filter(([k]) => k.startsWith(`${filePath}:`))
@@ -355,53 +358,55 @@ export function PRDiffView({
           return (
             <div
               key={filePath}
-              className="overflow-hidden rounded-xl border border-white/[0.07] bg-[hsl(220,14%,6%)]"
+              className={`overflow-hidden rounded-xl border transition-colors bg-[hsl(220,12%,7%)] shadow-sm ${
+                isViewed ? 'border-emerald-500/20' : 'border-white/[0.08]'
+              }`}
             >
               {/* ── File header ── */}
-              <div className="flex items-center gap-2 border-b border-white/[0.06] bg-white/[0.02] px-2 py-1">
+              <div className="flex items-center gap-3 border-b border-black/20 bg-black/40 px-3 py-2">
                 <button
                   onClick={() => toggleFile(filePath)}
-                  className="shrink-0 rounded p-0.5 text-muted-foreground/40 transition-colors hover:text-foreground"
+                  className="shrink-0 flex h-6 w-6 items-center justify-center rounded-md bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
                   aria-label={isCollapsed ? 'Expand file' : 'Collapse file'}
                 >
-                  {isCollapsed ? <ChevronRight size={13} /> : <ChevronDown size={13} />}
+                  {isCollapsed ? <ChevronRight size={15} /> : <ChevronDown size={15} />}
                 </button>
 
                 {/* Status glyph */}
-                <span
-                  className={`shrink-0 font-mono text-[10.5px] font-bold tabular-nums ${
+                <div
+                  className={`shrink-0 flex h-5 w-5 items-center justify-center rounded-sm font-mono text-[11px] font-bold ${
                     fileStatus === 'added'
-                      ? 'text-emerald-400/70'
+                      ? 'bg-emerald-500/20 text-emerald-400'
                       : fileStatus === 'deleted'
-                        ? 'text-rose-400/70'
-                        : 'text-muted-foreground/35'
+                        ? 'bg-rose-500/20 text-rose-400'
+                        : 'bg-blue-500/20 text-blue-400'
                   }`}
                 >
                   {fileStatus === 'added' ? 'A' : fileStatus === 'deleted' ? 'D' : 'M'}
-                </span>
+                </div>
 
                 {/* Breadcrumb */}
-                <div className="min-w-0 flex-1 flex items-center overflow-hidden font-mono text-[11.5px]">
+                <div className="min-w-0 flex-1 flex items-center overflow-hidden font-mono text-[13px]">
                   {dirs.map((dir, i) => (
                     <span key={i} className="flex shrink-0 items-center">
-                      <span className="text-muted-foreground/30">{dir}</span>
-                      <span className="text-muted-foreground/20">/</span>
+                      <span className="text-muted-foreground/40">{dir}</span>
+                      <span className="text-muted-foreground/20 mx-1">/</span>
                     </span>
                   ))}
-                  <span className="truncate font-medium text-foreground/80">{fileName}</span>
+                  <span className="truncate font-semibold text-foreground/90">{fileName}</span>
                 </div>
 
                 {/* Comment count badges */}
                 {(aiCount > 0 || userCount > 0) && (
-                  <div className="shrink-0 flex items-center gap-1.5">
+                  <div className="shrink-0 flex items-center gap-2 px-3 border-l border-white/10">
                     {aiCount > 0 && (
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground/40">
-                        <MessageSquare size={9} />
+                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-foreground/70 bg-white/5 px-2 py-0.5 rounded-full">
+                        <MessageSquare size={12} className="text-primary/70" />
                         {aiCount}
                       </span>
                     )}
                     {userCount > 0 && (
-                      <span className="text-[10px] text-amber-400/50">
+                      <span className="flex items-center gap-1 text-[11px] font-medium text-amber-400/90 bg-amber-500/10 px-2 py-0.5 rounded-full">
                         {userCount} note{userCount !== 1 ? 's' : ''}
                       </span>
                     )}
@@ -409,199 +414,208 @@ export function PRDiffView({
                 )}
 
                 {/* Diff stats */}
-                <div className="shrink-0 flex items-center gap-1 font-mono text-[11px]">
+                <div className="shrink-0 flex items-center gap-2 font-mono text-[12px] font-medium px-3 border-l border-white/10">
                   {file.additions > 0 && (
-                    <span className="text-emerald-400/70">+{file.additions}</span>
+                    <span className="text-emerald-400">+{file.additions}</span>
                   )}
                   {file.deletions > 0 && (
-                    <span className="text-rose-400/70">-{file.deletions}</span>
+                    <span className="text-rose-400">-{file.deletions}</span>
                   )}
                 </div>
 
                 {/* Copy path */}
                 <button
                   onClick={() => navigator.clipboard.writeText(filePath)}
-                  className="shrink-0 rounded p-1 text-muted-foreground/20 transition-colors hover:text-muted-foreground/55"
+                  className="shrink-0 rounded-md p-1.5 text-muted-foreground/40 transition-colors hover:bg-white/10 hover:text-foreground"
                   title="Copy path"
                   aria-label="Copy file path"
                 >
-                  <Copy size={10} />
+                  <Copy size={13} />
                 </button>
 
-                {/* Viewed */}
-                <div
+                {/* Viewed Checkback */}
+                <button
                   role="checkbox"
                   aria-checked={isViewed}
                   aria-label="Mark as viewed"
                   onClick={() => toggleViewed(filePath)}
-                  className={`flex h-[18px] w-[18px] shrink-0 cursor-pointer items-center justify-center rounded border transition-all ${
+                  className={`flex h-6 px-2 text-[11px] font-semibold shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border transition-all ${
                     isViewed
-                      ? 'border-emerald-500/40 bg-emerald-500/15'
-                      : 'border-white/[0.1] bg-white/[0.02] hover:border-white/[0.2]'
+                      ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                      : 'border-white/[0.1] bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]'
                   }`}
                 >
-                  {isViewed && <Check size={10} className="text-emerald-400" strokeWidth={3} />}
-                </div>
+                  {isViewed && <Check size={12} strokeWidth={3} />}
+                  {isViewed ? 'Viewed' : 'Mark Viewed'}
+                </button>
               </div>
 
               {/* ── Diff table ── */}
-              {!isCollapsed && (
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse font-mono text-[12px] leading-[20px]">
-                    <colgroup>
-                      {/* old ln, new ln, prefix, code */}
-                      <col className="w-10" />
-                      <col className="w-10" />
-                      <col className="w-[18px]" />
-                      <col />
-                    </colgroup>
-                    <tbody>
-                      {file.chunks.map((chunk, ci) => (
-                        <React.Fragment key={`chunk-${ci}`}>
-                          <tr>
-                            <td
-                              colSpan={4}
-                              className="bg-[hsl(212,45%,13%,0.35)] px-3 py-0.5 text-[10.5px] text-[hsl(212,60%,58%,0.6)] border-y border-white/[0.03] select-none"
-                            >
-                              {chunk.content}
-                            </td>
-                          </tr>
+              <AnimatePresence initial={false}>
+                {!isCollapsed && (
+                  <motion.div 
+                    initial={{ height: 0 }}
+                    animate={{ height: 'auto' }}
+                    exit={{ height: 0 }}
+                    className="overflow-x-auto overflow-y-hidden"
+                  >
+                    <table className="w-full border-collapse font-mono text-[13px] leading-[22px]">
+                      <colgroup>
+                        <col className="w-12" />
+                        <col className="w-12" />
+                        <col className="w-[20px]" />
+                        <col />
+                      </colgroup>
+                      <tbody>
+                        {file.chunks.map((chunk, ci) => (
+                          <React.Fragment key={`chunk-${ci}`}>
+                            <tr>
+                              <td
+                                colSpan={4}
+                                className="bg-[hsl(215,30%,12%,0.5)] px-4 py-1.5 text-[11px] text-[hsl(215,50%,65%,0.8)] border-y border-white/[0.04] select-none text-center tracking-widest font-semibold"
+                              >
+                                {chunk.content}
+                              </td>
+                            </tr>
 
-                          {chunk.changes.map((change, li) => {
-                            const { oldLn, newLn } = getLineNumbers(change)
-                            const activeLn =
-                              change.type === 'add' ? newLn : change.type === 'del' ? oldLn : newLn
-                            const userCommentLn = change.type === 'del' ? null : newLn
-                            const aiComments =
-                              activeLn != null ? getAIComments(filePath, activeLn) : []
-                            const userLineComments =
-                              userCommentLn != null ? getUserComments(filePath, userCommentLn) : []
-                            const composerKey =
-                              userCommentLn != null ? `${filePath}:${userCommentLn}` : null
-                            const composerOpen =
-                              composerKey != null && activeComposerKey === composerKey
-                            const hasAnnotations =
-                              aiComments.length > 0 || userLineComments.length > 0
+                            {chunk.changes.map((change, li) => {
+                              const { oldLn, newLn } = getLineNumbers(change)
+                              const activeLn =
+                                change.type === 'add' ? newLn : change.type === 'del' ? oldLn : newLn
+                              const userCommentLn = change.type === 'del' ? null : newLn
+                              const aiComments =
+                                activeLn != null ? getAIComments(filePath, activeLn) : []
+                              const userLineComments =
+                                userCommentLn != null ? getUserComments(filePath, userCommentLn) : []
+                              const composerKey =
+                                userCommentLn != null ? `${filePath}:${userCommentLn}` : null
+                              const composerOpen =
+                                composerKey != null && activeComposerKey === composerKey
 
-                            const rowBg =
-                              change.type === 'add'
-                                ? 'bg-[hsl(142,45%,38%,0.09)]'
-                                : change.type === 'del'
-                                  ? 'bg-[hsl(0,45%,42%,0.09)]'
-                                  : ''
-                            const gutterBg =
-                              change.type === 'add'
-                                ? 'bg-[hsl(142,45%,38%,0.15)]'
-                                : change.type === 'del'
-                                  ? 'bg-[hsl(0,45%,42%,0.15)]'
-                                  : 'bg-white/[0.016]'
-                            const prefixColor =
-                              change.type === 'add'
-                                ? 'text-emerald-500/70'
-                                : change.type === 'del'
-                                  ? 'text-rose-500/60'
-                                  : 'text-transparent'
-                            const lnColor =
-                              change.type === 'normal'
-                                ? 'text-muted-foreground/25'
-                                : 'text-muted-foreground/50'
+                              const rowBg =
+                                change.type === 'add'
+                                  ? 'bg-[hsl(142,45%,38%,0.1)]'
+                                  : change.type === 'del'
+                                    ? 'bg-[hsl(0,45%,42%,0.1)]'
+                                    : ''
+                              const gutterBg =
+                                change.type === 'add'
+                                  ? 'bg-[hsl(142,45%,38%,0.15)]'
+                                  : change.type === 'del'
+                                    ? 'bg-[hsl(0,45%,42%,0.15)]'
+                                    : 'bg-black/20'
+                              const prefixColor =
+                                change.type === 'add'
+                                  ? 'text-emerald-500/80 font-bold'
+                                  : change.type === 'del'
+                                    ? 'text-rose-500/80 font-bold'
+                                    : 'text-transparent'
+                              const lnColor =
+                                change.type === 'normal'
+                                  ? 'text-muted-foreground/30'
+                                  : 'text-muted-foreground/60'
 
-                            return (
-                              <React.Fragment key={`line-${ci}-${li}`}>
-                                <tr
-                                  className={`group diff-row ${rowBg} ${hasAnnotations ? 'diff-row--annotated' : ''}`}
-                                >
-                                  {/* Old line number */}
-                                  <td
-                                    className={`select-none text-right pr-2 pl-1 py-0 ${gutterBg} ${lnColor} border-r border-white/[0.03]`}
+                              return (
+                                <React.Fragment key={`line-${ci}-${li}`}>
+                                  <tr
+                                    className={`group diff-row ${rowBg} hover:bg-white/[0.04] cursor-text`}
                                   >
-                                    {oldLn ?? ''}
-                                  </td>
-
-                                  {/* New line number — clickable for composer */}
-                                  <td
-                                    className={`select-none py-0 pl-1 ${gutterBg} border-r border-white/[0.03] ${
-                                      userCommentLn != null ? 'cursor-pointer' : ''
-                                    }`}
-                                    onClick={() => composerKey && openComposer(composerKey)}
-                                    title={userCommentLn != null ? 'Add note' : undefined}
-                                  >
-                                    <span className="flex items-center justify-end gap-0.5 pr-2">
-                                      {/* + affordance: always faintly visible, stronger on hover */}
+                                    {/* Old line number */}
+                                    <td
+                                      className={`relative select-none text-right pr-3 pl-2 py-0 border-r border-white/[0.04] ${gutterBg} ${lnColor}`}
+                                    >
+                                      {/* Hover affordance border indicator */}
                                       {userCommentLn != null && (
+                                        <div className="absolute inset-y-0 left-0 w-1 bg-primary/0 group-hover:bg-primary transition-colors cursor-pointer" onClick={() => composerKey && openComposer(composerKey)}></div>
+                                      )}
+                                      {oldLn ?? ''}
+                                    </td>
+
+                                    {/* New line number — clickable for composer */}
+                                    <td
+                                      className={`relative select-none py-0 pl-2 pr-3 border-r border-white/[0.04] text-right ${gutterBg} ${
+                                        userCommentLn != null ? 'cursor-pointer' : ''
+                                      }`}
+                                      onClick={() => composerKey && openComposer(composerKey)}
+                                      title={userCommentLn != null ? 'Click to add a note' : undefined}
+                                    >
+                                      <div className="flex items-center justify-end">
                                         <Plus
-                                          size={8}
-                                          className={`shrink-0 transition-opacity ${
+                                          size={12}
+                                          className={`absolute left-2 shrink-0 transition-all ${
                                             composerOpen
-                                              ? 'opacity-60 text-primary'
-                                              : 'opacity-20 text-muted-foreground group-hover:opacity-50'
+                                              ? 'opacity-100 text-primary scale-110'
+                                              : 'opacity-0 text-primary group-hover:opacity-100'
                                           }`}
                                         />
-                                      )}
-                                      <span className={lnColor}>{newLn ?? ''}</span>
-                                    </span>
-                                  </td>
+                                        <span className={lnColor}>{newLn ?? ''}</span>
+                                      </div>
+                                    </td>
 
-                                  {/* Prefix */}
-                                  <td
-                                    className={`select-none pl-1.5 pr-0.5 font-bold ${prefixColor}`}
-                                  >
-                                    {change.type === 'add'
-                                      ? '+'
-                                      : change.type === 'del'
-                                        ? '-'
-                                        : ' '}
-                                  </td>
+                                    {/* Prefix */}
+                                    <td
+                                      className={`select-none pl-2.5 pr-1 font-bold ${prefixColor}`}
+                                    >
+                                      {change.type === 'add'
+                                        ? '+'
+                                        : change.type === 'del'
+                                          ? '-'
+                                          : ' '}
+                                    </td>
 
-                                  {/* Code */}
-                                  <td className="whitespace-pre pr-4 pl-1">
-                                    <span
-                                      dangerouslySetInnerHTML={{
-                                        __html: highlightCode(
-                                          change.content.replace(/^[+-]/, ''),
-                                          getLang(filePath)
-                                        )
-                                      }}
-                                    />
-                                  </td>
-                                </tr>
+                                    {/* Code */}
+                                    <td className="whitespace-pre pr-4 pl-1">
+                                      <span
+                                        className={change.type === 'add' ? 'text-emerald-100' : change.type === 'del' ? 'text-rose-100/80' : 'text-foreground/90'}
+                                        dangerouslySetInnerHTML={{
+                                          __html: highlightCode(
+                                            change.content.replace(/^[+-]/, ''),
+                                            getLang(filePath)
+                                          )
+                                        }}
+                                      />
+                                    </td>
+                                  </tr>
 
-                                {/* AI findings */}
-                                {aiComments.map((c, ci2) => (
-                                  <AICommentCard
-                                    key={`ai-${ci2}`}
-                                    comment={c}
-                                    onPostClick={onCommentClick}
-                                  />
-                                ))}
+                                  <AnimatePresence>
+                                    {/* AI findings */}
+                                    {aiComments.map((c, ci2) => (
+                                      <AICommentCard
+                                        key={`ai-${ci2}`}
+                                        comment={c}
+                                        onPostClick={onCommentClick}
+                                      />
+                                    ))}
 
-                                {/* User notes */}
-                                {userLineComments.map((uc) => (
-                                  <UserCommentCard
-                                    key={uc.id}
-                                    comment={uc}
-                                    onDelete={onDeleteUserComment}
-                                  />
-                                ))}
+                                    {/* User notes */}
+                                    {userLineComments.map((uc) => (
+                                      <UserCommentCard
+                                        key={uc.id}
+                                        comment={uc}
+                                        onDelete={onDeleteUserComment}
+                                      />
+                                    ))}
 
-                                {/* Inline composer */}
-                                {composerOpen && (
-                                  <InlineComposer
-                                    filePath={filePath}
-                                    lineNumber={userCommentLn!}
-                                    onSave={handleSave}
-                                    onCancel={closeComposer}
-                                  />
-                                )}
-                              </React.Fragment>
-                            )
-                          })}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                                    {/* Inline composer */}
+                                    {composerOpen && (
+                                      <InlineComposer
+                                        filePath={filePath}
+                                        lineNumber={userCommentLn!}
+                                        onSave={handleSave}
+                                        onCancel={closeComposer}
+                                      />
+                                    )}
+                                  </AnimatePresence>
+                                </React.Fragment>
+                              )
+                            })}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )
         })}
@@ -611,20 +625,16 @@ export function PRDiffView({
 }
 
 // ---------------------------------------------------------------------------
-// Static styles
+// Static styles remain minimal, handled mostly via Tailwind
 // ---------------------------------------------------------------------------
 
 const DIFF_STYLES = `
   .diff-row td {
     padding-top: 0;
     padding-bottom: 0;
-    line-height: 20px;
+    line-height: 22px;
   }
-  .diff-row--annotated {
-    border-left: 1px solid hsl(48, 60%, 50%, 0.25);
-  }
-  .diff-row:hover td:first-child,
-  .diff-row:hover td:nth-child(2) {
-    background-color: hsl(220, 14%, 10%, 0.6);
+  .diff-row:hover td:first-child .absolute.inset-y-0.left-0 {
+    width: 3px;
   }
 `

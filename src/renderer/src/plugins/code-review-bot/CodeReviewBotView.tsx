@@ -65,6 +65,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
   const loadHistory = useReviewStore((s) => s.loadHistory)
   const addHistoryEntry = useReviewStore((s) => s.addHistoryEntry)
   const updateComment = useReviewStore((s) => s.updateComment)
+  const toggleCommentPost = useReviewStore((s) => s.toggleCommentPost)
   const loadPersistedSessions = useReviewStore((s) => s.loadPersistedSessions)
   const restoreSessionFromHistory = useReviewStore((s) => s.restoreSessionFromHistory)
   const userComments = useReviewStore((s) => s.userComments)
@@ -442,6 +443,7 @@ export default function CodeReviewBotView(): React.JSX.Element {
                     onPostAll={handlePostAll}
                     onNewReview={handleNewReview}
                     onUpdateComment={updateComment}
+                    onToggleCommentPost={toggleCommentPost}
                     isConnected={isConnected}
                     hasAgent={hasAgent}
                   />

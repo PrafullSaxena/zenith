@@ -68,6 +68,7 @@ interface ReviewStoreState {
   cancelReview: () => void
   clearSession: (prId: number) => void
   updateComment: (index: number, newText: string) => void
+  toggleCommentPost: (index: number) => void
   postComment: (
     workspace: string,
     repoSlug: string,
@@ -743,6 +744,20 @@ export const useReviewStore = create<ReviewStoreState>((set, get) => ({
 
     const updatedComments = session.comments.map((c, i) =>
       i === index ? { ...c, body: newText } : c
+    )
+    const updated = { ...session, comments: updatedComments }
+    set({
+      currentSession: updated,
+      sessions: { ...get().sessions, [session.prId]: updated }
+    })
+  },
+
+  toggleCommentPost: (index: number) => {
+    const session = get().currentSession
+    if (!session) return
+
+    const updatedComments = session.comments.map((c, i) =>
+      i === index ? { ...c, shouldPost: !c.shouldPost } : c
     )
     const updated = { ...session, comments: updatedComments }
     set({
