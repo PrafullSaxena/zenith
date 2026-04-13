@@ -79,7 +79,16 @@ function DrawingCanvas({ snapshot, onSave }: DrawingCanvasProps): React.JSX.Elem
     // fetching from https://esm.sh CDN which is blocked by the app's CSP.
     // Fonts are copied from node_modules to public/excalidraw-assets/ by the
     // Vite plugin in electron.vite.config.ts at build/dev-start time.
-    window.EXCALIDRAW_ASSET_PATH = '/excalidraw-assets/'
+    //
+    // IMPORTANT: cannot use a root-relative path like '/excalidraw-assets/'
+    // because in production Electron loads the renderer via file:// protocol,
+    // which gives window.location.origin === "null" (literal string). Excalidraw's
+    // normalizeBaseUrl does new URL(path, "null") → throws → no URL pushed →
+    // falls through to CDN fallback (esm.sh) which is blocked by CSP.
+    //
+    // Fix: compute an absolute URL from window.location.href, which is a full
+    // file:/// URL in production and http://localhost in dev. Both resolve correctly.
+    window.EXCALIDRAW_ASSET_PATH = new URL('./excalidraw-assets/', window.location.href).href
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }

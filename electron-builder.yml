@@ -12,6 +12,7 @@ files:
 asarUnpack:
   - resources/**
   - '**/better-sqlite3/**'
+  - '**/excalidraw-assets/**'
 win:
   executableName: zenith
 nsis:

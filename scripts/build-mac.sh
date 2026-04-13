@@ -80,6 +80,32 @@ info "Building application (electron-vite build)..."
 npm run build
 ok "Application built successfully"
 
+# ── Step 3.5: Verify Excalidraw font assets ───────────────────
+# The Vite plugin (copyExcalidrawFonts in electron.vite.config.ts) copies
+# fonts from node_modules → src/renderer/public/excalidraw-assets/ at build
+# time, and Vite includes them in out/renderer/.
+#
+# In production the renderer loads via file:// — fonts cannot be fetched from
+# the CDN fallback (blocked by CSP). They MUST be in the built output and
+# extracted from the asar (asarUnpack entry in electron-builder.yml).
+# This step catches any silent Vite plugin failures before packaging.
+FONT_SRC="$PROJECT_DIR/node_modules/@excalidraw/excalidraw/dist/prod/fonts"
+FONT_OUT="$PROJECT_DIR/out/renderer/excalidraw-assets/fonts"
+FONT_CHECK="$FONT_OUT/Excalifont"
+
+info "Verifying Excalidraw font assets in build output..."
+if [ -d "$FONT_CHECK" ]; then
+  FONT_COUNT=$(find "$FONT_CHECK" -name "*.woff2" | wc -l | tr -d ' ')
+  ok "Excalifont woff2 files present: $FONT_COUNT"
+else
+  warn "Excalidraw fonts missing from out/renderer — copying from node_modules (Vite plugin may have failed)"
+  [ -d "$FONT_SRC" ] || error "Font source not found: $FONT_SRC  (run 'npm install' first)"
+  mkdir -p "$FONT_OUT"
+  cp -r "$FONT_SRC"/. "$FONT_OUT"/
+  FONT_COUNT=$(find "$FONT_OUT/Excalifont" -name "*.woff2" 2>/dev/null | wc -l | tr -d ' ')
+  ok "Fonts copied — Excalifont woff2 files: $FONT_COUNT"
+fi
+
 # ── Step 4: Package with electron-builder ────────────────────
 info "Packaging ${APP_NAME}.app for macOS${ARCH:+ ($ARCH)}..."
 npx electron-builder --mac $ARCH
