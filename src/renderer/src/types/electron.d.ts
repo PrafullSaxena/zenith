@@ -314,16 +314,17 @@ export interface ElectronAPI {
     loadAudio: (noteId: string) => Promise<number[] | null>
   }
   taskgroomer: {
-    createTask: (args: {
-      text: string
-      captureSource: 'typed' | 'clipboard'
-    }) => Promise<Task>
+    createTask: (args: { text: string; captureSource: 'typed' | 'clipboard' }) => Promise<Task>
     listTasks: (args?: { statuses?: string[] }) => Promise<Task[]>
     updateTask: (args: {
       id: string
       fields: Partial<Omit<Task, 'id' | 'createdAt'>>
     }) => Promise<Task>
     deleteTask: (args: { id: string }) => Promise<{ success: boolean }>
+  }
+  capture: {
+    getClipboard: () => Promise<string | null>
+    close: () => Promise<void>
   }
 }
 
