@@ -44,10 +44,15 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 **Goal**: The Task Groomer has a persistent task database in the main process, a repository API, and IPC channels wired — app boots and tasks persist across restarts
 **Depends on**: Phase 13
 **Requirements**: TDATA-01, TDATA-02, TDATA-03
+**Plans:** 2 plans
 **Success Criteria** (what must be TRUE):
   1. A task captured via any method persists to tasks.db and survives app restart
   2. Task CRUD (create, read, update status, delete) works via IPC from renderer
   3. Grooming schedule preference persists in electron-store
+
+Plans:
+- [ ] 14-01-PLAN.md — TaskDatabase class + four taskgroomer:* IPC handlers in main process
+- [ ] 14-02-PLAN.md — Preload bridge, ElectronAPI types, plugin registry entry + placeholder view
 
 ### Phase 15: Capture
 **Goal**: The user can capture a task from anywhere in the app (or OS, via global hotkey) using a lightweight popup; clipboard content is auto-detected and pre-filled
@@ -108,7 +113,7 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1-13 (v1.0 + v2.0) | 42/42 | ✅ Complete | 2026-05-20 |
-| 14. Data Foundation | 0/? | Not started | — |
+| 14. Data Foundation | 0/2 | Not started | — |
 | 15. Capture | 0/? | Not started | — |
 | 16. Dumpyard View | 0/? | Not started | — |
 | 17. Integrations | 0/? | Not started | — |
@@ -117,4 +122,4 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 | 20. Settings & Polish | 0/? | Not started | — |
 
 ---
-*Roadmap updated: 2026-05-20 — v2.0 archived, v3.0 Task Groomer planned*
+*Roadmap updated: 2026-05-20 — Phase 14 planned (2 plans)*
