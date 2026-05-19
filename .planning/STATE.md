@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 13 — Code Review Bot User Comments
-Plan: 13-02 complete — Inline composer and user comment cards in PRDiffView
-Status: Phase 13 complete — all 02/02 plans executed
-Last activity: 2026-04-04 — 13-02 inline-composer-and-user-comment-cards complete
+Phase: 05 — Cleanup
+Plan: 05-01 complete — Delete Glass components, 3D views, and old dependencies
+Status: Phase 05 complete — all 01/01 plans executed
+Last activity: 2026-05-19 — 05-01 delete-glass-3d-old-deps complete
 
-Progress: [██░░░░░░░░] 9% (v2.0 milestone)
+Progress: [██░░░░░░░░] 10% (v2.0 milestone)
 
 ## Performance Metrics
 
@@ -82,6 +82,7 @@ Key decisions for v2.0:
 - [Phase 13-02-codereviewbot-user-comments]: activeComposerKey toggles on second click — same key closes the composer (toggle semantics)
 - [Phase 13-02-codereviewbot-user-comments]: New (right) line number td handles click — anchors annotation to new-file line number convention matching ReviewComment.line
 - [Phase 13-02-codereviewbot-user-comments]: User comment and AI comment rows are sibling tr elements in tbody — no nesting to avoid table layout breakage
+- [Phase 05-cleanup]: cortex-theme.ts retained at src/renderer/src/plugins/cortex/cortex-theme.ts — it is plugin-specific color utilities (KIND_COLORS, METHOD_COLORS, REPO_TYPE_GRADIENTS), not a Glass design system file; lib/theme.ts does not contain these constants; all 5 import sites still need them
 
 ### Pending Todos
 
@@ -93,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04
-Stopped at: Completed 13-codereviewbot-user-comments/13-02-PLAN.md
+Last session: 2026-05-19
+Stopped at: Completed 05-cleanup/05-01-PLAN.md
 Resume file: next phase

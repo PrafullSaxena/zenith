@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Token Layer** - Generate all shadcn/Animate-UI base components customized with zenith-violet tokens
 - [x] **Phase 3: Shared Components** - Build 9 reusable components, AppLayout, Sidebar, PluginShell, CommandPalette, and global toast (completed 2026-03-26)
 - [ ] **Phase 4: Screen Migration** - Migrate all 10 screens/plugins to use shared components (parallel agents)
-- [ ] **Phase 5: 3D Removal & Cleanup** - Delete Glass components, Three.js code, and old dependencies
+- [x] **Phase 5: 3D Removal & Cleanup** - Delete Glass components, Three.js code, and old dependencies (completed 2026-05-19)
 - [ ] **Phase 6: Polish** - Micro-interactions, empty states, command palette wiring, a11y audit, bundle audit
 - [x] **Phase 7: Data Foundation** - Initialize pricing.db, PricingRepository, core IPC handlers, and credential storage (completed 2026-03-30)
 - [x] **Phase 8: Pricing Sync** - PricingSync service, AWS/Azure/GCP fetchers, delta sync, regional data, sync IPC channels (completed 2026-03-30)
@@ -270,7 +270,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 2. Token Layer | 0/3 | Not started | - |
 | 3. Shared Components | 0/6 | Complete    | 2026-03-26 |
 | 4. Screen Migration | 0/10 | Not started | - |
-| 5. 3D Removal & Cleanup | 0/1 | Not started | - |
+| 5. 3D Removal & Cleanup | 1/1 | Complete    | 2026-05-19 |
 | 6. Polish | 0/3 | Not started | - |
 | 7. Data Foundation | 2/2 | Complete    | 2026-03-30 |
 | 8. Pricing Sync | 3/3 | Complete    | 2026-03-30 |
