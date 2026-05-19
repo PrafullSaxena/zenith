@@ -31,7 +31,7 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 ### 📋 v3.0 — Task Groomer Plugin (Planned)
 
 - [x] **Phase 14: Data Foundation** — SQLite task store, IPC handlers, electron-store for grooming schedule config (completed 2026-05-19)
-- [ ] **Phase 15: Capture** — Global hotkey registration, popup window, clipboard auto-detect
+- [x] **Phase 15: Capture** — Global hotkey registration, popup window, clipboard auto-detect (completed 2026-05-19)
 - [ ] **Phase 16: Dumpyard View** — Plugin screen, task cards, status transitions, aging indicator
 - [ ] **Phase 17: Integrations** — Jira, Confluence, Google API clients + credential storage
 - [ ] **Phase 18: AI Grooming Engine** — Grooming agent, scheduling, per-task output (priority, evidence, research mini-summary)
@@ -58,7 +58,7 @@ Plans:
 **Goal**: The user can capture a task from anywhere in the app (or OS, via global hotkey) using a lightweight popup; clipboard content is auto-detected and pre-filled
 **Depends on**: Phase 14
 **Requirements**: CAP-01, CAP-02, CAP-03, CAP-04
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 **Success Criteria** (what must be TRUE):
   1. Pressing Cmd/Ctrl+Shift+D from any Zenith screen opens the capture popup within 150ms
   2. Submitting text in the popup creates a task in Dumpyard status and closes the popup
@@ -120,7 +120,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1-13 (v1.0 + v2.0) | 42/42 | ✅ Complete | 2026-05-20 |
 | 14. Data Foundation | 2/2 | Complete    | 2026-05-19 |
-| 15. Capture | 0/? | Not started | — |
+| 15. Capture | 0/? | Complete    | 2026-05-19 |
 | 16. Dumpyard View | 0/? | Not started | — |
 | 17. Integrations | 0/? | Not started | — |
 | 18. AI Grooming Engine | 0/? | Not started | — |
