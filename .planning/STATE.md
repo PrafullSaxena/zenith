@@ -61,5 +61,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 15 context gathered — popup appearance, input behavior, clipboard detection, post-submit flow all decided
-Resume file: /gsd:plan-phase 15
+Stopped at: Phase 16 context gathered — tabs layout, compact cards, status dropdown, stale indicator, empty states all decided
+Resume file: /gsd:plan-phase 16
