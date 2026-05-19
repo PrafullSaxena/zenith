@@ -10,6 +10,7 @@ import { HLJS_THEME_CSS } from './lib/hljs-themes'
 const MissionControl = React.lazy(() => import('./components/dashboard/MissionControl'))
 const ActivityLog = React.lazy(() => import('./components/activity/ActivityLog'))
 const AboutView = React.lazy(() => import('./components/about/AboutView'))
+const CaptureApp = React.lazy(() => import('./plugins/capture/CaptureApp'))
 
 function LoadingFallback(): React.JSX.Element {
   return (
@@ -57,6 +58,17 @@ function App(): React.JSX.Element {
   return (
     <HashRouter>
       <Routes>
+        {/* Capture popup — no sidebar, no AppLayout */}
+        <Route
+          path="/capture"
+          element={
+            <Suspense fallback={null}>
+              <ErrorBoundary>
+                <CaptureApp />
+              </ErrorBoundary>
+            </Suspense>
+          }
+        />
         <Route element={<AppLayout />}>
           {PLUGINS.map((plugin) => (
             <Route
