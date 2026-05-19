@@ -87,12 +87,19 @@ Plans:
 ### Phase 17: Integrations
 **Goal**: Jira, Confluence, and Google API clients are wired with credential storage; they can be queried from the grooming agent
 **Depends on**: Phase 16
-**Requirements**: INT-01, INT-02, INT-03, INT-04
+**Requirements**: INT-01, INT-02, INT-03, INT-04, TDATA-03
+**Plans:** 4 plans
 **Success Criteria** (what must be TRUE):
   1. Jira credentials stored encrypted; calling the Jira client returns issues matching a query string
   2. Confluence client returns page content for a query; credentials stored the same way
   3. Google Search client returns ranked links for a query (API key stored encrypted)
   4. All three clients handle missing credentials gracefully (return empty, not crash)
+
+Plans:
+- [ ] 17-01-PLAN.md — Integrations credential store (safeStorage wrappers, key constants)
+- [ ] 17-02-PLAN.md — Jira + Confluence API clients (search, direct key lookup, skip sentinel)
+- [ ] 17-03-PLAN.md — Web search client (Gemini CLI → Playwright DuckDuckGo fallback)
+- [ ] 17-04-PLAN.md — IPC wiring (integrations:* handlers), preload bridge, Settings UI (TaskGroomerSettings)
 
 ### Phase 18: AI Grooming Engine
 **Goal**: The AI grooming agent processes all Dump tasks, assigns priorities, enriches with evidence from Jira/Confluence/Google, and writes results back to the DB — runs on schedule and on-demand
@@ -128,10 +135,10 @@ Plans:
 | 14. Data Foundation | 2/2 | Complete    | 2026-05-19 |
 | 15. Capture | 0/? | Complete    | 2026-05-19 |
 | 16. Dumpyard View | 3/3 | Complete    | 2026-05-19 |
-| 17. Integrations | 0/? | Not started | — |
+| 17. Integrations | 0/4 | Planned | — |
 | 18. AI Grooming Engine | 0/? | Not started | — |
 | 19. Re-groom + Digest | 0/? | Not started | — |
 | 20. Settings & Polish | 0/? | Not started | — |
 
 ---
-*Roadmap updated: 2026-05-20 — Phase 14 planned (2 plans)*
+*Roadmap updated: 2026-05-20 — Phase 17 planned (4 plans)*
