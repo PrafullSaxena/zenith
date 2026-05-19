@@ -1,4 +1,4 @@
-import { ipcMain, safeStorage, shell, BrowserWindow, dialog, app, net } from 'electron'
+import { ipcMain, safeStorage, shell, BrowserWindow, dialog, app, net, clipboard } from 'electron'
 import Store from 'electron-store'
 import { getSettings, getSetting, setSetting, resetSettings, settingsStore } from './settings-store'
 import { TokenManager } from './bitbucket/token-manager'
@@ -55,6 +55,7 @@ import { buildEntityBatches } from './cortex/entity-enricher'
 import { buildValidationPrompt, buildValidationUserPrompt } from './cortex/analysis-validator'
 import path from 'node:path'
 import fs from 'node:fs'
+import { hideCaptureWindow } from './capture-window'
 import { initPricingDb } from './pricing/pricing-db'
 import { pricingRepository } from './pricing/pricing-repository'
 import {
@@ -1358,17 +1359,23 @@ export function registerIpcHandlers(): void {
   })
 
   // --- Task Groomer channels ---
-  ipcMain.handle('taskgroomer:createTask', (_event, args: { text: string; captureSource: 'typed' | 'clipboard' }) => {
-    return getTaskGroomerDb().createTask(args)
-  })
+  ipcMain.handle(
+    'taskgroomer:createTask',
+    (_event, args: { text: string; captureSource: 'typed' | 'clipboard' }) => {
+      return getTaskGroomerDb().createTask(args)
+    }
+  )
 
   ipcMain.handle('taskgroomer:listTasks', (_event, args?: { statuses?: string[] }) => {
     return getTaskGroomerDb().listTasks(args?.statuses)
   })
 
-  ipcMain.handle('taskgroomer:updateTask', (_event, args: { id: string; fields: Parameters<TaskDatabase['updateTask']>[0]['fields'] }) => {
-    return getTaskGroomerDb().updateTask({ id: args.id, fields: args.fields })
-  })
+  ipcMain.handle(
+    'taskgroomer:updateTask',
+    (_event, args: { id: string; fields: Parameters<TaskDatabase['updateTask']>[0]['fields'] }) => {
+      return getTaskGroomerDb().updateTask({ id: args.id, fields: args.fields })
+    }
+  )
 
   ipcMain.handle('taskgroomer:deleteTask', (_event, args: { id: string }) => {
     return getTaskGroomerDb().deleteTask(args.id)
@@ -1424,4 +1431,22 @@ export function registerIpcHandlers(): void {
       return { filePath }
     }
   )
+
+  // --- Capture popup channels ---
+  ipcMain.handle('capture:getClipboard', () => {
+    const text = clipboard.readText().trim()
+    if (!text) return null
+
+    // Match URLs (http/https prefix)
+    if (/^https?:\/\/.+/.test(text)) return text
+
+    // Match Jira-style ticket IDs: e.g. PROJ-123, ABC-4567
+    if (/^[A-Z][A-Z0-9]+-\d+$/.test(text)) return text
+
+    return null
+  })
+
+  ipcMain.handle('capture:close', () => {
+    hideCaptureWindow()
+  })
 }

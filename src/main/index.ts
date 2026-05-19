@@ -1,8 +1,9 @@
-import { app, BrowserWindow, Menu, nativeImage, session, systemPreferences } from 'electron'
+import { app, BrowserWindow, Menu, nativeImage, session, systemPreferences, globalShortcut } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { registerIpcHandlers, initPricingSync } from './ipc-handlers'
 import { getSetting } from './settings-store'
+import { showCaptureWindow } from './capture-window'
 import { installLogCollector } from './log-collector'
 import WinStateModule from 'electron-win-state'
 // CJS/ESM interop: electron-win-state uses module.exports = { default: Class }
@@ -144,6 +145,12 @@ app.whenReady().then(() => {
     initPricingSync(mainWindow)
   }
 
+  // Register global capture hotkey (Cmd/Ctrl+Shift+D)
+  const shortcut = process.platform === 'darwin' ? 'Command+Shift+D' : 'Control+Shift+D'
+  globalShortcut.register(shortcut, () => {
+    showCaptureWindow()
+  })
+
   app.on('activate', () => {
     // On macOS re-create a window when dock icon is clicked and no windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -153,4 +160,9 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
+})
+
+// Unregister all global shortcuts on quit
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
 })
