@@ -53,6 +53,8 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 17-01]: CRED_JIRA_PROJECTS stored as plaintext (non-secret list); two plaintext helpers expose intent
 - [Phase 17-01]: Store named 'zenith-integrations-credentials' to isolate integration creds from launchpad store
 - [Phase 17-integrations]: Two-strategy search: Gemini CLI primary, Playwright/DuckDuckGo HTML fallback — no API key required
+- [Phase 17-02]: null credentials returns skip sentinel immediately — grooming never blocked by unconfigured integrations
+- [Phase 17-02]: Node built-in fetch used in both clients — no node-fetch or axios dependency
 
 ### Pending Todos
 
