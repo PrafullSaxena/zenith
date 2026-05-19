@@ -88,7 +88,7 @@ Plans:
 **Goal**: Jira, Confluence, and Google API clients are wired with credential storage; they can be queried from the grooming agent
 **Depends on**: Phase 16
 **Requirements**: INT-01, INT-02, INT-03, INT-04, TDATA-03
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 **Success Criteria** (what must be TRUE):
   1. Jira credentials stored encrypted; calling the Jira client returns issues matching a query string
   2. Confluence client returns page content for a query; credentials stored the same way
@@ -135,7 +135,7 @@ Plans:
 | 14. Data Foundation | 2/2 | Complete    | 2026-05-19 |
 | 15. Capture | 0/? | Complete    | 2026-05-19 |
 | 16. Dumpyard View | 3/3 | Complete    | 2026-05-19 |
-| 17. Integrations | 0/4 | Planned | — |
+| 17. Integrations | 1/4 | In Progress|  |
 | 18. AI Grooming Engine | 0/? | Not started | — |
 | 19. Re-groom + Digest | 0/? | Not started | — |
 | 20. Settings & Polish | 0/? | Not started | — |

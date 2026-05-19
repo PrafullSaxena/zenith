@@ -49,6 +49,9 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - Preload uses unknown/unknown[] return types; typed returns live only in electron.d.ts
 - PluginId union extended explicitly in plugin.ts (string literal union, not inferred from PLUGINS array)
 - settingsSchema keys use dot notation (schedule.enabled, schedule.time, schedule.frequency) matching electron-store path convention
+- [Phase 17-01]: Used base64 encoding to match pricing/credentials.ts reference (plan said hex)
+- [Phase 17-01]: CRED_JIRA_PROJECTS stored as plaintext (non-secret list); two plaintext helpers expose intent
+- [Phase 17-01]: Store named 'zenith-integrations-credentials' to isolate integration creds from launchpad store
 
 ### Pending Todos
 
