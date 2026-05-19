@@ -9,11 +9,11 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 
 ## Current Position
 
-Milestone: v2.0 — COMPLETE (shipped 2026-05-20)
-Next milestone: v3.0 — Task Groomer Plugin
-Status: Between milestones — ready to plan Phase 14
+Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
+Phase: 14-data-foundation — Plan 1 of N complete
+Status: Executing Phase 14
 
-Progress: [██████████] 100% (v2.0 complete)
+Progress: [█░░░░░░░░░] 10% (Phase 14 Plan 01 complete)
 
 ## Performance Metrics
 
@@ -38,6 +38,12 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - Stale indicator after 3 days in Dump status
 - Clipboard auto-detection on popup open (URL, Jira ID, error text patterns)
 
+**Phase 14 Plan 01 decisions (2026-05-19):**
+- All 14 schema columns present from day one (grooming metadata nullable) — zero migrations needed until Phase 18
+- No ORDER BY in listTasks SQL — renderer Zustand store handles sort order
+- crypto.randomUUID() for UUID generation (built-in Node.js, no external dep)
+- deleteTask is idempotent (success:true always); updateTask throws on missing id (fail-fast)
+
 ### Pending Todos
 
 None.
@@ -48,6 +54,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-20
-Stopped at: v2.0 milestone complete, v3.0 requirements and roadmap defined
-Resume file: /gsd:plan-phase 14
+Last session: 2026-05-19
+Stopped at: Phase 14 Plan 01 complete — TaskDatabase + IPC handlers
+Resume file: /gsd:execute-phase 14 (Plan 02)

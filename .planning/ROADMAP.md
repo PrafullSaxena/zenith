@@ -43,8 +43,8 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 ### Phase 14: Data Foundation
 **Goal**: The Task Groomer has a persistent task database in the main process, a repository API, and IPC channels wired — app boots and tasks persist across restarts
 **Depends on**: Phase 13
-**Requirements**: TDATA-01, TDATA-02, TDATA-03
-**Plans:** 2 plans
+**Requirements**: TDATA-01, TDATA-02
+**Plans:** 1/2 plans executed
 **Success Criteria** (what must be TRUE):
   1. A task captured via any method persists to tasks.db and survives app restart
   2. Task CRUD (create, read, update status, delete) works via IPC from renderer
@@ -113,7 +113,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1-13 (v1.0 + v2.0) | 42/42 | ✅ Complete | 2026-05-20 |
-| 14. Data Foundation | 0/2 | Not started | — |
+| 14. Data Foundation | 1/2 | In Progress|  |
 | 15. Capture | 0/? | Not started | — |
 | 16. Dumpyard View | 0/? | Not started | — |
 | 17. Integrations | 0/? | Not started | — |

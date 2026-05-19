@@ -37,7 +37,7 @@
 
 ### Data & Storage
 
-- [ ] **TDATA-01**: Tasks persist in tasks.db (SQLite), survive app restart
+- [x] **TDATA-01**: Tasks persist in tasks.db (SQLite), survive app restart
 - [ ] **TDATA-02**: Grooming schedule (time, enabled) persists in electron-store and is configurable in Settings
 - [ ] **TDATA-03**: Integration credentials (Jira token, Confluence token, Google API key) stored encrypted via safeStorage
 
@@ -89,7 +89,7 @@
 | INT-02 | Phase 17 | Pending |
 | INT-03 | Phase 17 | Pending |
 | INT-04 | Phase 20 | Pending |
-| TDATA-01 | Phase 14 | Pending |
+| TDATA-01 | Phase 14 | Complete |
 | TDATA-02 | Phase 20 | Pending |
 | TDATA-03 | Phase 17 | Pending |
 
