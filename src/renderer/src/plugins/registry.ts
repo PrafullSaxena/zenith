@@ -175,6 +175,44 @@ export const PLUGINS: readonly PluginDefinition[] = [
       }
     ],
     defaultAgent: null
+  },
+  {
+    id: 'task-groomer',
+    name: 'Task Groomer',
+    description: 'Capture, groom, and prioritize development tasks with AI assistance',
+    icon: 'CheckSquare',
+    route: '/task-groomer',
+    component: React.lazy(() => import('./task-groomer/TaskGroomerView')),
+    settingsSchema: [
+      {
+        key: 'schedule.enabled',
+        label: 'Enable Scheduled Grooming',
+        type: 'boolean' as const,
+        description: 'Automatically groom tasks at the configured time',
+        defaultValue: true
+      },
+      {
+        key: 'schedule.time',
+        label: 'Grooming Time',
+        type: 'text' as const,
+        description: 'Time to run the grooming agent (HH:MM, 24-hour format)',
+        defaultValue: '09:00',
+        placeholder: '09:00'
+      },
+      {
+        key: 'schedule.frequency',
+        label: 'Grooming Frequency',
+        type: 'select' as const,
+        description: 'How often to run the grooming agent',
+        defaultValue: 'daily',
+        options: [
+          { label: 'Daily', value: 'daily' },
+          { label: 'Weekdays', value: 'weekdays' },
+          { label: 'Manual Only', value: 'manual' }
+        ]
+      }
+    ],
+    defaultAgent: null
   }
 ] as const
 
