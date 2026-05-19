@@ -61,5 +61,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 16 context gathered — tabs layout, compact cards, status dropdown, stale indicator, empty states all decided
-Resume file: /gsd:plan-phase 16
+Stopped at: Phase 17 context gathered — Integrations section in Settings, Jira/Confluence separate creds, Google free approach (Gemini CLI → Playwright), missing creds never block grooming
+Resume file: /gsd:plan-phase 17
