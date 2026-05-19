@@ -52,6 +52,7 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 17-01]: Used base64 encoding to match pricing/credentials.ts reference (plan said hex)
 - [Phase 17-01]: CRED_JIRA_PROJECTS stored as plaintext (non-secret list); two plaintext helpers expose intent
 - [Phase 17-01]: Store named 'zenith-integrations-credentials' to isolate integration creds from launchpad store
+- [Phase 17-integrations]: Two-strategy search: Gemini CLI primary, Playwright/DuckDuckGo HTML fallback — no API key required
 
 ### Pending Todos
 
