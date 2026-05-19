@@ -32,7 +32,7 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 - [x] **Phase 14: Data Foundation** — SQLite task store, IPC handlers, electron-store for grooming schedule config (completed 2026-05-19)
 - [x] **Phase 15: Capture** — Global hotkey registration, popup window, clipboard auto-detect (completed 2026-05-19)
-- [ ] **Phase 16: Dumpyard View** — Plugin screen, task cards, status transitions, aging indicator
+- [x] **Phase 16: Dumpyard View** — Plugin screen, task cards, status transitions, aging indicator (completed 2026-05-19)
 - [ ] **Phase 17: Integrations** — Jira, Confluence, Google API clients + credential storage
 - [ ] **Phase 18: AI Grooming Engine** — Grooming agent, scheduling, per-task output (priority, evidence, research mini-summary)
 - [ ] **Phase 19: Re-groom + Digest** — On-demand re-groom per task, post-grooming digest view
@@ -73,7 +73,7 @@ Plans:
 **Goal**: The Task Groomer plugin screen shows all tasks (ungroomed and groomed) with status controls and stale indicators; users can move tasks through their lifecycle
 **Depends on**: Phase 15
 **Requirements**: DUMP-01, DUMP-02, DUMP-03, DUMP-04
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 **Success Criteria** (what must be TRUE):
   1. The plugin screen shows two sections: Dumpyard (Dump status) and Groomed tasks
   2. Each task card shows: text, status badge, creation time, stale indicator (if 3+ days in Dump)
@@ -127,7 +127,7 @@ Plans:
 | 1-13 (v1.0 + v2.0) | 42/42 | ✅ Complete | 2026-05-20 |
 | 14. Data Foundation | 2/2 | Complete    | 2026-05-19 |
 | 15. Capture | 0/? | Complete    | 2026-05-19 |
-| 16. Dumpyard View | 0/? | Not started | — |
+| 16. Dumpyard View | 3/3 | Complete    | 2026-05-19 |
 | 17. Integrations | 0/? | Not started | — |
 | 18. AI Grooming Engine | 0/? | Not started | — |
 | 19. Re-groom + Digest | 0/? | Not started | — |
