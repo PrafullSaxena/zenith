@@ -56,6 +56,25 @@ import { buildValidationPrompt, buildValidationUserPrompt } from './cortex/analy
 import path from 'node:path'
 import fs from 'node:fs'
 import { hideCaptureWindow } from './capture-window'
+import {
+  saveIntegrationCredential,
+  getIntegrationCredential,
+  hasIntegrationCredential,
+  deleteIntegrationCredential,
+  getIntegrationCredentialMasked,
+  saveIntegrationSetting,
+  getIntegrationSetting,
+  CRED_JIRA_BASE_URL,
+  CRED_JIRA_EMAIL,
+  CRED_JIRA_API_TOKEN,
+  CRED_JIRA_PROJECTS,
+  CRED_CONFLUENCE_BASE_URL,
+  CRED_CONFLUENCE_EMAIL,
+  CRED_CONFLUENCE_API_TOKEN
+} from './integrations/credentials'
+import { searchJira, type JiraCredentials } from './integrations/jira-client'
+import { searchConfluence, type ConfluenceCredentials } from './integrations/confluence-client'
+import { webSearch } from './integrations/search-client'
 import { initPricingDb } from './pricing/pricing-db'
 import { pricingRepository } from './pricing/pricing-repository'
 import {
@@ -1448,5 +1467,131 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('capture:close', () => {
     hideCaptureWindow()
+  })
+
+  // --- Integrations channels ---
+
+  ipcMain.handle('integrations:jira:saveCredentials', (_event, creds: {
+    baseUrl: string; email: string; apiToken: string; projects: string
+  }) => {
+    saveIntegrationCredential(CRED_JIRA_BASE_URL, creds.baseUrl)
+    saveIntegrationCredential(CRED_JIRA_EMAIL, creds.email)
+    saveIntegrationCredential(CRED_JIRA_API_TOKEN, creds.apiToken)
+    saveIntegrationSetting(CRED_JIRA_PROJECTS, creds.projects)
+    return { saved: true }
+  })
+
+  ipcMain.handle('integrations:jira:getStatus', () => {
+    return {
+      configured: hasIntegrationCredential(CRED_JIRA_API_TOKEN),
+      baseUrl: getIntegrationCredential(CRED_JIRA_BASE_URL),
+      email: getIntegrationCredential(CRED_JIRA_EMAIL),
+      apiTokenMasked: getIntegrationCredentialMasked(CRED_JIRA_API_TOKEN),
+      projects: getIntegrationSetting(CRED_JIRA_PROJECTS)
+    }
+  })
+
+  ipcMain.handle('integrations:jira:clearCredentials', () => {
+    deleteIntegrationCredential(CRED_JIRA_BASE_URL)
+    deleteIntegrationCredential(CRED_JIRA_EMAIL)
+    deleteIntegrationCredential(CRED_JIRA_API_TOKEN)
+    return { cleared: true }
+  })
+
+  ipcMain.handle('integrations:jira:testConnection', async () => {
+    const baseUrl = getIntegrationCredential(CRED_JIRA_BASE_URL)
+    const email = getIntegrationCredential(CRED_JIRA_EMAIL)
+    const apiToken = getIntegrationCredential(CRED_JIRA_API_TOKEN)
+    if (!baseUrl || !email || !apiToken) {
+      return { success: false, error: 'Credentials not configured' }
+    }
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000)
+      const auth = Buffer.from(`${email}:${apiToken}`).toString('base64')
+      const resp = await fetch(`${baseUrl}/rest/api/3/project/search?maxResults=1`, {
+        headers: { Authorization: `Basic ${auth}`, Accept: 'application/json' },
+        signal: controller.signal
+      })
+      clearTimeout(timeout)
+      if (!resp.ok) return { success: false, error: `HTTP ${resp.status}` }
+      return { success: true, error: null }
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+    }
+  })
+
+  ipcMain.handle('integrations:jira:search', async (_event, query: string) => {
+    const baseUrl = getIntegrationCredential(CRED_JIRA_BASE_URL)
+    const email = getIntegrationCredential(CRED_JIRA_EMAIL)
+    const apiToken = getIntegrationCredential(CRED_JIRA_API_TOKEN)
+    const projectsRaw = getIntegrationSetting(CRED_JIRA_PROJECTS)
+    const projects = projectsRaw ? projectsRaw.split(',').map(p => p.trim()).filter(Boolean) : []
+    const credentials: JiraCredentials | null = (baseUrl && email && apiToken)
+      ? { baseUrl, email, apiToken, projects }
+      : null
+    return searchJira(query, credentials)
+  })
+
+  ipcMain.handle('integrations:confluence:saveCredentials', (_event, creds: {
+    baseUrl: string; email: string; apiToken: string
+  }) => {
+    saveIntegrationCredential(CRED_CONFLUENCE_BASE_URL, creds.baseUrl)
+    saveIntegrationCredential(CRED_CONFLUENCE_EMAIL, creds.email)
+    saveIntegrationCredential(CRED_CONFLUENCE_API_TOKEN, creds.apiToken)
+    return { saved: true }
+  })
+
+  ipcMain.handle('integrations:confluence:getStatus', () => {
+    return {
+      configured: hasIntegrationCredential(CRED_CONFLUENCE_API_TOKEN),
+      baseUrl: getIntegrationCredential(CRED_CONFLUENCE_BASE_URL),
+      email: getIntegrationCredential(CRED_CONFLUENCE_EMAIL),
+      apiTokenMasked: getIntegrationCredentialMasked(CRED_CONFLUENCE_API_TOKEN)
+    }
+  })
+
+  ipcMain.handle('integrations:confluence:clearCredentials', () => {
+    deleteIntegrationCredential(CRED_CONFLUENCE_BASE_URL)
+    deleteIntegrationCredential(CRED_CONFLUENCE_EMAIL)
+    deleteIntegrationCredential(CRED_CONFLUENCE_API_TOKEN)
+    return { cleared: true }
+  })
+
+  ipcMain.handle('integrations:confluence:testConnection', async () => {
+    const baseUrl = getIntegrationCredential(CRED_CONFLUENCE_BASE_URL)
+    const email = getIntegrationCredential(CRED_CONFLUENCE_EMAIL)
+    const apiToken = getIntegrationCredential(CRED_CONFLUENCE_API_TOKEN)
+    if (!baseUrl || !email || !apiToken) {
+      return { success: false, error: 'Credentials not configured' }
+    }
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000)
+      const auth = Buffer.from(`${email}:${apiToken}`).toString('base64')
+      const resp = await fetch(`${baseUrl}/wiki/rest/api/space?limit=1`, {
+        headers: { Authorization: `Basic ${auth}`, Accept: 'application/json' },
+        signal: controller.signal
+      })
+      clearTimeout(timeout)
+      if (!resp.ok) return { success: false, error: `HTTP ${resp.status}` }
+      return { success: true, error: null }
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+    }
+  })
+
+  ipcMain.handle('integrations:confluence:search', async (_event, query: string) => {
+    const baseUrl = getIntegrationCredential(CRED_CONFLUENCE_BASE_URL)
+    const email = getIntegrationCredential(CRED_CONFLUENCE_EMAIL)
+    const apiToken = getIntegrationCredential(CRED_CONFLUENCE_API_TOKEN)
+    const credentials: ConfluenceCredentials | null = (baseUrl && email && apiToken)
+      ? { baseUrl, email, apiToken }
+      : null
+    return searchConfluence(query, credentials)
+  })
+
+  ipcMain.handle('integrations:web:search', async (_event, query: string) => {
+    return webSearch(query)
   })
 }

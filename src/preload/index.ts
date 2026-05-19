@@ -479,11 +479,39 @@ const api = {
       ipcRenderer.invoke('taskgroomer:deleteTask', args)
   },
   capture: {
-    getClipboard: (): Promise<string | null> =>
-      ipcRenderer.invoke('capture:getClipboard'),
+    getClipboard: (): Promise<string | null> => ipcRenderer.invoke('capture:getClipboard'),
 
-    close: (): Promise<void> =>
-      ipcRenderer.invoke('capture:close')
+    close: (): Promise<void> => ipcRenderer.invoke('capture:close')
+  },
+  integrations: {
+    jira: {
+      saveCredentials: (creds: { baseUrl: string; email: string; apiToken: string; projects: string }) =>
+        ipcRenderer.invoke('integrations:jira:saveCredentials', creds),
+      getStatus: () =>
+        ipcRenderer.invoke('integrations:jira:getStatus'),
+      clearCredentials: () =>
+        ipcRenderer.invoke('integrations:jira:clearCredentials'),
+      testConnection: () =>
+        ipcRenderer.invoke('integrations:jira:testConnection'),
+      search: (query: string) =>
+        ipcRenderer.invoke('integrations:jira:search', query)
+    },
+    confluence: {
+      saveCredentials: (creds: { baseUrl: string; email: string; apiToken: string }) =>
+        ipcRenderer.invoke('integrations:confluence:saveCredentials', creds),
+      getStatus: () =>
+        ipcRenderer.invoke('integrations:confluence:getStatus'),
+      clearCredentials: () =>
+        ipcRenderer.invoke('integrations:confluence:clearCredentials'),
+      testConnection: () =>
+        ipcRenderer.invoke('integrations:confluence:testConnection'),
+      search: (query: string) =>
+        ipcRenderer.invoke('integrations:confluence:search', query)
+    },
+    web: {
+      search: (query: string) =>
+        ipcRenderer.invoke('integrations:web:search', query)
+    }
   }
 }
 

@@ -326,6 +326,25 @@ export interface ElectronAPI {
     getClipboard: () => Promise<string | null>
     close: () => Promise<void>
   }
+  integrations: {
+    jira: {
+      saveCredentials: (creds: { baseUrl: string; email: string; apiToken: string; projects: string }) => Promise<{ saved: boolean }>
+      getStatus: () => Promise<{ configured: boolean; baseUrl: string | null; email: string | null; apiTokenMasked: string | null; projects: string | null }>
+      clearCredentials: () => Promise<{ cleared: boolean }>
+      testConnection: () => Promise<{ success: boolean; error: string | null }>
+      search: (query: string) => Promise<unknown>
+    }
+    confluence: {
+      saveCredentials: (creds: { baseUrl: string; email: string; apiToken: string }) => Promise<{ saved: boolean }>
+      getStatus: () => Promise<{ configured: boolean; baseUrl: string | null; email: string | null; apiTokenMasked: string | null }>
+      clearCredentials: () => Promise<{ cleared: boolean }>
+      testConnection: () => Promise<{ success: boolean; error: string | null }>
+      search: (query: string) => Promise<unknown>
+    }
+    web: {
+      search: (query: string) => Promise<unknown>
+    }
+  }
 }
 
 declare global {
