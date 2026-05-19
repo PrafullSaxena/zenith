@@ -61,5 +61,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 14 complete (2/2 plans) — tasks.db, IPC handlers, preload bridge, ElectronAPI types, plugin registry, placeholder view all shipped
-Resume file: /gsd:discuss-phase 15
+Stopped at: Phase 15 context gathered — popup appearance, input behavior, clipboard detection, post-submit flow all decided
+Resume file: /gsd:plan-phase 15
