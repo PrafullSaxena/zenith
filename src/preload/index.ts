@@ -414,6 +414,19 @@ const api = {
     loadAudio: (noteId: string): Promise<number[] | null> =>
       ipcRenderer.invoke('nebula:loadAudio', noteId),
   },
+  taskgroomer: {
+    createTask: (args: { text: string; captureSource: 'typed' | 'clipboard' }): Promise<unknown> =>
+      ipcRenderer.invoke('taskgroomer:createTask', args),
+
+    listTasks: (args?: { statuses?: string[] }): Promise<unknown[]> =>
+      ipcRenderer.invoke('taskgroomer:listTasks', args),
+
+    updateTask: (args: { id: string; fields: Record<string, unknown> }): Promise<unknown> =>
+      ipcRenderer.invoke('taskgroomer:updateTask', args),
+
+    deleteTask: (args: { id: string }): Promise<{ success: boolean }> =>
+      ipcRenderer.invoke('taskgroomer:deleteTask', args),
+  },
 }
 
 console.log('[preload] API namespaces:', Object.keys(api))
