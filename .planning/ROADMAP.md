@@ -113,7 +113,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1-13 (v1.0 + v2.0) | 42/42 | ✅ Complete | 2026-05-20 |
-| 14. Data Foundation | 2/2 | Complete   | 2026-05-19 |
+| 14. Data Foundation | 2/2 | Complete    | 2026-05-19 |
 | 15. Capture | 0/? | Not started | — |
 | 16. Dumpyard View | 0/? | Not started | — |
 | 17. Integrations | 0/? | Not started | — |
