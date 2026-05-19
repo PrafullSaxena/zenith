@@ -6,6 +6,7 @@ import { SettingsField } from './SettingsField'
 import type { PluginId } from '../../types/plugin'
 
 const LaunchpadSettings = lazy(() => import('../../plugins/launchpad/LaunchpadSettings'))
+const TaskGroomerSettings = lazy(() => import('../../plugins/task-groomer/TaskGroomerSettings'))
 
 interface PluginSettingsProps {
   pluginId: PluginId
@@ -71,6 +72,14 @@ export function PluginSettings({ pluginId }: PluginSettingsProps): React.JSX.Ele
         }
       >
         <LaunchpadSettings />
+      </Suspense>
+    )
+  }
+
+  if (pluginId === 'task-groomer') {
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center py-12"><span className="text-sm text-muted-foreground">Loading settings...</span></div>}>
+        <TaskGroomerSettings />
       </Suspense>
     )
   }
