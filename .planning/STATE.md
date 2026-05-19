@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Reduce the friction of developer workflows through AI-augmented tooling — all in a single, fast, consistent desktop app.
-**Current focus:** v3.0 — Task Groomer Plugin (planning phase)
+**Current focus:** v3.0 — Task Groomer Plugin (Phase 15: Capture)
 
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 14-data-foundation — Plan 2 of N complete
-Status: Executing Phase 14
+Phase: 15-capture — Not started
+Status: Ready to discuss Phase 15
 
-Progress: [██░░░░░░░░] 20% (Phase 14 Plan 02 complete)
+Progress: [██░░░░░░░░] 14% (Phase 14 complete — 1/7 phases done)
 
 ## Performance Metrics
 
@@ -61,5 +61,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 14 Plan 02 complete — preload contextBridge + ElectronAPI + plugin registry
-Resume file: /gsd:execute-phase 14 (Plan 03)
+Stopped at: Phase 14 complete (2/2 plans) — tasks.db, IPC handlers, preload bridge, ElectronAPI types, plugin registry, placeholder view all shipped
+Resume file: /gsd:discuss-phase 15

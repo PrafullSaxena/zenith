@@ -65,9 +65,9 @@ Reduce the friction of common developer workflows through AI-augmented tooling �
 - **Branch:** feature/ui-revamp-air-2
 - **Shipped specs:** docs/superpowers/specs/2026-03-27-full-ui-revamp-design.md (v1.0), docs/superpowers/specs/2026-03-30-launchpad-enhancement-design.md (v2.0)
 - **Stack:** React 19, Tailwind v4, Framer Motion 12, Zustand 5, React Router 7, Electron 39, better-sqlite3, electron-store, Recharts, @tanstack/react-virtual
-- **DBs:** nebula.db (notes + FTS5), cortex.db (cache), pricing.db (cloud rates — seeded from TS catalogs, live-synced)
+- **DBs:** nebula.db (notes + FTS5), cortex.db (cache), pricing.db (cloud rates — seeded from TS catalogs, live-synced), tasks.db (Task Groomer — WAL mode, 14-column schema)
 - **LOC:** ~62,400 TypeScript (as of v2.0 completion)
-- **IPC channels:** ~80 channels covering all plugin ↔ main-process communication
+- **IPC channels:** ~84 channels covering all plugin ↔ main-process communication (4 taskgroomer:* added in Phase 14)
 - **Stores:** 13 Zustand stores (all plugin + system state)
 
 ## Constraints
@@ -94,7 +94,10 @@ Reduce the friction of common developer workflows through AI-augmented tooling �
 | Recharts for visualization | Declarative React API, works in Electron renderer, all chart types in one lib | ✓ Good |
 | Lazy rate loading per service | Only load rates for selected services — no 18k-row full load | ✓ Good |
 | Seed from hardcoded on first launch | Zero network dependency on first run; sync runs in background | ✓ Good |
-| Task Groomer as standalone Zenith plugin (v3.0) | Self-contained, consistent with other plugins; hotkey scope is global | — Pending |
+| Task Groomer as standalone Zenith plugin (v3.0) | Self-contained, consistent with other plugins; hotkey scope is global | ✓ Good |
+| tasks.db 14-column schema with nullable grooming metadata from day one | Eliminates migrations when Phase 18 AI agent writes results; all columns present but NULL until groomed | ✓ Good |
+| Task interface declared locally in electron.d.ts (not imported from main) | Preserves contextBridge isolation — renderer types live in renderer types | ✓ Good |
+| PluginId union extended explicitly as string literal union in plugin.ts | Compiler catches typos at use sites; inferred union from array const is fragile | ✓ Good |
 
 ---
-*Last updated: 2026-05-20 after v2.0 milestone complete*
+*Last updated: 2026-05-20 after Phase 14 (Data Foundation)*
