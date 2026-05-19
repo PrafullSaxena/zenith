@@ -2,87 +2,41 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-30)
+See: .planning/PROJECT.md (updated 2026-05-20)
 
-**Core value:** Live, accurate cloud cost estimation with regional pricing and a comprehensive service catalog.
-**Current focus:** Phase 8 — Pricing Sync (Azure fetcher, GCP fetcher, PricingSync orchestrator)
+**Core value:** Reduce the friction of developer workflows through AI-augmented tooling — all in a single, fast, consistent desktop app.
+**Current focus:** v3.0 — Task Groomer Plugin (planning phase)
 
 ## Current Position
 
-Phase: 05 — Cleanup
-Plan: 05-01 complete — Delete Glass components, 3D views, and old dependencies
-Status: Phase 05 complete — all 01/01 plans executed
-Last activity: 2026-05-19 — 05-01 delete-glass-3d-old-deps complete
+Milestone: v2.0 — COMPLETE (shipped 2026-05-20)
+Next milestone: v3.0 — Task Groomer Plugin
+Status: Between milestones — ready to plan Phase 14
 
-Progress: [██░░░░░░░░] 10% (v2.0 milestone)
+Progress: [██████████] 100% (v2.0 complete)
 
 ## Performance Metrics
 
-**v1.0 UI Revamp (completed):**
-- Total plans completed: 14
-- Average duration: 3 min
-- Total execution time: 0.7 hours
-
-**v2.0 Launchpad Enhancement:**
-- Total plans completed: 7
-- Average duration: ~4 min
-- Total execution time: ~29 min
-
-*Updated after each plan completion*
+**v1.0 UI Revamp + v2.0 Launchpad Enhancement (combined — completed 2026-05-20):**
+- Total phases: 13
+- Total plans completed: 42
+- ~62,400 LOC TypeScript
+- Timeline: 2026-03-06 → 2026-05-20 (~75 days)
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Key decisions for v2.0:
+All v2.0 decisions logged in PROJECT.md Key Decisions table.
 
-- Separate pricing.db (isolated from nebula.db/cortex.db, easy to wipe/reseed)
-- GCP requires free API key (Cloud Billing API returns 403 without auth)
-- Top 12 regions per provider synced by default (~95% coverage)
-- Recharts for all visualizations (treemap, donut, bar, line)
-- Lazy rate loading — only fetch rates for selected services
-- Seed from hardcoded TypeScript on first launch (zero-network on first run)
-- Delta sync — only changed rates fetched on subsequent syncs
-- Memoized calculator (serviceId + config hash + region as cache key)
-- @tanstack/react-virtual for ServiceCatalog list virtualization
-- [Phase 07-data-foundation]: PricingRepository calls getPricingDb() per method (not constructor) to allow import before init
-- [Phase 07-data-foundation]: CloudProvider type defined locally in pricing-repository.ts to maintain main/renderer separation
-- [Phase 07-data-foundation]: Dedicated 'zenith-launchpad-credentials' electron-store isolates Launchpad credentials from other plugin credentials
-- [Phase 07-data-foundation]: tsconfig.node.json include extended to cover renderer catalog/type files — required for seed.ts to import AWS/GCP/Azure TS catalogs in the main process
-- [Phase 07-data-foundation]: Seed region per provider: us-east-1 (AWS), us-central1 (GCP), eastus (Azure)
-- [Phase 08-pricing-sync]: Azure armRegionName filter limits API response to 12 target regions; GCP ETag applied to first page only; no new dependencies (built-in Node https)
-- [Phase 08-pricing-sync]: AWS delta check uses pricing-aws-meta.json sidecar (userData path) rather than DB column — simpler, no schema migration required
-- [Phase 08-pricing-sync]: SYNC-07 Cost Explorer skipped with TODO stub — @aws-sdk/client-pricing not in package.json, no new deps added in this plan
-- [Phase 08]: initPricingSync() exported from ipc-handlers.ts and called post-window-creation; onSyncComplete() returns unsubscribe fn (contextBridge-safe pattern)
-- [Phase 09-calculator-store]: calculator.ts keeps SelectOption.pricePerHour as primary price for compute/db/k8s — rates RateMap is fallback for services that used hardcoded constants
-- [Phase 09-calculator-store]: GCP skip detection updated from result.skipped to result.deltaSkipped && result.servicesUpdated === 0 to match real GcpFetchResult shape
-- [Phase 09-calculator-store]: Callers (launchpad-store, EstimationSummary, ComparisonView) pass empty RateMap {} — actual DB rate injection in subsequent plan
-- [Phase 09-calculator-store]: index.d.ts extended with full launchpad API surface — was missing despite preload implementation existing since phase 08
-- [Phase 09-calculator-store]: Region dropdown uses 12 hardcoded regions per provider — matches the 12 regions seeded and synced by the pricing pipeline
-- [Phase 09-calculator-store]: Composite memoCache key covers all active selections joined with '|' plus region — single Map lookup per getTotalCost invocation
-- [Phase 09-calculator-store]: electron.d.ts (renderer-side) takes precedence over preload/index.d.ts for Window.api types — phase-08 API additions must be mirrored in electron.d.ts
-- [Phase 10-service-catalog]: 8-category canonical structure (compute, storage, database, networking, mlai, analytics, messaging, security) — all 3 providers mirror this; no separate containers category
-- [Phase 10-service-catalog]: azure managed-disk and data-transfer IDs preserved in azure.ts to avoid breaking existing equivalences
-- [Phase 10-service-catalog]: bedrock and sagemaker both map to vertex-ai for GCP equivalence; kinesis and sns both map to pub-sub
-- [Phase 10-service-catalog]: equivalence table in ComparisonView renders unconditionally — cost comparison cards are conditional on selections
-- [Phase 10-service-catalog]: DISPLAY_NAMES in getProviderServiceName covers legacy 'managed-disk' ID to avoid lookup misses
-- [Phase 10-02-service-catalog]: getCatalog declared inline in electron.d.ts — main-process types must not be imported from renderer
-- [Phase 10-02-service-catalog]: dbCatalog parallel searchIndex string[] enables O(n) in-memory filter — no object traversal per keystroke
-- [Phase 10-02-service-catalog]: loadDbCatalog triggered from setProvider and ServiceCatalog useEffect — catalog loads on any provider change regardless of component mount state
-- [Phase 11-visualizations]: recharts ^3.8.1 for all chart components; center label as CSS overlay div; enrichedItems join pattern for categoryId propagation
-- [Phase 11-02-visualizations]: cheapest-bar Cell highlight via useMemo Map; muted brand colors for non-cheapest bars; _provider metadata keys in trend chart data for tooltip access; connectNulls=false on trend lines shows gaps explicitly
-- [Phase 12-settings-polish]: Custom plugin settings panel via pluginId detection in PluginSettings — avoids new SettingsFieldType, keeps LaunchpadSettings self-contained
-- [Phase 12-settings-polish]: getCredentialMasked uses unicode bullets + last 4 chars — never sends full secret to renderer; provider staleness threshold = 2x sync frequency
-- [Phase 12-settings-polish]: formatRelativeTime extracted to shared utils.ts — single source of truth for SyncStatusBadge and LaunchpadSettings
-- [Phase 12-settings-polish]: SyncStatusBadge always rendered regardless of provider selection — sync health visible even before choosing a provider
-- [Phase 13-codereviewbot-user-comments]: UserCommentMap keyed {file}:{line} — same convention as ReviewComment for consistent line addressing
-- [Phase 13-codereviewbot-user-comments]: User annotations injected as PRIOR USER ANNOTATIONS in effectiveGuidelines — AI treats them as known context, not new findings
-- [Phase 13-codereviewbot-user-comments]: Settings key pattern userComments:{workspace}/{repoSlug}/{prId} scopes comments per PR, consistent with existing reviewSessions pattern
-- [Phase 13-02-codereviewbot-user-comments]: activeComposerKey toggles on second click — same key closes the composer (toggle semantics)
-- [Phase 13-02-codereviewbot-user-comments]: New (right) line number td handles click — anchors annotation to new-file line number convention matching ReviewComment.line
-- [Phase 13-02-codereviewbot-user-comments]: User comment and AI comment rows are sibling tr elements in tbody — no nesting to avoid table layout breakage
-- [Phase 05-cleanup]: cortex-theme.ts retained at src/renderer/src/plugins/cortex/cortex-theme.ts — it is plugin-specific color utilities (KIND_COLORS, METHOD_COLORS, REPO_TYPE_GRADIENTS), not a Glass design system file; lib/theme.ts does not contain these constants; all 5 import sites still need them
+**Key v3.0 decisions made during planning:**
+- Task Groomer as standalone Zenith plugin (not global overlay) — consistent plugin pattern
+- Tasks stored in tasks.db (SQLite, isolated from nebula.db/cortex.db)
+- Jira: read for enrichment during grooming, push on explicit button click (not auto-sync)
+- Re-groom per task available on demand (not batch-only)
+- Task lifecycle: Dump → Groomed → Done / Delegated / Aborted (5 states)
+- Stale indicator after 3 days in Dump status
+- Clipboard auto-detection on popup open (URL, Jira ID, error text patterns)
 
 ### Pending Todos
 
@@ -94,6 +48,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-19
-Stopped at: Completed 05-cleanup/05-01-PLAN.md
-Resume file: next phase
+Last session: 2026-05-20
+Stopped at: v2.0 milestone complete, v3.0 requirements and roadmap defined
+Resume file: /gsd:plan-phase 14
