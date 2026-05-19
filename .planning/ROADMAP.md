@@ -58,10 +58,16 @@ Plans:
 **Goal**: The user can capture a task from anywhere in the app (or OS, via global hotkey) using a lightweight popup; clipboard content is auto-detected and pre-filled
 **Depends on**: Phase 14
 **Requirements**: CAP-01, CAP-02, CAP-03, CAP-04
+**Plans:** 3 plans
 **Success Criteria** (what must be TRUE):
   1. Pressing Cmd/Ctrl+Shift+D from any Zenith screen opens the capture popup within 150ms
   2. Submitting text in the popup creates a task in Dumpyard status and closes the popup
   3. If clipboard contains a URL, Jira ticket ID, or error text, it is auto-pasted into the input on popup open
+
+Plans:
+- [ ] 15-01-PLAN.md — Main process: capture-window.ts + globalShortcut hotkey + capture IPC handlers
+- [ ] 15-02-PLAN.md — Renderer: CapturePopup component + CSS + /capture route in App.tsx
+- [ ] 15-03-PLAN.md — Preload bridge + electron.d.ts types + full compile verification
 
 ### Phase 16: Dumpyard View
 **Goal**: The Task Groomer plugin screen shows all tasks (ungroomed and groomed) with status controls and stale indicators; users can move tasks through their lifecycle
