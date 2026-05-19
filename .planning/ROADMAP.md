@@ -73,10 +73,16 @@ Plans:
 **Goal**: The Task Groomer plugin screen shows all tasks (ungroomed and groomed) with status controls and stale indicators; users can move tasks through their lifecycle
 **Depends on**: Phase 15
 **Requirements**: DUMP-01, DUMP-02, DUMP-03, DUMP-04
+**Plans:** 3 plans
 **Success Criteria** (what must be TRUE):
   1. The plugin screen shows two sections: Dumpyard (Dump status) and Groomed tasks
   2. Each task card shows: text, status badge, creation time, stale indicator (if 3+ days in Dump)
   3. User can change any task's status via a dropdown or button (Dump / Groomed / Done / Delegated / Aborted)
+
+Plans:
+- [ ] 16-01-PLAN.md — Zustand store (task-groomer-store.ts) with IPC wiring, stale detection helpers
+- [ ] 16-02-PLAN.md — TaskCard + StatusDropdown components (compact row, colored badge, dropdown)
+- [ ] 16-03-PLAN.md — TaskGroomerView (replace placeholder) + TaskSidePanel + human verification
 
 ### Phase 17: Integrations
 **Goal**: Jira, Confluence, and Google API clients are wired with credential storage; they can be queried from the grooming agent
