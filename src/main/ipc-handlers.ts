@@ -2,17 +2,35 @@ import { ipcMain, safeStorage, shell, BrowserWindow, dialog, app, net } from 'el
 import Store from 'electron-store'
 import { getSettings, getSetting, setSetting, resetSettings, settingsStore } from './settings-store'
 import { TokenManager } from './bitbucket/token-manager'
-import { listOpenPRs, getPRDiff, postInlineComment, postTopLevelComment, getDiffstatCount, testCredentials, basicAuthHeader } from './bitbucket/api'
+import {
+  listOpenPRs,
+  getPRDiff,
+  postInlineComment,
+  postTopLevelComment,
+  getDiffstatCount,
+  testCredentials,
+  basicAuthHeader
+} from './bitbucket/api'
 import { streamReview, cancelSdkReview, streamAnalysis } from './ai/stream'
-import { streamCliReview, cancelCliReview, streamCliAnalysis, probeCliBinary } from './ai/cli-stream'
+import {
+  streamCliReview,
+  cancelCliReview,
+  streamCliAnalysis,
+  probeCliBinary
+} from './ai/cli-stream'
 import { UnifiedDbManager } from './db/db-manager'
 import { validateQuery } from './db/postgres'
-import { buildSchemaContext, buildQueryOptimizationContext, buildTableDDL } from './db/introspection'
+import {
+  buildSchemaContext,
+  buildQueryOptimizationContext,
+  buildTableDDL
+} from './db/introspection'
 import { exportDiagnosticZip } from './log-collector'
 // PDF generators are imported dynamically inside handlers to avoid
 // module-level side effects (pdfmake.fonts) that could interfere
 // with handler registration if module loading fails.
 import { NebulaDatabase } from './nebula/database'
+import { TaskDatabase } from './taskgroomer/database'
 import { NoteFileStorage } from './nebula/file-storage'
 import { transcribeAudio } from './nebula/transcription'
 import { getApiKeyForProvider } from './ai/providers'
@@ -28,14 +46,27 @@ import {
 import { generateHLDDocument } from './cortex/doc-generator'
 import { buildInsightsPrompt } from './cortex/toon-parser'
 import { isRtkAvailable } from './cortex/rtk-integration'
-import { buildStaticDigest, buildDigestRefinementPrompt, buildDigestUserPrompt } from './cortex/digest-builder'
+import {
+  buildStaticDigest,
+  buildDigestRefinementPrompt,
+  buildDigestUserPrompt
+} from './cortex/digest-builder'
 import { buildEntityBatches } from './cortex/entity-enricher'
 import { buildValidationPrompt, buildValidationUserPrompt } from './cortex/analysis-validator'
 import path from 'node:path'
 import fs from 'node:fs'
 import { initPricingDb } from './pricing/pricing-db'
 import { pricingRepository } from './pricing/pricing-repository'
-import { saveCredential, hasCredential, deleteCredential, getCredentialMasked, CRED_GCP_API_KEY, CRED_AWS_ACCESS_KEY_ID, CRED_AWS_SECRET_ACCESS_KEY, CRED_GCP_BILLING_ACCOUNT_ID } from './pricing/credentials'
+import {
+  saveCredential,
+  hasCredential,
+  deleteCredential,
+  getCredentialMasked,
+  CRED_GCP_API_KEY,
+  CRED_AWS_ACCESS_KEY_ID,
+  CRED_AWS_SECRET_ACCESS_KEY,
+  CRED_GCP_BILLING_ACCOUNT_ID
+} from './pricing/credentials'
 import { seedPricingDb } from './pricing/seed'
 import { pricingSync } from './pricing/pricing-sync'
 
@@ -58,6 +89,16 @@ let nebulaFs: NoteFileStorage | null = null
 /** Lazy-initialized Cortex instances. */
 let cortexGit: GitService | null = null
 let cortexAnalyzer: CodebaseAnalyzer | null = null
+
+/** Lazy-initialized Task Groomer database instance. */
+let taskGroomerDb: TaskDatabase | null = null
+
+function getTaskGroomerDb(): TaskDatabase {
+  if (!taskGroomerDb) {
+    taskGroomerDb = new TaskDatabase()
+  }
+  return taskGroomerDb
+}
 
 // Initialize pricing DB and seed on first launch
 try {
@@ -208,13 +249,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     'bitbucket:postTopLevelComment',
-    async (
-      _event,
-      workspace: string,
-      repoSlug: string,
-      prId: number,
-      comment: string
-    ) => {
+    async (_event, workspace: string, repoSlug: string, prId: number, comment: string) => {
       const authHeader = tokenManager.getAuthHeader()
       await postTopLevelComment(workspace, repoSlug, prId, authHeader, comment)
     }
@@ -240,8 +275,7 @@ export function registerIpcHandlers(): void {
       command?: string,
       guidelines?: string
     ) => {
-      const mainWindow =
-        BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
       if (!mainWindow) {
         throw new Error('No browser window available for streaming')
       }
@@ -398,12 +432,9 @@ export function registerIpcHandlers(): void {
     return dbManager.getDatabases(connectionId)
   })
 
-  ipcMain.handle(
-    'db:switchDatabase',
-    async (_event, connectionId: string, database: string) => {
-      await dbManager.switchDatabase(connectionId, database)
-    }
-  )
+  ipcMain.handle('db:switchDatabase', async (_event, connectionId: string, database: string) => {
+    await dbManager.switchDatabase(connectionId, database)
+  })
 
   ipcMain.handle('db:getSchemas', async (_event, connectionId: string) => {
     return dbManager.getSchemas(connectionId)
@@ -463,7 +494,7 @@ export function registerIpcHandlers(): void {
       // Pagination: wrap with LIMIT/OFFSET if requested and not already present
       let querySql = sql
       const defaultLimit = limit ?? 100
-      if (!(/\bLIMIT\b/i.test(sql))) {
+      if (!/\bLIMIT\b/i.test(sql)) {
         const off = offset ?? 0
         querySql = `${sql.trimEnd().replace(/;+$/, '')}\nLIMIT ${defaultLimit} OFFSET ${off}`
       }
@@ -524,16 +555,13 @@ export function registerIpcHandlers(): void {
     }
   )
 
-  ipcMain.handle(
-    'db:storeCredentials',
-    (_event, connectionId: string, password: string) => {
-      if (!safeStorage.isEncryptionAvailable()) {
-        throw new Error('Encryption is not available on this system')
-      }
-      const encrypted = safeStorage.encryptString(password)
-      credentialsStore.set(`db:${connectionId}`, encrypted.toString('base64'))
+  ipcMain.handle('db:storeCredentials', (_event, connectionId: string, password: string) => {
+    if (!safeStorage.isEncryptionAvailable()) {
+      throw new Error('Encryption is not available on this system')
     }
-  )
+    const encrypted = safeStorage.encryptString(password)
+    credentialsStore.set(`db:${connectionId}`, encrypted.toString('base64'))
+  })
 
   ipcMain.handle('db:getCredentials', (_event, connectionId: string) => {
     const encrypted = credentialsStore.get(`db:${connectionId}`) as string | undefined
@@ -553,8 +581,7 @@ export function registerIpcHandlers(): void {
       sessionId: string,
       command?: string
     ) => {
-      const mainWindow =
-        BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
       if (!mainWindow) {
         throw new Error('No browser window available for streaming')
       }
@@ -575,48 +602,70 @@ export function registerIpcHandlers(): void {
   })
 
   // --- Unified PDF export channel ---
-  ipcMain.handle('app:exportPdf', async (_event, data: {
-    markdown: string;
-    title?: string;
-    mermaidImages?: Record<number, string>;
-    orientation?: 'portrait' | 'landscape';
-  }) => {
-    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
-    if (!mainWindow) throw new Error('No window available for save dialog')
-    const { exportPdf } = await import('./lib/pdf-generator')
-    const filePath = await exportPdf(mainWindow, data)
-    return { filePath }
-  })
+  ipcMain.handle(
+    'app:exportPdf',
+    async (
+      _event,
+      data: {
+        markdown: string
+        title?: string
+        mermaidImages?: Record<number, string>
+        orientation?: 'portrait' | 'landscape'
+        diagramImage?: string
+      }
+    ) => {
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      if (!mainWindow) throw new Error('No window available for save dialog')
+      const { exportPdf } = await import('./lib/pdf-generator')
+      const filePath = await exportPdf(mainWindow, data)
+      return { filePath }
+    }
+  )
 
   // --- Launchpad channels (forwards to unified PDF engine) ---
-  ipcMain.handle('launchpad:exportPdf', async (_event, estimation: {
-    name: string;
-    provider: string;
-    lineItems: Array<{ serviceName: string; configSummary: string; monthly: number; yearly: number }>;
-    totalMonthly: number;
-    totalYearly: number;
-    aiRecommendations?: string;
-  }) => {
-    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
-    if (!mainWindow) throw new Error('No window available for save dialog')
+  ipcMain.handle(
+    'launchpad:exportPdf',
+    async (
+      _event,
+      estimation: {
+        name: string
+        provider: string
+        lineItems: Array<{
+          serviceName: string
+          configSummary: string
+          monthly: number
+          yearly: number
+        }>
+        totalMonthly: number
+        totalYearly: number
+        aiRecommendations?: string
+      }
+    ) => {
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      if (!mainWindow) throw new Error('No window available for save dialog')
 
-    // Convert estimation to markdown for unified engine
-    const tableHeader = '| Service | Configuration | Monthly | Yearly |\n| --- | --- | --- | --- |'
-    const tableRows = estimation.lineItems.map(
-      (li) => `| ${li.serviceName} | ${li.configSummary} | $${li.monthly.toFixed(2)} | $${li.yearly.toFixed(2)} |`
-    ).join('\n')
-    const totalRow = `\n**Total: $${estimation.totalMonthly.toFixed(2)}/mo — $${estimation.totalYearly.toFixed(2)}/yr**`
+      // Convert estimation to markdown for unified engine
+      const tableHeader =
+        '| Service | Configuration | Monthly | Yearly |\n| --- | --- | --- | --- |'
+      const tableRows = estimation.lineItems
+        .map(
+          (li) =>
+            `| ${li.serviceName} | ${li.configSummary} | $${li.monthly.toFixed(2)} | $${li.yearly.toFixed(2)} |`
+        )
+        .join('\n')
+      const totalRow = `\n**Total: $${estimation.totalMonthly.toFixed(2)}/mo — $${estimation.totalYearly.toFixed(2)}/yr**`
 
-    let md = `# ${estimation.name}\n\n**Provider:** ${estimation.provider}\n\n${tableHeader}\n${tableRows}\n${totalRow}`
+      let md = `# ${estimation.name}\n\n**Provider:** ${estimation.provider}\n\n${tableHeader}\n${tableRows}\n${totalRow}`
 
-    if (estimation.aiRecommendations) {
-      md += `\n\n## AI Recommendations\n\n${estimation.aiRecommendations}`
+      if (estimation.aiRecommendations) {
+        md += `\n\n## AI Recommendations\n\n${estimation.aiRecommendations}`
+      }
+
+      const { exportPdf } = await import('./lib/pdf-generator')
+      const filePath = await exportPdf(mainWindow, { markdown: md, title: estimation.name })
+      return { filePath }
     }
-
-    const { exportPdf } = await import('./lib/pdf-generator')
-    const filePath = await exportPdf(mainWindow, { markdown: md, title: estimation.name })
-    return { filePath }
-  })
+  )
 
   // --- Launchpad data channels ---
   ipcMain.handle('launchpad:getCatalog', (_event, provider: string) => {
@@ -692,7 +741,12 @@ export function registerIpcHandlers(): void {
   // ── launchpad:deleteCredential ─────────────────────────────────────────
   ipcMain.handle(
     'launchpad:deleteCredential',
-    (_event, { key }: { key: 'gcpApiKey' | 'awsAccessKeyId' | 'awsSecretAccessKey' | 'gcpBillingAccountId' }) => {
+    (
+      _event,
+      {
+        key
+      }: { key: 'gcpApiKey' | 'awsAccessKeyId' | 'awsSecretAccessKey' | 'gcpBillingAccountId' }
+    ) => {
       const credKeyMap: Record<string, string> = {
         gcpApiKey: CRED_GCP_API_KEY,
         awsAccessKeyId: CRED_AWS_ACCESS_KEY_ID,
@@ -721,7 +775,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('launchpad:getSyncStatus', async () => {
     try {
       const providers: Array<'aws' | 'gcp' | 'azure'> = ['aws', 'gcp', 'azure']
-      const statuses = providers.map(p => pricingRepository.getSyncStatus(p))
+      const statuses = providers.map((p) => pricingRepository.getSyncStatus(p))
       return { success: true, statuses }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
@@ -745,39 +799,51 @@ export function registerIpcHandlers(): void {
   })
 
   // --- TextCraft channels (backward-compatible alias for unified engine) ---
-  ipcMain.handle('textcraft:exportPdf', async (_event, data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }) => {
-    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
-    if (!mainWindow) throw new Error('No window available for save dialog')
-    const { exportPdf } = await import('./lib/pdf-generator')
-    const filePath = await exportPdf(mainWindow, data)
-    return { filePath }
-  })
+  ipcMain.handle(
+    'textcraft:exportPdf',
+    async (
+      _event,
+      data: { markdown: string; title?: string; mermaidImages?: Record<number, string> }
+    ) => {
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      if (!mainWindow) throw new Error('No window available for save dialog')
+      const { exportPdf } = await import('./lib/pdf-generator')
+      const filePath = await exportPdf(mainWindow, data)
+      return { filePath }
+    }
+  )
 
   // --- Nebula channels ---
-  ipcMain.handle('nebula:saveNote', async (_event, note: {
-    id: string
-    title: string
-    content: object
-    drawing: object | null
-    summary: string | null
-    topics: string[]
-    createdAt: string
-    updatedAt: string
-  }) => {
-    const { db, fs: noteFs } = getNebulaInstances()
-    noteFs.writeNote(note)
-    const contentText = noteFs.extractPlainText(note.content)
-    db.upsertNote({
-      id: note.id,
-      title: note.title,
-      content: JSON.stringify(note.content),
-      drawing: note.drawing ? JSON.stringify(note.drawing) : null,
-      summary: note.summary,
-      topics: note.topics,
-      contentText
-    })
-    return { saved: true }
-  })
+  ipcMain.handle(
+    'nebula:saveNote',
+    async (
+      _event,
+      note: {
+        id: string
+        title: string
+        content: object
+        drawing: object | null
+        summary: string | null
+        topics: string[]
+        createdAt: string
+        updatedAt: string
+      }
+    ) => {
+      const { db, fs: noteFs } = getNebulaInstances()
+      noteFs.writeNote(note)
+      const contentText = noteFs.extractPlainText(note.content)
+      db.upsertNote({
+        id: note.id,
+        title: note.title,
+        content: JSON.stringify(note.content),
+        drawing: note.drawing ? JSON.stringify(note.drawing) : null,
+        summary: note.summary,
+        topics: note.topics,
+        contentText
+      })
+      return { saved: true }
+    }
+  )
 
   ipcMain.handle('nebula:loadNote', async (_event, id: string) => {
     const { fs: noteFs } = getNebulaInstances()
@@ -836,10 +902,17 @@ export function registerIpcHandlers(): void {
     }
   })
 
-  ipcMain.handle('nebula:updateEdges', async (_event, sourceId: string, targets: { targetId: string; relationship: string; weight: number }[]) => {
-    const { db } = getNebulaInstances()
-    db.upsertEdges(sourceId, targets)
-  })
+  ipcMain.handle(
+    'nebula:updateEdges',
+    async (
+      _event,
+      sourceId: string,
+      targets: { targetId: string; relationship: string; weight: number }[]
+    ) => {
+      const { db } = getNebulaInstances()
+      db.upsertEdges(sourceId, targets)
+    }
+  )
 
   ipcMain.handle(
     'nebula:transcribeAudio',
@@ -867,7 +940,16 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     'nebula:saveTranscription',
-    async (_event, record: { id: string; noteId: string | null; audioPath: string; transcript: string; speakers: string }) => {
+    async (
+      _event,
+      record: {
+        id: string
+        noteId: string | null
+        audioPath: string
+        transcript: string
+        speakers: string
+      }
+    ) => {
       const { db } = getNebulaInstances()
       db.saveTranscription(record)
       return { saved: true }
@@ -967,20 +1049,17 @@ export function registerIpcHandlers(): void {
   )
 
   // Get file content from a cloned repo
-  ipcMain.handle(
-    'cortex:getFileContent',
-    async (_event, repoPath: string, filePath: string) => {
-      const { git, analyzer } = getCortexInstances()
-      const content = await git.getFileContent(repoPath, filePath)
-      const language = analyzer.detectLanguage(filePath)
-      return {
-        content,
-        language,
-        path: filePath,
-        lineCount: content.split('\n').length
-      }
+  ipcMain.handle('cortex:getFileContent', async (_event, repoPath: string, filePath: string) => {
+    const { git, analyzer } = getCortexInstances()
+    const content = await git.getFileContent(repoPath, filePath)
+    const language = analyzer.detectLanguage(filePath)
+    return {
+      content,
+      language,
+      path: filePath,
+      lineCount: content.split('\n').length
     }
-  )
+  })
 
   // Remove a cloned repository
   ipcMain.handle('cortex:removeRepo', async (_event, repoPath: string) => {
@@ -1039,11 +1118,21 @@ export function registerIpcHandlers(): void {
     }
 
     const diagrams = {
-      architecture: generateArchitectureDiagram(typedAnalysis as Parameters<typeof generateArchitectureDiagram>[0]),
-      apiFlow: generateAPIFlowDiagram(typedAnalysis as Parameters<typeof generateAPIFlowDiagram>[0]),
-      componentTree: generateComponentTreeDiagram(typedAnalysis as Parameters<typeof generateComponentTreeDiagram>[0]),
-      pipeline: generatePipelineDiagram(typedAnalysis as Parameters<typeof generatePipelineDiagram>[0]),
-      classDiagram: generateClassDiagram(typedAnalysis as Parameters<typeof generateClassDiagram>[0])
+      architecture: generateArchitectureDiagram(
+        typedAnalysis as Parameters<typeof generateArchitectureDiagram>[0]
+      ),
+      apiFlow: generateAPIFlowDiagram(
+        typedAnalysis as Parameters<typeof generateAPIFlowDiagram>[0]
+      ),
+      componentTree: generateComponentTreeDiagram(
+        typedAnalysis as Parameters<typeof generateComponentTreeDiagram>[0]
+      ),
+      pipeline: generatePipelineDiagram(
+        typedAnalysis as Parameters<typeof generatePipelineDiagram>[0]
+      ),
+      classDiagram: generateClassDiagram(
+        typedAnalysis as Parameters<typeof generateClassDiagram>[0]
+      )
     }
 
     return generateHLDDocument(typedAnalysis as Parameters<typeof generateHLDDocument>[0], diagrams)
@@ -1100,9 +1189,14 @@ export function registerIpcHandlers(): void {
 
     // Re-analyze
     const win = BrowserWindow.fromWebContents(event.sender)
-    const result = await analyzer.analyzeRepository(repo.repoPath, repo.branch, repo.url, (progress) => {
-      win?.webContents.send('cortex:analysisProgress', progress)
-    })
+    const result = await analyzer.analyzeRepository(
+      repo.repoPath,
+      repo.branch,
+      repo.url,
+      (progress) => {
+        win?.webContents.send('cortex:analysisProgress', progress)
+      }
+    )
 
     // Update repo record
     analyzer.cache.updateRepo(repoId, { commitSha: newSha, lastAnalyzed: new Date().toISOString() })
@@ -1113,63 +1207,60 @@ export function registerIpcHandlers(): void {
   // --- Cortex AI Enrichment ---
 
   // Build or return cached codebase digest
-  ipcMain.handle(
-    'cortex:buildDigest',
-    async (event, repoUrl: string, branch: string) => {
-      const { git, analyzer } = getCortexInstances()
-      const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '')
-      if (!analysis) throw new Error('No analysis found. Analyze the repository first.')
+  ipcMain.handle('cortex:buildDigest', async (event, repoUrl: string, branch: string) => {
+    const { git, analyzer } = getCortexInstances()
+    const analysis = analyzer.cache.getAnalysis(repoUrl, branch, '')
+    if (!analysis) throw new Error('No analysis found. Analyze the repository first.')
 
-      const typedAnalysis = analysis as Record<string, unknown>
-      const commitSha = typedAnalysis.commitSha as string
+    const typedAnalysis = analysis as Record<string, unknown>
+    const commitSha = typedAnalysis.commitSha as string
 
-      // Check for cached digest
-      const cached = analyzer.cache.getEnrichment(repoUrl, branch, commitSha, 'digest')
-      if (cached) return { data: cached, cached: true }
+    // Check for cached digest
+    const cached = analyzer.cache.getEnrichment(repoUrl, branch, commitSha, 'digest')
+    if (cached) return { data: cached, cached: true }
 
-      // Pass 1: Build static digest
-      const win = BrowserWindow.fromWebContents(event.sender)
-      win?.webContents.send('cortex:analysisProgress', {
-        phase: 'enriching',
-        progress: 10,
-        detail: 'Building AI context...',
-        filesProcessed: 0,
-        totalFiles: 0
-      })
+    // Pass 1: Build static digest
+    const win = BrowserWindow.fromWebContents(event.sender)
+    win?.webContents.send('cortex:analysisProgress', {
+      phase: 'enriching',
+      progress: 10,
+      detail: 'Building AI context...',
+      filesProcessed: 0,
+      totalFiles: 0
+    })
 
-      // Get repoPath from repos table
-      const repos = analyzer.cache.listRepos()
-      const repo = repos.find((r) => r.url === repoUrl && r.branch === branch)
-      if (!repo) throw new Error('Repository not found in database')
+    // Get repoPath from repos table
+    const repos = analyzer.cache.listRepos()
+    const repo = repos.find((r) => r.url === repoUrl && r.branch === branch)
+    if (!repo) throw new Error('Repository not found in database')
 
-      const rawDigest = await buildStaticDigest(
-        typedAnalysis as unknown as Parameters<typeof buildStaticDigest>[0],
-        repo.repoPath,
-        git
-      )
+    const rawDigest = await buildStaticDigest(
+      typedAnalysis as unknown as Parameters<typeof buildStaticDigest>[0],
+      repo.repoPath,
+      git
+    )
 
-      win?.webContents.send('cortex:analysisProgress', {
-        phase: 'enriching',
-        progress: 30,
-        detail: 'Static digest built, preparing AI refinement...',
-        filesProcessed: 0,
-        totalFiles: 0
-      })
+    win?.webContents.send('cortex:analysisProgress', {
+      phase: 'enriching',
+      progress: 30,
+      detail: 'Static digest built, preparing AI refinement...',
+      filesProcessed: 0,
+      totalFiles: 0
+    })
 
-      // Return raw digest + prompts for renderer to stream via AI
-      const systemPrompt = buildDigestRefinementPrompt()
-      const userPrompt = buildDigestUserPrompt(rawDigest)
+    // Return raw digest + prompts for renderer to stream via AI
+    const systemPrompt = buildDigestRefinementPrompt()
+    const userPrompt = buildDigestUserPrompt(rawDigest)
 
-      return {
-        data: null,
-        cached: false,
-        rawDigest,
-        systemPrompt,
-        userPrompt,
-        commitSha
-      }
+    return {
+      data: null,
+      cached: false,
+      rawDigest,
+      systemPrompt,
+      userPrompt,
+      commitSha
     }
-  )
+  })
 
   // Save enrichment data
   ipcMain.handle(
@@ -1191,13 +1282,7 @@ export function registerIpcHandlers(): void {
   // Get cached enrichment
   ipcMain.handle(
     'cortex:getEnrichment',
-    async (
-      _event,
-      repoUrl: string,
-      branch: string,
-      commitSha: string,
-      enrichmentType: string
-    ) => {
+    async (_event, repoUrl: string, branch: string, commitSha: string, enrichmentType: string) => {
       const { analyzer } = getCortexInstances()
       return analyzer.cache.getEnrichment(repoUrl, branch, commitSha, enrichmentType)
     }
@@ -1213,8 +1298,13 @@ export function registerIpcHandlers(): void {
 
       const typedAnalysis = analysis as Record<string, unknown>
       const entities = typedAnalysis.entities as Array<{
-        id: string; name: string; kind: string; filePath: string;
-        line: number; endLine: number; summary: string
+        id: string
+        name: string
+        kind: string
+        filePath: string
+        line: number
+        endLine: number
+        summary: string
       }>
 
       const repos = analyzer.cache.listRepos()
@@ -1252,9 +1342,7 @@ export function registerIpcHandlers(): void {
         .map((r, i) => `[${i}] ${r.method} ${r.fullPath} → ${r.handlerName} (${r.controllerName})`)
         .join('\n')
 
-      const edgesText = calls
-        .map((c) => `${c.callerId} → ${c.calleeId} (${c.type})`)
-        .join('\n')
+      const edgesText = calls.map((c) => `${c.callerId} → ${c.calleeId} (${c.type})`).join('\n')
 
       return {
         systemPrompt: buildValidationPrompt(),
@@ -1269,48 +1357,71 @@ export function registerIpcHandlers(): void {
     return isRtkAvailable()
   })
 
-  // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---
-  ipcMain.handle('db:exportErDiagramPdf', async (_event, data: {
-    markdown?: string;
-    mermaidImages?: Record<number, string>;
-    title?: string;
-    // Legacy fields (image-based export)
-    imageDataUrl?: string;
-    width?: number;
-    height?: number;
-    connectionName?: string;
-    schema?: string;
-    tableCount?: number;
-    relationshipMode?: string;
-    generatedAt?: string;
-  }) => {
-    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
-    if (!mainWindow) throw new Error('No window available for save dialog')
-    const { exportPdf } = await import('./lib/pdf-generator')
+  // --- Task Groomer channels ---
+  ipcMain.handle('taskgroomer:createTask', (_event, args: { text: string; captureSource: 'typed' | 'clipboard' }) => {
+    return getTaskGroomerDb().createTask(args)
+  })
 
-    // If markdown is provided, use unified engine directly
-    if (data.markdown) {
+  ipcMain.handle('taskgroomer:listTasks', (_event, args?: { statuses?: string[] }) => {
+    return getTaskGroomerDb().listTasks(args?.statuses)
+  })
+
+  ipcMain.handle('taskgroomer:updateTask', (_event, args: { id: string; fields: Parameters<TaskDatabase['updateTask']>[0]['fields'] }) => {
+    return getTaskGroomerDb().updateTask({ id: args.id, fields: args.fields })
+  })
+
+  ipcMain.handle('taskgroomer:deleteTask', (_event, args: { id: string }) => {
+    return getTaskGroomerDb().deleteTask(args.id)
+  })
+
+  // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---
+  ipcMain.handle(
+    'db:exportErDiagramPdf',
+    async (
+      _event,
+      data: {
+        markdown?: string
+        mermaidImages?: Record<number, string>
+        title?: string
+        // Legacy fields (image-based export)
+        imageDataUrl?: string
+        width?: number
+        height?: number
+        connectionName?: string
+        schema?: string
+        tableCount?: number
+        relationshipMode?: string
+        generatedAt?: string
+      }
+    ) => {
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      if (!mainWindow) throw new Error('No window available for save dialog')
+      const { exportPdf } = await import('./lib/pdf-generator')
+
+      // If markdown is provided, use unified engine directly
+      if (data.markdown) {
+        const filePath = await exportPdf(mainWindow, {
+          markdown: data.markdown,
+          title: data.title || 'ER Diagram',
+          mermaidImages: data.mermaidImages,
+          orientation: 'landscape'
+        })
+        return { filePath }
+      }
+
+      // Legacy fallback: image-based export — wrap image in markdown
+      const title = data.connectionName ? `${data.connectionName} — ${data.schema}` : 'ER Diagram'
+      const md = `# ${title}\n\n**Tables:** ${data.tableCount ?? 'N/A'} | **Mode:** ${data.relationshipMode ?? 'N/A'}`
+      const mermaidImages = data.imageDataUrl ? { 0: data.imageDataUrl } : undefined
+      const mdWithDiagram = mermaidImages ? md + '\n\n```mermaid\nplaceholder\n```' : md
+
       const filePath = await exportPdf(mainWindow, {
-        markdown: data.markdown,
-        title: data.title || 'ER Diagram',
-        mermaidImages: data.mermaidImages,
+        markdown: mdWithDiagram,
+        title,
+        mermaidImages,
         orientation: 'landscape'
       })
       return { filePath }
     }
-
-    // Legacy fallback: image-based export — wrap image in markdown
-    const title = data.connectionName ? `${data.connectionName} — ${data.schema}` : 'ER Diagram'
-    const md = `# ${title}\n\n**Tables:** ${data.tableCount ?? 'N/A'} | **Mode:** ${data.relationshipMode ?? 'N/A'}`
-    const mermaidImages = data.imageDataUrl ? { 0: data.imageDataUrl } : undefined
-    const mdWithDiagram = mermaidImages ? md + '\n\n```mermaid\nplaceholder\n```' : md
-
-    const filePath = await exportPdf(mainWindow, {
-      markdown: mdWithDiagram,
-      title,
-      mermaidImages,
-      orientation: 'landscape'
-    })
-    return { filePath }
-  })
+  )
 }
