@@ -32,28 +32,45 @@ export default function CapturePopup(): React.JSX.Element {
   const originalClipboardText = useRef<string>('')
 
   useEffect(() => {
-    // Focus immediately so the window accepts keyboard input right away
-    textareaRef.current?.focus()
-    window.api.capture.resize(COMPACT_H)
+    // initForm runs every time the window becomes visible:
+    //  • on first open (mount)
+    //  • on every subsequent open (window was hidden → shown again)
+    // This resets stale state from the previous session.
+    function initForm() {
+      // Clear previous text so the user starts fresh each time
+      setText('')
+      setFromClipboard(false)
+      setSubmitting(false)
+      originalClipboardText.current = ''
+      window.api.capture.resize(COMPACT_H)
 
-    window.api.capture.getClipboard().then((clipText) => {
-      if (clipText) {
-        setText(clipText)
-        originalClipboardText.current = clipText
-        setFromClipboard(true)
-        // Re-focus after clipboard content is set — the async setState +
-        // IPC resize can steal focus from the textarea on some macOS builds
+      window.api.capture.getClipboard().then((clipText) => {
+        if (clipText) {
+          setText(clipText)
+          originalClipboardText.current = clipText
+          setFromClipboard(true)
+        }
+        // Focus + cursor at end after all state is applied
         requestAnimationFrame(() => {
-          if (textareaRef.current) {
-            textareaRef.current.focus()
-            // Move cursor to end of pasted text so user can append immediately
-            const len = clipText.length
-            textareaRef.current.setSelectionRange(len, len)
-          }
+          if (!textareaRef.current) return
+          textareaRef.current.focus()
+          const pos = clipText?.length ?? 0
+          textareaRef.current.setSelectionRange(pos, pos)
         })
-      }
-    })
-  }, [])
+      })
+    }
+
+    function handleVisibilityChange() {
+      // document becomes 'visible' every time the Electron window is un-hidden
+      if (document.visibilityState === 'visible') initForm()
+    }
+
+    // Initialize now (handles initial mount + dev hot-reload)
+    initForm()
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Detect multiline — toggle card's is-expanded class + resize window to match.
   // Grow: resize immediately so window is ready when CSS expansion starts.
@@ -137,10 +154,7 @@ export default function CapturePopup(): React.JSX.Element {
         </div>
 
         {/* Body — flex:1 fills remaining card height; click anywhere in body to focus textarea */}
-        <div
-          className="capture-body"
-          onClick={() => textareaRef.current?.focus()}
-        >
+        <div className="capture-body" onClick={() => textareaRef.current?.focus()}>
           <textarea
             ref={textareaRef}
             className="capture-input"
