@@ -8,6 +8,8 @@
  */
 import React, { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
+import { Bot, Ticket, FileText, Globe } from 'lucide-react'
+import { cn } from '@renderer/lib/utils'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useAgentStore } from '../../stores/agent-store'
 
@@ -64,6 +66,51 @@ function HelpTooltip({ children }: { children: React.ReactNode }): React.JSX.Ele
         </div>
       )}
     </span>
+  )
+}
+
+// ── Integration Health Dashboard ────────────────────────────────────────
+
+function IntegrationHealthDashboard({
+  aiConfigured,
+  jiraConfigured,
+  confluenceConfigured,
+  webSearchConfigured
+}: {
+  aiConfigured: boolean
+  jiraConfigured: boolean
+  confluenceConfigured: boolean
+  webSearchConfigured: boolean
+}): React.JSX.Element {
+  const services = [
+    { icon: Bot, label: 'AI Agent', configured: aiConfigured, color: 'text-primary' },
+    { icon: Ticket, label: 'Jira', configured: jiraConfigured, color: 'text-blue-400' },
+    { icon: FileText, label: 'Confluence', configured: confluenceConfigured, color: 'text-blue-300' },
+    { icon: Globe, label: 'Web Search', configured: webSearchConfigured, color: 'text-green-400' }
+  ]
+  return (
+    <div className="rounded-xl border border-white/6 bg-white/[0.04] p-4">
+      <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-3">
+        Integration Status
+      </p>
+      <div className="flex items-center gap-3">
+        {services.map(({ icon: Icon, label, configured, color }) => (
+          <div
+            key={label}
+            title={label}
+            className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-lg border',
+              configured
+                ? 'border-white/10 bg-white/[0.04]'
+                : 'border-white/6 bg-white/[0.02] opacity-30 grayscale'
+            )}
+            aria-label={`${label}: ${configured ? 'configured' : 'not configured'}`}
+          >
+            <Icon size={18} className={configured ? color : 'text-muted-foreground'} />
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -270,6 +317,14 @@ export default function TaskGroomerSettings(): React.JSX.Element {
       </p>
 
       <div className="space-y-6">
+        {/* ── Integration Health Dashboard ──────────────────────────── */}
+        <IntegrationHealthDashboard
+          aiConfigured={availableProviders.length > 0}
+          jiraConfigured={jiraStatus.configured}
+          confluenceConfigured={confluenceStatus.configured}
+          webSearchConfigured={true}
+        />
+
         {/* ── Section 0: AI Agent ───────────────────────────────────── */}
         <div className="rounded-xl border border-white/6 bg-white/[0.04] p-5">
           <h3 className="text-[13px] font-medium text-foreground mb-1">AI Agent</h3>
