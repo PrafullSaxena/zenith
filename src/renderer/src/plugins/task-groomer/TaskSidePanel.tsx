@@ -162,9 +162,14 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
               </h3>
 
               {!hasGroomingData ? (
-                <p className="text-xs text-muted-foreground italic">
-                  Grooming data will appear here after the agent runs.
-                </p>
+                <div className="rounded-lg border border-white/6 bg-white/[0.02] px-3 py-4 flex flex-col items-center gap-2 text-center">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    No grooming results yet.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/60">
+                    Use the Re-groom button above or run a batch groom to analyze this task.
+                  </p>
+                </div>
               ) : (
                 <div className="flex flex-col gap-3">
                   {/* Priority */}
@@ -252,14 +257,14 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                   {task.jiraTicketKey && task.jiraTicketUrl && (
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground w-16 shrink-0">Jira</span>
-                      <a
-                        href={task.jiraTicketUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary hover:underline"
+                      <button
+                        type="button"
+                        onClick={() => window.api.app.openExternal(task.jiraTicketUrl!)}
+                        className="text-xs text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
+                        aria-label={`Open Jira ticket ${task.jiraTicketKey}`}
                       >
                         {task.jiraTicketKey}
-                      </a>
+                      </button>
                     </div>
                   )}
                 </div>
