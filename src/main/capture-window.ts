@@ -9,7 +9,7 @@ export function createCaptureWindow(): BrowserWindow {
 
   const win = new BrowserWindow({
     width: 540,
-    height: 220, // card compact=94px + expanded=168px + 16px overlay; extra = transparent
+    height: 110, // compact: card(94px) + overlay-padding(16px)
     x: Math.floor((width - 540) / 2),
     y: Math.floor(height * 0.25),
     frame: false,
@@ -57,7 +57,7 @@ export function showCaptureWindow(): void {
   if (!captureWindow.isVisible()) {
     // Re-center on current display each time
     const { width, height } = screen.getPrimaryDisplay().workAreaSize
-    captureWindow.setSize(540, 220)
+    captureWindow.setSize(540, 110)
     captureWindow.setPosition(Math.floor((width - 540) / 2), Math.floor(height * 0.25))
     captureWindow.show()
     captureWindow.focus()
