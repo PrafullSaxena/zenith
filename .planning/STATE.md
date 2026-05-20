@@ -10,8 +10,8 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 18-ai-grooming-engine — Plan 02 of 4 complete
-Status: Executing Phase 18 (18-02 done — IPC handler + grooming schedule wired)
+Phase: 18-ai-grooming-engine — Plan 03 of 4 complete
+Status: Executing Phase 18 (18-03 done — preload bridge + TypeScript types wired)
 
 Progress: [████░░░░░░] 57% (Phase 17 complete — 4/7 phases done; Phase 18 started)
 
@@ -63,6 +63,10 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - JSON parse error throws with 200-char raw text preview for debuggability
 - researchLinks serialized to JSON string (matches existing research_links TEXT column); only set when isResearchMode=true
 
+**Phase 18-03 decisions (2026-05-20):**
+- onGroomProgress/onGroomStart return void (not ipcRenderer.on() result) — contextBridge cannot serialize IpcRenderer instances
+- removeGroomListeners() removes both groom:progress and groom:start channels in a single call
+
 **Phase 18-02 decisions (2026-05-20):**
 - isDestroyed() guard added before every webContents.send() in schedule callbacks — window may close between tick and send
 - taskgroomer:groom handler returns {started: true} immediately (fire-and-forget); batch runs as background async task
@@ -80,5 +84,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 18 Plan 02 complete — IPC handler + grooming schedule wired (commits 733932d, a1325e0).
-Resume file: /gsd:execute-phase 18 (continue with Plan 03)
+Stopped at: Phase 18 Plan 03 complete — preload bridge + TypeScript types (commit 15926d9).
+Resume file: /gsd:execute-phase 18 (continue with Plan 04)
