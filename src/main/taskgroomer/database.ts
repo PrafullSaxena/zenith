@@ -28,6 +28,7 @@ interface TaskRow {
   evidence_summary: string | null
   research_summary: string | null
   research_links: string | null
+  priority_rationale: string | null
   groomed_at: number | null
 }
 
@@ -38,8 +39,8 @@ export interface Task {
   text: string
   status: 'dump' | 'groomed' | 'done' | 'delegated' | 'aborted'
   captureSource: 'typed' | 'clipboard'
-  createdAt: number   // Unix ms
-  updatedAt: number   // Unix ms
+  createdAt: number // Unix ms
+  updatedAt: number // Unix ms
   // Grooming metadata — nullable until Phase 18 AI agent writes them
   priority: 'p1' | 'p2' | 'p3' | null
   suggestedAction: 'do' | 'delegate' | 'defer' | 'delete' | null
@@ -47,8 +48,9 @@ export interface Task {
   jiraTicketUrl: string | null
   evidenceSummary: string | null
   researchSummary: string | null
-  researchLinks: string | null  // JSON array: {title, url}[]
-  groomedAt: number | null      // Unix ms
+  researchLinks: string | null // JSON array: {title, url}[]
+  priorityRationale: string | null
+  groomedAt: number | null // Unix ms
 }
 
 export interface CreateTaskInput {
@@ -75,6 +77,7 @@ const CAMEL_TO_SNAKE: Record<string, string> = {
   evidenceSummary: 'evidence_summary',
   researchSummary: 'research_summary',
   researchLinks: 'research_links',
+  priorityRationale: 'priority_rationale',
   groomedAt: 'groomed_at'
 }
 
@@ -117,9 +120,17 @@ export class TaskDatabase {
 
     // Set PRAGMA user_version = 1 to mark initial schema version.
     // Sequential if(version < N) blocks will run ALTER TABLE as needed in future phases.
-    const version = (this.db.pragma('user_version', { simple: true }) as number)
+    const version = this.db.pragma('user_version', { simple: true }) as number
     if (version < 1) {
       this.db.pragma('user_version = 1')
+    }
+    if (version < 2) {
+      try {
+        this.db.exec(`ALTER TABLE tasks ADD COLUMN priority_rationale TEXT`)
+      } catch {
+        // Column may already exist if schema was pre-created — safe to ignore
+      }
+      this.db.pragma('user_version = 2')
     }
   }
 
@@ -140,6 +151,7 @@ export class TaskDatabase {
       evidenceSummary: row.evidence_summary ?? null,
       researchSummary: row.research_summary ?? null,
       researchLinks: row.research_links ?? null,
+      priorityRationale: row.priority_rationale ?? null,
       groomedAt: row.groomed_at ?? null
     }
   }
@@ -153,14 +165,16 @@ export class TaskDatabase {
     const id = crypto.randomUUID()
     const now = Date.now()
 
-    this.db.prepare(`
+    this.db
+      .prepare(
+        `
       INSERT INTO tasks (id, text, status, capture_source, created_at, updated_at)
       VALUES (?, ?, 'dump', ?, ?, ?)
-    `).run(id, input.text, input.captureSource, now, now)
+    `
+      )
+      .run(id, input.text, input.captureSource, now, now)
 
-    const row = this.db
-      .prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`)
-      .get(id)!
+    const row = this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(id)!
 
     return this.rowToTask(row)
   }
@@ -212,13 +226,9 @@ export class TaskDatabase {
       // Only updated_at — still valid, proceed
     }
 
-    this.db
-      .prepare(`UPDATE tasks SET ${setClauses.join(', ')} WHERE id = ?`)
-      .run(...values)
+    this.db.prepare(`UPDATE tasks SET ${setClauses.join(', ')} WHERE id = ?`).run(...values)
 
-    const row = this.db
-      .prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`)
-      .get(id)
+    const row = this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(id)
 
     if (!row) {
       throw new Error(`Task not found: ${id}`)

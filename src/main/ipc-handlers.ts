@@ -1661,6 +1661,7 @@ async function runGroomingBatch(win: BrowserWindow | null): Promise<void> {
         fields: {
           status: 'groomed',
           priority: result.priority,
+          priorityRationale: result.priorityRationale,
           suggestedAction: result.suggestedAction,
           evidenceSummary: result.evidenceSummary,
           jiraTicketKey: result.jiraTicketKey,
