@@ -10,8 +10,8 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 18-ai-grooming-engine — Plan 01 of 4 complete
-Status: Executing Phase 18 (18-01 done — grooming-agent.ts shipped)
+Phase: 18-ai-grooming-engine — Plan 02 of 4 complete
+Status: Executing Phase 18 (18-02 done — IPC handler + grooming schedule wired)
 
 Progress: [████░░░░░░] 57% (Phase 17 complete — 4/7 phases done; Phase 18 started)
 
@@ -63,6 +63,12 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - JSON parse error throws with 200-char raw text preview for debuggability
 - researchLinks serialized to JSON string (matches existing research_links TEXT column); only set when isResearchMode=true
 
+**Phase 18-02 decisions (2026-05-20):**
+- isDestroyed() guard added before every webContents.send() in schedule callbacks — window may close between tick and send
+- taskgroomer:groom handler returns {started: true} immediately (fire-and-forget); batch runs as background async task
+- groomingRunActive module-level flag prevents double-trigger from both IPC and schedule
+- taskgroomer:groom:start is a separate push channel for schedule-triggered runs so renderer can react without initiating the IPC call
+
 ### Pending Todos
 
 None.
@@ -74,5 +80,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 18 Plan 01 complete — grooming-agent.ts implemented (commit 04c81e6).
-Resume file: /gsd:execute-phase 18 (continue with Plan 02)
+Stopped at: Phase 18 Plan 02 complete — IPC handler + grooming schedule wired (commits 733932d, a1325e0).
+Resume file: /gsd:execute-phase 18 (continue with Plan 03)
