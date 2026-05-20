@@ -321,6 +321,14 @@ export interface ElectronAPI {
       fields: Partial<Omit<Task, 'id' | 'createdAt'>>
     }) => Promise<Task>
     deleteTask: (args: { id: string }) => Promise<{ success: boolean }>
+    groom: () => Promise<{ started: boolean; reason?: string }>
+    onGroomProgress: (cb: (data: {
+      taskId: string
+      status: 'grooming' | 'done' | 'failed'
+      result?: Record<string, unknown>
+    }) => void) => void
+    onGroomStart: (cb: (data: { taskCount: number }) => void) => void
+    removeGroomListeners: () => void
   }
   capture: {
     getClipboard: () => Promise<string | null>
@@ -328,15 +336,35 @@ export interface ElectronAPI {
   }
   integrations: {
     jira: {
-      saveCredentials: (creds: { baseUrl: string; email: string; apiToken: string; projects: string }) => Promise<{ saved: boolean }>
-      getStatus: () => Promise<{ configured: boolean; baseUrl: string | null; email: string | null; apiTokenMasked: string | null; projects: string | null }>
+      saveCredentials: (creds: {
+        baseUrl: string
+        email: string
+        apiToken: string
+        projects: string
+      }) => Promise<{ saved: boolean }>
+      getStatus: () => Promise<{
+        configured: boolean
+        baseUrl: string | null
+        email: string | null
+        apiTokenMasked: string | null
+        projects: string | null
+      }>
       clearCredentials: () => Promise<{ cleared: boolean }>
       testConnection: () => Promise<{ success: boolean; error: string | null }>
       search: (query: string) => Promise<unknown>
     }
     confluence: {
-      saveCredentials: (creds: { baseUrl: string; email: string; apiToken: string }) => Promise<{ saved: boolean }>
-      getStatus: () => Promise<{ configured: boolean; baseUrl: string | null; email: string | null; apiTokenMasked: string | null }>
+      saveCredentials: (creds: {
+        baseUrl: string
+        email: string
+        apiToken: string
+      }) => Promise<{ saved: boolean }>
+      getStatus: () => Promise<{
+        configured: boolean
+        baseUrl: string | null
+        email: string | null
+        apiTokenMasked: string | null
+      }>
       clearCredentials: () => Promise<{ cleared: boolean }>
       testConnection: () => Promise<{ success: boolean; error: string | null }>
       search: (query: string) => Promise<unknown>

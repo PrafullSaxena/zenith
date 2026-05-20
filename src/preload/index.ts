@@ -476,7 +476,35 @@ const api = {
       ipcRenderer.invoke('taskgroomer:updateTask', args),
 
     deleteTask: (args: { id: string }): Promise<{ success: boolean }> =>
-      ipcRenderer.invoke('taskgroomer:deleteTask', args)
+      ipcRenderer.invoke('taskgroomer:deleteTask', args),
+
+    // Trigger manual grooming run
+    groom: (): Promise<{ started: boolean; reason?: string }> =>
+      ipcRenderer.invoke('taskgroomer:groom'),
+
+    // Subscribe to per-task progress events.
+    // IMPORTANT: Do NOT return ipcRenderer.on() — it returns IpcRenderer which
+    // contextBridge cannot serialize. Return void instead (same pattern as ai:onStreamChunk).
+    onGroomProgress: (
+      cb: (data: {
+        taskId: string
+        status: 'grooming' | 'done' | 'failed'
+        result?: Record<string, unknown>
+      }) => void
+    ): void => {
+      ipcRenderer.on('taskgroomer:groom:progress', (_e, data) => cb(data))
+    },
+
+    // Subscribe to schedule-triggered groom start events (no user action).
+    onGroomStart: (cb: (data: { taskCount: number }) => void): void => {
+      ipcRenderer.on('taskgroomer:groom:start', (_e, data) => cb(data))
+    },
+
+    // Remove all grooming event listeners (call on component unmount).
+    removeGroomListeners: (): void => {
+      ipcRenderer.removeAllListeners('taskgroomer:groom:progress')
+      ipcRenderer.removeAllListeners('taskgroomer:groom:start')
+    }
   },
   capture: {
     getClipboard: (): Promise<string | null> => ipcRenderer.invoke('capture:getClipboard'),
@@ -485,32 +513,27 @@ const api = {
   },
   integrations: {
     jira: {
-      saveCredentials: (creds: { baseUrl: string; email: string; apiToken: string; projects: string }) =>
-        ipcRenderer.invoke('integrations:jira:saveCredentials', creds),
-      getStatus: () =>
-        ipcRenderer.invoke('integrations:jira:getStatus'),
-      clearCredentials: () =>
-        ipcRenderer.invoke('integrations:jira:clearCredentials'),
-      testConnection: () =>
-        ipcRenderer.invoke('integrations:jira:testConnection'),
-      search: (query: string) =>
-        ipcRenderer.invoke('integrations:jira:search', query)
+      saveCredentials: (creds: {
+        baseUrl: string
+        email: string
+        apiToken: string
+        projects: string
+      }) => ipcRenderer.invoke('integrations:jira:saveCredentials', creds),
+      getStatus: () => ipcRenderer.invoke('integrations:jira:getStatus'),
+      clearCredentials: () => ipcRenderer.invoke('integrations:jira:clearCredentials'),
+      testConnection: () => ipcRenderer.invoke('integrations:jira:testConnection'),
+      search: (query: string) => ipcRenderer.invoke('integrations:jira:search', query)
     },
     confluence: {
       saveCredentials: (creds: { baseUrl: string; email: string; apiToken: string }) =>
         ipcRenderer.invoke('integrations:confluence:saveCredentials', creds),
-      getStatus: () =>
-        ipcRenderer.invoke('integrations:confluence:getStatus'),
-      clearCredentials: () =>
-        ipcRenderer.invoke('integrations:confluence:clearCredentials'),
-      testConnection: () =>
-        ipcRenderer.invoke('integrations:confluence:testConnection'),
-      search: (query: string) =>
-        ipcRenderer.invoke('integrations:confluence:search', query)
+      getStatus: () => ipcRenderer.invoke('integrations:confluence:getStatus'),
+      clearCredentials: () => ipcRenderer.invoke('integrations:confluence:clearCredentials'),
+      testConnection: () => ipcRenderer.invoke('integrations:confluence:testConnection'),
+      search: (query: string) => ipcRenderer.invoke('integrations:confluence:search', query)
     },
     web: {
-      search: (query: string) =>
-        ipcRenderer.invoke('integrations:web:search', query)
+      search: (query: string) => ipcRenderer.invoke('integrations:web:search', query)
     }
   }
 }
