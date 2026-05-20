@@ -1,19 +1,20 @@
 /**
- * TaskGroomerView — Main plugin view for the Task Groomer.
+ * TaskGroomerView — Revamped Task Groomer plugin view.
  *
- * Replaces the Phase 14 placeholder. Implements the full Dumpyard View:
- *  - Slim toolbar: PageHeader with "Task Groomer" title + Groom button (live with spinner)
- *  - Two tabs: "Dumpyard" (dump status tasks) + "Groomed" (all others)
- *  - Tab labels show task counts when non-zero
- *  - Compact TaskCard rows sorted newest-first, with shimmer during grooming
- *  - Empty states with context-appropriate messaging
- *  - TaskSidePanel slides in from right on card click
- *  - Failure summary toast via sonner after each grooming run
- *
- * Default-exported for React.lazy() in plugin registry.ts (unchanged from Phase 14).
+ * Dumpyard tab: compact list with hover-delete + side panel.
+ * Groomed tab: toggleable List / Kanban views with status-based columns.
  */
 import { useEffect, useRef, useState } from 'react'
-import { CheckSquare, Sparkles, Inbox, Loader2, AlertCircle, X } from 'lucide-react'
+import {
+  CheckSquare,
+  Sparkles,
+  Inbox,
+  Loader2,
+  AlertCircle,
+  X,
+  LayoutList,
+  LayoutGrid
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTaskGroomerStore } from '@renderer/stores/task-groomer-store'
@@ -24,6 +25,7 @@ import { cn } from '@renderer/lib/utils'
 import TaskCard from './TaskCard'
 import TaskSidePanel from './TaskSidePanel'
 import GroomDigest from './GroomDigest'
+import { GroomedKanban } from './GroomedKanban'
 
 export default function TaskGroomerView(): React.JSX.Element {
   const tasks = useTaskGroomerStore((s) => s.tasks)
@@ -32,15 +34,13 @@ export default function TaskGroomerView(): React.JSX.Element {
   const selectedTaskId = useTaskGroomerStore((s) => s.selectedTaskId)
   const loadTasks = useTaskGroomerStore((s) => s.loadTasks)
   const updateTaskStatus = useTaskGroomerStore((s) => s.updateTaskStatus)
+  const deleteTask = useTaskGroomerStore((s) => s.deleteTask)
   const setActiveTab = useTaskGroomerStore((s) => s.setActiveTab)
   const setSelectedTaskId = useTaskGroomerStore((s) => s.setSelectedTaskId)
 
-  // Digest state
   const showDigest = useTaskGroomerStore((s) => s.showDigest)
   const dismissDigest = useTaskGroomerStore((s) => s.dismissDigest)
 
-  // Grooming state
-  const deleteTask = useTaskGroomerStore((s) => s.deleteTask)
   const groomingActive = useTaskGroomerStore((s) => s.groomingActive)
   const groomCount = useTaskGroomerStore((s) => s.groomCount)
   const groomingTaskIds = useTaskGroomerStore((s) => s.groomingTaskIds)
@@ -50,21 +50,19 @@ export default function TaskGroomerView(): React.JSX.Element {
   const lastGroomSummary = useTaskGroomerStore((s) => s.lastGroomSummary)
   const failedTaskIds = useTaskGroomerStore((s) => s.failedTaskIds)
 
-  // Failure banner local state
+  // Groomed view mode — persisted across tab switches
+  const [groomedViewMode, setGroomedViewMode] = useState<'list' | 'kanban'>('list')
   const [failureBannerDismissed, setFailureBannerDismissed] = useState(false)
 
-  // Load tasks on mount
   useEffect(() => {
     loadTasks()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Init/cleanup groom IPC listeners on mount/unmount
   useEffect(() => {
     initGroomListeners()
     return () => cleanupGroomListeners()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Show failure toast when lastGroomSummary changes; also reset banner dismissed state
   const prevSummaryRef = useRef(lastGroomSummary)
   useEffect(() => {
     if (lastGroomSummary && lastGroomSummary !== prevSummaryRef.current) {
@@ -81,46 +79,34 @@ export default function TaskGroomerView(): React.JSX.Element {
     }
   }, [lastGroomSummary])
 
-  // Reset failure banner dismissed state when a new groom run starts
   useEffect(() => {
-    if (groomingActive) {
-      setFailureBannerDismissed(false)
-    }
+    if (groomingActive) setFailureBannerDismissed(false)
   }, [groomingActive])
 
-  // Failure banner display condition
   const showFailureBanner =
     lastGroomSummary !== null &&
     lastGroomSummary.failed > 0 &&
     !failureBannerDismissed &&
     !groomingActive
 
-  // Derive task lists inline (not stored in Zustand — pure filter)
   const dumpTasks = tasks.filter((t) => t.status === 'dump')
   const groomedTasks = tasks.filter((t) => t.status !== 'dump')
   const visibleTasks = activeTab === 'dumpyard' ? dumpTasks : groomedTasks
-
-  // Selected task for side panel
   const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? null
 
-  // Tab definitions with count badges
   const TABS = [
-    {
-      id: 'dumpyard',
-      label: dumpTasks.length > 0 ? `Dumpyard (${dumpTasks.length})` : 'Dumpyard'
-    },
-    {
-      id: 'groomed',
-      label: groomedTasks.length > 0 ? `Groomed (${groomedTasks.length})` : 'Groomed'
-    }
+    { id: 'dumpyard', label: dumpTasks.length > 0 ? `Dumpyard (${dumpTasks.length})` : 'Dumpyard' },
+    { id: 'groomed', label: groomedTasks.length > 0 ? `Groomed (${groomedTasks.length})` : 'Groomed' }
   ]
+
+  const isKanban = activeTab === 'groomed' && groomedViewMode === 'kanban'
 
   return (
     <div className="relative flex h-full flex-col">
-      {/* Subtle dot grid background */}
-      <div className="pointer-events-none absolute inset-0 z-0 dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:24px_24px]" />
+      {/* Subtle dot grid */}
+      <div className="pointer-events-none absolute inset-0 z-0 dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] [background-size:24px_24px]" />
 
-      {/* Toolbar: title + tabs + Groom button */}
+      {/* Toolbar */}
       <PageHeader
         icon={CheckSquare}
         title="Task Groomer"
@@ -128,89 +114,136 @@ export default function TaskGroomerView(): React.JSX.Element {
         activeTab={activeTab}
         onTabChange={(id) => setActiveTab(id as 'dumpyard' | 'groomed')}
         statusIndicator={
-          <button
-            type="button"
-            disabled={groomingActive || dumpTasks.length === 0}
-            onClick={startGroom}
-            title={
-              dumpTasks.length === 0
-                ? 'No Dump tasks to groom'
-                : groomingActive
-                  ? `Grooming ${groomCount} tasks...`
-                  : 'Groom all Dump tasks with AI'
-            }
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-              groomingActive
-                ? 'bg-primary/20 border-primary/30 text-primary cursor-not-allowed'
-                : dumpTasks.length === 0
-                  ? 'bg-white/4 border-white/8 text-muted-foreground opacity-60 cursor-not-allowed'
-                  : 'bg-primary border-primary/80 text-primary-foreground hover:bg-primary/90 cursor-pointer'
+          <div className="flex items-center gap-2">
+            {/* Kanban/List toggle — only on Groomed tab */}
+            {activeTab === 'groomed' && (
+              <div className="flex items-center rounded-lg border border-white/8 bg-white/[0.03] p-0.5 gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => setGroomedViewMode('list')}
+                  className={cn(
+                    'flex items-center justify-center w-6 h-6 rounded-md transition-colors',
+                    groomedViewMode === 'list'
+                      ? 'bg-white/10 text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  title="List view"
+                  aria-label="List view"
+                >
+                  <LayoutList size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGroomedViewMode('kanban')}
+                  className={cn(
+                    'flex items-center justify-center w-6 h-6 rounded-md transition-colors',
+                    groomedViewMode === 'kanban'
+                      ? 'bg-white/10 text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  title="Kanban view"
+                  aria-label="Kanban view"
+                >
+                  <LayoutGrid size={12} />
+                </button>
+              </div>
             )}
-          >
-            {groomingActive ? (
-              <>
-                <Loader2 size={12} className="animate-spin" />
-                Grooming {groomCount} tasks...
-              </>
-            ) : (
-              <>
-                <Sparkles size={12} />
-                Groom
-              </>
-            )}
-          </button>
+
+            {/* Groom button */}
+            <button
+              type="button"
+              disabled={groomingActive || dumpTasks.length === 0}
+              onClick={startGroom}
+              title={
+                dumpTasks.length === 0
+                  ? 'No Dump tasks to groom'
+                  : groomingActive
+                    ? `Grooming ${groomCount} tasks...`
+                    : 'Groom all Dump tasks with AI'
+              }
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                groomingActive
+                  ? 'bg-primary/20 border-primary/30 text-primary cursor-not-allowed'
+                  : dumpTasks.length === 0
+                    ? 'bg-white/4 border-white/8 text-muted-foreground opacity-50 cursor-not-allowed'
+                    : 'bg-primary border-primary/80 text-primary-foreground hover:bg-primary/90 cursor-pointer'
+              )}
+            >
+              {groomingActive ? (
+                <>
+                  <Loader2 size={12} className="animate-spin" />
+                  Grooming {groomCount}...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={12} />
+                  Groom
+                </>
+              )}
+            </button>
+          </div>
         }
       />
 
-      {/* Failure banner — persistent after a batch groom run with failures */}
-      {showFailureBanner && (
-        <div className="flex items-center gap-3 mx-3 my-1.5 px-3 py-2 rounded-lg border border-amber-400/20 bg-amber-400/8 text-xs">
-          <AlertCircle size={13} className="text-amber-400 shrink-0" />
-          <span className="flex-1 text-amber-200/80">
-            {lastGroomSummary!.failed} task{lastGroomSummary!.failed !== 1 ? 's' : ''} failed to
-            groom
-          </span>
-          <button
-            type="button"
-            onClick={startGroom}
-            disabled={groomingActive || dumpTasks.length === 0}
-            className="text-amber-400 hover:text-amber-300 font-medium transition-colors disabled:opacity-50"
+      {/* Failure banner */}
+      <AnimatePresence>
+        {showFailureBanner && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
           >
-            Retry
-          </button>
-          <button
-            type="button"
-            onClick={() => setFailureBannerDismissed(true)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Dismiss failure banner"
-          >
-            <X size={12} />
-          </button>
-        </div>
-      )}
+            <div className="flex items-center gap-3 mx-3 my-1.5 px-3 py-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.07] text-xs">
+              <AlertCircle size={13} className="text-amber-400 shrink-0" />
+              <span className="flex-1 text-amber-200/80">
+                {lastGroomSummary!.failed} task{lastGroomSummary!.failed !== 1 ? 's' : ''} failed
+              </span>
+              <button
+                type="button"
+                onClick={startGroom}
+                disabled={groomingActive || dumpTasks.length === 0}
+                className="text-amber-400 hover:text-amber-300 font-medium transition-colors disabled:opacity-50"
+              >
+                Retry
+              </button>
+              <button
+                type="button"
+                onClick={() => setFailureBannerDismissed(true)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Dismiss"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Tab content */}
       <div className="relative flex-1 overflow-hidden z-10">
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab}
+            key={`${activeTab}-${isKanban ? 'kanban' : 'list'}`}
             variants={pageTransition}
             initial="initial"
             animate="animate"
             exit="exit"
             className="flex h-full flex-col overflow-hidden"
           >
-            {/* Loading state */}
+            {/* Loading */}
             {loading && (
               <div className="flex flex-1 items-center justify-center">
-                <span className="text-sm text-muted-foreground">Loading tasks...</span>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 size={14} className="animate-spin" />
+                  Loading tasks...
+                </div>
               </div>
             )}
 
-            {/* Empty state */}
-            {!loading &&
-              visibleTasks.length === 0 &&
+            {/* Empty states */}
+            {!loading && visibleTasks.length === 0 &&
               (activeTab === 'dumpyard' ? (
                 <EmptyState
                   icon={Inbox}
@@ -221,12 +254,26 @@ export default function TaskGroomerView(): React.JSX.Element {
                 <EmptyState
                   icon={CheckSquare}
                   title="No groomed tasks yet"
-                  description="Tasks will appear here after grooming. Use the Groom button above to start."
+                  description="Groom your dump tasks to see them here."
                 />
               ))}
 
-            {/* Task list */}
-            {!loading && visibleTasks.length > 0 && (
+            {/* KANBAN VIEW — Groomed tab only */}
+            {!loading && visibleTasks.length > 0 && isKanban && (
+              <GroomedKanban
+                tasks={groomedTasks}
+                onStatusChange={updateTaskStatus}
+                onDelete={deleteTask}
+                onCardClick={(t) => {
+                  if (showDigest) dismissDigest()
+                  setSelectedTaskId(t.id === selectedTaskId ? null : t.id)
+                }}
+                selectedTaskId={selectedTaskId}
+              />
+            )}
+
+            {/* LIST VIEW */}
+            {!loading && visibleTasks.length > 0 && !isKanban && (
               <div className="flex flex-col flex-1 overflow-y-auto px-3 py-2 gap-0.5 relative">
                 <AnimatePresence initial={false}>
                   {visibleTasks.map((task, i) => (
@@ -252,8 +299,7 @@ export default function TaskGroomerView(): React.JSX.Element {
         </AnimatePresence>
       </div>
 
-      {/* Right-side panel slot: digest after batch groom, or task detail panel */}
-      {/* Digest takes priority: slides in after batch run; dismisses to reveal TaskSidePanel */}
+      {/* Digest + side panel */}
       <GroomDigest
         open={showDigest}
         onClose={dismissDigest}
@@ -263,7 +309,6 @@ export default function TaskGroomerView(): React.JSX.Element {
         }}
       />
 
-      {/* TaskSidePanel: only when digest is not showing */}
       <TaskSidePanel
         task={selectedTask}
         open={selectedTaskId !== null && !showDigest}

@@ -26,12 +26,14 @@ function formatRelativeTime(ms: number): string {
   return `${Math.floor(diff / (30 * 86400000))}mo ago`
 }
 
-const PRIORITY_CONFIG: Record<NonNullable<Task['priority']>, { label: string; className: string }> =
-  {
-    p1: { label: 'P1', className: 'text-red-400 bg-red-400/12 border-red-400/20' },
-    p2: { label: 'P2', className: 'text-amber-400 bg-amber-400/12 border-amber-400/20' },
-    p3: { label: 'P3', className: 'text-blue-400 bg-blue-400/12 border-blue-400/20' }
-  }
+const PRIORITY_CONFIG: Record<
+  NonNullable<Task['priority']>,
+  { label: string; className: string }
+> = {
+  p1: { label: 'P1', className: 'text-red-400 bg-red-400/12 border-red-400/20' },
+  p2: { label: 'P2', className: 'text-amber-400 bg-amber-400/12 border-amber-400/20' },
+  p3: { label: 'P3', className: 'text-blue-400 bg-blue-400/12 border-blue-400/20' }
+}
 
 const ACTION_CONFIG: Record<string, string> = {
   do: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
