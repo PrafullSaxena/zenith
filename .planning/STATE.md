@@ -10,8 +10,8 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 20-settings-polish — In Progress (Plan 01/05 complete)
-Status: Phase 20 started. Plan 20-01 complete: IntegrationHealthDashboard added to TaskGroomerSettings above AI Agent section.
+Phase: 20-settings-polish — In Progress (Plan 04/05 complete)
+Status: Plan 20-04 complete (2026-05-21). Polished GroomDigest (text-sm rows, focus rings), StatusDropdown a11y focus ring, and capture popup spotlight aesthetic with styled submit button.
 
 Progress: [█████████░] 90% (6/7 phases complete — Phase 20 in progress)
 
@@ -122,5 +122,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-21
-Stopped at: Completed 20-01-PLAN.md (IntegrationHealthDashboard in TaskGroomerSettings, commit 740b49e)
-Resume at: 20-02-PLAN.md (next plan in 20-settings-polish phase)
+Stopped at: Completed 20-04-PLAN.md (GroomDigest polish + StatusDropdown a11y + Capture popup spotlight, commits fb24cc5, 1e77ea0)
+Resume at: 20-05-PLAN.md (final plan in 20-settings-polish phase)
