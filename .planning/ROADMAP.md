@@ -105,7 +105,7 @@ Plans:
 **Goal**: The AI grooming agent processes all Dump tasks, assigns priorities, enriches with evidence from Jira/Confluence/Google, and writes results back to the DB — runs on schedule and on-demand
 **Depends on**: Phase 17
 **Requirements**: GROOM-01, GROOM-02, GROOM-03, GROOM-04
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 **Success Criteria** (what must be TRUE):
   1. Running the grooming agent (scheduled or manual) processes all Dump tasks and sets their status to Groomed
   2. Each groomed task has: priority (P1/P2/P3), suggested action (do/delegate/defer/delete), linked Jira ticket (if found), evidence summary
@@ -143,7 +143,7 @@ Plans:
 | 15. Capture | 0/? | Complete    | 2026-05-19 |
 | 16. Dumpyard View | 3/3 | Complete    | 2026-05-19 |
 | 17. Integrations | 4/4 | ✅ Complete | 2026-05-20 |
-| 18. AI Grooming Engine | 0/4 | Not started | — |
+| 18. AI Grooming Engine | 1/4 | In Progress|  |
 | 19. Re-groom + Digest | 0/? | Not started | — |
 | 20. Settings & Polish | 0/? | Not started | — |
 

@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 18-grooming-engine — Not started
-Status: Ready to discuss Phase 18
+Phase: 18-ai-grooming-engine — Plan 01 of 4 complete
+Status: Executing Phase 18 (18-01 done — grooming-agent.ts shipped)
 
-Progress: [████░░░░░░] 57% (Phase 17 complete — 4/7 phases done)
+Progress: [████░░░░░░] 57% (Phase 17 complete — 4/7 phases done; Phase 18 started)
 
 ## Performance Metrics
 
@@ -56,6 +56,13 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 17-02]: null credentials returns skip sentinel immediately — grooming never blocked by unconfigured integrations
 - [Phase 17-02]: Node built-in fetch used in both clients — no node-fetch or axios dependency
 
+**Phase 18-01 decisions (2026-05-20):**
+- generateText (non-streaming) over streamText — batch grooming result sufficient; no streaming UI needed
+- withTimeout helper races promise against setTimeout; each integration catches independently to return skip sentinel
+- Credential builders return null for entire set if any required field missing — no partial credentials, zero network calls
+- JSON parse error throws with 200-char raw text preview for debuggability
+- researchLinks serialized to JSON string (matches existing research_links TEXT column); only set when isResearchMode=true
+
 ### Pending Todos
 
 None.
@@ -67,5 +74,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 17 complete (checkpoint approved). All 4 plans shipped: credentials store, Jira+Confluence clients, web search client (DuckDuckGo fetch — replaced Playwright due to chromium-bidi ESM issue in Electron), IPC wiring + TaskGroomerSettings UI with permission help tooltips.
-Resume file: /gsd:discuss-phase 18
+Stopped at: Phase 18 Plan 01 complete — grooming-agent.ts implemented (commit 04c81e6).
+Resume file: /gsd:execute-phase 18 (continue with Plan 02)
