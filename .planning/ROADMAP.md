@@ -36,7 +36,7 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 17: Integrations** — Jira, Confluence, Google API clients + credential storage (completed 2026-05-20)
 - [x] **Phase 18: AI Grooming Engine** — Grooming agent, scheduling, per-task output (priority, evidence, research mini-summary) (completed 2026-05-20)
 - [x] **Phase 19: Re-groom + Digest** — On-demand re-groom per task, post-grooming digest view (completed 2026-05-20)
-- [ ] **Phase 20: Settings & Polish** — Grooming schedule config, Jira push button, UI polish
+- [ ] **Phase 20: Settings & Polish** — Integration health dashboard, error UI, Jira link, UI/a11y polish
 
 ## Phase Details
 
@@ -133,12 +133,22 @@ Plans:
 - [ ] 19-03-PLAN.md — GroomDigest component + TaskGroomerView wiring + human verification
 
 ### Phase 20: Settings & Polish
-**Goal**: Grooming schedule is configurable in Settings; Jira push works via single button; UI is polished and production-ready
+**Goal**: Task Groomer plugin is production-ready: integration health dashboard in settings, persistent failure UI, Jira ticket as clickable link, UI and a11y polish across all Task Groomer components
 **Depends on**: Phase 19
 **Requirements**: DATA-02, INT-04
+**Plans:** 5 plans
 **Success Criteria** (what must be TRUE):
-  1. Zenith Settings has a Task Groomer section: configure grooming schedule time, view integration connection status
-  2. A "Push to Jira" button on any groomed task creates a Jira ticket and shows a success confirmation
+  1. Settings → Task Groomer shows an integration health dashboard: 4 service icons (AI Agent, Jira, Confluence, Web Search) — vivid when configured, dimmed/grayscale when not
+  2. When a batch groom run has failures, a persistent amber banner shows the failure count with Retry and Dismiss actions; failed task cards show an amber warning icon
+  3. The Jira ticket key in TaskSidePanel is a clickable button opening the ticket in the browser via openExternal (not an anchor tag)
+  4. Capture popup has a styled submit button; GroomDigest has consistent text sizing; all interactive elements have focus rings
+
+Plans:
+- [ ] 20-01-PLAN.md — Integration health dashboard in TaskGroomerSettings
+- [ ] 20-02-PLAN.md — Failure banner + failed task indicator (TaskGroomerView + TaskCard + store)
+- [ ] 20-03-PLAN.md — Jira link fix + TaskSidePanel empty state + a11y pass
+- [ ] 20-04-PLAN.md — GroomDigest polish + capture popup submit button + StatusDropdown focus ring
+- [ ] 20-05-PLAN.md — Final compile + human verification checkpoint
 
 ## Progress
 
@@ -151,7 +161,7 @@ Plans:
 | 17. Integrations | 4/4 | ✅ Complete | 2026-05-20 |
 | 18. AI Grooming Engine | 5/5 | Complete    | 2026-05-20 |
 | 19. Re-groom + Digest | 3/3 | Complete   | 2026-05-20 |
-| 20. Settings & Polish | 0/? | Not started | — |
+| 20. Settings & Polish | 0/5 | Not started | — |
 
 ---
-*Roadmap updated: 2026-05-20 — Phase 18 planned (4 plans)*
+*Roadmap updated: 2026-05-21 — Phase 20 planned (5 plans)*
