@@ -10,8 +10,8 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 18-ai-grooming-engine — Plan 04 of 4 complete (PHASE COMPLETE)
-Status: Phase 18 complete — all 4 plans delivered; AI Grooming Engine end-to-end
+Phase: 18-ai-grooming-engine — Plan 05 of 5 complete (PHASE COMPLETE)
+Status: Phase 18 complete — all 5 plans delivered; AI Grooming Engine end-to-end + gap closure
 
 Progress: [█████░░░░░] 71% (Phase 18 complete — 5/7 phases done)
 
@@ -63,6 +63,11 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - JSON parse error throws with 200-char raw text preview for debuggability
 - researchLinks serialized to JSON string (matches existing research_links TEXT column); only set when isResearchMode=true
 
+**Phase 18-05 decisions (2026-05-20):**
+- ALTER TABLE under version < 2 guard with try/catch: idempotent schema migration — new installs and existing DBs both converge safely
+- IIFE for JSON.parse in JSX: keeps try/catch scoped without useMemo or extra component
+- window.api.app.openExternal (not <a href>) for research links — Electron CSP blocks external anchor navigation in renderer
+
 **Phase 18-04 decisions (2026-05-20):**
 - Listener deduplication: initGroomListeners() calls removeGroomListeners() first to prevent IPC listener stacking on component re-mount
 - prevSummaryRef pattern to detect lastGroomSummary change without an extra boolean state field
@@ -89,5 +94,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 18 Plan 04 complete — renderer state machine + live Groom button (commits 153d87f, bb884d3).
+Stopped at: Phase 18 Plan 05 complete — gap closure: priorityRationale DB persistence + researchLinks rendering (commits 4eaf446, 276a517).
 Resume file: /gsd:execute-phase 19 (next phase after Phase 18)
