@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 19-re-groom-digest — Plan 02 of 3 complete (IN PROGRESS)
-Status: Phase 19 in progress — Plan 02 complete; Zustand store re-groom/digest state + TaskSidePanel Re-groom button wired
+Phase: 19-re-groom-digest — Plan 03 of 3 complete (COMPLETE)
+Status: Phase 19 complete — GroomDigest component created and wired into TaskGroomerView; all GROOM-05/06 requirements met
 
-Progress: [██████░░░░] 75% (Phase 19 in progress — Plan 2/3 done)
+Progress: [██████████] 100% (Phase 19 complete — all 3/3 plans done)
 
 ## Performance Metrics
 
@@ -63,6 +63,12 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - JSON parse error throws with 200-char raw text preview for debuggability
 - researchLinks serialized to JSON string (matches existing research_links TEXT column); only set when isResearchMode=true
 
+**Phase 19-03 decisions (2026-05-20):**
+- CSS transition-transform used for GroomDigest slide-in — no Framer Motion, avoids extra dependency per CONTEXT.md discretion
+- GroomDigest renders as fixed inset-y-0 right-0 z-50 overlay (same pattern as Sheet) independently from TaskSidePanel
+- TaskSidePanel open prop gates on !showDigest to prevent both panels showing at once
+- Priority badge and action chip color configs defined locally in GroomDigest.tsx, mirroring TaskSidePanel PRIORITY_CONFIG
+
 **Phase 19-02 decisions (2026-05-20):**
 - Dynamic import('sonner') inside startReGroom action — avoids module-level import side effects; matches pattern where toast is used inside effects
 - Two-minute freshness window (groomedAt < TWO_MINUTES) at __run_complete__ to identify batch-groomed tasks for digest
@@ -106,5 +112,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 19 Plan 02 complete — Zustand store re-groom/digest state + TaskSidePanel Re-groom button (commits d992949, 73d5395).
-Resume file: /gsd:execute-phase 19 (continue with Plan 03)
+Stopped at: Phase 19 Plan 03 complete — GroomDigest component + TaskGroomerView wiring (commits a67af70, 6c1a422).
+Resume file: Phase 19 complete.

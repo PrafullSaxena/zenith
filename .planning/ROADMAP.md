@@ -35,7 +35,7 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 16: Dumpyard View** — Plugin screen, task cards, status transitions, aging indicator (completed 2026-05-19)
 - [x] **Phase 17: Integrations** — Jira, Confluence, Google API clients + credential storage (completed 2026-05-20)
 - [x] **Phase 18: AI Grooming Engine** — Grooming agent, scheduling, per-task output (priority, evidence, research mini-summary) (completed 2026-05-20)
-- [ ] **Phase 19: Re-groom + Digest** — On-demand re-groom per task, post-grooming digest view
+- [x] **Phase 19: Re-groom + Digest** — On-demand re-groom per task, post-grooming digest view (completed 2026-05-20)
 - [ ] **Phase 20: Settings & Polish** — Grooming schedule config, Jira push button, UI polish
 
 ## Phase Details
@@ -122,7 +122,7 @@ Plans:
 **Goal**: Users can request a fresh AI analysis on any individual task; after each grooming run a digest view shows all newly groomed tasks in priority order
 **Depends on**: Phase 18
 **Requirements**: GROOM-05, GROOM-06
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 **Success Criteria** (what must be TRUE):
   1. A "Re-groom" button on any task triggers fresh AI analysis and updates the task's enrichment data
   2. After each grooming run, a digest view renders all newly groomed tasks sorted by priority with their evidence summaries
@@ -150,7 +150,7 @@ Plans:
 | 16. Dumpyard View | 3/3 | Complete    | 2026-05-19 |
 | 17. Integrations | 4/4 | ✅ Complete | 2026-05-20 |
 | 18. AI Grooming Engine | 5/5 | Complete    | 2026-05-20 |
-| 19. Re-groom + Digest | 2/3 | In Progress|  |
+| 19. Re-groom + Digest | 3/3 | Complete   | 2026-05-20 |
 | 20. Settings & Polish | 0/? | Not started | — |
 
 ---
