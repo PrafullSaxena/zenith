@@ -55,12 +55,21 @@ interface TaskGroomerState {
   groomCount: number               // count of dump tasks at start of run (for button label)
   lastGroomSummary: { succeeded: number; failed: number; total: number } | null
 
+  // Re-groom state
+  reGroomTaskId: string | null     // ID of task currently being re-groomed; null if idle
+
+  // Digest state (populated after batch groom run completes)
+  digestTasks: Task[]              // Tasks groomed in the most recent batch run, sorted for display
+  showDigest: boolean              // true after batch completes; false when user dismisses or next batch starts
+
   // Actions
   loadTasks: () => Promise<void>
   updateTaskStatus: (id: string, status: Task['status']) => Promise<void>
   setActiveTab: (tab: 'dumpyard' | 'groomed') => void
   setSelectedTaskId: (id: string | null) => void
   startGroom: () => Promise<void>
+  startReGroom: (taskId: string) => Promise<void>
+  dismissDigest: () => void
   handleGroomProgress: (data: {
     taskId: string
     status: 'grooming' | 'done' | 'failed'
@@ -86,6 +95,13 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
   groomingTaskIds: new Set<string>(),
   groomCount: 0,
   lastGroomSummary: null,
+
+  // Re-groom state initial values
+  reGroomTaskId: null,
+
+  // Digest state initial values
+  digestTasks: [],
+  showDigest: false,
 
   loadTasks: async () => {
     set({ loading: true, error: null })
@@ -132,7 +148,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
   startGroom: async () => {
     const dumpTasks = get().tasks.filter(t => t.status === 'dump')
     if (dumpTasks.length === 0) return
-    set({ groomingActive: true, groomCount: dumpTasks.length, groomingTaskIds: new Set() })
+    set({ groomingActive: true, groomCount: dumpTasks.length, groomingTaskIds: new Set(), digestTasks: [], showDigest: false })
     try {
       await window.api.taskgroomer.groom()
     } catch (err) {
@@ -141,13 +157,99 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
     }
   },
 
+  startReGroom: async (taskId: string) => {
+    const { groomingActive, reGroomTaskId } = get()
+
+    // Shared lock: block if any groom (batch or single) is already running
+    if (groomingActive || reGroomTaskId !== null) return
+
+    set({ reGroomTaskId: taskId })
+
+    try {
+      const response = await window.api.taskgroomer.reGroom(taskId)
+
+      if (!response.started) {
+        // Main process rejected — another run is active
+        set({ reGroomTaskId: null })
+        return
+      }
+
+      if (response.error || !response.result) {
+        // Re-groom ran but AI failed
+        set({ reGroomTaskId: null })
+        const { toast } = await import('sonner')
+        toast.error('Re-groom failed — try again.')
+        return
+      }
+
+      const r = response.result
+
+      // In-place update: replace AI fields, preserve everything else
+      set(state => ({
+        reGroomTaskId: null,
+        tasks: state.tasks.map(t =>
+          t.id === taskId
+            ? {
+                ...t,
+                priority: r.priority as Task['priority'],
+                priorityRationale: r.priorityRationale,
+                suggestedAction: r.suggestedAction as Task['suggestedAction'],
+                evidenceSummary: r.evidenceSummary,
+                jiraTicketKey: r.jiraTicketKey,
+                jiraTicketUrl: r.jiraTicketUrl,
+                researchSummary: r.researchSummary,
+                researchLinks: r.researchLinks,
+                groomedAt: r.groomedAt,
+                updatedAt: Date.now()
+              }
+            : t
+        )
+      }))
+    } catch {
+      set({ reGroomTaskId: null })
+      const { toast } = await import('sonner')
+      toast.error('Re-groom failed — try again.')
+    }
+  },
+
+  dismissDigest: () => {
+    set({ showDigest: false })
+  },
+
   handleGroomProgress: (data) => {
     const { taskId, status, result } = data
 
     // Sentinel event: run is complete
     if (taskId === '__run_complete__') {
       const summary = result as { succeeded: number; failed: number; total: number } | undefined
-      set({ groomingActive: false, groomingTaskIds: new Set() })
+
+      // Compute digest: tasks that were successfully groomed in this batch run
+      // Identify by groomedAt being within the last 2 minutes (batch just ran)
+      const now = Date.now()
+      const TWO_MINUTES = 2 * 60 * 1000
+      const freshGroomed = get().tasks.filter(
+        t => t.status === 'groomed' && t.groomedAt !== null && now - t.groomedAt < TWO_MINUTES
+      )
+
+      // Sort: P1 → P2 → P3, then Do → Delegate → Defer → Delete within same priority
+      const PRIORITY_ORDER: Record<string, number> = { p1: 0, p2: 1, p3: 2 }
+      const ACTION_ORDER: Record<string, number> = { do: 0, delegate: 1, defer: 2, delete: 3 }
+      const sortedDigest = [...freshGroomed].sort((a, b) => {
+        const pa = PRIORITY_ORDER[a.priority ?? 'p3'] ?? 2
+        const pb = PRIORITY_ORDER[b.priority ?? 'p3'] ?? 2
+        if (pa !== pb) return pa - pb
+        const aa = ACTION_ORDER[a.suggestedAction ?? 'defer'] ?? 2
+        const ab = ACTION_ORDER[b.suggestedAction ?? 'defer'] ?? 2
+        return aa - ab
+      })
+
+      set({
+        groomingActive: false,
+        groomingTaskIds: new Set(),
+        digestTasks: sortedDigest,
+        showDigest: sortedDigest.length > 0
+      })
+
       if (summary) {
         set({
           lastGroomSummary: {
