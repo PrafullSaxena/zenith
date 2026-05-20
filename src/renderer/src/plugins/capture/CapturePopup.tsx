@@ -11,10 +11,7 @@ function BoltIcon(): React.JSX.Element {
 }
 
 const MAX_CHARS = 500
-// Two fixed window heights. CSS transitions the textarea between them.
-const COMPACT_H  = 172  // header + 1-line textarea + footer
-const EXPANDED_H = 276  // header + 130px textarea + footer
-// Single-line scrollHeight at font-size 15px / line-height 1.55 ≈ 24px
+// Single-line scrollHeight at font-size 15px / line-height 1.55 ≈ 23-27px
 const SINGLE_LINE_H = 28
 
 export default function CapturePopup(): React.JSX.Element {
@@ -27,8 +24,6 @@ export default function CapturePopup(): React.JSX.Element {
 
   useEffect(() => {
     textareaRef.current?.focus()
-    window.api.capture.resize(COMPACT_H)
-
     window.api.capture.getClipboard().then((clipText) => {
       if (clipText) {
         setText(clipText)
@@ -38,31 +33,17 @@ export default function CapturePopup(): React.JSX.Element {
     })
   }, [])
 
-  // Detect multiline and toggle expanded state + resize window
+  // Detect multiline → toggle CSS expanded class (no window resize needed)
   useEffect(() => {
     const el = textareaRef.current
     if (!el) return
-
-    // Measure natural scroll height (reset height first so it reflects content)
     el.style.height = 'auto'
     const scrollH = el.scrollHeight
-    el.style.height = '' // let CSS control the height
+    el.style.height = ''
+    setExpanded(scrollH > SINGLE_LINE_H || text.includes('\n'))
+  }, [text])
 
-    const isMultiLine = scrollH > SINGLE_LINE_H || text.includes('\n')
-
-    if (isMultiLine && !expanded) {
-      setExpanded(true)
-      window.api.capture.resize(EXPANDED_H)
-    } else if (!isMultiLine && expanded) {
-      setExpanded(false)
-      // Delay window shrink so CSS transition finishes first
-      setTimeout(() => window.api.capture.resize(COMPACT_H), 230)
-    }
-  }, [text, expanded])
-
-  const handleClose = useCallback(() => {
-    window.api.capture.close()
-  }, [])
+  const handleClose = useCallback(() => window.api.capture.close(), [])
 
   const handleSubmit = useCallback(async () => {
     const trimmed = text.trim()
@@ -95,7 +76,6 @@ export default function CapturePopup(): React.JSX.Element {
   }
 
   const charCount = text.length
-  const nearLimit = charCount > MAX_CHARS * 0.8
 
   return (
     <div className="capture-overlay" onClick={handleClose}>
@@ -103,18 +83,16 @@ export default function CapturePopup(): React.JSX.Element {
         className={`capture-card${submitting ? ' is-submitting' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ── Header ───────────────────────────────── */}
+        {/* Header */}
         <div className="capture-header">
-          <div className="capture-icon">
-            <BoltIcon />
-          </div>
+          <div className="capture-icon"><BoltIcon /></div>
           <div className="capture-header-meta">
             <span className="capture-title">Quick Capture</span>
             {fromClipboard && <span className="capture-badge">from clipboard</span>}
           </div>
         </div>
 
-        {/* ── Body / Textarea ───────────────────────── */}
+        {/* Body */}
         <div className="capture-body">
           <textarea
             ref={textareaRef}
@@ -127,38 +105,25 @@ export default function CapturePopup(): React.JSX.Element {
           />
         </div>
 
-        {/* ── Footer ───────────────────────────────── */}
+        {/* Footer */}
         <div className="capture-footer">
           <div className="capture-hints">
-            <span className="capture-hint">
-              <kbd>↵</kbd> capture
-            </span>
-            <span className="capture-hint">
-              <kbd>shift ↵</kbd> new line
-            </span>
-            <span className="capture-hint">
-              <kbd>esc</kbd> dismiss
-            </span>
+            <span className="capture-hint"><kbd>↵</kbd> capture</span>
+            <span className="capture-hint"><kbd>shift ↵</kbd> new line</span>
+            <span className="capture-hint"><kbd>esc</kbd> dismiss</span>
           </div>
-
           <div className="capture-footer-right">
             {charCount > 0 && (
-              <span className={`capture-charcount${nearLimit ? ' warn' : ''}`}>
+              <span className={`capture-charcount${charCount > MAX_CHARS * 0.8 ? ' warn' : ''}`}>
                 {MAX_CHARS - charCount}
               </span>
             )}
-            <button
-              type="button"
-              className="capture-btn"
-              onClick={handleSubmit}
-              disabled={submitting || !text.trim()}
-              aria-label="Capture task"
-            >
-              {submitting ? (
-                <><span className="capture-spinner" /> Capturing</>
-              ) : (
-                <>Capture <span className="capture-btn-enter">↵</span></>
-              )}
+            <button type="button" className="capture-btn" onClick={handleSubmit}
+              disabled={submitting || !text.trim()} aria-label="Capture task">
+              {submitting
+                ? <><span className="capture-spinner" /> Capturing</>
+                : <>Capture <span className="capture-btn-enter">↵</span></>
+              }
             </button>
           </div>
         </div>

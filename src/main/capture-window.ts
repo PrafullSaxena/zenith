@@ -9,9 +9,9 @@ export function createCaptureWindow(): BrowserWindow {
 
   const win = new BrowserWindow({
     width: 540,
-    height: 172,
+    height: 300,  // always fixed — card is content-sized, extra area is transparent
     x: Math.floor((width - 540) / 2),
-    y: Math.floor(height * 0.28),
+    y: Math.floor(height * 0.25),
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -57,9 +57,8 @@ export function showCaptureWindow(): void {
   if (!captureWindow.isVisible()) {
     // Re-center on current display each time
     const { width, height } = screen.getPrimaryDisplay().workAreaSize
-    // Reset to base height each time it's shown (content from last session)
-    captureWindow.setSize(540, 172)
-    captureWindow.setPosition(Math.floor((width - 540) / 2), Math.floor(height * 0.28))
+    captureWindow.setSize(540, 300)
+    captureWindow.setPosition(Math.floor((width - 540) / 2), Math.floor(height * 0.25))
     captureWindow.show()
     captureWindow.focus()
   }
