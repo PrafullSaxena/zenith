@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Reduce the friction of developer workflows through AI-augmented tooling — all in a single, fast, consistent desktop app.
-**Current focus:** v3.0 — Task Groomer Plugin (Phase 15: Capture)
+**Current focus:** v3.0 — Task Groomer Plugin (Phase 18: AI Grooming Engine)
 
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 15-capture — Not started
-Status: Ready to discuss Phase 15
+Phase: 18-grooming-engine — Not started
+Status: Ready to discuss Phase 18
 
-Progress: [██░░░░░░░░] 14% (Phase 14 complete — 1/7 phases done)
+Progress: [████░░░░░░] 57% (Phase 17 complete — 4/7 phases done)
 
 ## Performance Metrics
 
@@ -67,5 +67,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 17 context gathered — Integrations section in Settings, Jira/Confluence separate creds, Google free approach (Gemini CLI → Playwright), missing creds never block grooming
-Resume file: /gsd:plan-phase 17
+Stopped at: Phase 17 complete (checkpoint approved). All 4 plans shipped: credentials store, Jira+Confluence clients, web search client (DuckDuckGo fetch — replaced Playwright due to chromium-bidi ESM issue in Electron), IPC wiring + TaskGroomerSettings UI with permission help tooltips.
+Resume file: /gsd:discuss-phase 18
