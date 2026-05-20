@@ -19,7 +19,7 @@ function BoltIcon(): React.JSX.Element {
 }
 
 const MAX_CHARS = 500
-const COMPACT_H = 118  // card(94px) + overlay(16px) + shadow-room(8px)
+const COMPACT_H = 118 // card(94px) + overlay(16px) + shadow-room(8px)
 const EXPANDED_H = 192 // card(168px) + overlay(16px) + shadow-room(8px)
 const CSS_TRANSITION_MS = 230
 
@@ -32,13 +32,25 @@ export default function CapturePopup(): React.JSX.Element {
   const originalClipboardText = useRef<string>('')
 
   useEffect(() => {
+    // Focus immediately so the window accepts keyboard input right away
     textareaRef.current?.focus()
     window.api.capture.resize(COMPACT_H)
+
     window.api.capture.getClipboard().then((clipText) => {
       if (clipText) {
         setText(clipText)
         originalClipboardText.current = clipText
         setFromClipboard(true)
+        // Re-focus after clipboard content is set — the async setState +
+        // IPC resize can steal focus from the textarea on some macOS builds
+        requestAnimationFrame(() => {
+          if (textareaRef.current) {
+            textareaRef.current.focus()
+            // Move cursor to end of pasted text so user can append immediately
+            const len = clipText.length
+            textareaRef.current.setSelectionRange(len, len)
+          }
+        })
       }
     })
   }, [])
@@ -124,8 +136,11 @@ export default function CapturePopup(): React.JSX.Element {
           </div>
         </div>
 
-        {/* Body — flex:1 fills remaining card height */}
-        <div className="capture-body">
+        {/* Body — flex:1 fills remaining card height; click anywhere in body to focus textarea */}
+        <div
+          className="capture-body"
+          onClick={() => textareaRef.current?.focus()}
+        >
           <textarea
             ref={textareaRef}
             className="capture-input"
@@ -134,6 +149,8 @@ export default function CapturePopup(): React.JSX.Element {
             onKeyDown={handleKeyDown}
             placeholder="What needs doing?"
             disabled={submitting}
+            // autoFocus as belt-and-suspenders — works even if the focus() call above races
+            autoFocus
           />
         </div>
       </div>

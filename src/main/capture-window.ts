@@ -61,6 +61,10 @@ export function showCaptureWindow(): void {
     captureWindow.setPosition(Math.floor((width - 540) / 2), Math.floor(height * 0.25))
     captureWindow.show()
     captureWindow.focus()
+    // Explicitly focus the webContents so the renderer receives keyboard events.
+    // On macOS, win.focus() alone sometimes doesn't route keyboard input to the
+    // renderer process in transparent frameless alwaysOnTop windows.
+    captureWindow.webContents.focus()
   }
 }
 
