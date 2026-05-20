@@ -23,6 +23,7 @@ import { EmptyState } from '@renderer/components/ui/EmptyState'
 import { cn } from '@renderer/lib/utils'
 import TaskCard from './TaskCard'
 import TaskSidePanel from './TaskSidePanel'
+import GroomDigest from './GroomDigest'
 
 export default function TaskGroomerView(): React.JSX.Element {
   const tasks = useTaskGroomerStore((s) => s.tasks)
@@ -33,6 +34,10 @@ export default function TaskGroomerView(): React.JSX.Element {
   const updateTaskStatus = useTaskGroomerStore((s) => s.updateTaskStatus)
   const setActiveTab = useTaskGroomerStore((s) => s.setActiveTab)
   const setSelectedTaskId = useTaskGroomerStore((s) => s.setSelectedTaskId)
+
+  // Digest state
+  const showDigest = useTaskGroomerStore((s) => s.showDigest)
+  const dismissDigest = useTaskGroomerStore((s) => s.dismissDigest)
 
   // Grooming state
   const groomingActive = useTaskGroomerStore((s) => s.groomingActive)
@@ -183,7 +188,10 @@ export default function TaskGroomerView(): React.JSX.Element {
                     isSelected={selectedTaskId === task.id}
                     isGrooming={groomingTaskIds.has(task.id)}
                     onStatusChange={updateTaskStatus}
-                    onClick={(t) => setSelectedTaskId(t.id === selectedTaskId ? null : t.id)}
+                    onClick={(t) => {
+                      if (showDigest) dismissDigest()
+                      setSelectedTaskId(t.id === selectedTaskId ? null : t.id)
+                    }}
                   />
                 ))}
               </div>
@@ -192,10 +200,21 @@ export default function TaskGroomerView(): React.JSX.Element {
         </AnimatePresence>
       </div>
 
-      {/* Side panel — overlays from right */}
+      {/* Right-side panel slot: digest after batch groom, or task detail panel */}
+      {/* Digest takes priority: slides in after batch run; dismisses to reveal TaskSidePanel */}
+      <GroomDigest
+        open={showDigest}
+        onClose={dismissDigest}
+        onTaskClick={(taskId) => {
+          dismissDigest()
+          setSelectedTaskId(taskId)
+        }}
+      />
+
+      {/* TaskSidePanel: only when digest is not showing */}
       <TaskSidePanel
         task={selectedTask}
-        open={selectedTaskId !== null}
+        open={selectedTaskId !== null && !showDigest}
         onClose={() => setSelectedTaskId(null)}
       />
     </div>
