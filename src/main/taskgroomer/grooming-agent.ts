@@ -2,17 +2,21 @@
  * grooming-agent.ts — Core AI grooming agent for the Task Groomer plugin.
  *
  * Processes a single Dump-status task by:
- *   1. Gathering integration credentials (Jira, Confluence)
- *   2. Querying integrations in parallel with 30s timeouts
- *   3. Building a context-rich prompt
- *   4. Calling Claude via Vercel AI SDK generateText
- *   5. Parsing and validating the structured JSON response
+ *   1. Resolving the configured AI provider (CLI or SDK)
+ *   2. Gathering integration credentials (Jira, Confluence)
+ *   3. Querying integrations in parallel with 30s timeouts
+ *   4. Building a context-rich prompt
+ *   5. Calling the AI agent (SDK generateText or CLI spawn)
+ *   6. Parsing and validating the structured JSON response
  *
  * This module runs ONLY in the main process.
  */
 
+import { spawn } from 'child_process'
 import { generateText } from 'ai'
 import { createModel, getApiKeyForProvider } from '../ai/providers'
+import { getShellEnv } from '../ai/cli-stream'
+import { getSetting } from '../settings-store'
 import {
   getIntegrationCredential,
   getIntegrationSetting,
@@ -182,12 +186,115 @@ function validateAction(value: string): value is 'do' | 'delegate' | 'defer' | '
  * Integration timeouts and missing credentials produce skip sentinels,
  * not errors — grooming always completes as long as Claude is reachable.
  */
+/**
+ * Resolve which provider to use for grooming.
+ * Reads plugins.task-groomer.groomingProvider from settings, then looks up
+ * the full provider config from agents.providers. Falls back to the first
+ * connected/configured provider if no explicit selection is saved.
+ */
+function resolveGroomingProvider(): {
+  providerId: string
+  model: string
+  command: string
+  apiKey: Promise<string | undefined>
+} | null {
+  const savedProviderId = (getSetting('plugins.task-groomer.groomingProvider') as string) ?? ''
+  const allProviders =
+    (getSetting('agents.providers') as Array<{
+      id: string
+      name: string
+      type: string
+      model: string
+      command: string
+      baseUrl: string
+      requiresApiKey: boolean
+    }> | null) ?? []
+
+  // Find the explicitly selected provider, or auto-select first connected one
+  let provider = savedProviderId
+    ? allProviders.find((p) => p.id === savedProviderId)
+    : allProviders[0]
+
+  if (!provider) return null
+
+  return {
+    providerId: provider.id,
+    model: provider.model || 'claude-sonnet-4-6',
+    command: provider.command || '',
+    apiKey: provider.requiresApiKey ? getApiKeyForProvider(provider.id) : Promise.resolve(undefined)
+  }
+}
+
+/**
+ * Call the AI via CLI spawn — pipes the full prompt to stdin, collects stdout,
+ * extracts the first JSON object from the response.
+ */
+function groomWithCLI(prompt: string, command: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, {
+      shell: true,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: getShellEnv()
+    })
+
+    let stdout = ''
+    let stderr = ''
+
+    child.stdin.on('error', () => {
+      /* suppress EPIPE */
+    })
+    child.stdout.on('data', (data: Buffer) => {
+      stdout += data.toString()
+    })
+    child.stderr.on('data', (data: Buffer) => {
+      stderr += data.toString()
+    })
+
+    const canContinue = child.stdin.write(prompt)
+    if (!canContinue) {
+      child.stdin.once('drain', () => child.stdin.end())
+    } else {
+      child.stdin.end()
+    }
+
+    child.on('close', (code) => {
+      if (code !== 0 && !stdout.trim()) {
+        reject(new Error(`CLI grooming failed (exit ${code}): ${stderr.trim() || 'Unknown error'}`))
+        return
+      }
+      // Extract JSON from output — CLI agents may wrap in markdown fences
+      const jsonMatch = stdout.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        reject(new Error(`CLI returned no JSON. Output (first 200 chars): ${stdout.slice(0, 200)}`))
+        return
+      }
+      resolve(jsonMatch[0])
+    })
+
+    child.on('error', (err) => {
+      reject(new Error(`Failed to start CLI for grooming: ${err.message}`))
+    })
+  })
+}
+
 export async function groomTask(task: Task): Promise<GroomingResult> {
-  // Step 1: Get Claude API key — fail fast if not configured
-  const apiKey = await getApiKeyForProvider('claude')
-  if (!apiKey) {
+  // Step 1: Resolve configured AI provider — fail fast if nothing is set up
+  const providerConfig = resolveGroomingProvider()
+  if (!providerConfig) {
     throw new Error(
-      'Anthropic API key not configured. Set it in Settings > Code Review Bot > Provider.'
+      'No AI agent configured for grooming. Go to Settings → Task Groomer → AI Agent and select a provider.'
+    )
+  }
+
+  const { providerId, model, command, apiKey: apiKeyPromise } = providerConfig
+  const apiKey = await apiKeyPromise
+
+  // SDK providers require an API key; CLI providers use the command directly
+  const useSDK = !!apiKey
+  const useCLI = !useSDK && !!command
+  if (!useSDK && !useCLI) {
+    throw new Error(
+      `Provider "${providerId}" has no API key and no CLI command. Configure it in Settings → AI Agents.`
     )
   }
 
@@ -246,22 +353,30 @@ Priority rules:
 - Defer: Do it later, not urgent
 - Delete: This is no longer relevant or worthwhile`
 
-  // Step 6: Call Claude via Vercel AI SDK generateText (non-streaming)
-  const model = createModel('claude', 'claude-sonnet-4-6', apiKey)
-  const { text } = await generateText({
-    model,
-    system: systemPrompt,
-    prompt: userPrompt,
-    maxTokens: 1024
-  })
+  // Step 6: Call the AI agent — SDK (generateText) or CLI (spawn + stdin)
+  let responseText: string
+  if (useSDK) {
+    const sdkModel = createModel(providerId, model, apiKey)
+    const { text } = await generateText({
+      model: sdkModel,
+      system: systemPrompt,
+      prompt: userPrompt,
+      maxTokens: 1024
+    })
+    responseText = text
+  } else {
+    // CLI: combine system + user prompts into a single stdin payload
+    const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`
+    responseText = await groomWithCLI(combinedPrompt, command)
+  }
 
   // Step 7: Parse and validate the JSON response
   let parsed: AiGroomingResponse
   try {
-    parsed = JSON.parse(text) as AiGroomingResponse
+    parsed = JSON.parse(responseText) as AiGroomingResponse
   } catch {
-    const preview = text.slice(0, 200)
-    throw new Error(`Claude returned invalid JSON. Raw response (first 200 chars): ${preview}`)
+    const preview = responseText.slice(0, 200)
+    throw new Error(`AI returned invalid JSON. Raw response (first 200 chars): ${preview}`)
   }
 
   if (!parsed.priority || !validatePriority(parsed.priority)) {

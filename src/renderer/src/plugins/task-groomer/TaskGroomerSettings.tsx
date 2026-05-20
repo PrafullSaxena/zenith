@@ -1,13 +1,15 @@
 /**
  * TaskGroomerSettings — Custom settings panel for the Task Groomer plugin.
  *
- * Two sections:
- *   1. Grooming Schedule — schedule enable/time/frequency settings
- *   2. Integrations — Jira, Confluence, and Web Search cards
+ * Three sections:
+ *   1. AI Agent — which configured provider to use for grooming
+ *   2. Grooming Schedule — schedule enable/time/frequency settings
+ *   3. Integrations — Jira, Confluence, and Web Search cards
  */
 import React, { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useSettingsStore } from '../../stores/settings-store'
+import { useAgentStore } from '../../stores/agent-store'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -69,6 +71,11 @@ function HelpTooltip({ children }: { children: React.ReactNode }): React.JSX.Ele
 
 export default function TaskGroomerSettings(): React.JSX.Element {
   const { getSetting, setSetting } = useSettingsStore()
+  const { providers, loadProviders } = useAgentStore()
+
+  useEffect(() => {
+    loadProviders()
+  }, [loadProviders])
 
   // ── Jira state ────────────────────────────────────────────────────────
   const [jiraStatus, setJiraStatus] = useState<JiraStatus>({
@@ -104,6 +111,10 @@ export default function TaskGroomerSettings(): React.JSX.Element {
   const [confluenceConfirmClear, setConfluenceConfirmClear] = useState(false)
   const [confluenceSaving, setConfluenceSaving] = useState(false)
   const [confluenceTesting, setConfluenceTesting] = useState(false)
+
+  // ── Grooming agent selection ───────────────────────────────────────────
+  const groomingProvider = (getSetting('plugins.task-groomer.groomingProvider') as string) ?? ''
+  const availableProviders = providers.filter((p) => p.status === 'connected' || p.hasApiKey)
 
   // ── Schedule settings (from settings store) ───────────────────────────
   const scheduleEnabled = (getSetting('plugins.task-groomer.schedule.enabled') as boolean) ?? false
@@ -259,6 +270,50 @@ export default function TaskGroomerSettings(): React.JSX.Element {
       </p>
 
       <div className="space-y-6">
+        {/* ── Section 0: AI Agent ───────────────────────────────────── */}
+        <div className="rounded-xl border border-white/6 bg-white/[0.04] p-5">
+          <h3 className="text-[13px] font-medium text-foreground mb-1">AI Agent</h3>
+          <p className="text-[11px] text-muted-foreground mb-4">
+            Which configured AI agent to use for grooming tasks. Configure agents in{' '}
+            <span className="text-primary/80">Settings → AI Agents</span>.
+          </p>
+
+          {availableProviders.length === 0 ? (
+            <div className="rounded-lg border border-white/8 bg-white/[0.02] px-3 py-2.5 text-[12px] text-muted-foreground">
+              No AI agents configured. Go to{' '}
+              <span className="text-primary/80">Settings → AI Agents</span> to set one up.
+            </div>
+          ) : (
+            <div>
+              <label className="mb-1.5 block text-[12px] text-muted-foreground">
+                Grooming agent
+              </label>
+              <select
+                value={groomingProvider}
+                onChange={(e) =>
+                  setSetting('plugins.task-groomer.groomingProvider', e.target.value)
+                }
+                className="w-full rounded-lg border border-white/8 bg-white/4 px-2 py-1 text-[12px] text-foreground focus:outline-none focus:border-primary appearance-none"
+              >
+                <option value="">Auto (first available)</option>
+                {availableProviders.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                    {p.type === 'cli' ? ' (CLI)' : p.requiresApiKey ? ' (SDK)' : ' (Local)'}
+                  </option>
+                ))}
+              </select>
+              {groomingProvider && (
+                <p className="mt-1.5 text-[11px] text-muted-foreground/60">
+                  {availableProviders.find((p) => p.id === groomingProvider)?.command
+                    ? `Command: ${availableProviders.find((p) => p.id === groomingProvider)?.command}`
+                    : 'SDK provider — uses API key from credentials store'}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* ── Section 1: Grooming Schedule ─────────────────────────── */}
         <div className="rounded-xl border border-white/6 bg-white/[0.04] p-5">
           <h3 className="text-[13px] font-medium text-foreground mb-4">Grooming Schedule</h3>

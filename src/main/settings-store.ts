@@ -19,6 +19,9 @@ const DEFAULTS: Record<string, unknown> = {
     'db-inspector': {
       connections: []
     },
+    'task-groomer': {
+      groomingProvider: ''
+    }
   },
   agents: {},
   reviewHistory: []
