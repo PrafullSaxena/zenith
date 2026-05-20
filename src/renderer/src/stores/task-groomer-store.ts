@@ -49,11 +49,25 @@ interface TaskGroomerState {
   activeTab: 'dumpyard' | 'groomed'
   selectedTaskId: string | null
 
+  // Grooming state
+  groomingActive: boolean          // true while a run is in progress
+  groomingTaskIds: Set<string>     // task IDs currently being processed (shimmer state)
+  groomCount: number               // count of dump tasks at start of run (for button label)
+  lastGroomSummary: { succeeded: number; failed: number; total: number } | null
+
   // Actions
   loadTasks: () => Promise<void>
   updateTaskStatus: (id: string, status: Task['status']) => Promise<void>
   setActiveTab: (tab: 'dumpyard' | 'groomed') => void
   setSelectedTaskId: (id: string | null) => void
+  startGroom: () => Promise<void>
+  handleGroomProgress: (data: {
+    taskId: string
+    status: 'grooming' | 'done' | 'failed'
+    result?: Record<string, unknown>
+  }) => void
+  initGroomListeners: () => void
+  cleanupGroomListeners: () => void
 }
 
 // ---------------------------------------------------------------------------
@@ -66,6 +80,12 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
   error: null,
   activeTab: 'dumpyard',
   selectedTaskId: null,
+
+  // Grooming state initial values
+  groomingActive: false,
+  groomingTaskIds: new Set<string>(),
+  groomCount: 0,
+  lastGroomSummary: null,
 
   loadTasks: async () => {
     set({ loading: true, error: null })
@@ -88,9 +108,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
     const prev = get().tasks
     // Optimistic update — apply immediately so UI responds instantly
     set({
-      tasks: prev.map((t) =>
-        t.id === id ? { ...t, status, updatedAt: Date.now() } : t
-      )
+      tasks: prev.map((t) => (t.id === id ? { ...t, status, updatedAt: Date.now() } : t))
     })
     try {
       await window.api.taskgroomer.updateTask({ id, fields: { status } })
@@ -109,5 +127,109 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
 
   setSelectedTaskId: (id: string | null) => {
     set({ selectedTaskId: id })
+  },
+
+  startGroom: async () => {
+    const dumpTasks = get().tasks.filter(t => t.status === 'dump')
+    if (dumpTasks.length === 0) return
+    set({ groomingActive: true, groomCount: dumpTasks.length, groomingTaskIds: new Set() })
+    try {
+      await window.api.taskgroomer.groom()
+    } catch (err) {
+      // If IPC call fails outright (e.g. already running), reset state
+      set({ groomingActive: false, groomingTaskIds: new Set() })
+    }
+  },
+
+  handleGroomProgress: (data) => {
+    const { taskId, status, result } = data
+
+    // Sentinel event: run is complete
+    if (taskId === '__run_complete__') {
+      const summary = result as { succeeded: number; failed: number; total: number } | undefined
+      set({ groomingActive: false, groomingTaskIds: new Set() })
+      if (summary) {
+        set({
+          lastGroomSummary: {
+            succeeded: summary.succeeded,
+            failed: summary.failed,
+            total: summary.total
+          }
+        })
+      }
+      return
+    }
+
+    if (status === 'grooming') {
+      // Add task to shimmering set
+      set(state => ({
+        groomingTaskIds: new Set([...state.groomingTaskIds, taskId])
+      }))
+      return
+    }
+
+    if (status === 'done' && result) {
+      // Remove from shimmering set + update task in tasks array
+      const taskResult = result as {
+        priority: Task['priority']
+        suggestedAction: Task['suggestedAction']
+        evidenceSummary: string | null
+        jiraTicketKey: string | null
+        jiraTicketUrl: string | null
+        researchSummary: string | null
+        researchLinks: string | null
+        groomedAt: number
+      }
+      set(state => {
+        const newShimmerIds = new Set(state.groomingTaskIds)
+        newShimmerIds.delete(taskId)
+        return {
+          groomingTaskIds: newShimmerIds,
+          tasks: state.tasks.map(t =>
+            t.id === taskId
+              ? {
+                  ...t,
+                  status: 'groomed' as const,
+                  priority: taskResult.priority,
+                  suggestedAction: taskResult.suggestedAction,
+                  evidenceSummary: taskResult.evidenceSummary,
+                  jiraTicketKey: taskResult.jiraTicketKey,
+                  jiraTicketUrl: taskResult.jiraTicketUrl,
+                  researchSummary: taskResult.researchSummary,
+                  researchLinks: taskResult.researchLinks,
+                  groomedAt: taskResult.groomedAt,
+                  updatedAt: Date.now()
+                }
+              : t
+          )
+        }
+      })
+      return
+    }
+
+    if (status === 'failed') {
+      // Remove from shimmering set, leave task in dump status (no change to tasks array)
+      set(state => {
+        const newShimmerIds = new Set(state.groomingTaskIds)
+        newShimmerIds.delete(taskId)
+        return { groomingTaskIds: newShimmerIds }
+      })
+    }
+  },
+
+  initGroomListeners: () => {
+    // Deduplicate: remove any existing listeners before registering new ones
+    window.api.taskgroomer.removeGroomListeners()
+    window.api.taskgroomer.onGroomProgress((data) => {
+      get().handleGroomProgress(data)
+    })
+    window.api.taskgroomer.onGroomStart(({ taskCount }) => {
+      // Schedule-triggered start — renderer wasn't the initiator
+      set({ groomingActive: true, groomCount: taskCount, groomingTaskIds: new Set() })
+    })
+  },
+
+  cleanupGroomListeners: () => {
+    window.api.taskgroomer.removeGroomListeners()
   }
 }))
