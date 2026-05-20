@@ -8,7 +8,7 @@
 html, body {
   width: 100%;
   background: transparent;
-  overflow: visible;
+  overflow: hidden; /* clip box-shadow at window boundary — no hard cutoff line */
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -43,8 +43,8 @@ html, body {
   border: 1px solid hsl(var(--border) / 0.55);
   box-shadow:
     0 0 0 0.5px hsl(var(--primary) / 0.1),
-    0 16px 48px rgba(0, 0, 0, 0.65),
-    0 4px 12px rgba(0, 0, 0, 0.35);
+    0 4px 24px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   /* Transition card height — both states animate together */
   transition: height 220ms cubic-bezier(0.16, 1, 0.3, 1);

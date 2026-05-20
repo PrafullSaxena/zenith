@@ -19,8 +19,8 @@ function BoltIcon(): React.JSX.Element {
 }
 
 const MAX_CHARS = 500
-const COMPACT_H  = 110  // card(94px) + overlay-padding(16px)
-const EXPANDED_H = 184  // card(168px) + overlay-padding(16px)
+const COMPACT_H = 118  // card(94px) + overlay(16px) + shadow-room(8px)
+const EXPANDED_H = 192 // card(168px) + overlay(16px) + shadow-room(8px)
 const CSS_TRANSITION_MS = 230
 
 export default function CapturePopup(): React.JSX.Element {
