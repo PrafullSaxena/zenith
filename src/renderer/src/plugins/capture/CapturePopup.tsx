@@ -91,9 +91,17 @@ export default function CapturePopup(): React.JSX.Element {
           rows={1}
           disabled={submitting}
         />
-        <div className="capture-hint">
-          <span>⏎ to capture</span>
-          <span>esc to dismiss</span>
+        <div className="capture-actions">
+          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)' }}>esc to dismiss</span>
+          <button
+            type="button"
+            className="capture-submit"
+            onClick={handleSubmit}
+            disabled={submitting || !text.trim()}
+            aria-label="Capture task"
+          >
+            {submitting ? 'Capturing...' : 'Capture ⏎'}
+          </button>
         </div>
       </div>
     </div>
