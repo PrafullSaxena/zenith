@@ -24,8 +24,8 @@ type TaskStatus = Task['status']
 
 interface StatusConfig {
   label: string
-  color: string       // text color class
-  bgColor: string     // bg + border classes for badge
+  color: string // text color class
+  bgColor: string // bg + border classes for badge
 }
 
 const STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
@@ -61,11 +61,11 @@ const STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
  * Current status is always listed last (rendered grayed out).
  */
 const STATUS_ORDER: Record<TaskStatus, TaskStatus[]> = {
-  dump:      ['groomed', 'done', 'delegated', 'aborted', 'dump'],
-  groomed:   ['done', 'delegated', 'aborted', 'dump', 'groomed'],
-  done:      ['dump', 'groomed', 'delegated', 'aborted', 'done'],
+  dump: ['groomed', 'done', 'delegated', 'aborted', 'dump'],
+  groomed: ['done', 'delegated', 'aborted', 'dump', 'groomed'],
+  done: ['dump', 'groomed', 'delegated', 'aborted', 'done'],
   delegated: ['dump', 'groomed', 'done', 'aborted', 'delegated'],
-  aborted:   ['dump', 'groomed', 'done', 'delegated', 'aborted']
+  aborted: ['dump', 'groomed', 'done', 'delegated', 'aborted']
 }
 
 // ---------------------------------------------------------------------------
@@ -120,9 +120,7 @@ export function StatusDropdown({ task, onStatusChange }: StatusDropdownProps): R
                 isCurrent && 'opacity-50 cursor-not-allowed pointer-events-none'
               )}
             >
-              <span className={cn('text-[10px] font-medium', cfg.color)}>
-                {cfg.label}
-              </span>
+              <span className={cn('text-[10px] font-medium', cfg.color)}>{cfg.label}</span>
               {isCurrent && (
                 <span className="ml-auto text-[9px] text-muted-foreground">current</span>
               )}

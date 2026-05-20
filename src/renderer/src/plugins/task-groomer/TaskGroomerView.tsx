@@ -40,6 +40,7 @@ export default function TaskGroomerView(): React.JSX.Element {
   const dismissDigest = useTaskGroomerStore((s) => s.dismissDigest)
 
   // Grooming state
+  const deleteTask = useTaskGroomerStore((s) => s.deleteTask)
   const groomingActive = useTaskGroomerStore((s) => s.groomingActive)
   const groomCount = useTaskGroomerStore((s) => s.groomCount)
   const groomingTaskIds = useTaskGroomerStore((s) => s.groomingTaskIds)
@@ -226,21 +227,25 @@ export default function TaskGroomerView(): React.JSX.Element {
 
             {/* Task list */}
             {!loading && visibleTasks.length > 0 && (
-              <div className="flex flex-col flex-1 overflow-y-auto px-3 py-2 gap-0.5">
-                {visibleTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    isSelected={selectedTaskId === task.id}
-                    isGrooming={groomingTaskIds.has(task.id)}
-                    isGroomFailed={failedTaskIds.has(task.id)}
-                    onStatusChange={updateTaskStatus}
-                    onClick={(t) => {
-                      if (showDigest) dismissDigest()
-                      setSelectedTaskId(t.id === selectedTaskId ? null : t.id)
-                    }}
-                  />
-                ))}
+              <div className="flex flex-col flex-1 overflow-y-auto px-3 py-2 gap-0.5 relative">
+                <AnimatePresence initial={false}>
+                  {visibleTasks.map((task, i) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      isSelected={selectedTaskId === task.id}
+                      isGrooming={groomingTaskIds.has(task.id)}
+                      isGroomFailed={failedTaskIds.has(task.id)}
+                      animationDelay={i * 0.02}
+                      onStatusChange={updateTaskStatus}
+                      onDelete={deleteTask}
+                      onClick={(t) => {
+                        if (showDigest) dismissDigest()
+                        setSelectedTaskId(t.id === selectedTaskId ? null : t.id)
+                      }}
+                    />
+                  ))}
+                </AnimatePresence>
               </div>
             )}
           </motion.div>

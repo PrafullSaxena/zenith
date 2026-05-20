@@ -85,7 +85,12 @@ function IntegrationHealthDashboard({
   const services = [
     { icon: Bot, label: 'AI Agent', configured: aiConfigured, color: 'text-primary' },
     { icon: Ticket, label: 'Jira', configured: jiraConfigured, color: 'text-blue-400' },
-    { icon: FileText, label: 'Confluence', configured: confluenceConfigured, color: 'text-blue-300' },
+    {
+      icon: FileText,
+      label: 'Confluence',
+      configured: confluenceConfigured,
+      color: 'text-blue-300'
+    },
     { icon: Globe, label: 'Web Search', configured: webSearchConfigured, color: 'text-green-400' }
   ]
   return (

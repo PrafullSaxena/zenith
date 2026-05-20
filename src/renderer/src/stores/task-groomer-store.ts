@@ -66,6 +66,7 @@ interface TaskGroomerState {
   // Actions
   loadTasks: () => Promise<void>
   updateTaskStatus: (id: string, status: Task['status']) => Promise<void>
+  deleteTask: (id: string) => Promise<void>
   setActiveTab: (tab: 'dumpyard' | 'groomed') => void
   setSelectedTaskId: (id: string | null) => void
   startGroom: () => Promise<void>
@@ -136,6 +137,21 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
         tasks: prev,
         error: err instanceof Error ? err.message : 'Failed to update task status'
       })
+    }
+  },
+
+  deleteTask: async (id: string) => {
+    const prev = get().tasks
+    // Optimistic: remove from local state immediately
+    set({
+      tasks: prev.filter((t) => t.id !== id),
+      selectedTaskId: get().selectedTaskId === id ? null : get().selectedTaskId
+    })
+    try {
+      await window.api.taskgroomer.deleteTask({ id })
+    } catch (err) {
+      // Revert on IPC failure
+      set({ tasks: prev, error: err instanceof Error ? err.message : 'Failed to delete task' })
     }
   },
 
