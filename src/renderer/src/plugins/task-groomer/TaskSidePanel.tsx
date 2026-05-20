@@ -7,15 +7,11 @@
  *
  * When grooming data is absent, a placeholder message is shown.
  */
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle
-} from '@renderer/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@renderer/components/ui/sheet'
 import { useTaskGroomerStore, isTaskStale } from '@renderer/stores/task-groomer-store'
 import StatusDropdown from './StatusDropdown'
 import { cn } from '@renderer/lib/utils'
+import { Loader2, RotateCcw } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
 // Date formatter (local utility)
@@ -36,9 +32,15 @@ function formatDateTime(ms: number): string {
 // Priority label config
 // ---------------------------------------------------------------------------
 
-const PRIORITY_CONFIG: Record<NonNullable<Task['priority']>, { label: string; className: string }> = {
+const PRIORITY_CONFIG: Record<
+  NonNullable<Task['priority']>,
+  { label: string; className: string }
+> = {
   p1: { label: 'P1 — High Priority', className: 'text-red-400 bg-red-400/15 border-red-400/20' },
-  p2: { label: 'P2 — Medium Priority', className: 'text-amber-400 bg-amber-400/15 border-amber-400/20' },
+  p2: {
+    label: 'P2 — Medium Priority',
+    className: 'text-amber-400 bg-amber-400/15 border-amber-400/20'
+  },
   p3: { label: 'P3 — Low Priority', className: 'text-blue-400 bg-blue-400/15 border-blue-400/20' }
 }
 
@@ -67,11 +69,17 @@ interface TaskSidePanelProps {
 
 export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): React.JSX.Element {
   const updateTaskStatus = useTaskGroomerStore((s) => s.updateTaskStatus)
+  const reGroomTaskId = useTaskGroomerStore((s) => s.reGroomTaskId)
+  const groomingActive = useTaskGroomerStore((s) => s.groomingActive)
+  const startReGroom = useTaskGroomerStore((s) => s.startReGroom)
 
   const stale = task ? isTaskStale(task) : false
   const hasGroomingData = task
     ? task.priority !== null || task.suggestedAction !== null || task.evidenceSummary !== null
     : false
+
+  const isReGrooming = task ? reGroomTaskId === task.id : false
+  const isAnyGroomActive = groomingActive || reGroomTaskId !== null
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
@@ -120,6 +128,35 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
 
             {/* Grooming section */}
             <div className="flex flex-col gap-3">
+              {/* Re-groom button */}
+              {task && (
+                <button
+                  type="button"
+                  disabled={isAnyGroomActive}
+                  onClick={() => startReGroom(task.id)}
+                  className={cn(
+                    'flex items-center gap-1.5 self-start px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                    isReGrooming
+                      ? 'bg-primary/20 border-primary/30 text-primary cursor-not-allowed'
+                      : isAnyGroomActive
+                        ? 'bg-white/4 border-white/8 text-muted-foreground opacity-50 cursor-not-allowed'
+                        : 'bg-white/6 border-white/12 text-foreground hover:bg-white/10 cursor-pointer'
+                  )}
+                >
+                  {isReGrooming ? (
+                    <>
+                      <Loader2 size={12} className="animate-spin" />
+                      Grooming...
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw size={12} />
+                      Re-groom
+                    </>
+                  )}
+                </button>
+              )}
+
               <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
                 Grooming Results
               </h3>
@@ -156,7 +193,9 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                   {task.suggestedAction && (
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground w-16 shrink-0">Action</span>
-                      <span className="text-xs text-foreground capitalize">{task.suggestedAction}</span>
+                      <span className="text-xs text-foreground capitalize">
+                        {task.suggestedAction}
+                      </span>
                     </div>
                   )}
 
@@ -181,32 +220,33 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                   )}
 
                   {/* Research links */}
-                  {task.researchLinks && (() => {
-                    let links: { title: string; url: string }[] = []
-                    try {
-                      links = JSON.parse(task.researchLinks)
-                    } catch {
-                      // malformed JSON — skip silently
-                    }
-                    return links.length > 0 ? (
-                      <div className="flex flex-col gap-1.5">
-                        <span className="text-xs text-muted-foreground">Links</span>
-                        <ul className="flex flex-col gap-1">
-                          {links.map((link, i) => (
-                            <li key={i}>
-                              <button
-                                type="button"
-                                onClick={() => window.api.app.openExternal(link.url)}
-                                className="text-xs text-primary hover:underline text-left break-all"
-                              >
-                                {link.title || link.url}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null
-                  })()}
+                  {task.researchLinks &&
+                    (() => {
+                      let links: { title: string; url: string }[] = []
+                      try {
+                        links = JSON.parse(task.researchLinks)
+                      } catch {
+                        // malformed JSON — skip silently
+                      }
+                      return links.length > 0 ? (
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-xs text-muted-foreground">Links</span>
+                          <ul className="flex flex-col gap-1">
+                            {links.map((link, i) => (
+                              <li key={i}>
+                                <button
+                                  type="button"
+                                  onClick={() => window.api.app.openExternal(link.url)}
+                                  className="text-xs text-primary hover:underline text-left break-all"
+                                >
+                                  {link.title || link.url}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null
+                    })()}
 
                   {/* Jira ticket */}
                   {task.jiraTicketKey && task.jiraTicketUrl && (
