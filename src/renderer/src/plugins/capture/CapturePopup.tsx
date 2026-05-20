@@ -11,7 +11,6 @@ function BoltIcon(): React.JSX.Element {
 }
 
 const MAX_CHARS = 500
-// Single-line scrollHeight at font-size 15px / line-height 1.55 ≈ 23-27px
 const SINGLE_LINE_H = 28
 
 export default function CapturePopup(): React.JSX.Element {
@@ -33,7 +32,6 @@ export default function CapturePopup(): React.JSX.Element {
     })
   }, [])
 
-  // Detect multiline → toggle CSS expanded class (no window resize needed)
   useEffect(() => {
     const el = textareaRef.current
     if (!el) return
@@ -75,24 +73,26 @@ export default function CapturePopup(): React.JSX.Element {
     if (fromClipboard) setFromClipboard(false)
   }
 
-  const charCount = text.length
-
   return (
     <div className="capture-overlay" onClick={handleClose}>
       <div
         className={`capture-card${submitting ? ' is-submitting' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Header — icon + title left, keyboard hints right */}
         <div className="capture-header">
           <div className="capture-icon"><BoltIcon /></div>
-          <div className="capture-header-meta">
+          <div className="capture-title-row">
             <span className="capture-title">Quick Capture</span>
-            {fromClipboard && <span className="capture-badge">from clipboard</span>}
+            {fromClipboard && <span className="capture-badge">clipboard</span>}
+          </div>
+          <div className="capture-shortcuts">
+            <span className="capture-shortcut"><kbd>↵</kbd> capture</span>
+            <span className="capture-shortcut"><kbd>esc</kbd> dismiss</span>
           </div>
         </div>
 
-        {/* Body */}
+        {/* Textarea — expands with CSS transition, no footer */}
         <div className="capture-body">
           <textarea
             ref={textareaRef}
@@ -103,29 +103,6 @@ export default function CapturePopup(): React.JSX.Element {
             placeholder="What needs doing?"
             disabled={submitting}
           />
-        </div>
-
-        {/* Footer */}
-        <div className="capture-footer">
-          <div className="capture-hints">
-            <span className="capture-hint"><kbd>↵</kbd> capture</span>
-            <span className="capture-hint"><kbd>shift ↵</kbd> new line</span>
-            <span className="capture-hint"><kbd>esc</kbd> dismiss</span>
-          </div>
-          <div className="capture-footer-right">
-            {charCount > 0 && (
-              <span className={`capture-charcount${charCount > MAX_CHARS * 0.8 ? ' warn' : ''}`}>
-                {MAX_CHARS - charCount}
-              </span>
-            )}
-            <button type="button" className="capture-btn" onClick={handleSubmit}
-              disabled={submitting || !text.trim()} aria-label="Capture task">
-              {submitting
-                ? <><span className="capture-spinner" /> Capturing</>
-                : <>Capture <span className="capture-btn-enter">↵</span></>
-              }
-            </button>
-          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 /* ── Capture Popup ─────────────────────────────────────────────────────
-   Two fixed states: COMPACT (1-line textarea) and EXPANDED (multiline + scrollbar).
-   CSS transitions animate the textarea. Window IPC resize fires on state change.
-   Shares CSS custom properties from main.css (same renderer bundle).
+   Fixed 300px window (transparent). Card = header + textarea, no footer.
+   Card is always shorter than window — transparent gap below is invisible.
    ───────────────────────────────────────────────────────────────────── */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,40 +14,31 @@ html, body, #root {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Overlay — transparent, full window. Card sits at top, extra space is invisible. */
+/* ── Overlay — transparent, full window, block layout ────────────────── */
 
 .capture-overlay {
   position: absolute;
   inset: 0;
   padding: 8px;
   background: transparent;
-  /* block layout — card is content-sized, never stretches */
   display: block;
-  animation: overlay-in 140ms ease-out forwards;
+  animation: overlay-in 120ms ease-out forwards;
 }
 
-/* ── Card — content-sized; window is fixed 300px but card is shorter ─── */
+/* ── Card — content-sized (header + body), never fills window ────────── */
 
 .capture-card {
   width: 100%;
-  /* NO height, NO flex — card height = sum of header + body + footer */
-  position: relative;
-  border-radius: 16px;
+  border-radius: 14px;
   background: hsl(var(--popover));
-  border: 1px solid hsl(var(--border) / 0.7);
+  border: 1px solid hsl(var(--border) / 0.6);
   box-shadow:
-    0 0 0 0.5px hsl(var(--primary) / 0.15),
+    0 0 0 0.5px hsl(var(--primary) / 0.12),
     0 20px 60px rgba(0, 0, 0, 0.7),
-    0 8px 20px rgba(0, 0, 0, 0.4),
-    0 0 30px hsl(var(--primary) / 0.06);
+    0 6px 16px rgba(0, 0, 0, 0.4);
   overflow: hidden;
-  animation: card-in 260ms cubic-bezier(0.22, 1.3, 0.36, 1) forwards;
+  animation: card-in 240ms cubic-bezier(0.22, 1.3, 0.36, 1) forwards;
   opacity: 0;
-  background-image: linear-gradient(
-    to bottom,
-    hsl(var(--primary) / 0.08) 0px,
-    transparent 1px
-  );
 }
 
 /* ── Header ──────────────────────────────────────────────────────────── */
@@ -57,40 +47,43 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px 12px;
-  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  padding: 13px 14px 12px;
+  border-bottom: 1px solid hsl(var(--border) / 0.45);
 }
 
+/* Icon */
 .capture-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
-  border-radius: 8px;
+  border-radius: 7px;
   background: hsl(var(--primary) / 0.15);
-  border: 1px solid hsl(var(--primary) / 0.25);
+  border: 1px solid hsl(var(--primary) / 0.22);
   color: hsl(var(--primary));
-  animation: icon-pulse 2.8s ease-in-out infinite;
+  animation: icon-glow 3s ease-in-out infinite;
 }
-
 .capture-icon svg { display: block; }
 
-.capture-header-meta {
-  flex: 1;
+/* Title + optional badge */
+.capture-title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
 }
 
 .capture-title {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: hsl(var(--muted-foreground) / 0.7);
+  color: hsl(var(--muted-foreground) / 0.65);
   user-select: none;
+  white-space: nowrap;
 }
 
 .capture-badge {
@@ -99,35 +92,61 @@ html, body, #root {
   gap: 3px;
   font-size: 10px;
   font-weight: 500;
-  color: hsl(var(--primary) / 0.9);
+  color: hsl(var(--primary) / 0.85);
   background: hsl(var(--primary) / 0.1);
-  border: 1px solid hsl(var(--primary) / 0.2);
+  border: 1px solid hsl(var(--primary) / 0.18);
   border-radius: 4px;
-  padding: 1px 6px;
+  padding: 1px 5px;
   user-select: none;
-  animation: badge-slide-in 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: badge-in 160ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-
 .capture-badge::before {
   content: '';
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: hsl(var(--primary) / 0.7);
+  background: hsl(var(--primary) / 0.65);
   flex-shrink: 0;
 }
 
-/* ── Textarea area ───────────────────────────────────────────────────── */
+/* Keyboard shortcuts — right side of header, plain text style */
+.capture-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.capture-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: hsl(var(--muted-foreground) / 0.38);
+  user-select: none;
+}
+
+.capture-shortcut kbd {
+  font-family: inherit;
+  font-size: 10px;
+  color: hsl(var(--muted-foreground) / 0.5);
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* ── Body ────────────────────────────────────────────────────────────── */
 
 .capture-body {
-  padding: 12px 16px;
+  padding: 12px 14px 13px;
 }
+
+/* ── Textarea — two fixed states, CSS transition between them ────────── */
 
 .capture-input {
   display: block;
   width: 100%;
-  /* COMPACT state — single line */
-  height: 26px;
+  height: 26px;          /* COMPACT: single line */
   overflow: hidden;
   resize: none;
   background: transparent;
@@ -139,151 +158,27 @@ html, body, #root {
   line-height: 1.55;
   color: hsl(var(--foreground));
   caret-color: hsl(var(--primary));
-  /* Smooth height transition between compact and expanded */
-  transition:
-    height 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: height 230ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .capture-input::placeholder {
-  color: hsl(var(--muted-foreground) / 0.35);
+  color: hsl(var(--muted-foreground) / 0.32);
 }
 
-.capture-input:disabled { opacity: 0.45; cursor: not-allowed; }
+.capture-input:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* EXPANDED state — fixed taller box with scrollbar */
+/* EXPANDED: taller fixed box with scrollbar */
 .capture-input.is-expanded {
-  height: 130px;
+  height: 120px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: hsl(var(--primary) / 0.3) transparent;
+  scrollbar-color: hsl(var(--primary) / 0.25) transparent;
 }
-
 .capture-input.is-expanded::-webkit-scrollbar { width: 3px; }
 .capture-input.is-expanded::-webkit-scrollbar-track { background: transparent; }
 .capture-input.is-expanded::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.3);
+  background: hsl(var(--primary) / 0.25);
   border-radius: 2px;
-}
-
-/* ── Footer ──────────────────────────────────────────────────────────── */
-
-.capture-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 9px 16px 12px;
-  border-top: 1px solid hsl(var(--border) / 0.4);
-  gap: 8px;
-}
-
-.capture-hints {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.capture-hint {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  color: hsl(var(--muted-foreground) / 0.4);
-  user-select: none;
-}
-
-.capture-hint kbd {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 4px;
-  font-size: 9px;
-  font-family: inherit;
-  color: hsl(var(--muted-foreground) / 0.5);
-  background: hsl(var(--secondary));
-  border: 1px solid hsl(var(--border));
-  border-bottom-width: 2px;
-  border-radius: 3px;
-  line-height: 1.4;
-}
-
-.capture-footer-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.capture-charcount {
-  font-size: 10px;
-  color: hsl(var(--muted-foreground) / 0.35);
-  font-variant-numeric: tabular-nums;
-  user-select: none;
-  min-width: 22px;
-  text-align: right;
-  transition: color 180ms;
-}
-.capture-charcount.warn { color: hsl(var(--warning) / 0.65); }
-
-/* ── Capture button ──────────────────────────────────────────────────── */
-
-.capture-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 13px 5px 12px;
-  background: hsl(var(--primary) / 0.9);
-  border: 1px solid hsl(var(--primary) / 0.4);
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  color: hsl(var(--primary-foreground));
-  cursor: pointer;
-  letter-spacing: 0.02em;
-  box-shadow: 0 2px 8px hsl(var(--primary) / 0.25), inset 0 1px 0 hsl(255 255% 100% / 0.1);
-  transition: background 130ms, transform 70ms, box-shadow 130ms;
-  user-select: none;
-}
-
-.capture-btn:not(:disabled):hover {
-  background: hsl(var(--primary));
-  box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
-  transform: translateY(-1px);
-}
-
-.capture-btn:not(:disabled):active {
-  transform: scale(0.96);
-}
-
-.capture-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.capture-btn:focus-visible {
-  outline: 2px solid hsl(var(--ring) / 0.6);
-  outline-offset: 2px;
-}
-
-.capture-btn-enter {
-  display: inline-flex;
-  align-items: center;
-  background: hsl(255 255% 100% / 0.14);
-  border-radius: 3px;
-  padding: 1px 4px;
-  font-size: 10px;
-  color: hsl(var(--primary-foreground) / 0.65);
-  line-height: 1.3;
-}
-
-.capture-spinner {
-  width: 11px;
-  height: 11px;
-  border: 1.5px solid hsl(var(--primary-foreground) / 0.2);
-  border-top-color: hsl(var(--primary-foreground) / 0.85);
-  border-radius: 50%;
-  animation: spin 480ms linear infinite;
-  flex-shrink: 0;
 }
 
 /* ── Animations ──────────────────────────────────────────────────────── */
@@ -294,23 +189,19 @@ html, body, #root {
 }
 
 @keyframes card-in {
-  0%   { opacity: 0; transform: scale(0.94) translateY(-6px); }
-  60%  { opacity: 1; }
+  0%   { opacity: 0; transform: scale(0.95) translateY(-5px); }
+  55%  { opacity: 1; }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-@keyframes icon-pulse {
-  0%, 100% { box-shadow: 0 0 8px hsl(var(--primary) / 0.15); }
-  50%       { box-shadow: 0 0 16px hsl(var(--primary) / 0.3); }
+@keyframes icon-glow {
+  0%, 100% { box-shadow: 0 0 6px hsl(var(--primary) / 0.12); }
+  50%       { box-shadow: 0 0 14px hsl(var(--primary) / 0.28); }
 }
 
-@keyframes badge-slide-in {
-  from { opacity: 0; transform: translateX(-4px); }
+@keyframes badge-in {
+  from { opacity: 0; transform: translateX(-3px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.capture-card.is-submitting .capture-input { opacity: 0.4; }
+.capture-card.is-submitting .capture-input { opacity: 0.35; }
