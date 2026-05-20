@@ -8,10 +8,10 @@ export function createCaptureWindow(): BrowserWindow {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
   const win = new BrowserWindow({
-    width: 480,
-    height: 140,
-    x: Math.floor((width - 480) / 2),
-    y: Math.floor(height * 0.35),
+    width: 540,
+    height: 178,
+    x: Math.floor((width - 540) / 2),
+    y: Math.floor(height * 0.30),
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -58,8 +58,8 @@ export function showCaptureWindow(): void {
     // Re-center on current display each time
     const { width, height } = screen.getPrimaryDisplay().workAreaSize
     captureWindow.setPosition(
-      Math.floor((width - 480) / 2),
-      Math.floor(height * 0.35)
+      Math.floor((width - 540) / 2),
+      Math.floor(height * 0.30)
     )
     captureWindow.show()
     captureWindow.focus()
