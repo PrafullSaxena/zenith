@@ -17,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@renderer/components/ui/tooltip'
+import { AlertCircle } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { isTaskStale, staleDays } from '@renderer/stores/task-groomer-store'
 import StatusDropdown from './StatusDropdown'
@@ -61,6 +62,7 @@ interface TaskCardProps {
   onClick: (task: Task) => void
   isSelected?: boolean
   isGrooming?: boolean
+  isGroomFailed?: boolean
 }
 
 export function TaskCard({
@@ -68,7 +70,8 @@ export function TaskCard({
   onStatusChange,
   onClick,
   isSelected = false,
-  isGrooming = false
+  isGrooming = false,
+  isGroomFailed = false
 }: TaskCardProps): React.JSX.Element {
   const stale = isTaskStale(task)
   const days = stale ? staleDays(task) : 0
@@ -84,7 +87,8 @@ export function TaskCard({
         'border border-transparent transition-colors select-none',
         'hover:bg-white/4',
         isSelected && 'bg-white/6 border-white/8',
-        isGrooming && 'animate-pulse opacity-70'
+        isGrooming && 'animate-pulse opacity-70',
+        isGroomFailed && 'border-amber-400/15'
       )}
     >
       {/* Status badge (has its own click handler + stopPropagation) */}
@@ -127,6 +131,11 @@ export function TaskCard({
         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/20 text-amber-400 shrink-0">
           Stale {days}d
         </span>
+      )}
+
+      {/* Failed groom indicator */}
+      {isGroomFailed && (
+        <AlertCircle size={12} className="text-amber-400 shrink-0" aria-label="Grooming failed" />
       )}
 
       {/* Relative creation time */}

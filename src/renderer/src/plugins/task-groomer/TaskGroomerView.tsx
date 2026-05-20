@@ -233,6 +233,7 @@ export default function TaskGroomerView(): React.JSX.Element {
                     task={task}
                     isSelected={selectedTaskId === task.id}
                     isGrooming={groomingTaskIds.has(task.id)}
+                    isGroomFailed={failedTaskIds.has(task.id)}
                     onStatusChange={updateTaskStatus}
                     onClick={(t) => {
                       if (showDigest) dismissDigest()
