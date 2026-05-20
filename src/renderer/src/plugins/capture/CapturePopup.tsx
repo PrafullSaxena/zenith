@@ -19,20 +19,15 @@ function BoltIcon(): React.JSX.Element {
 }
 
 const MAX_CHARS = 500
-
-// Fixed height steps — window snaps to these values so resize feels intentional.
-// BASE=190 gives comfortable room for header + 1-line textarea + footer.
-// Each STEP=52px accommodates ~2 additional lines.
-const BASE_H = 190
-const STEP_H = 52
+const OVERLAY_PADDING = 14 // 7px top + 7px bottom in .capture-overlay
+const MIN_H = 190
 const MAX_H = 420
 
-function stepHeight(textareaScrollH: number): number {
-  const LINE_H = 23 // 15px font × 1.5 line-height
-  const extraLines = Math.max(0, Math.ceil(textareaScrollH / LINE_H) - 1)
-  if (extraLines === 0) return BASE_H
-  const buckets = Math.ceil(extraLines / 2) // 2 lines per bucket
-  return Math.min(MAX_H, BASE_H + buckets * STEP_H)
+// Quantize to 24px steps (≈1 line) for discrete animation feel.
+// Prevents IPC spam on every sub-pixel layout shift.
+function quantize(px: number): number {
+  const STEP = 24
+  return Math.min(MAX_H, Math.max(MIN_H, Math.ceil(px / STEP) * STEP))
 }
 
 export default function CapturePopup(): React.JSX.Element {
@@ -40,14 +35,15 @@ export default function CapturePopup(): React.JSX.Element {
   const [fromClipboard, setFromClipboard] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
   const originalClipboardText = useRef<string>('')
-  const lastStep = useRef<number>(BASE_H)
+  const lastSentH = useRef<number>(0)
 
   // Auto-focus and clipboard check on mount
   useEffect(() => {
     textareaRef.current?.focus()
-    // Set base window height on open
-    window.api.capture.resize(BASE_H)
+    window.api.capture.resize(MIN_H)
+    lastSentH.current = MIN_H
 
     window.api.capture.getClipboard().then((clipText) => {
       if (clipText) {
@@ -58,22 +54,33 @@ export default function CapturePopup(): React.JSX.Element {
     })
   }, [])
 
-  // Auto-resize textarea + snap window height when text changes
+  // ResizeObserver: measure the actual rendered card height and resize window to fit exactly.
+  // Since .capture-card has overflow:visible, content is always fully rendered regardless
+  // of window size — no clipping race between layout and IPC.
+  useEffect(() => {
+    const card = cardRef.current
+    if (!card) return
+
+    const observer = new ResizeObserver((entries) => {
+      const h = entries[0]?.contentRect.height
+      if (!h) return
+      const target = quantize(h + OVERLAY_PADDING)
+      if (target !== lastSentH.current) {
+        lastSentH.current = target
+        window.api.capture.resize(target)
+      }
+    })
+
+    observer.observe(card)
+    return () => observer.disconnect()
+  }, [])
+
+  // Auto-resize textarea height as content grows
   useEffect(() => {
     const el = textareaRef.current
     if (!el) return
-
-    // Measure current scroll height to determine textarea lines
     el.style.height = 'auto'
-    const scrollH = el.scrollHeight
-    el.style.height = `${scrollH}px`
-
-    // Only send IPC when the step changes (avoid spamming on every keystroke)
-    const step = stepHeight(scrollH)
-    if (step !== lastStep.current) {
-      lastStep.current = step
-      window.api.capture.resize(step)
-    }
+    el.style.height = `${el.scrollHeight}px`
   }, [text])
 
   const handleClose = useCallback(() => {
@@ -121,7 +128,7 @@ export default function CapturePopup(): React.JSX.Element {
   return (
     <div className="capture-overlay" onClick={handleClose}>
       <div className="capture-card" onClick={(e) => e.stopPropagation()}>
-        <div className={`capture-card-inner${submitting ? ' is-submitting' : ''}`}>
+        <div ref={cardRef} className={`capture-card-inner${submitting ? ' is-submitting' : ''}`}>
 
           {/* Header */}
           <div className="capture-header">
