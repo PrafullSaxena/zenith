@@ -5,7 +5,7 @@
  * Groomed tab: toggleable List / Kanban views with status-based columns.
  */
 import { useEffect, useRef, useState } from 'react'
-import { Filter, Sparkles, Loader2, AlertCircle, X, LayoutList, LayoutGrid } from 'lucide-react'
+import { Inbox, CheckSquare, Sparkles, Loader2, AlertCircle, X, LayoutList, LayoutGrid } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTaskGroomerStore } from '@renderer/stores/task-groomer-store'
@@ -103,7 +103,7 @@ export default function TaskGroomerView(): React.JSX.Element {
 
       {/* Toolbar */}
       <PageHeader
-        icon={Filter}
+        icon={Inbox}
         title="InTake"
         tabs={TABS}
         activeTab={activeTab}
