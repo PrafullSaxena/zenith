@@ -323,11 +323,29 @@ export interface ElectronAPI {
     }) => Promise<Task>
     deleteTask: (args: { id: string }) => Promise<{ success: boolean }>
     groom: () => Promise<{ started: boolean; reason?: string }>
-    onGroomProgress: (cb: (data: {
-      taskId: string
-      status: 'grooming' | 'done' | 'failed'
-      result?: Record<string, unknown>
-    }) => void) => void
+    reGroom: (taskId: string) => Promise<{
+      started: boolean
+      reason?: string
+      result?: {
+        priority: Task['priority']
+        priorityRationale: string
+        suggestedAction: Task['suggestedAction']
+        evidenceSummary: string | null
+        jiraTicketKey: string | null
+        jiraTicketUrl: string | null
+        researchSummary: string | null
+        researchLinks: string | null
+        groomedAt: number
+      } | null
+      error?: string
+    }>
+    onGroomProgress: (
+      cb: (data: {
+        taskId: string
+        status: 'grooming' | 'done' | 'failed'
+        result?: Record<string, unknown>
+      }) => void
+    ) => void
     onGroomStart: (cb: (data: { taskCount: number }) => void) => void
     removeGroomListeners: () => void
   }

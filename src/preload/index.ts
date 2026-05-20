@@ -482,6 +482,26 @@ const api = {
     groom: (): Promise<{ started: boolean; reason?: string }> =>
       ipcRenderer.invoke('taskgroomer:groom'),
 
+    // Trigger single-task re-grooming. Awaits the full result (synchronous from renderer's perspective).
+    // Returns {started: false, reason} if a groom is already running.
+    // Returns {started: true, result: {...}} on success or {started: true, result: null, error: string} on failure.
+    reGroom: (taskId: string): Promise<{
+      started: boolean
+      reason?: string
+      result?: {
+        priority: string
+        priorityRationale: string
+        suggestedAction: string
+        evidenceSummary: string | null
+        jiraTicketKey: string | null
+        jiraTicketUrl: string | null
+        researchSummary: string | null
+        researchLinks: string | null
+        groomedAt: number
+      } | null
+      error?: string
+    }> => ipcRenderer.invoke('taskgroomer:regroom', { taskId }),
+
     // Subscribe to per-task progress events.
     // IMPORTANT: Do NOT return ipcRenderer.on() — it returns IpcRenderer which
     // contextBridge cannot serialize. Return void instead (same pattern as ai:onStreamChunk).
