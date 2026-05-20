@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Reduce the friction of developer workflows through AI-augmented tooling — all in a single, fast, consistent desktop app.
-**Current focus:** v3.0 — Task Groomer Plugin (Phase 18: AI Grooming Engine)
+**Current focus:** v3.0 — Task Groomer Plugin (Phase 19: Re-groom + Digest)
 
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 18-ai-grooming-engine — Plan 05 of 5 complete (PHASE COMPLETE)
-Status: Phase 18 complete — all 5 plans delivered; AI Grooming Engine end-to-end + gap closure
+Phase: 19-re-groom-digest — Plan 01 of 3 complete (IN PROGRESS)
+Status: Phase 19 started — Plan 01 complete; taskgroomer:regroom IPC + preload bridge wired
 
-Progress: [█████░░░░░] 71% (Phase 18 complete — 5/7 phases done)
+Progress: [█████░░░░░] 72% (Phase 19 in progress — Plan 1/3 done)
 
 ## Performance Metrics
 
@@ -63,6 +63,12 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - JSON parse error throws with 200-char raw text preview for debuggability
 - researchLinks serialized to JSON string (matches existing research_links TEXT column); only set when isResearchMode=true
 
+**Phase 19-01 decisions (2026-05-20):**
+- taskgroomer:regroom awaits full result and returns synchronously — unlike batch groom which is fire-and-forget; single-task re-groom needs immediate response for renderer in-place update
+- listTasks() without status filter — re-groom works on any task status (dump/groomed/done/delegated/aborted)
+- Task status NOT changed during re-groom — only grooming metadata fields updated
+- Jira merge: result.jiraTicketKey ?? existingJiraKey — preserves existing Jira ticket when AI returns null
+
 **Phase 18-05 decisions (2026-05-20):**
 - ALTER TABLE under version < 2 guard with try/catch: idempotent schema migration — new installs and existing DBs both converge safely
 - IIFE for JSON.parse in JSX: keeps try/catch scoped without useMemo or extra component
@@ -94,5 +100,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 18 Plan 05 complete — gap closure: priorityRationale DB persistence + researchLinks rendering (commits 4eaf446, 276a517).
-Resume file: /gsd:execute-phase 19 (next phase after Phase 18)
+Stopped at: Phase 19 Plan 01 complete — taskgroomer:regroom IPC handler + preload bridge + electron.d.ts types (commits 841b583, 3797ffb).
+Resume file: /gsd:execute-phase 19 (continue with Plan 02)

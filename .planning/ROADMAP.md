@@ -128,7 +128,7 @@ Plans:
   2. After each grooming run, a digest view renders all newly groomed tasks sorted by priority with their evidence summaries
 
 Plans:
-- [ ] 19-01-PLAN.md — Re-groom IPC handler + preload bridge (main process layer)
+- [x] 19-01-PLAN.md — Re-groom IPC handler + preload bridge (main process layer)
 - [ ] 19-02-PLAN.md — Zustand store re-groom/digest state + Re-groom button in TaskSidePanel
 - [ ] 19-03-PLAN.md — GroomDigest component + TaskGroomerView wiring + human verification
 
@@ -150,7 +150,7 @@ Plans:
 | 16. Dumpyard View | 3/3 | Complete    | 2026-05-19 |
 | 17. Integrations | 4/4 | ✅ Complete | 2026-05-20 |
 | 18. AI Grooming Engine | 5/5 | Complete    | 2026-05-20 |
-| 19. Re-groom + Digest | 0/? | Not started | — |
+| 19. Re-groom + Digest | 1/3 | In progress | — |
 | 20. Settings & Polish | 0/? | Not started | — |
 
 ---

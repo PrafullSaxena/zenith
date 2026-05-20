@@ -83,7 +83,7 @@
 | GROOM-02 | Phase 18 | Complete |
 | GROOM-03 | Phase 18 | Complete |
 | GROOM-04 | Phase 18 | Complete |
-| GROOM-05 | Phase 19 | Pending |
+| GROOM-05 | Phase 19 | In progress (19-01: IPC done) |
 | GROOM-06 | Phase 19 | Pending |
 | INT-01 | Phase 17 | Pending |
 | INT-02 | Phase 17 | Pending |
