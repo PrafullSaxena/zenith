@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 20-settings-polish — Not started
-Status: Phase 19 fully verified and shipped (2026-05-21). Fixed: grooming engine now reads AI provider from Settings → Task Groomer → AI Agent instead of hardcoded Anthropic SDK key. Supports CLI agents (claude, gemini, codex, ollama) and SDK providers.
+Phase: 20-settings-polish — In Progress (Plan 01/05 complete)
+Status: Phase 20 started. Plan 20-01 complete: IntegrationHealthDashboard added to TaskGroomerSettings above AI Agent section.
 
-Progress: [█████████░] 90% (6/7 phases complete — Phase 20 remaining)
+Progress: [█████████░] 90% (6/7 phases complete — Phase 20 in progress)
 
 ## Performance Metrics
 
@@ -106,6 +106,10 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - SDK path: provider.requiresApiKey=true → getApiKeyForProvider() → generateText via Vercel AI SDK
 - CLI path: provider.command set → groomWithCLI() spawns shell, writes combined system+user prompt to stdin, extracts first JSON object from stdout via regex
 - TaskGroomerSettings gains "AI Agent" section (Section 0) with dropdown of connected providers from useAgentStore
+- [Phase 20-01]: IntegrationHealthDashboard: webSearchConfigured always true; icons display-only (no click handlers); cn utility for conditional border/opacity classes
+- [Phase 20-settings-polish]: Jira link button uses window.api.app.openExternal (not anchor tag) — Electron CSP blocks external anchor navigation in renderer
+- [Phase 20-settings-polish]: Empty grooming state renders styled card (rounded-lg border bg-white/[0.02]) for visual clarity
+- [Phase 20-settings-polish]: Re-groom aria-label reflects runtime state: 'Grooming in progress' when active, 'Re-groom this task' otherwise
 
 ### Pending Todos
 
@@ -118,5 +122,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-21
-Stopped at: Phase 19 human verification approved. Shipped AI provider selector fix (commit 0f42ded). Phase 20 is next.
-Resume at: /gsd:discuss-phase 20 or /gsd:plan-phase 20
+Stopped at: Completed 20-01-PLAN.md (IntegrationHealthDashboard in TaskGroomerSettings, commit 740b49e)
+Resume at: 20-02-PLAN.md (next plan in 20-settings-polish phase)
