@@ -1,7 +1,15 @@
-import { app, BrowserWindow, Menu, nativeImage, session, systemPreferences, globalShortcut } from 'electron'
+import {
+  app,
+  BrowserWindow,
+  Menu,
+  nativeImage,
+  session,
+  systemPreferences,
+  globalShortcut
+} from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
-import { registerIpcHandlers, initPricingSync } from './ipc-handlers'
+import { registerIpcHandlers, initPricingSync, initGroomingSchedule } from './ipc-handlers'
 import { getSetting } from './settings-store'
 import { showCaptureWindow } from './capture-window'
 import { installLogCollector } from './log-collector'
@@ -143,6 +151,9 @@ app.whenReady().then(() => {
   buildMenu()
   if (mainWindow) {
     initPricingSync(mainWindow)
+  }
+  if (mainWindow) {
+    initGroomingSchedule(mainWindow)
   }
 
   // Register global capture hotkey (Cmd/Ctrl+Shift+D)
