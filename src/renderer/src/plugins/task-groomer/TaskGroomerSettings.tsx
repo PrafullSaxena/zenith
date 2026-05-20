@@ -329,11 +329,30 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                   <StatusDot active={jiraStatus.configured} />
                   <span className="text-[12px] font-medium text-foreground">Jira</span>
                   <HelpTooltip>
-                    <p className="font-medium text-foreground/80 mb-1">Required permissions</p>
-                    <p><span className="text-foreground/60">Read tasks:</span> Browse Projects on configured project(s)</p>
-                    <p><span className="text-foreground/60">Push issues (Phase 20):</span> Create Issues permission</p>
-                    <p className="pt-1 border-t border-white/8"><span className="text-foreground/60">API token:</span> Generate at Atlassian account settings → Security → API tokens</p>
-                    <p className="text-muted-foreground/50">A read-only service account is sufficient for grooming.</p>
+                    <p className="font-medium text-foreground/80 mb-1">API token setup</p>
+                    <p>
+                      Generate at{' '}
+                      <span className="text-foreground/70">
+                        id.atlassian.com → Security → API tokens
+                      </span>
+                      . Classic tokens have{' '}
+                      <span className="text-foreground/70">no scope selector</span> — the token
+                      inherits your account&apos;s existing project permissions.
+                    </p>
+                    <p className="pt-1.5 border-t border-white/8 font-medium text-foreground/70">
+                      Your account needs:
+                    </p>
+                    <p>
+                      <span className="text-foreground/60">Search &amp; read issues →</span> Browse
+                      Projects on configured project(s)
+                    </p>
+                    <p>
+                      <span className="text-foreground/60">Push issues (future) →</span> Create
+                      Issues
+                    </p>
+                    <p className="text-muted-foreground/50 pt-0.5">
+                      A read-only account is enough for grooming.
+                    </p>
                   </HelpTooltip>
                   <span className="ml-2 text-[11px] text-muted-foreground">
                     {jiraStatus.configured ? 'Connected' : 'Not connected'}
@@ -505,11 +524,26 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                   <StatusDot active={confluenceStatus.configured} />
                   <span className="text-[12px] font-medium text-foreground">Confluence</span>
                   <HelpTooltip>
-                    <p className="font-medium text-foreground/80 mb-1">Required permissions</p>
-                    <p><span className="text-foreground/60">Read pages:</span> View Pages on any space you want to search</p>
-                    <p><span className="text-foreground/60">Space access:</span> Managed at the Confluence space level — Zenith searches all spaces your account can see</p>
-                    <p className="pt-1 border-t border-white/8"><span className="text-foreground/60">API token:</span> Same Atlassian token as Jira if using the same account</p>
-                    <p className="text-muted-foreground/50">Zenith only reads Confluence — no write permissions needed.</p>
+                    <p className="font-medium text-foreground/80 mb-1">API token setup</p>
+                    <p>
+                      Same classic API token as Jira (
+                      <span className="text-foreground/70">
+                        id.atlassian.com → Security → API tokens
+                      </span>
+                      ) if using the same Atlassian account.{' '}
+                      <span className="text-foreground/70">No scope selector</span> — inherits your
+                      account permissions.
+                    </p>
+                    <p className="pt-1.5 border-t border-white/8 font-medium text-foreground/70">
+                      Your account needs:
+                    </p>
+                    <p>
+                      <span className="text-foreground/60">Search &amp; read pages →</span> View
+                      Pages on any space (set in Space Settings → Permissions)
+                    </p>
+                    <p className="text-muted-foreground/50 pt-0.5">
+                      Zenith is read-only — no write permissions needed.
+                    </p>
                   </HelpTooltip>
                   <span className="ml-2 text-[11px] text-muted-foreground">
                     {confluenceStatus.configured ? 'Connected' : 'Not connected'}
@@ -666,8 +700,8 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                 <span className="ml-2 text-[11px] text-muted-foreground">Available</span>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                No credentials required. Uses Gemini CLI if installed, falls back to DuckDuckGo
-                HTML scraping via built-in fetch.
+                No credentials required. Uses Gemini CLI if installed, falls back to DuckDuckGo HTML
+                scraping via built-in fetch.
               </p>
             </div>
           </div>
