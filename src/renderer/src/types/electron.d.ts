@@ -352,6 +352,7 @@ export interface ElectronAPI {
   capture: {
     getClipboard: () => Promise<string | null>
     close: () => Promise<void>
+    resize: (height: number) => Promise<void>
   }
   integrations: {
     jira: {

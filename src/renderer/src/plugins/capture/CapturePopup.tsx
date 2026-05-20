@@ -20,12 +20,14 @@ function BoltIcon(): React.JSX.Element {
 }
 
 const MAX_CHARS = 500
+const BASE_WINDOW_HEIGHT = 178 // matches capture-window.ts initial height
 
 export default function CapturePopup(): React.JSX.Element {
   const [text, setText] = useState('')
   const [fromClipboard, setFromClipboard] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
   const originalClipboardText = useRef<string>('')
 
   // Auto-focus and clipboard check on mount
@@ -48,6 +50,22 @@ export default function CapturePopup(): React.JSX.Element {
     el.style.height = 'auto'
     el.style.height = `${el.scrollHeight}px`
   }, [text])
+
+  // Resize the Electron window to match card content height
+  useEffect(() => {
+    const card = cardRef.current
+    if (!card) return
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (!entry) return
+      // card height + 14px overlay padding (7px top + 7px bottom)
+      const needed = Math.round(entry.contentRect.height) + 14
+      const target = Math.max(BASE_WINDOW_HEIGHT, needed)
+      window.api.capture.resize(target)
+    })
+    observer.observe(card)
+    return () => observer.disconnect()
+  }, [])
 
   const handleClose = useCallback(() => {
     window.api.capture.close()
@@ -96,7 +114,7 @@ export default function CapturePopup(): React.JSX.Element {
   return (
     <div className="capture-overlay" onClick={handleClose}>
       <div className="capture-card" onClick={(e) => e.stopPropagation()}>
-        <div className={`capture-card-inner${submitting ? ' is-submitting' : ''}`}>
+        <div ref={cardRef} className={`capture-card-inner${submitting ? ' is-submitting' : ''}`}>
           {/* Header */}
           <div className="capture-header">
             <div className="capture-icon">

@@ -55,7 +55,7 @@ import { buildEntityBatches } from './cortex/entity-enricher'
 import { buildValidationPrompt, buildValidationUserPrompt } from './cortex/analysis-validator'
 import path from 'node:path'
 import fs from 'node:fs'
-import { hideCaptureWindow } from './capture-window'
+import { hideCaptureWindow, getCaptureWindow } from './capture-window'
 import {
   saveIntegrationCredential,
   getIntegrationCredential,
@@ -1546,6 +1546,14 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('capture:close', () => {
     hideCaptureWindow()
+  })
+
+  ipcMain.handle('capture:resize', (_event, height: number) => {
+    const win = getCaptureWindow()
+    if (!win || win.isDestroyed()) return
+    const clamped = Math.max(178, Math.min(420, Math.round(height)))
+    const [currentW] = win.getSize()
+    win.setSize(currentW, clamped, false)
   })
 
   // --- Integrations channels ---

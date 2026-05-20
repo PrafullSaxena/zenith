@@ -530,8 +530,8 @@ const api = {
   },
   capture: {
     getClipboard: (): Promise<string | null> => ipcRenderer.invoke('capture:getClipboard'),
-
-    close: (): Promise<void> => ipcRenderer.invoke('capture:close')
+    close: (): Promise<void> => ipcRenderer.invoke('capture:close'),
+    resize: (height: number): Promise<void> => ipcRenderer.invoke('capture:resize', height)
   },
   integrations: {
     jira: {
