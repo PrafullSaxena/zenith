@@ -13,7 +13,7 @@ import {
   PenLine,
   GripVertical,
   Brain,
-  Inbox
+  Filter
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PLUGINS } from '../plugins/registry'
@@ -35,7 +35,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   BookOpen,
   PenLine,
   Brain,
-  Inbox
+  Filter
 }
 
 function SidebarIcon({
@@ -176,11 +176,7 @@ export function Sidebar(): React.JSX.Element {
                 <div className="pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 opacity-0 transition-opacity group-hover/drag:opacity-40">
                   <GripVertical size={8} className="text-text-secondary" />
                 </div>
-                <SidebarIcon
-                  iconName={plugin.icon}
-                  label={plugin.name}
-                  to={plugin.route}
-                />
+                <SidebarIcon iconName={plugin.icon} label={plugin.name} to={plugin.route} />
               </Reorder.Item>
             ))}
           </Reorder.Group>

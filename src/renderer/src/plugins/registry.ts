@@ -47,9 +47,11 @@ export const PLUGINS: readonly PluginDefinition[] = [
         key: 'reviewGuidelines',
         label: 'Review Guidelines',
         type: 'textarea',
-        description: 'Markdown guidelines for AI code review. Include repo-specific rules, coding standards, and focus areas.',
+        description:
+          'Markdown guidelines for AI code review. Include repo-specific rules, coding standards, and focus areas.',
         defaultValue: '',
-        placeholder: '# Code Review Guidelines\n\n## Code Quality\n- Check for proper error handling\n- Verify logging is present\n- Look for security vulnerabilities\n\n## Best Practices\n- Functions should have single responsibilities\n- Use meaningful variable names'
+        placeholder:
+          '# Code Review Guidelines\n\n## Code Quality\n- Check for proper error handling\n- Verify logging is present\n- Look for security vulnerabilities\n\n## Best Practices\n- Functions should have single responsibilities\n- Use meaningful variable names'
       },
       {
         key: 'autoReview',
@@ -180,7 +182,7 @@ export const PLUGINS: readonly PluginDefinition[] = [
     id: 'task-groomer',
     name: 'InTake',
     description: 'Capture, groom, and prioritize development tasks with AI assistance',
-    icon: 'Inbox',
+    icon: 'Filter',
     route: '/task-groomer',
     component: React.lazy(() => import('./task-groomer/TaskGroomerView')),
     settingsSchema: [
