@@ -89,6 +89,7 @@ import {
 } from './pricing/credentials'
 import { seedPricingDb } from './pricing/seed'
 import { pricingSync } from './pricing/pricing-sync'
+import { groomTask } from './taskgroomer/grooming-agent'
 
 /**
  * Separate electron-store instance for credentials.
@@ -119,6 +120,9 @@ function getTaskGroomerDb(): TaskDatabase {
   }
   return taskGroomerDb
 }
+
+/** Prevents double-triggering a grooming batch run. */
+let groomingRunActive = false
 
 // Initialize pricing DB and seed on first launch
 try {
@@ -1400,6 +1404,22 @@ export function registerIpcHandlers(): void {
     return getTaskGroomerDb().deleteTask(args.id)
   })
 
+  ipcMain.handle('taskgroomer:groom', async (event) => {
+    if (groomingRunActive) {
+      return { started: false, reason: 'already_running' }
+    }
+    groomingRunActive = true
+
+    const win = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getAllWindows()[0]
+
+    // Kick off grooming as a background task (don't await here — return immediately)
+    runGroomingBatch(win).finally(() => {
+      groomingRunActive = false
+    })
+
+    return { started: true }
+  })
+
   // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---
   ipcMain.handle(
     'db:exportErDiagramPdf',
@@ -1471,15 +1491,24 @@ export function registerIpcHandlers(): void {
 
   // --- Integrations channels ---
 
-  ipcMain.handle('integrations:jira:saveCredentials', (_event, creds: {
-    baseUrl: string; email: string; apiToken: string; projects: string
-  }) => {
-    saveIntegrationCredential(CRED_JIRA_BASE_URL, creds.baseUrl)
-    saveIntegrationCredential(CRED_JIRA_EMAIL, creds.email)
-    saveIntegrationCredential(CRED_JIRA_API_TOKEN, creds.apiToken)
-    saveIntegrationSetting(CRED_JIRA_PROJECTS, creds.projects)
-    return { saved: true }
-  })
+  ipcMain.handle(
+    'integrations:jira:saveCredentials',
+    (
+      _event,
+      creds: {
+        baseUrl: string
+        email: string
+        apiToken: string
+        projects: string
+      }
+    ) => {
+      saveIntegrationCredential(CRED_JIRA_BASE_URL, creds.baseUrl)
+      saveIntegrationCredential(CRED_JIRA_EMAIL, creds.email)
+      saveIntegrationCredential(CRED_JIRA_API_TOKEN, creds.apiToken)
+      saveIntegrationSetting(CRED_JIRA_PROJECTS, creds.projects)
+      return { saved: true }
+    }
+  )
 
   ipcMain.handle('integrations:jira:getStatus', () => {
     return {
@@ -1526,21 +1555,33 @@ export function registerIpcHandlers(): void {
     const email = getIntegrationCredential(CRED_JIRA_EMAIL)
     const apiToken = getIntegrationCredential(CRED_JIRA_API_TOKEN)
     const projectsRaw = getIntegrationSetting(CRED_JIRA_PROJECTS)
-    const projects = projectsRaw ? projectsRaw.split(',').map(p => p.trim()).filter(Boolean) : []
-    const credentials: JiraCredentials | null = (baseUrl && email && apiToken)
-      ? { baseUrl, email, apiToken, projects }
-      : null
+    const projects = projectsRaw
+      ? projectsRaw
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean)
+      : []
+    const credentials: JiraCredentials | null =
+      baseUrl && email && apiToken ? { baseUrl, email, apiToken, projects } : null
     return searchJira(query, credentials)
   })
 
-  ipcMain.handle('integrations:confluence:saveCredentials', (_event, creds: {
-    baseUrl: string; email: string; apiToken: string
-  }) => {
-    saveIntegrationCredential(CRED_CONFLUENCE_BASE_URL, creds.baseUrl)
-    saveIntegrationCredential(CRED_CONFLUENCE_EMAIL, creds.email)
-    saveIntegrationCredential(CRED_CONFLUENCE_API_TOKEN, creds.apiToken)
-    return { saved: true }
-  })
+  ipcMain.handle(
+    'integrations:confluence:saveCredentials',
+    (
+      _event,
+      creds: {
+        baseUrl: string
+        email: string
+        apiToken: string
+      }
+    ) => {
+      saveIntegrationCredential(CRED_CONFLUENCE_BASE_URL, creds.baseUrl)
+      saveIntegrationCredential(CRED_CONFLUENCE_EMAIL, creds.email)
+      saveIntegrationCredential(CRED_CONFLUENCE_API_TOKEN, creds.apiToken)
+      return { saved: true }
+    }
+  )
 
   ipcMain.handle('integrations:confluence:getStatus', () => {
     return {
@@ -1585,13 +1626,158 @@ export function registerIpcHandlers(): void {
     const baseUrl = getIntegrationCredential(CRED_CONFLUENCE_BASE_URL)
     const email = getIntegrationCredential(CRED_CONFLUENCE_EMAIL)
     const apiToken = getIntegrationCredential(CRED_CONFLUENCE_API_TOKEN)
-    const credentials: ConfluenceCredentials | null = (baseUrl && email && apiToken)
-      ? { baseUrl, email, apiToken }
-      : null
+    const credentials: ConfluenceCredentials | null =
+      baseUrl && email && apiToken ? { baseUrl, email, apiToken } : null
     return searchConfluence(query, credentials)
   })
 
   ipcMain.handle('integrations:web:search', async (_event, query: string) => {
     return webSearch(query)
   })
+}
+
+// ── Task Groomer batch runner ─────────────────────────────────────────────
+
+async function runGroomingBatch(win: BrowserWindow | null): Promise<void> {
+  const db = getTaskGroomerDb()
+  const dumpTasks = db.listTasks(['dump'])
+
+  let succeeded = 0
+  let failed = 0
+
+  for (const task of dumpTasks) {
+    // Push 'grooming' status — renderer shows shimmer
+    win?.webContents.send('taskgroomer:groom:progress', {
+      taskId: task.id,
+      status: 'grooming'
+    })
+
+    try {
+      const result = await groomTask(task)
+
+      // Write result back to DB
+      db.updateTask({
+        id: task.id,
+        fields: {
+          status: 'groomed',
+          priority: result.priority,
+          suggestedAction: result.suggestedAction,
+          evidenceSummary: result.evidenceSummary,
+          jiraTicketKey: result.jiraTicketKey,
+          jiraTicketUrl: result.jiraTicketUrl,
+          researchSummary: result.researchSummary,
+          researchLinks: result.researchLinks,
+          groomedAt: result.groomedAt
+        }
+      })
+
+      // Push 'done' with full result — renderer flips card to Groomed
+      win?.webContents.send('taskgroomer:groom:progress', {
+        taskId: task.id,
+        status: 'done',
+        result: {
+          priority: result.priority,
+          priorityRationale: result.priorityRationale,
+          suggestedAction: result.suggestedAction,
+          evidenceSummary: result.evidenceSummary,
+          jiraTicketKey: result.jiraTicketKey,
+          jiraTicketUrl: result.jiraTicketUrl,
+          researchSummary: result.researchSummary,
+          researchLinks: result.researchLinks,
+          groomedAt: result.groomedAt
+        }
+      })
+
+      succeeded++
+    } catch (err) {
+      console.error(`[TaskGroomer] Failed to groom task ${task.id}:`, err)
+      // Push 'failed' — renderer leaves card in Dump, adds to failure count
+      win?.webContents.send('taskgroomer:groom:progress', {
+        taskId: task.id,
+        status: 'failed'
+      })
+      failed++
+    }
+  }
+
+  // Push run-complete summary so renderer can show toast
+  win?.webContents.send('taskgroomer:groom:progress', {
+    taskId: '__run_complete__',
+    status: 'done',
+    result: { succeeded, failed, total: dumpTasks.length }
+  })
+}
+
+// ── Task Groomer schedule ─────────────────────────────────────────────────
+
+/**
+ * Initializes the grooming schedule.
+ * Called from main/index.ts after mainWindow is created.
+ *
+ * Behavior:
+ *  1. Catch-up check on app start: if schedule was missed today AND dump tasks exist, run immediately.
+ *  2. Every 60 seconds, check if the configured schedule time has been reached today.
+ *     If yes and not already run today, trigger grooming.
+ */
+export function initGroomingSchedule(mainWindow: BrowserWindow): void {
+  // Track the date of the last auto-groom to prevent multiple runs on same day
+  let lastAutoGroomDate: string | null = null
+
+  function getTodayStr(): string {
+    return new Date().toDateString()
+  }
+
+  function getScheduleConfig(): { enabled: boolean; time: string } {
+    const enabled = (getSetting('plugins.task-groomer.schedule.enabled') as boolean) ?? false
+    const time = (getSetting('plugins.task-groomer.schedule.time') as string) ?? '09:00'
+    return { enabled, time }
+  }
+
+  function shouldRunNow(): boolean {
+    const { enabled, time } = getScheduleConfig()
+    if (!enabled) return false
+    if (groomingRunActive) return false
+
+    const today = getTodayStr()
+    if (lastAutoGroomDate === today) return false // Already ran today
+
+    const [hours, minutes] = time.split(':').map(Number)
+    const now = new Date()
+    return now.getHours() > hours || (now.getHours() === hours && now.getMinutes() >= minutes)
+  }
+
+  // Catch-up check: run immediately on app start if schedule was missed today
+  // Wait 3 seconds after window creation to avoid race with renderer load
+  setTimeout(() => {
+    if (mainWindow.isDestroyed()) return
+    if (shouldRunNow()) {
+      const dumpTasks = getTaskGroomerDb().listTasks(['dump'])
+      if (dumpTasks.length > 0) {
+        console.log('[TaskGroomer] Catch-up: running missed schedule')
+        lastAutoGroomDate = getTodayStr()
+        groomingRunActive = true
+        mainWindow.webContents.send('taskgroomer:groom:start', { taskCount: dumpTasks.length })
+        runGroomingBatch(mainWindow).finally(() => {
+          groomingRunActive = false
+        })
+      }
+    }
+  }, 3000)
+
+  // Poll every 60 seconds for schedule trigger
+  setInterval(() => {
+    if (mainWindow.isDestroyed()) return
+    if (shouldRunNow()) {
+      const dumpTasks = getTaskGroomerDb().listTasks(['dump'])
+      if (dumpTasks.length > 0) {
+        console.log('[TaskGroomer] Schedule: running grooming at configured time')
+        lastAutoGroomDate = getTodayStr()
+        groomingRunActive = true
+        mainWindow.webContents.send('taskgroomer:groom:start', { taskCount: dumpTasks.length })
+        runGroomingBatch(mainWindow).finally(() => {
+          groomingRunActive = false
+        })
+      }
+    }
+  }, 60_000)
 }
