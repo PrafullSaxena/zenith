@@ -94,6 +94,15 @@ None - no external service configuration required.
 - Integration health dashboard complete — 20-01 done
 - Remaining 20-xx plans can proceed with layout polish, TaskSidePanel empty state, GroomDigest styling, capture popup polish, status dropdown UX, and error UI for failed grooming
 
+## Self-Check: PASSED
+
+- FOUND: `src/renderer/src/plugins/task-groomer/TaskGroomerSettings.tsx`
+- FOUND: `.planning/phases/20-settings-polish/20-01-SUMMARY.md`
+- FOUND: commit `740b49e` (feat)
+- FOUND: `IntegrationHealthDashboard` component in file
+- FOUND: all 4 lucide icons (`Bot`, `Ticket`, `FileText`, `Globe`)
+- TypeScript: zero errors
+
 ---
 *Phase: 20-settings-polish*
 *Completed: 2026-05-21*
