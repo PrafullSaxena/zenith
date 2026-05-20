@@ -143,7 +143,7 @@ Plans:
 | 15. Capture | 0/? | Complete    | 2026-05-19 |
 | 16. Dumpyard View | 3/3 | Complete    | 2026-05-19 |
 | 17. Integrations | 4/4 | ✅ Complete | 2026-05-20 |
-| 18. AI Grooming Engine | 5/5 | Complete   | 2026-05-20 |
+| 18. AI Grooming Engine | 5/5 | Complete    | 2026-05-20 |
 | 19. Re-groom + Digest | 0/? | Not started | — |
 | 20. Settings & Polish | 0/? | Not started | — |
 
