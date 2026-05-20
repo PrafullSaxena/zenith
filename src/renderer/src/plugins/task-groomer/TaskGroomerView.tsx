@@ -2,22 +2,25 @@
  * TaskGroomerView — Main plugin view for the Task Groomer.
  *
  * Replaces the Phase 14 placeholder. Implements the full Dumpyard View:
- *  - Slim toolbar: PageHeader with "Task Groomer" title + Groom button (disabled placeholder)
+ *  - Slim toolbar: PageHeader with "Task Groomer" title + Groom button (live with spinner)
  *  - Two tabs: "Dumpyard" (dump status tasks) + "Groomed" (all others)
  *  - Tab labels show task counts when non-zero
- *  - Compact TaskCard rows sorted newest-first
+ *  - Compact TaskCard rows sorted newest-first, with shimmer during grooming
  *  - Empty states with context-appropriate messaging
  *  - TaskSidePanel slides in from right on card click
+ *  - Failure summary toast via sonner after each grooming run
  *
  * Default-exported for React.lazy() in plugin registry.ts (unchanged from Phase 14).
  */
-import { useEffect } from 'react'
-import { CheckSquare, Sparkles, Inbox } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { CheckSquare, Sparkles, Inbox, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 import { useTaskGroomerStore } from '@renderer/stores/task-groomer-store'
 import { PageHeader } from '../../components/shared/page-header'
 import { pageTransition } from '@renderer/lib/motion'
 import { EmptyState } from '@renderer/components/ui/EmptyState'
+import { cn } from '@renderer/lib/utils'
 import TaskCard from './TaskCard'
 import TaskSidePanel from './TaskSidePanel'
 
@@ -31,10 +34,41 @@ export default function TaskGroomerView(): React.JSX.Element {
   const setActiveTab = useTaskGroomerStore((s) => s.setActiveTab)
   const setSelectedTaskId = useTaskGroomerStore((s) => s.setSelectedTaskId)
 
+  // Grooming state
+  const groomingActive = useTaskGroomerStore((s) => s.groomingActive)
+  const groomCount = useTaskGroomerStore((s) => s.groomCount)
+  const groomingTaskIds = useTaskGroomerStore((s) => s.groomingTaskIds)
+  const startGroom = useTaskGroomerStore((s) => s.startGroom)
+  const initGroomListeners = useTaskGroomerStore((s) => s.initGroomListeners)
+  const cleanupGroomListeners = useTaskGroomerStore((s) => s.cleanupGroomListeners)
+  const lastGroomSummary = useTaskGroomerStore((s) => s.lastGroomSummary)
+
   // Load tasks on mount
   useEffect(() => {
     loadTasks()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Init/cleanup groom IPC listeners on mount/unmount
+  useEffect(() => {
+    initGroomListeners()
+    return () => cleanupGroomListeners()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show failure toast when lastGroomSummary changes
+  const prevSummaryRef = useRef(lastGroomSummary)
+  useEffect(() => {
+    if (lastGroomSummary && lastGroomSummary !== prevSummaryRef.current) {
+      prevSummaryRef.current = lastGroomSummary
+      const { succeeded, failed, total } = lastGroomSummary
+      if (failed === 0) {
+        toast.success(`All ${total} tasks groomed.`)
+      } else {
+        toast.warning(
+          `Groomed ${succeeded}/${total} tasks. ${failed} failed — they'll retry on next run.`
+        )
+      }
+    }
+  }, [lastGroomSummary])
 
   // Derive task lists inline (not stored in Zustand — pure filter)
   const dumpTasks = tasks.filter((t) => t.status === 'dump')
@@ -71,12 +105,35 @@ export default function TaskGroomerView(): React.JSX.Element {
         statusIndicator={
           <button
             type="button"
-            disabled
-            title="Grooming coming in Phase 18"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/4 border border-white/8 text-muted-foreground opacity-60 cursor-not-allowed"
+            disabled={groomingActive || dumpTasks.length === 0}
+            onClick={startGroom}
+            title={
+              dumpTasks.length === 0
+                ? 'No Dump tasks to groom'
+                : groomingActive
+                  ? `Grooming ${groomCount} tasks...`
+                  : 'Groom all Dump tasks with AI'
+            }
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+              groomingActive
+                ? 'bg-primary/20 border-primary/30 text-primary cursor-not-allowed'
+                : dumpTasks.length === 0
+                  ? 'bg-white/4 border-white/8 text-muted-foreground opacity-60 cursor-not-allowed'
+                  : 'bg-primary border-primary/80 text-primary-foreground hover:bg-primary/90 cursor-pointer'
+            )}
           >
-            <Sparkles size={12} />
-            Groom
+            {groomingActive ? (
+              <>
+                <Loader2 size={12} className="animate-spin" />
+                Grooming {groomCount} tasks...
+              </>
+            ) : (
+              <>
+                <Sparkles size={12} />
+                Groom
+              </>
+            )}
           </button>
         }
       />
@@ -100,8 +157,9 @@ export default function TaskGroomerView(): React.JSX.Element {
             )}
 
             {/* Empty state */}
-            {!loading && visibleTasks.length === 0 && (
-              activeTab === 'dumpyard' ? (
+            {!loading &&
+              visibleTasks.length === 0 &&
+              (activeTab === 'dumpyard' ? (
                 <EmptyState
                   icon={Inbox}
                   title="Your dumpyard is clear"
@@ -113,8 +171,7 @@ export default function TaskGroomerView(): React.JSX.Element {
                   title="No groomed tasks yet"
                   description="Tasks will appear here after grooming. Use the Groom button above to start."
                 />
-              )
-            )}
+              ))}
 
             {/* Task list */}
             {!loading && visibleTasks.length > 0 && (
@@ -124,10 +181,9 @@ export default function TaskGroomerView(): React.JSX.Element {
                     key={task.id}
                     task={task}
                     isSelected={selectedTaskId === task.id}
+                    isGrooming={groomingTaskIds.has(task.id)}
                     onStatusChange={updateTaskStatus}
-                    onClick={(t) =>
-                      setSelectedTaskId(t.id === selectedTaskId ? null : t.id)
-                    }
+                    onClick={(t) => setSelectedTaskId(t.id === selectedTaskId ? null : t.id)}
                   />
                 ))}
               </div>

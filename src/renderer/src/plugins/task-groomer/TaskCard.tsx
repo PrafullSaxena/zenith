@@ -11,7 +11,12 @@
  *
  * Clicking the card opens the side panel (via onClick prop).
  */
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@renderer/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@renderer/components/ui/tooltip'
 import { cn } from '@renderer/lib/utils'
 import { isTaskStale, staleDays } from '@renderer/stores/task-groomer-store'
 import StatusDropdown from './StatusDropdown'
@@ -55,13 +60,15 @@ interface TaskCardProps {
   onStatusChange: (id: string, status: Task['status']) => void
   onClick: (task: Task) => void
   isSelected?: boolean
+  isGrooming?: boolean
 }
 
 export function TaskCard({
   task,
   onStatusChange,
   onClick,
-  isSelected = false
+  isSelected = false,
+  isGrooming = false
 }: TaskCardProps): React.JSX.Element {
   const stale = isTaskStale(task)
   const days = stale ? staleDays(task) : 0
@@ -76,7 +83,8 @@ export function TaskCard({
         'flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer',
         'border border-transparent transition-colors select-none',
         'hover:bg-white/4',
-        isSelected && 'bg-white/6 border-white/8'
+        isSelected && 'bg-white/6 border-white/8',
+        isGrooming && 'animate-pulse opacity-70'
       )}
     >
       {/* Status badge (has its own click handler + stopPropagation) */}
@@ -86,9 +94,7 @@ export function TaskCard({
       <TooltipProvider delayDuration={600}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="flex-1 text-sm text-foreground truncate min-w-0">
-              {task.text}
-            </span>
+            <span className="flex-1 text-sm text-foreground truncate min-w-0">{task.text}</span>
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-[400px] break-words whitespace-pre-wrap">
             {task.text}
