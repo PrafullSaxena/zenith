@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 19-re-groom-digest — Plan 01 of 3 complete (IN PROGRESS)
-Status: Phase 19 started — Plan 01 complete; taskgroomer:regroom IPC + preload bridge wired
+Phase: 19-re-groom-digest — Plan 02 of 3 complete (IN PROGRESS)
+Status: Phase 19 in progress — Plan 02 complete; Zustand store re-groom/digest state + TaskSidePanel Re-groom button wired
 
-Progress: [█████░░░░░] 72% (Phase 19 in progress — Plan 1/3 done)
+Progress: [██████░░░░] 75% (Phase 19 in progress — Plan 2/3 done)
 
 ## Performance Metrics
 
@@ -63,6 +63,12 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - JSON parse error throws with 200-char raw text preview for debuggability
 - researchLinks serialized to JSON string (matches existing research_links TEXT column); only set when isResearchMode=true
 
+**Phase 19-02 decisions (2026-05-20):**
+- Dynamic import('sonner') inside startReGroom action — avoids module-level import side effects; matches pattern where toast is used inside effects
+- Two-minute freshness window (groomedAt < TWO_MINUTES) at __run_complete__ to identify batch-groomed tasks for digest
+- Re-groom button placed above "Grooming Results" heading — visible regardless of whether grooming data exists
+- isReGrooming checks reGroomTaskId === task.id so only the active task shows spinner, not all tasks
+
 **Phase 19-01 decisions (2026-05-20):**
 - taskgroomer:regroom awaits full result and returns synchronously — unlike batch groom which is fire-and-forget; single-task re-groom needs immediate response for renderer in-place update
 - listTasks() without status filter — re-groom works on any task status (dump/groomed/done/delegated/aborted)
@@ -100,5 +106,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 19 Plan 01 complete — taskgroomer:regroom IPC handler + preload bridge + electron.d.ts types (commits 841b583, 3797ffb).
-Resume file: /gsd:execute-phase 19 (continue with Plan 02)
+Stopped at: Phase 19 Plan 02 complete — Zustand store re-groom/digest state + TaskSidePanel Re-groom button (commits d992949, 73d5395).
+Resume file: /gsd:execute-phase 19 (continue with Plan 03)

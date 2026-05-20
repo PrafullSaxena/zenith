@@ -122,7 +122,7 @@ Plans:
 **Goal**: Users can request a fresh AI analysis on any individual task; after each grooming run a digest view shows all newly groomed tasks in priority order
 **Depends on**: Phase 18
 **Requirements**: GROOM-05, GROOM-06
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 **Success Criteria** (what must be TRUE):
   1. A "Re-groom" button on any task triggers fresh AI analysis and updates the task's enrichment data
   2. After each grooming run, a digest view renders all newly groomed tasks sorted by priority with their evidence summaries
@@ -150,7 +150,7 @@ Plans:
 | 16. Dumpyard View | 3/3 | Complete    | 2026-05-19 |
 | 17. Integrations | 4/4 | ✅ Complete | 2026-05-20 |
 | 18. AI Grooming Engine | 5/5 | Complete    | 2026-05-20 |
-| 19. Re-groom + Digest | 1/3 | In progress | — |
+| 19. Re-groom + Digest | 2/3 | In Progress|  |
 | 20. Settings & Polish | 0/? | Not started | — |
 
 ---

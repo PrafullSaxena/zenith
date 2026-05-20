@@ -25,8 +25,8 @@
 - [x] **GROOM-02**: AI grooming can be triggered manually at any time from the plugin screen
 - [x] **GROOM-03**: Per task, AI produces: priority score (P1/P2/P3), suggested action (do/delegate/defer/delete), linked Jira ticket (if found), evidence summary
 - [x] **GROOM-04**: For research-mode tasks (complex/ambiguous), AI produces a mini-summary with relevant links from Google, Confluence, and Jira plus a suggested next-step roadmap
-- [ ] **GROOM-05**: User can trigger "Re-groom" on any task to get fresh AI analysis
-- [ ] **GROOM-06**: After each grooming run, a digest view shows all newly groomed tasks in priority order
+- [x] **GROOM-05**: User can trigger "Re-groom" on any task to get fresh AI analysis
+- [x] **GROOM-06**: After each grooming run, a digest view shows all newly groomed tasks in priority order
 
 ### Integrations
 
@@ -84,7 +84,7 @@
 | GROOM-03 | Phase 18 | Complete |
 | GROOM-04 | Phase 18 | Complete |
 | GROOM-05 | Phase 19 | In progress (19-01: IPC done) |
-| GROOM-06 | Phase 19 | Pending |
+| GROOM-06 | Phase 19 | Complete |
 | INT-01 | Phase 17 | Pending |
 | INT-02 | Phase 17 | Pending |
 | INT-03 | Phase 17 | Pending |
