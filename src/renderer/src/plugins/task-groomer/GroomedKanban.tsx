@@ -183,9 +183,7 @@ function KanbanCard({
         </div>
 
         {/* Task text */}
-        <p className="text-[13px] text-foreground/90 leading-snug line-clamp-3 mb-3">
-          {task.text}
-        </p>
+        <p className="text-[13px] text-foreground/90 leading-snug line-clamp-3 mb-3">{task.text}</p>
 
         {/* Bottom: status dropdown */}
         <div onClick={(e) => e.stopPropagation()}>
@@ -229,7 +227,9 @@ function KanbanColumn({
       >
         <Icon size={13} className="text-muted-foreground shrink-0" />
         <span className="text-[11px] font-semibold text-foreground/80 flex-1">{column.label}</span>
-        <span className={cn('text-[10px] font-semibold rounded-full px-1.5 py-0.5', column.countBg)}>
+        <span
+          className={cn('text-[10px] font-semibold rounded-full px-1.5 py-0.5', column.countBg)}
+        >
           {tasks.length}
         </span>
       </div>

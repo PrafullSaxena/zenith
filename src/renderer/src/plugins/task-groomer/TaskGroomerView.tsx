@@ -26,6 +26,7 @@ import TaskCard from './TaskCard'
 import TaskSidePanel from './TaskSidePanel'
 import GroomDigest from './GroomDigest'
 import { GroomedKanban } from './GroomedKanban'
+import { DumpyardGrid } from './DumpyardGrid'
 
 export default function TaskGroomerView(): React.JSX.Element {
   const tasks = useTaskGroomerStore((s) => s.tasks)
@@ -96,7 +97,10 @@ export default function TaskGroomerView(): React.JSX.Element {
 
   const TABS = [
     { id: 'dumpyard', label: dumpTasks.length > 0 ? `Dumpyard (${dumpTasks.length})` : 'Dumpyard' },
-    { id: 'groomed', label: groomedTasks.length > 0 ? `Groomed (${groomedTasks.length})` : 'Groomed' }
+    {
+      id: 'groomed',
+      label: groomedTasks.length > 0 ? `Groomed (${groomedTasks.length})` : 'Groomed'
+    }
   ]
 
   const isKanban = activeTab === 'groomed' && groomedViewMode === 'kanban'
@@ -243,7 +247,8 @@ export default function TaskGroomerView(): React.JSX.Element {
             )}
 
             {/* Empty states */}
-            {!loading && visibleTasks.length === 0 &&
+            {!loading &&
+              visibleTasks.length === 0 &&
               (activeTab === 'dumpyard' ? (
                 <EmptyState
                   icon={Inbox}
@@ -257,6 +262,22 @@ export default function TaskGroomerView(): React.JSX.Element {
                   description="Groom your dump tasks to see them here."
                 />
               ))}
+
+            {/* DUMPYARD — card grid (dump tasks have no grooming data; cards > list rows) */}
+            {!loading && visibleTasks.length > 0 && activeTab === 'dumpyard' && (
+              <DumpyardGrid
+                tasks={dumpTasks}
+                onStatusChange={updateTaskStatus}
+                onDelete={deleteTask}
+                onCardClick={(t) => {
+                  if (showDigest) dismissDigest()
+                  setSelectedTaskId(t.id === selectedTaskId ? null : t.id)
+                }}
+                selectedTaskId={selectedTaskId}
+                groomingTaskIds={groomingTaskIds}
+                failedTaskIds={failedTaskIds}
+              />
+            )}
 
             {/* KANBAN VIEW — Groomed tab only */}
             {!loading && visibleTasks.length > 0 && isKanban && (
@@ -272,11 +293,11 @@ export default function TaskGroomerView(): React.JSX.Element {
               />
             )}
 
-            {/* LIST VIEW */}
-            {!loading && visibleTasks.length > 0 && !isKanban && (
+            {/* GROOMED LIST VIEW — compact rows with shimmer + chips */}
+            {!loading && visibleTasks.length > 0 && activeTab === 'groomed' && !isKanban && (
               <div className="flex flex-col flex-1 overflow-y-auto px-3 py-2 gap-0.5 relative">
                 <AnimatePresence initial={false}>
-                  {visibleTasks.map((task, i) => (
+                  {groomedTasks.map((task, i) => (
                     <TaskCard
                       key={task.id}
                       task={task}

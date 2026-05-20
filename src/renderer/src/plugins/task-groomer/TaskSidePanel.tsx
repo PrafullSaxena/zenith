@@ -6,12 +6,7 @@
  *
  * Content: full task text, status, metadata, grooming results + re-groom.
  */
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle
-} from '@renderer/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@renderer/components/ui/dialog'
 import { useTaskGroomerStore, isTaskStale } from '@renderer/stores/task-groomer-store'
 import StatusDropdown from './StatusDropdown'
 import { cn } from '@renderer/lib/utils'
@@ -42,10 +37,7 @@ function formatDateTime(ms: number): string {
   })
 }
 
-const PRIORITY_CONFIG: Record<
-  NonNullable<Task['priority']>,
-  { label: string; badge: string }
-> = {
+const PRIORITY_CONFIG: Record<NonNullable<Task['priority']>, { label: string; badge: string }> = {
   p1: { label: 'P1 — High', badge: 'text-red-400 bg-red-400/15 border-red-400/25' },
   p2: { label: 'P2 — Medium', badge: 'text-amber-400 bg-amber-400/15 border-amber-400/25' },
   p3: { label: 'P3 — Low', badge: 'text-blue-400 bg-blue-400/15 border-blue-400/25' }
@@ -62,7 +54,11 @@ const ACTION_CONFIG: Record<string, string> = {
 // Section wrapper
 // ---------------------------------------------------------------------------
 
-function Section({ title, icon: Icon, children }: {
+function Section({
+  title,
+  icon: Icon,
+  children
+}: {
   title: string
   icon: React.ElementType
   children: React.ReactNode
@@ -107,7 +103,11 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
   // Parse research links safely
   let researchLinks: { title: string; url: string }[] = []
   if (task?.researchLinks) {
-    try { researchLinks = JSON.parse(task.researchLinks) } catch { /* skip */ }
+    try {
+      researchLinks = JSON.parse(task.researchLinks)
+    } catch {
+      /* skip */
+    }
   }
 
   return (
@@ -149,9 +149,15 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                   )}
                 >
                   {isReGrooming ? (
-                    <><Loader2 size={11} className="animate-spin" />Grooming…</>
+                    <>
+                      <Loader2 size={11} className="animate-spin" />
+                      Grooming…
+                    </>
                   ) : (
-                    <><RotateCcw size={11} />Re-groom</>
+                    <>
+                      <RotateCcw size={11} />
+                      Re-groom
+                    </>
                   )}
                 </button>
               </div>
@@ -159,24 +165,29 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
 
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
-
               {/* Metadata */}
               <Section title="Details" icon={Calendar}>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-2 rounded-xl border border-white/6 bg-white/[0.02] px-4 py-3">
                   <div className="flex items-center gap-2">
                     <Calendar size={11} className="text-muted-foreground/50 shrink-0" />
                     <span className="text-[11px] text-muted-foreground/60">Created</span>
-                    <span className="text-[11px] text-foreground/80 ml-auto">{formatDateTime(task.createdAt)}</span>
+                    <span className="text-[11px] text-foreground/80 ml-auto">
+                      {formatDateTime(task.createdAt)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock size={11} className="text-muted-foreground/50 shrink-0" />
                     <span className="text-[11px] text-muted-foreground/60">Updated</span>
-                    <span className="text-[11px] text-foreground/80 ml-auto">{formatDateTime(task.updatedAt)}</span>
+                    <span className="text-[11px] text-foreground/80 ml-auto">
+                      {formatDateTime(task.updatedAt)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Tag size={11} className="text-muted-foreground/50 shrink-0" />
                     <span className="text-[11px] text-muted-foreground/60">Source</span>
-                    <span className="text-[11px] text-foreground/80 ml-auto capitalize">{task.captureSource}</span>
+                    <span className="text-[11px] text-foreground/80 ml-auto capitalize">
+                      {task.captureSource}
+                    </span>
                   </div>
                 </div>
               </Section>
@@ -186,7 +197,9 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                 {!hasGroomingData ? (
                   <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.015] px-4 py-6 flex flex-col items-center gap-2 text-center">
                     <Zap size={18} className="text-muted-foreground/25" />
-                    <p className="text-xs text-muted-foreground leading-relaxed">No grooming results yet.</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      No grooming results yet.
+                    </p>
                     <p className="text-[11px] text-muted-foreground/50">
                       Click Re-groom or run a batch groom to analyze this task.
                     </p>
@@ -197,18 +210,22 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                     {(task.priority || task.suggestedAction) && (
                       <div className="flex items-center gap-2 flex-wrap">
                         {task.priority && (
-                          <span className={cn(
-                            'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold border',
-                            PRIORITY_CONFIG[task.priority].badge
-                          )}>
+                          <span
+                            className={cn(
+                              'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold border',
+                              PRIORITY_CONFIG[task.priority].badge
+                            )}
+                          >
                             {PRIORITY_CONFIG[task.priority].label}
                           </span>
                         )}
                         {task.suggestedAction && ACTION_CONFIG[task.suggestedAction] && (
-                          <span className={cn(
-                            'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium border capitalize',
-                            ACTION_CONFIG[task.suggestedAction]
-                          )}>
+                          <span
+                            className={cn(
+                              'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium border capitalize',
+                              ACTION_CONFIG[task.suggestedAction]
+                            )}
+                          >
                             {task.suggestedAction}
                           </span>
                         )}
@@ -227,7 +244,9 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center gap-1.5">
                           <FileText size={11} className="text-muted-foreground/50" />
-                          <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">Evidence</span>
+                          <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">
+                            Evidence
+                          </span>
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed pl-4 border-l border-white/10">
                           {task.evidenceSummary}
@@ -240,7 +259,9 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center gap-1.5">
                           <FileText size={11} className="text-muted-foreground/50" />
-                          <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">Research</span>
+                          <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">
+                            Research
+                          </span>
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed pl-4 border-l border-white/10">
                           {task.researchSummary}
@@ -253,7 +274,9 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center gap-1.5">
                           <Link size={11} className="text-muted-foreground/50" />
-                          <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">Links</span>
+                          <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">
+                            Links
+                          </span>
                         </div>
                         <ul className="flex flex-col gap-1 pl-4">
                           {researchLinks.map((link, i) => (
@@ -274,7 +297,9 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                     {/* Jira ticket */}
                     {task.jiraTicketKey && task.jiraTicketUrl && (
                       <div className="flex items-center gap-2 rounded-lg border border-blue-400/15 bg-blue-400/[0.04] px-3 py-2">
-                        <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">Jira</span>
+                        <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">
+                          Jira
+                        </span>
                         <button
                           type="button"
                           onClick={() => window.api.app.openExternal(task.jiraTicketUrl!)}
