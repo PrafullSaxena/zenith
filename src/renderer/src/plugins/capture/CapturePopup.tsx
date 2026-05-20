@@ -11,7 +11,6 @@ function BoltIcon(): React.JSX.Element {
 }
 
 const MAX_CHARS = 500
-const SINGLE_LINE_H = 28
 
 export default function CapturePopup(): React.JSX.Element {
   const [text, setText] = useState('')
@@ -32,13 +31,10 @@ export default function CapturePopup(): React.JSX.Element {
     })
   }, [])
 
+  // Detect multiline purely from text content — no el.style manipulation needed.
+  // The card's explicit CSS height transition handles the visual expansion.
   useEffect(() => {
-    const el = textareaRef.current
-    if (!el) return
-    el.style.height = 'auto'
-    const scrollH = el.scrollHeight
-    el.style.height = ''
-    setExpanded(scrollH > SINGLE_LINE_H || text.includes('\n'))
+    setExpanded(text.includes('\n') || text.length > 60)
   }, [text])
 
   const handleClose = useCallback(() => window.api.capture.close(), [])
@@ -73,13 +69,17 @@ export default function CapturePopup(): React.JSX.Element {
     if (fromClipboard) setFromClipboard(false)
   }
 
+  const cardClass = [
+    'capture-card',
+    expanded ? 'is-expanded' : '',
+    submitting ? 'is-submitting' : ''
+  ].filter(Boolean).join(' ')
+
   return (
     <div className="capture-overlay" onClick={handleClose}>
-      <div
-        className={`capture-card${submitting ? ' is-submitting' : ''}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header — icon + title left, keyboard hints right */}
+      <div className={cardClass} onClick={(e) => e.stopPropagation()}>
+
+        {/* Header */}
         <div className="capture-header">
           <div className="capture-icon"><BoltIcon /></div>
           <div className="capture-title-row">
@@ -92,11 +92,11 @@ export default function CapturePopup(): React.JSX.Element {
           </div>
         </div>
 
-        {/* Textarea — expands with CSS transition, no footer */}
+        {/* Body — flex:1 fills remaining card height */}
         <div className="capture-body">
           <textarea
             ref={textareaRef}
-            className={`capture-input${expanded ? ' is-expanded' : ''}`}
+            className="capture-input"
             value={text}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -104,6 +104,7 @@ export default function CapturePopup(): React.JSX.Element {
             disabled={submitting}
           />
         </div>
+
       </div>
     </div>
   )
