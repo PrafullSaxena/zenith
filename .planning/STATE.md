@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Reduce the friction of developer workflows through AI-augmented tooling — all in a single, fast, consistent desktop app.
-**Current focus:** v3.0 — Task Groomer Plugin (Phase 19: Re-groom + Digest)
+**Current focus:** v3.0 — Task Groomer Plugin (Phase 20: Settings & Polish)
 
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 19-re-groom-digest — Plan 03 of 3 complete (COMPLETE)
-Status: Phase 19 complete — GroomDigest component created and wired into TaskGroomerView; all GROOM-05/06 requirements met
+Phase: 20-settings-polish — Not started
+Status: Phase 19 fully verified and shipped (2026-05-21). Fixed: grooming engine now reads AI provider from Settings → Task Groomer → AI Agent instead of hardcoded Anthropic SDK key. Supports CLI agents (claude, gemini, codex, ollama) and SDK providers.
 
-Progress: [██████████] 100% (Phase 19 complete — all 3/3 plans done)
+Progress: [█████████░] 90% (6/7 phases complete — Phase 20 remaining)
 
 ## Performance Metrics
 
@@ -101,6 +101,12 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - groomingRunActive module-level flag prevents double-trigger from both IPC and schedule
 - taskgroomer:groom:start is a separate push channel for schedule-triggered runs so renderer can react without initiating the IPC call
 
+**Post-Phase-19 fix (2026-05-21):**
+- resolveGroomingProvider() reads plugins.task-groomer.groomingProvider from settings, falls back to first entry in agents.providers
+- SDK path: provider.requiresApiKey=true → getApiKeyForProvider() → generateText via Vercel AI SDK
+- CLI path: provider.command set → groomWithCLI() spawns shell, writes combined system+user prompt to stdin, extracts first JSON object from stdout via regex
+- TaskGroomerSettings gains "AI Agent" section (Section 0) with dropdown of connected providers from useAgentStore
+
 ### Pending Todos
 
 None.
@@ -111,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-20
-Stopped at: Phase 19 Plan 03 complete — GroomDigest component + TaskGroomerView wiring (commits a67af70, 6c1a422).
-Resume file: Phase 19 complete.
+Last session: 2026-05-21
+Stopped at: Phase 19 human verification approved. Shipped AI provider selector fix (commit 0f42ded). Phase 20 is next.
+Resume at: /gsd:discuss-phase 20 or /gsd:plan-phase 20
