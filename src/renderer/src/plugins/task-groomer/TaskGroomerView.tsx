@@ -12,8 +12,8 @@
  *
  * Default-exported for React.lazy() in plugin registry.ts (unchanged from Phase 14).
  */
-import { useEffect, useRef } from 'react'
-import { CheckSquare, Sparkles, Inbox, Loader2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { CheckSquare, Sparkles, Inbox, Loader2, AlertCircle, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTaskGroomerStore } from '@renderer/stores/task-groomer-store'
@@ -47,6 +47,10 @@ export default function TaskGroomerView(): React.JSX.Element {
   const initGroomListeners = useTaskGroomerStore((s) => s.initGroomListeners)
   const cleanupGroomListeners = useTaskGroomerStore((s) => s.cleanupGroomListeners)
   const lastGroomSummary = useTaskGroomerStore((s) => s.lastGroomSummary)
+  const failedTaskIds = useTaskGroomerStore((s) => s.failedTaskIds)
+
+  // Failure banner local state
+  const [failureBannerDismissed, setFailureBannerDismissed] = useState(false)
 
   // Load tasks on mount
   useEffect(() => {
@@ -59,11 +63,12 @@ export default function TaskGroomerView(): React.JSX.Element {
     return () => cleanupGroomListeners()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Show failure toast when lastGroomSummary changes
+  // Show failure toast when lastGroomSummary changes; also reset banner dismissed state
   const prevSummaryRef = useRef(lastGroomSummary)
   useEffect(() => {
     if (lastGroomSummary && lastGroomSummary !== prevSummaryRef.current) {
       prevSummaryRef.current = lastGroomSummary
+      setFailureBannerDismissed(false)
       const { succeeded, failed, total } = lastGroomSummary
       if (failed === 0) {
         toast.success(`All ${total} tasks groomed.`)
@@ -74,6 +79,20 @@ export default function TaskGroomerView(): React.JSX.Element {
       }
     }
   }, [lastGroomSummary])
+
+  // Reset failure banner dismissed state when a new groom run starts
+  useEffect(() => {
+    if (groomingActive) {
+      setFailureBannerDismissed(false)
+    }
+  }, [groomingActive])
+
+  // Failure banner display condition
+  const showFailureBanner =
+    lastGroomSummary !== null &&
+    lastGroomSummary.failed > 0 &&
+    !failureBannerDismissed &&
+    !groomingActive
 
   // Derive task lists inline (not stored in Zustand — pure filter)
   const dumpTasks = tasks.filter((t) => t.status === 'dump')
@@ -142,6 +161,33 @@ export default function TaskGroomerView(): React.JSX.Element {
           </button>
         }
       />
+
+      {/* Failure banner — persistent after a batch groom run with failures */}
+      {showFailureBanner && (
+        <div className="flex items-center gap-3 mx-3 my-1.5 px-3 py-2 rounded-lg border border-amber-400/20 bg-amber-400/8 text-xs">
+          <AlertCircle size={13} className="text-amber-400 shrink-0" />
+          <span className="flex-1 text-amber-200/80">
+            {lastGroomSummary!.failed} task{lastGroomSummary!.failed !== 1 ? 's' : ''} failed to
+            groom
+          </span>
+          <button
+            type="button"
+            onClick={startGroom}
+            disabled={groomingActive || dumpTasks.length === 0}
+            className="text-amber-400 hover:text-amber-300 font-medium transition-colors disabled:opacity-50"
+          >
+            Retry
+          </button>
+          <button
+            type="button"
+            onClick={() => setFailureBannerDismissed(true)}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Dismiss failure banner"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      )}
 
       {/* Tab content */}
       <div className="relative flex-1 overflow-hidden z-10">

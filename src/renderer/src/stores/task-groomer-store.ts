@@ -50,17 +50,18 @@ interface TaskGroomerState {
   selectedTaskId: string | null
 
   // Grooming state
-  groomingActive: boolean          // true while a run is in progress
-  groomingTaskIds: Set<string>     // task IDs currently being processed (shimmer state)
-  groomCount: number               // count of dump tasks at start of run (for button label)
+  groomingActive: boolean // true while a run is in progress
+  groomingTaskIds: Set<string> // task IDs currently being processed (shimmer state)
+  groomCount: number // count of dump tasks at start of run (for button label)
   lastGroomSummary: { succeeded: number; failed: number; total: number } | null
+  failedTaskIds: Set<string> // task IDs that failed grooming in the most recent run
 
   // Re-groom state
-  reGroomTaskId: string | null     // ID of task currently being re-groomed; null if idle
+  reGroomTaskId: string | null // ID of task currently being re-groomed; null if idle
 
   // Digest state (populated after batch groom run completes)
-  digestTasks: Task[]              // Tasks groomed in the most recent batch run, sorted for display
-  showDigest: boolean              // true after batch completes; false when user dismisses or next batch starts
+  digestTasks: Task[] // Tasks groomed in the most recent batch run, sorted for display
+  showDigest: boolean // true after batch completes; false when user dismisses or next batch starts
 
   // Actions
   loadTasks: () => Promise<void>
@@ -95,6 +96,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
   groomingTaskIds: new Set<string>(),
   groomCount: 0,
   lastGroomSummary: null,
+  failedTaskIds: new Set<string>(),
 
   // Re-groom state initial values
   reGroomTaskId: null,
@@ -146,9 +148,16 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
   },
 
   startGroom: async () => {
-    const dumpTasks = get().tasks.filter(t => t.status === 'dump')
+    const dumpTasks = get().tasks.filter((t) => t.status === 'dump')
     if (dumpTasks.length === 0) return
-    set({ groomingActive: true, groomCount: dumpTasks.length, groomingTaskIds: new Set(), digestTasks: [], showDigest: false })
+    set({
+      groomingActive: true,
+      groomCount: dumpTasks.length,
+      groomingTaskIds: new Set(),
+      failedTaskIds: new Set(),
+      digestTasks: [],
+      showDigest: false
+    })
     try {
       await window.api.taskgroomer.groom()
     } catch (err) {
@@ -185,9 +194,9 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
       const r = response.result
 
       // In-place update: replace AI fields, preserve everything else
-      set(state => ({
+      set((state) => ({
         reGroomTaskId: null,
-        tasks: state.tasks.map(t =>
+        tasks: state.tasks.map((t) =>
           t.id === taskId
             ? {
                 ...t,
@@ -228,7 +237,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
       const now = Date.now()
       const TWO_MINUTES = 2 * 60 * 1000
       const freshGroomed = get().tasks.filter(
-        t => t.status === 'groomed' && t.groomedAt !== null && now - t.groomedAt < TWO_MINUTES
+        (t) => t.status === 'groomed' && t.groomedAt !== null && now - t.groomedAt < TWO_MINUTES
       )
 
       // Sort: P1 → P2 → P3, then Do → Delegate → Defer → Delete within same priority
@@ -264,7 +273,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
 
     if (status === 'grooming') {
       // Add task to shimmering set
-      set(state => ({
+      set((state) => ({
         groomingTaskIds: new Set([...state.groomingTaskIds, taskId])
       }))
       return
@@ -282,12 +291,12 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
         researchLinks: string | null
         groomedAt: number
       }
-      set(state => {
+      set((state) => {
         const newShimmerIds = new Set(state.groomingTaskIds)
         newShimmerIds.delete(taskId)
         return {
           groomingTaskIds: newShimmerIds,
-          tasks: state.tasks.map(t =>
+          tasks: state.tasks.map((t) =>
             t.id === taskId
               ? {
                   ...t,
@@ -310,11 +319,14 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
     }
 
     if (status === 'failed') {
-      // Remove from shimmering set, leave task in dump status (no change to tasks array)
-      set(state => {
+      // Remove from shimmering set, track in failedTaskIds, leave task in dump status
+      set((state) => {
         const newShimmerIds = new Set(state.groomingTaskIds)
         newShimmerIds.delete(taskId)
-        return { groomingTaskIds: newShimmerIds }
+        return {
+          groomingTaskIds: newShimmerIds,
+          failedTaskIds: new Set([...state.failedTaskIds, taskId])
+        }
       })
     }
   },
