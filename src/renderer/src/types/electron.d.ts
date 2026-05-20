@@ -32,6 +32,7 @@ interface Task {
   evidenceSummary: string | null
   researchSummary: string | null
   researchLinks: string | null
+  priorityRationale: string | null
   groomedAt: number | null
 }
 

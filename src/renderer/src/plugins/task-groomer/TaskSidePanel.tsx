@@ -3,10 +3,9 @@
  *
  * Opens when a TaskCard is clicked. Shows complete task text (not truncated),
  * status controls, metadata (created/updated/source/stale), and grooming data
- * when present (Priority, suggested action, evidence summary, Jira link).
+ * when present (Priority, suggested action, evidence summary, research links, Jira link).
  *
- * When grooming data is absent (Phase 16), a placeholder message is shown.
- * Grooming data will be populated in Phase 18.
+ * When grooming data is absent, a placeholder message is shown.
  */
 import {
   Sheet,
@@ -146,6 +145,13 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                     </div>
                   )}
 
+                  {/* Priority rationale */}
+                  {task.priorityRationale && (
+                    <p className="text-xs text-muted-foreground leading-relaxed pl-[4.5rem] -mt-1">
+                      {task.priorityRationale}
+                    </p>
+                  )}
+
                   {/* Suggested action */}
                   {task.suggestedAction && (
                     <div className="flex items-center gap-2">
@@ -173,6 +179,34 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                       </p>
                     </div>
                   )}
+
+                  {/* Research links */}
+                  {task.researchLinks && (() => {
+                    let links: { title: string; url: string }[] = []
+                    try {
+                      links = JSON.parse(task.researchLinks)
+                    } catch {
+                      // malformed JSON — skip silently
+                    }
+                    return links.length > 0 ? (
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-xs text-muted-foreground">Links</span>
+                        <ul className="flex flex-col gap-1">
+                          {links.map((link, i) => (
+                            <li key={i}>
+                              <button
+                                type="button"
+                                onClick={() => window.api.app.openExternal(link.url)}
+                                className="text-xs text-primary hover:underline text-left break-all"
+                              >
+                                {link.title || link.url}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null
+                  })()}
 
                   {/* Jira ticket */}
                   {task.jiraTicketKey && task.jiraTicketUrl && (
