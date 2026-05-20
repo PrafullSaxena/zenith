@@ -1,41 +1,46 @@
 /* ── Capture Popup ─────────────────────────────────────────────────────
-   Fixed 300px window (transparent). Card = header + textarea, no footer.
-   Card is always shorter than window — transparent gap below is invisible.
+   Fixed 300px transparent Electron window.
+   Layout: overlay wraps card naturally (no absolute fill).
+   Card = header + textarea only. Height is purely content-driven.
    ───────────────────────────────────────────────────────────────────── */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body, #root {
+html, body {
   width: 100%;
   height: 100%;
   background: transparent;
-  overflow: hidden;
+  overflow: visible;
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Overlay — transparent, full window, block layout ────────────────── */
+#root {
+  width: 100%;
+  background: transparent;
+  /* No height:100% — let content drive the height */
+}
+
+/* ── Overlay — natural block, NOT position:absolute ─────────────────── */
 
 .capture-overlay {
-  position: absolute;
-  inset: 0;
   padding: 8px;
   background: transparent;
-  display: block;
+  /* display:block by default — card is a child block, content-sized */
   animation: overlay-in 120ms ease-out forwards;
 }
 
-/* ── Card — content-sized (header + body), never fills window ────────── */
+/* ── Card — guaranteed content height ───────────────────────────────── */
 
 .capture-card {
   width: 100%;
   border-radius: 14px;
   background: hsl(var(--popover));
-  border: 1px solid hsl(var(--border) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.55);
   box-shadow:
-    0 0 0 0.5px hsl(var(--primary) / 0.12),
-    0 20px 60px rgba(0, 0, 0, 0.7),
-    0 6px 16px rgba(0, 0, 0, 0.4);
+    0 0 0 0.5px hsl(var(--primary) / 0.1),
+    0 16px 48px rgba(0, 0, 0, 0.65),
+    0 4px 12px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   animation: card-in 240ms cubic-bezier(0.22, 1.3, 0.36, 1) forwards;
   opacity: 0;
@@ -46,42 +51,40 @@ html, body, #root {
 .capture-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 13px 14px 12px;
-  border-bottom: 1px solid hsl(var(--border) / 0.45);
+  gap: 9px;
+  padding: 11px 13px 10px;
+  border-bottom: 1px solid hsl(var(--border) / 0.4);
 }
 
-/* Icon */
 .capture-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
-  border-radius: 7px;
-  background: hsl(var(--primary) / 0.15);
-  border: 1px solid hsl(var(--primary) / 0.22);
+  border-radius: 6px;
+  background: hsl(var(--primary) / 0.14);
+  border: 1px solid hsl(var(--primary) / 0.2);
   color: hsl(var(--primary));
   animation: icon-glow 3s ease-in-out infinite;
 }
 .capture-icon svg { display: block; }
 
-/* Title + optional badge */
 .capture-title-row {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   flex: 1;
   min-width: 0;
 }
 
 .capture-title {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: hsl(var(--muted-foreground) / 0.65);
+  color: hsl(var(--muted-foreground) / 0.6);
   user-select: none;
   white-space: nowrap;
 }
@@ -90,30 +93,29 @@ html, body, #root {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 500;
-  color: hsl(var(--primary) / 0.85);
-  background: hsl(var(--primary) / 0.1);
-  border: 1px solid hsl(var(--primary) / 0.18);
-  border-radius: 4px;
+  color: hsl(var(--primary) / 0.8);
+  background: hsl(var(--primary) / 0.09);
+  border: 1px solid hsl(var(--primary) / 0.16);
+  border-radius: 3px;
   padding: 1px 5px;
   user-select: none;
   animation: badge-in 160ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .capture-badge::before {
   content: '';
-  width: 4px;
-  height: 4px;
+  width: 3.5px;
+  height: 3.5px;
   border-radius: 50%;
-  background: hsl(var(--primary) / 0.65);
-  flex-shrink: 0;
+  background: hsl(var(--primary) / 0.6);
 }
 
-/* Keyboard shortcuts — right side of header, plain text style */
+/* Keyboard shortcuts — right-aligned, minimal */
 .capture-shortcuts {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
@@ -122,14 +124,15 @@ html, body, #root {
   align-items: center;
   gap: 3px;
   font-size: 10px;
-  color: hsl(var(--muted-foreground) / 0.38);
+  color: hsl(var(--muted-foreground) / 0.35);
   user-select: none;
+  letter-spacing: 0.01em;
 }
 
 .capture-shortcut kbd {
   font-family: inherit;
   font-size: 10px;
-  color: hsl(var(--muted-foreground) / 0.5);
+  color: hsl(var(--muted-foreground) / 0.45);
   background: transparent;
   border: none;
   padding: 0;
@@ -138,15 +141,15 @@ html, body, #root {
 /* ── Body ────────────────────────────────────────────────────────────── */
 
 .capture-body {
-  padding: 12px 14px 13px;
+  padding: 11px 13px 12px;
 }
 
-/* ── Textarea — two fixed states, CSS transition between them ────────── */
+/* ── Textarea ────────────────────────────────────────────────────────── */
 
 .capture-input {
   display: block;
   width: 100%;
-  height: 26px;          /* COMPACT: single line */
+  height: 24px;
   overflow: hidden;
   resize: none;
   background: transparent;
@@ -155,29 +158,29 @@ html, body, #root {
   font-family: inherit;
   font-size: 15px;
   font-weight: 400;
-  line-height: 1.55;
+  line-height: 1.5;
   color: hsl(var(--foreground));
   caret-color: hsl(var(--primary));
-  transition: height 230ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: height 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .capture-input::placeholder {
-  color: hsl(var(--muted-foreground) / 0.32);
+  color: hsl(var(--muted-foreground) / 0.3);
 }
 
 .capture-input:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* EXPANDED: taller fixed box with scrollbar */
+/* EXPANDED — fixed taller box */
 .capture-input.is-expanded {
-  height: 120px;
+  height: 112px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: hsl(var(--primary) / 0.25) transparent;
+  scrollbar-color: hsl(var(--primary) / 0.22) transparent;
 }
 .capture-input.is-expanded::-webkit-scrollbar { width: 3px; }
 .capture-input.is-expanded::-webkit-scrollbar-track { background: transparent; }
 .capture-input.is-expanded::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.25);
+  background: hsl(var(--primary) / 0.22);
   border-radius: 2px;
 }
 
@@ -189,14 +192,14 @@ html, body, #root {
 }
 
 @keyframes card-in {
-  0%   { opacity: 0; transform: scale(0.95) translateY(-5px); }
+  0%   { opacity: 0; transform: scale(0.95) translateY(-4px); }
   55%  { opacity: 1; }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 @keyframes icon-glow {
-  0%, 100% { box-shadow: 0 0 6px hsl(var(--primary) / 0.12); }
-  50%       { box-shadow: 0 0 14px hsl(var(--primary) / 0.28); }
+  0%, 100% { box-shadow: 0 0 5px hsl(var(--primary) / 0.1); }
+  50%       { box-shadow: 0 0 12px hsl(var(--primary) / 0.25); }
 }
 
 @keyframes badge-in {
