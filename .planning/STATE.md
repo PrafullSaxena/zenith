@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 18-ai-grooming-engine — Plan 03 of 4 complete
-Status: Executing Phase 18 (18-03 done — preload bridge + TypeScript types wired)
+Phase: 18-ai-grooming-engine — Plan 04 of 4 complete (PHASE COMPLETE)
+Status: Phase 18 complete — all 4 plans delivered; AI Grooming Engine end-to-end
 
-Progress: [████░░░░░░] 57% (Phase 17 complete — 4/7 phases done; Phase 18 started)
+Progress: [█████░░░░░] 71% (Phase 18 complete — 5/7 phases done)
 
 ## Performance Metrics
 
@@ -63,6 +63,11 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - JSON parse error throws with 200-char raw text preview for debuggability
 - researchLinks serialized to JSON string (matches existing research_links TEXT column); only set when isResearchMode=true
 
+**Phase 18-04 decisions (2026-05-20):**
+- Listener deduplication: initGroomListeners() calls removeGroomListeners() first to prevent IPC listener stacking on component re-mount
+- prevSummaryRef pattern to detect lastGroomSummary change without an extra boolean state field
+- animate-pulse + opacity-70 for task shimmer — CSS-only Tailwind, no Framer Motion per-card
+
 **Phase 18-03 decisions (2026-05-20):**
 - onGroomProgress/onGroomStart return void (not ipcRenderer.on() result) — contextBridge cannot serialize IpcRenderer instances
 - removeGroomListeners() removes both groom:progress and groom:start channels in a single call
@@ -84,5 +89,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-20
-Stopped at: Phase 18 Plan 03 complete — preload bridge + TypeScript types (commit 15926d9).
-Resume file: /gsd:execute-phase 18 (continue with Plan 04)
+Stopped at: Phase 18 Plan 04 complete — renderer state machine + live Groom button (commits 153d87f, bb884d3).
+Resume file: /gsd:execute-phase 19 (next phase after Phase 18)

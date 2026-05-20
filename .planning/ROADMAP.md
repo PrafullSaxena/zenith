@@ -34,7 +34,7 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 15: Capture** — Global hotkey registration, popup window, clipboard auto-detect (completed 2026-05-19)
 - [x] **Phase 16: Dumpyard View** — Plugin screen, task cards, status transitions, aging indicator (completed 2026-05-19)
 - [x] **Phase 17: Integrations** — Jira, Confluence, Google API clients + credential storage (completed 2026-05-20)
-- [ ] **Phase 18: AI Grooming Engine** — Grooming agent, scheduling, per-task output (priority, evidence, research mini-summary)
+- [x] **Phase 18: AI Grooming Engine** — Grooming agent, scheduling, per-task output (priority, evidence, research mini-summary) (completed 2026-05-20)
 - [ ] **Phase 19: Re-groom + Digest** — On-demand re-groom per task, post-grooming digest view
 - [ ] **Phase 20: Settings & Polish** — Grooming schedule config, Jira push button, UI polish
 
@@ -105,7 +105,7 @@ Plans:
 **Goal**: The AI grooming agent processes all Dump tasks, assigns priorities, enriches with evidence from Jira/Confluence/Google, and writes results back to the DB — runs on schedule and on-demand
 **Depends on**: Phase 17
 **Requirements**: GROOM-01, GROOM-02, GROOM-03, GROOM-04
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 **Success Criteria** (what must be TRUE):
   1. Running the grooming agent (scheduled or manual) processes all Dump tasks and sets their status to Groomed
   2. Each groomed task has: priority (P1/P2/P3), suggested action (do/delegate/defer/delete), linked Jira ticket (if found), evidence summary
@@ -143,7 +143,7 @@ Plans:
 | 15. Capture | 0/? | Complete    | 2026-05-19 |
 | 16. Dumpyard View | 3/3 | Complete    | 2026-05-19 |
 | 17. Integrations | 4/4 | ✅ Complete | 2026-05-20 |
-| 18. AI Grooming Engine | 3/4 | In Progress|  |
+| 18. AI Grooming Engine | 4/4 | Complete   | 2026-05-20 |
 | 19. Re-groom + Digest | 0/? | Not started | — |
 | 20. Settings & Polish | 0/? | Not started | — |
 
