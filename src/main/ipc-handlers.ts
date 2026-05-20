@@ -1420,6 +1420,65 @@ export function registerIpcHandlers(): void {
     return { started: true }
   })
 
+  ipcMain.handle('taskgroomer:regroom', async (_event, args: { taskId: string }) => {
+    if (groomingRunActive) {
+      return { started: false, reason: 'already_running' }
+    }
+    groomingRunActive = true
+
+    const db = getTaskGroomerDb()
+    const tasks = db.listTasks()
+    const task = tasks.find((t) => t.id === args.taskId)
+
+    if (!task) {
+      groomingRunActive = false
+      return { started: false, reason: 'task_not_found' }
+    }
+
+    try {
+      const result = await groomTask(task)
+
+      // Merge strategy: preserve existing Jira link if AI returns null for those fields
+      const existingJiraKey = task.jiraTicketKey
+      const existingJiraUrl = task.jiraTicketUrl
+
+      db.updateTask({
+        id: task.id,
+        fields: {
+          priority: result.priority,
+          priorityRationale: result.priorityRationale,
+          suggestedAction: result.suggestedAction,
+          evidenceSummary: result.evidenceSummary,
+          jiraTicketKey: result.jiraTicketKey ?? existingJiraKey,
+          jiraTicketUrl: result.jiraTicketUrl ?? existingJiraUrl,
+          researchSummary: result.researchSummary,
+          researchLinks: result.researchLinks,
+          groomedAt: result.groomedAt
+        }
+      })
+
+      return {
+        started: true,
+        result: {
+          priority: result.priority,
+          priorityRationale: result.priorityRationale,
+          suggestedAction: result.suggestedAction,
+          evidenceSummary: result.evidenceSummary,
+          jiraTicketKey: result.jiraTicketKey ?? existingJiraKey,
+          jiraTicketUrl: result.jiraTicketUrl ?? existingJiraUrl,
+          researchSummary: result.researchSummary,
+          researchLinks: result.researchLinks,
+          groomedAt: result.groomedAt
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      return { started: true, result: null, error: message }
+    } finally {
+      groomingRunActive = false
+    }
+  })
+
   // --- DbInspector ER Diagram PDF export (forwards to unified engine) ---
   ipcMain.handle(
     'db:exportErDiagramPdf',
