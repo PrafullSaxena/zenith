@@ -136,7 +136,7 @@ Plans:
 **Goal**: Task Groomer plugin is production-ready: integration health dashboard in settings, persistent failure UI, Jira ticket as clickable link, UI and a11y polish across all Task Groomer components
 **Depends on**: Phase 19
 **Requirements**: DATA-02, INT-04
-**Plans:** 2/5 plans executed
+**Plans:** 3/5 plans executed
 **Success Criteria** (what must be TRUE):
   1. Settings → Task Groomer shows an integration health dashboard: 4 service icons (AI Agent, Jira, Confluence, Web Search) — vivid when configured, dimmed/grayscale when not
   2. When a batch groom run has failures, a persistent amber banner shows the failure count with Retry and Dismiss actions; failed task cards show an amber warning icon
@@ -161,7 +161,7 @@ Plans:
 | 17. Integrations | 4/4 | ✅ Complete | 2026-05-20 |
 | 18. AI Grooming Engine | 5/5 | Complete    | 2026-05-20 |
 | 19. Re-groom + Digest | 3/3 | Complete   | 2026-05-20 |
-| 20. Settings & Polish | 2/5 | In Progress|  |
+| 20. Settings & Polish | 3/5 | In Progress|  |
 
 ---
 *Roadmap updated: 2026-05-21 — Phase 20 planned (5 plans)*
