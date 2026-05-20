@@ -1551,11 +1551,10 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('capture:resize', (_event, height: number) => {
     const win = getCaptureWindow()
     if (!win || win.isDestroyed()) return
-    const clamped = Math.max(190, Math.min(420, Math.round(height)))
+    const target = Math.round(height)
     const [currentW, currentH] = win.getSize()
-    if (currentH === clamped) return // no-op if already at this step
-    // animate: true on macOS gives native smooth resize; no-op on other platforms
-    win.setSize(currentW, clamped, process.platform === 'darwin')
+    if (currentH === target) return
+    win.setSize(currentW, target, process.platform === 'darwin')
   })
 
   // --- Integrations channels ---

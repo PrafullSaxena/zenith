@@ -1,88 +1,52 @@
 /* ── Capture Popup ─────────────────────────────────────────────────────
-   Frameless transparent Electron window (540×178px).
-   Uses the same CSS custom properties as the rest of the Zenith app
-   (defined in main.css — available because this route shares the renderer).
+   Two fixed states: COMPACT (1-line textarea) and EXPANDED (multiline + scrollbar).
+   CSS transitions animate the textarea. Window IPC resize fires on state change.
+   Shares CSS custom properties from main.css (same renderer bundle).
    ───────────────────────────────────────────────────────────────────── */
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body {
+html, body, #root {
   width: 100%;
   height: 100%;
   background: transparent;
   overflow: hidden;
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-#root {
-  width: 100%;
-  height: 100%;
-}
-
-/* ── Root wrapper — transparent, never fills with dark background ────── */
+/* ── Overlay — transparent wrapper, fills window ─────────────────────── */
 
 .capture-overlay {
   width: 100%;
   height: 100%;
-  padding: 7px;
-  /* No background — card provides its own. Area outside card is transparent. */
+  padding: 8px;
   background: transparent;
-  animation: overlay-in 160ms ease-out forwards;
+  animation: overlay-in 140ms ease-out forwards;
 }
 
-/* ── Card — content-sized, never stretches to fill window ────────────── */
+/* ── Card ────────────────────────────────────────────────────────────── */
 
 .capture-card {
   width: 100%;
   position: relative;
-  border-radius: 14px;
-  /* overflow: visible — content must never be clipped while IPC resize is in-flight */
-  overflow: visible;
-  animation: card-spring 260ms cubic-bezier(0.22, 1.4, 0.36, 1) forwards;
-  opacity: 0;
-}
-
-/* Gradient border — uses --primary (violet) + --border */
-.capture-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 14px;
-  padding: 1px;
-  background: linear-gradient(
-    135deg,
-    hsl(var(--primary) / 0.55) 0%,
-    hsl(var(--border) / 0.8) 45%,
-    hsl(var(--border) / 0.3) 70%,
-    hsl(var(--primary) / 0.2) 100%
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  animation: border-shimmer 3.5s ease-in-out infinite;
-  z-index: 1;
-}
-
-/* Card body — matches app's popover surface; height is content-driven */
-.capture-card-inner {
-  position: relative;
-  width: 100%;
+  border-radius: 16px;
   background: hsl(var(--popover));
-  border-radius: 14px;
+  border: 1px solid hsl(var(--border) / 0.7);
   box-shadow:
-    0 24px 60px hsl(var(--background) / 0.9),
-    0 8px 20px hsl(var(--background) / 0.6),
-    0 0 0 0.5px hsl(var(--foreground) / 0.04),
-    0 0 40px hsl(var(--primary) / 0.06);
-  padding: 14px 16px 13px;
-  overflow: hidden; /* clip inner content to rounded corners */
+    0 0 0 0.5px hsl(var(--primary) / 0.15),
+    0 20px 60px hsl(var(--background) / 0.85),
+    0 8px 20px hsl(var(--background) / 0.5),
+    0 0 30px hsl(var(--primary) / 0.05);
+  overflow: hidden;
+  animation: card-in 260ms cubic-bezier(0.22, 1.3, 0.36, 1) forwards;
+  opacity: 0;
+  /* Top border accent */
+  background-image: linear-gradient(
+    to bottom,
+    hsl(var(--primary) / 0.08) 0px,
+    transparent 1px
+  );
 }
 
 /* ── Header ──────────────────────────────────────────────────────────── */
@@ -90,69 +54,60 @@ html, body {
 .capture-header {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-bottom: 10px;
-  flex-shrink: 0;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
 }
 
-/* Icon pill — matches the app's primary color */
 .capture-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 7px;
-  background: hsl(var(--primary) / 0.15);
-  border: 1px solid hsl(var(--primary) / 0.28);
-  box-shadow:
-    0 0 10px hsl(var(--primary) / 0.15),
-    inset 0 1px 0 hsl(var(--foreground) / 0.05);
   flex-shrink: 0;
+  border-radius: 8px;
+  background: hsl(var(--primary) / 0.15);
+  border: 1px solid hsl(var(--primary) / 0.25);
   color: hsl(var(--primary));
-  animation: icon-pulse 2.6s ease-in-out infinite;
+  animation: icon-pulse 2.8s ease-in-out infinite;
 }
 
-.capture-icon svg {
-  display: block;
-}
+.capture-icon svg { display: block; }
 
-.capture-header-text {
+.capture-header-meta {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
 }
 
-/* Label — matches app's muted-foreground */
-.capture-label {
+.capture-title {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: hsl(var(--muted-foreground) / 0.75);
+  color: hsl(var(--muted-foreground) / 0.7);
   user-select: none;
 }
 
-/* Clipboard badge — uses primary color */
 .capture-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   font-size: 10px;
   font-weight: 500;
-  color: hsl(var(--primary));
+  color: hsl(var(--primary) / 0.9);
   background: hsl(var(--primary) / 0.1);
   border: 1px solid hsl(var(--primary) / 0.2);
   border-radius: 4px;
   padding: 1px 6px;
   user-select: none;
-  animation: badge-in 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: badge-slide-in 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .capture-badge::before {
   content: '';
-  display: inline-block;
   width: 4px;
   height: 4px;
   border-radius: 50%;
@@ -160,52 +115,50 @@ html, body {
   flex-shrink: 0;
 }
 
-/* ── Divider ─────────────────────────────────────────────────────────── */
+/* ── Textarea area ───────────────────────────────────────────────────── */
 
-.capture-divider {
-  height: 1px;
-  border: none;
-  background: linear-gradient(
-    90deg,
-    hsl(var(--primary) / 0.2) 0%,
-    hsl(var(--border)) 40%,
-    transparent 100%
-  );
-  margin-bottom: 10px;
-  flex-shrink: 0;
+.capture-body {
+  padding: 12px 16px;
 }
 
-/* ── Textarea ────────────────────────────────────────────────────────── */
-
 .capture-input {
+  display: block;
   width: 100%;
+  /* COMPACT state — single line */
+  height: 26px;
+  overflow: hidden;
+  resize: none;
   background: transparent;
   border: none;
   outline: none;
-  resize: none;
   font-family: inherit;
   font-size: 15px;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
   color: hsl(var(--foreground));
   caret-color: hsl(var(--primary));
-  overflow: hidden;
-  min-height: 24px;
-  /* no max-height — window resizes to fit content via ResizeObserver + IPC */
+  /* Smooth height transition between compact and expanded */
+  transition:
+    height 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .capture-input::placeholder {
-  color: hsl(var(--muted-foreground) / 0.4);
+  color: hsl(var(--muted-foreground) / 0.35);
 }
 
-.capture-input:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.capture-input:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* EXPANDED state — fixed taller box with scrollbar */
+.capture-input.is-expanded {
+  height: 130px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.3) transparent;
 }
 
-.capture-input::-webkit-scrollbar { width: 2px; }
-.capture-input::-webkit-scrollbar-track { background: transparent; }
-.capture-input::-webkit-scrollbar-thumb {
+.capture-input.is-expanded::-webkit-scrollbar { width: 3px; }
+.capture-input.is-expanded::-webkit-scrollbar-track { background: transparent; }
+.capture-input.is-expanded::-webkit-scrollbar-thumb {
   background: hsl(var(--primary) / 0.3);
   border-radius: 2px;
 }
@@ -216,8 +169,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 10px;
-  flex-shrink: 0;
+  padding: 9px 16px 12px;
+  border-top: 1px solid hsl(var(--border) / 0.4);
   gap: 8px;
 }
 
@@ -227,27 +180,26 @@ html, body {
   gap: 8px;
 }
 
-.capture-hint-key {
+.capture-hint {
   display: inline-flex;
   align-items: center;
   gap: 3px;
   font-size: 10px;
-  color: hsl(var(--muted-foreground) / 0.45);
+  color: hsl(var(--muted-foreground) / 0.4);
   user-select: none;
 }
 
-.capture-hint-key kbd {
+.capture-hint kbd {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  padding: 1px 4px;
+  font-size: 9px;
+  font-family: inherit;
+  color: hsl(var(--muted-foreground) / 0.5);
   background: hsl(var(--secondary));
   border: 1px solid hsl(var(--border));
   border-bottom-width: 2px;
   border-radius: 3px;
-  padding: 1px 4px;
-  font-size: 9px;
-  font-family: inherit;
-  color: hsl(var(--muted-foreground) / 0.6);
   line-height: 1.4;
 }
 
@@ -257,73 +209,64 @@ html, body {
   gap: 8px;
 }
 
-/* Character countdown */
 .capture-charcount {
   font-size: 10px;
-  color: hsl(var(--muted-foreground) / 0.4);
-  user-select: none;
+  color: hsl(var(--muted-foreground) / 0.35);
   font-variant-numeric: tabular-nums;
-  transition: color 200ms;
-  min-width: 24px;
+  user-select: none;
+  min-width: 22px;
   text-align: right;
+  transition: color 180ms;
 }
+.capture-charcount.warn { color: hsl(var(--warning) / 0.65); }
 
-.capture-charcount.warn {
-  color: hsl(var(--warning) / 0.7);
-}
+/* ── Capture button ──────────────────────────────────────────────────── */
 
-/* ── Submit button — matches app's primary button style ──────────────── */
-
-.capture-submit {
+.capture-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 12px 5px 11px;
+  padding: 5px 13px 5px 12px;
   background: hsl(var(--primary) / 0.9);
   border: 1px solid hsl(var(--primary) / 0.4);
   border-radius: 8px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   font-family: inherit;
   color: hsl(var(--primary-foreground));
   cursor: pointer;
-  transition: background 140ms ease, transform 70ms ease, box-shadow 140ms ease;
-  user-select: none;
   letter-spacing: 0.02em;
-  box-shadow:
-    0 2px 8px hsl(var(--primary) / 0.3),
-    inset 0 1px 0 hsl(var(--foreground) / 0.1);
+  box-shadow: 0 2px 8px hsl(var(--primary) / 0.25), inset 0 1px 0 hsl(255 255% 100% / 0.1);
+  transition: background 130ms, transform 70ms, box-shadow 130ms;
+  user-select: none;
 }
 
-.capture-submit:not(:disabled):hover {
+.capture-btn:not(:disabled):hover {
   background: hsl(var(--primary));
-  box-shadow: 0 4px 16px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(var(--foreground) / 0.15);
+  box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
   transform: translateY(-1px);
 }
 
-.capture-submit:not(:disabled):active {
+.capture-btn:not(:disabled):active {
   transform: scale(0.96);
-  box-shadow: 0 1px 4px hsl(var(--primary) / 0.2);
 }
 
-.capture-submit:disabled {
+.capture-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-.capture-submit:focus-visible {
+.capture-btn:focus-visible {
   outline: 2px solid hsl(var(--ring) / 0.6);
   outline-offset: 2px;
 }
 
-/* ↵ badge inside the button */
-.capture-submit-enter {
+.capture-btn-enter {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: hsl(var(--primary-foreground) / 0.15);
+  background: hsl(255 255% 100% / 0.14);
   border-radius: 3px;
   padding: 1px 4px;
   font-size: 10px;
@@ -331,7 +274,6 @@ html, body {
   line-height: 1.3;
 }
 
-/* Spinner */
 .capture-spinner {
   width: 11px;
   height: 11px;
@@ -349,39 +291,18 @@ html, body {
   to   { opacity: 1; }
 }
 
-@keyframes card-spring {
-  0%   { opacity: 0; transform: scale(0.93) translateY(-6px); }
-  55%  { opacity: 1; }
+@keyframes card-in {
+  0%   { opacity: 0; transform: scale(0.94) translateY(-6px); }
+  60%  { opacity: 1; }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-@keyframes border-shimmer {
-  0%, 100% {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--primary) / 0.55) 0%,
-      hsl(var(--border) / 0.8) 45%,
-      hsl(var(--border) / 0.3) 70%,
-      hsl(var(--primary) / 0.2) 100%
-    );
-  }
-  50% {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--primary) / 0.2) 0%,
-      hsl(var(--primary) / 0.45) 45%,
-      hsl(var(--border) / 0.6) 70%,
-      hsl(var(--primary) / 0.45) 100%
-    );
-  }
-}
-
 @keyframes icon-pulse {
-  0%, 100% { box-shadow: 0 0 10px hsl(var(--primary) / 0.15), inset 0 1px 0 hsl(var(--foreground) / 0.05); }
-  50%       { box-shadow: 0 0 18px hsl(var(--primary) / 0.3),  inset 0 1px 0 hsl(var(--foreground) / 0.08); }
+  0%, 100% { box-shadow: 0 0 8px hsl(var(--primary) / 0.15); }
+  50%       { box-shadow: 0 0 16px hsl(var(--primary) / 0.3); }
 }
 
-@keyframes badge-in {
+@keyframes badge-slide-in {
   from { opacity: 0; transform: translateX(-4px); }
   to   { opacity: 1; transform: translateX(0); }
 }
@@ -390,5 +311,4 @@ html, body {
   to { transform: rotate(360deg); }
 }
 
-/* Submitting dim */
-.capture-card-inner.is-submitting .capture-input { opacity: 0.4; transition: opacity 200ms; }
+.capture-card.is-submitting .capture-input { opacity: 0.4; }
