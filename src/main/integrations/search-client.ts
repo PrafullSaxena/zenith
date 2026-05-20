@@ -1,5 +1,4 @@
 import { spawn } from 'node:child_process'
-import { chromium } from 'playwright'
 
 export interface SearchResult {
   title: string
@@ -11,7 +10,7 @@ export interface SearchResponse {
   results: SearchResult[]
   skipped: boolean
   reason: 'error' | null
-  strategy: 'gemini' | 'playwright' | null
+  strategy: 'gemini' | 'fetch' | null
 }
 
 async function isGeminiAvailable(): Promise<boolean> {
@@ -61,9 +60,7 @@ async function searchViaGemini(query: string): Promise<SearchResult[]> {
   })
 
   const match = stdout.match(/\[[\s\S]*\]/)
-  if (!match) {
-    throw new Error('No JSON array found in Gemini output')
-  }
+  if (!match) throw new Error('No JSON array found in Gemini output')
 
   const parsed = JSON.parse(match[0]) as Array<Record<string, unknown>>
   const results: SearchResult[] = parsed
@@ -75,38 +72,69 @@ async function searchViaGemini(query: string): Promise<SearchResult[]> {
     }))
     .slice(0, 5)
 
-  if (results.length === 0) {
-    throw new Error('Gemini returned no usable results')
+  if (results.length === 0) throw new Error('Gemini returned no usable results')
+  return results
+}
+
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function parseHtmlResults(html: string): SearchResult[] {
+  const results: SearchResult[] = []
+
+  // DuckDuckGo HTML uses <div class="result"> blocks for organic results
+  const blockRe = /<div class="result[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/g
+  const titleRe = /<a[^>]+class="result__a"[^>]*>([\s\S]*?)<\/a>/
+  const urlRe = /<a[^>]+class="result__url"[^>]*>([\s\S]*?)<\/a>/
+  const snippetRe = /<a[^>]+class="result__snippet"[^>]*>([\s\S]*?)<\/a>/
+
+  let m: RegExpExecArray | null
+  while ((m = blockRe.exec(html)) !== null && results.length < 5) {
+    const block = m[1]
+    const titleM = titleRe.exec(block)
+    const urlM = urlRe.exec(block)
+    const snippetM = snippetRe.exec(block)
+
+    if (!titleM || !urlM) continue
+
+    const url = stripHtml(urlM[1])
+    if (!url) continue
+
+    results.push({
+      title: stripHtml(titleM[1]),
+      url,
+      snippet: snippetM ? stripHtml(snippetM[1]) : ''
+    })
   }
 
   return results
 }
 
-async function searchViaPlaywright(query: string): Promise<SearchResult[]> {
-  const browser = await chromium.launch({ headless: true })
+async function searchViaFetch(query: string): Promise<SearchResult[]> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 20_000)
+
   try {
-    const page = await browser.newPage()
-    await page.goto(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
-      timeout: 20_000
-    })
-    await page.waitForSelector('div.result', { timeout: 20_000 })
+    const resp = await fetch(
+      `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`,
+      {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml',
+          'Accept-Language': 'en-US,en;q=0.9'
+        },
+        signal: controller.signal
+      }
+    )
 
-    const results = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('div.result:not(.result--ad)'))
-        .slice(0, 5)
-        .map((el) => ({
-          title: el.querySelector('.result__title a')?.textContent?.trim() ?? '',
-          url:
-            el.querySelector('.result__url')?.textContent?.trim() ??
-            (el.querySelector('.result__title a') as HTMLAnchorElement | null)?.href ??
-            '',
-          snippet: el.querySelector('.result__snippet')?.textContent?.trim() ?? ''
-        }))
-    })
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
 
-    return results.filter((r) => r.url.length > 0)
+    const html = await resp.text()
+    return parseHtmlResults(html)
   } finally {
-    await browser.close()
+    clearTimeout(timeoutId)
   }
 }
 
@@ -120,11 +148,11 @@ export async function webSearch(query: string): Promise<SearchResponse> {
           return { results, skipped: false, reason: null, strategy: 'gemini' }
         }
       } catch {
-        // fall through to Playwright
+        // fall through to fetch strategy
       }
     }
-    const results = await searchViaPlaywright(query)
-    return { results, skipped: false, reason: null, strategy: 'playwright' }
+    const results = await searchViaFetch(query)
+    return { results, skipped: false, reason: null, strategy: 'fetch' }
   } catch {
     return { results: [], skipped: true, reason: 'error', strategy: null }
   }
