@@ -19,12 +19,14 @@ import { cn } from '@renderer/lib/utils'
 // Badge configs — mirror TaskSidePanel priority colors
 // ---------------------------------------------------------------------------
 
-const PRIORITY_BADGE: Record<NonNullable<Task['priority']>, { label: string; className: string }> =
-  {
-    p1: { label: 'P1', className: 'text-red-400 bg-red-400/15 border-red-400/20' },
-    p2: { label: 'P2', className: 'text-amber-400 bg-amber-400/15 border-amber-400/20' },
-    p3: { label: 'P3', className: 'text-blue-400 bg-blue-400/15 border-blue-400/20' }
-  }
+const PRIORITY_BADGE: Record<
+  NonNullable<Task['priority']>,
+  { label: string; className: string }
+> = {
+  p1: { label: 'P1', className: 'text-red-400 bg-red-400/15 border-red-400/20' },
+  p2: { label: 'P2', className: 'text-amber-400 bg-amber-400/15 border-amber-400/20' },
+  p3: { label: 'P3', className: 'text-blue-400 bg-blue-400/15 border-blue-400/20' }
+}
 
 const ACTION_CHIP: Record<
   NonNullable<Task['suggestedAction']>,
@@ -93,7 +95,7 @@ export function GroomDigest({ open, onClose, onTaskClick }: GroomDigestProps): R
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-white/8 transition-colors"
+          className="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-white/8 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
           aria-label="Close digest"
         >
           <X size={16} />
@@ -115,10 +117,10 @@ export function GroomDigest({ open, onClose, onTaskClick }: GroomDigestProps): R
               key={task.id}
               type="button"
               onClick={() => onTaskClick(task.id)}
-              className="flex items-center gap-2 px-4 py-2.5 text-left hover:bg-white/4 transition-colors group"
+              className="flex items-center gap-2 px-4 py-2.5 text-left hover:bg-white/4 transition-colors group focus-visible:outline-none focus-visible:bg-white/4"
             >
               {/* Task title — truncated */}
-              <span className="flex-1 text-xs text-foreground truncate group-hover:text-primary transition-colors">
+              <span className="flex-1 text-sm text-foreground truncate group-hover:text-primary transition-colors">
                 {task.text}
               </span>
 

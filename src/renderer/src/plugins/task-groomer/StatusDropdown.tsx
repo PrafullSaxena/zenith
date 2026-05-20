@@ -91,7 +91,8 @@ export function StatusDropdown({ task, onStatusChange }: StatusDropdownProps): R
           className={cn(
             'inline-flex items-center rounded-full px-2 py-0.5',
             'text-[10px] font-medium border shrink-0',
-            'transition-opacity hover:opacity-80 focus:outline-none',
+            'transition-opacity hover:opacity-80',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
             config.color,
             config.bgColor
           )}
