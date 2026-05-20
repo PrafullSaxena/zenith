@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import './capture.css'
 
-// Inline bolt SVG — no external dependency needed in this standalone window
 function BoltIcon(): React.JSX.Element {
   return (
     <svg
@@ -9,7 +8,7 @@ function BoltIcon(): React.JSX.Element {
       height="15"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="rgba(167,139,250,0.95)"
+      stroke="currentColor"
       strokeWidth="2.2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -20,19 +19,35 @@ function BoltIcon(): React.JSX.Element {
 }
 
 const MAX_CHARS = 500
-const BASE_WINDOW_HEIGHT = 178 // matches capture-window.ts initial height
+
+// Fixed height steps — window snaps to these values so resize feels intentional.
+// BASE=190 gives comfortable room for header + 1-line textarea + footer.
+// Each STEP=52px accommodates ~2 additional lines.
+const BASE_H = 190
+const STEP_H = 52
+const MAX_H = 420
+
+function stepHeight(textareaScrollH: number): number {
+  const LINE_H = 23 // 15px font × 1.5 line-height
+  const extraLines = Math.max(0, Math.ceil(textareaScrollH / LINE_H) - 1)
+  if (extraLines === 0) return BASE_H
+  const buckets = Math.ceil(extraLines / 2) // 2 lines per bucket
+  return Math.min(MAX_H, BASE_H + buckets * STEP_H)
+}
 
 export default function CapturePopup(): React.JSX.Element {
   const [text, setText] = useState('')
   const [fromClipboard, setFromClipboard] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const cardRef = useRef<HTMLDivElement>(null)
   const originalClipboardText = useRef<string>('')
+  const lastStep = useRef<number>(BASE_H)
 
   // Auto-focus and clipboard check on mount
   useEffect(() => {
     textareaRef.current?.focus()
+    // Set base window height on open
+    window.api.capture.resize(BASE_H)
 
     window.api.capture.getClipboard().then((clipText) => {
       if (clipText) {
@@ -43,29 +58,23 @@ export default function CapturePopup(): React.JSX.Element {
     })
   }, [])
 
-  // Auto-resize textarea as content grows
+  // Auto-resize textarea + snap window height when text changes
   useEffect(() => {
     const el = textareaRef.current
     if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${el.scrollHeight}px`
-  }, [text])
 
-  // Resize the Electron window to match card content height
-  useEffect(() => {
-    const card = cardRef.current
-    if (!card) return
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0]
-      if (!entry) return
-      // card height + 14px overlay padding (7px top + 7px bottom)
-      const needed = Math.round(entry.contentRect.height) + 14
-      const target = Math.max(BASE_WINDOW_HEIGHT, needed)
-      window.api.capture.resize(target)
-    })
-    observer.observe(card)
-    return () => observer.disconnect()
-  }, [])
+    // Measure current scroll height to determine textarea lines
+    el.style.height = 'auto'
+    const scrollH = el.scrollHeight
+    el.style.height = `${scrollH}px`
+
+    // Only send IPC when the step changes (avoid spamming on every keystroke)
+    const step = stepHeight(scrollH)
+    if (step !== lastStep.current) {
+      lastStep.current = step
+      window.api.capture.resize(step)
+    }
+  }, [text])
 
   const handleClose = useCallback(() => {
     window.api.capture.close()
@@ -74,7 +83,6 @@ export default function CapturePopup(): React.JSX.Element {
   const handleSubmit = useCallback(async () => {
     const trimmed = text.trim()
     if (!trimmed || submitting) return
-
     setSubmitting(true)
     try {
       await window.api.taskgroomer.createTask({
@@ -96,7 +104,6 @@ export default function CapturePopup(): React.JSX.Element {
         e.preventDefault()
         handleSubmit()
       }
-      // Shift+Enter: newline
     },
     [handleClose, handleSubmit]
   )
@@ -114,7 +121,8 @@ export default function CapturePopup(): React.JSX.Element {
   return (
     <div className="capture-overlay" onClick={handleClose}>
       <div className="capture-card" onClick={(e) => e.stopPropagation()}>
-        <div ref={cardRef} className={`capture-card-inner${submitting ? ' is-submitting' : ''}`}>
+        <div className={`capture-card-inner${submitting ? ' is-submitting' : ''}`}>
+
           {/* Header */}
           <div className="capture-header">
             <div className="capture-icon">
@@ -126,7 +134,6 @@ export default function CapturePopup(): React.JSX.Element {
             </div>
           </div>
 
-          {/* Divider */}
           <hr className="capture-divider" />
 
           {/* Input */}
@@ -179,6 +186,7 @@ export default function CapturePopup(): React.JSX.Element {
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </div>
