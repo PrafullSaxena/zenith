@@ -36,6 +36,35 @@ function StatusDot({ active }: { active: boolean }): React.JSX.Element {
   )
 }
 
+// ── Help tooltip ────────────────────────────────────────────────────────
+
+function HelpTooltip({ children }: { children: React.ReactNode }): React.JSX.Element {
+  const [visible, setVisible] = useState(false)
+  return (
+    <span className="relative inline-flex items-center ml-1.5">
+      <button
+        type="button"
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        onFocus={() => setVisible(true)}
+        onBlur={() => setVisible(false)}
+        className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-white/20 text-[9px] text-muted-foreground/60 hover:border-white/40 hover:text-muted-foreground transition focus:outline-none"
+        aria-label="Help"
+      >
+        ?
+      </button>
+      {visible && (
+        <div className="absolute left-5 top-1/2 -translate-y-1/2 z-50 w-64 rounded-lg border border-white/10 bg-zinc-900/95 p-3 shadow-xl backdrop-blur-sm">
+          <div className="text-[11px] leading-relaxed text-muted-foreground space-y-1.5">
+            {children}
+          </div>
+          <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 rotate-45 border-l border-t border-white/10 bg-zinc-900/95" />
+        </div>
+      )}
+    </span>
+  )
+}
+
 // ── Component ──────────────────────────────────────────────────────────
 
 export default function TaskGroomerSettings(): React.JSX.Element {
@@ -51,7 +80,10 @@ export default function TaskGroomerSettings(): React.JSX.Element {
   })
   const [jiraEditing, setJiraEditing] = useState(false)
   const [jiraForm, setJiraForm] = useState({ baseUrl: '', email: '', apiToken: '', projects: '' })
-  const [jiraTestResult, setJiraTestResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [jiraTestResult, setJiraTestResult] = useState<{
+    success: boolean
+    message: string
+  } | null>(null)
   const [jiraConfirmClear, setJiraConfirmClear] = useState(false)
   const [jiraSaving, setJiraSaving] = useState(false)
   const [jiraTesting, setJiraTesting] = useState(false)
@@ -65,7 +97,10 @@ export default function TaskGroomerSettings(): React.JSX.Element {
   })
   const [confluenceEditing, setConfluenceEditing] = useState(false)
   const [confluenceForm, setConfluenceForm] = useState({ baseUrl: '', email: '', apiToken: '' })
-  const [confluenceTestResult, setConfluenceTestResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [confluenceTestResult, setConfluenceTestResult] = useState<{
+    success: boolean
+    message: string
+  } | null>(null)
   const [confluenceConfirmClear, setConfluenceConfirmClear] = useState(false)
   const [confluenceSaving, setConfluenceSaving] = useState(false)
   const [confluenceTesting, setConfluenceTesting] = useState(false)
@@ -73,7 +108,8 @@ export default function TaskGroomerSettings(): React.JSX.Element {
   // ── Schedule settings (from settings store) ───────────────────────────
   const scheduleEnabled = (getSetting('plugins.task-groomer.schedule.enabled') as boolean) ?? false
   const scheduleTime = (getSetting('plugins.task-groomer.schedule.time') as string) ?? '09:00'
-  const scheduleFrequency = (getSetting('plugins.task-groomer.schedule.frequency') as string) ?? 'daily'
+  const scheduleFrequency =
+    (getSetting('plugins.task-groomer.schedule.frequency') as string) ?? 'daily'
 
   // ── Data fetching ──────────────────────────────────────────────────────
 
@@ -158,7 +194,11 @@ export default function TaskGroomerSettings(): React.JSX.Element {
   // ── Confluence handlers ────────────────────────────────────────────────
 
   const handleConfluenceSave = async (): Promise<void> => {
-    if (!confluenceForm.baseUrl.trim() || !confluenceForm.email.trim() || !confluenceForm.apiToken.trim()) {
+    if (
+      !confluenceForm.baseUrl.trim() ||
+      !confluenceForm.email.trim() ||
+      !confluenceForm.apiToken.trim()
+    ) {
       toast.error('Base URL, Email, and API Token are required')
       return
     }
@@ -228,7 +268,9 @@ export default function TaskGroomerSettings(): React.JSX.Element {
             <div className="flex items-center justify-between">
               <label className="text-[12px] text-muted-foreground">Auto-grooming enabled</label>
               <button
-                onClick={() => setSetting('plugins.task-groomer.schedule.enabled', !scheduleEnabled)}
+                onClick={() =>
+                  setSetting('plugins.task-groomer.schedule.enabled', !scheduleEnabled)
+                }
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
                   scheduleEnabled ? 'bg-primary' : 'bg-white/10'
                 }`}
@@ -260,7 +302,9 @@ export default function TaskGroomerSettings(): React.JSX.Element {
               <label className="mb-1.5 block text-[12px] text-muted-foreground">Frequency</label>
               <select
                 value={scheduleFrequency}
-                onChange={(e) => setSetting('plugins.task-groomer.schedule.frequency', e.target.value)}
+                onChange={(e) =>
+                  setSetting('plugins.task-groomer.schedule.frequency', e.target.value)
+                }
                 disabled={!scheduleEnabled}
                 className="w-full rounded-lg border border-white/8 bg-white/4 px-2 py-1 text-[12px] text-foreground focus:outline-none focus:border-primary disabled:opacity-40 appearance-none"
               >
@@ -284,6 +328,13 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                 <div className="flex items-center">
                   <StatusDot active={jiraStatus.configured} />
                   <span className="text-[12px] font-medium text-foreground">Jira</span>
+                  <HelpTooltip>
+                    <p className="font-medium text-foreground/80 mb-1">Required permissions</p>
+                    <p><span className="text-foreground/60">Read tasks:</span> Browse Projects on configured project(s)</p>
+                    <p><span className="text-foreground/60">Push issues (Phase 20):</span> Create Issues permission</p>
+                    <p className="pt-1 border-t border-white/8"><span className="text-foreground/60">API token:</span> Generate at Atlassian account settings → Security → API tokens</p>
+                    <p className="text-muted-foreground/50">A read-only service account is sufficient for grooming.</p>
+                  </HelpTooltip>
                   <span className="ml-2 text-[11px] text-muted-foreground">
                     {jiraStatus.configured ? 'Connected' : 'Not connected'}
                   </span>
@@ -346,7 +397,9 @@ export default function TaskGroomerSettings(): React.JSX.Element {
 
               {/* Test result inline */}
               {jiraTestResult && (
-                <p className={`mb-2 text-[11px] ${jiraTestResult.success ? 'text-green-400' : 'text-red-400'}`}>
+                <p
+                  className={`mb-2 text-[11px] ${jiraTestResult.success ? 'text-green-400' : 'text-red-400'}`}
+                >
                   {jiraTestResult.message}
                 </p>
               )}
@@ -399,7 +452,9 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-[11px] text-muted-foreground">API Token</label>
+                    <label className="mb-1 block text-[11px] text-muted-foreground">
+                      API Token
+                    </label>
                     <input
                       type="password"
                       value={jiraForm.apiToken}
@@ -409,7 +464,9 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-[11px] text-muted-foreground">Project Keys</label>
+                    <label className="mb-1 block text-[11px] text-muted-foreground">
+                      Project Keys
+                    </label>
                     <input
                       type="text"
                       value={jiraForm.projects}
@@ -447,6 +504,13 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                 <div className="flex items-center">
                   <StatusDot active={confluenceStatus.configured} />
                   <span className="text-[12px] font-medium text-foreground">Confluence</span>
+                  <HelpTooltip>
+                    <p className="font-medium text-foreground/80 mb-1">Required permissions</p>
+                    <p><span className="text-foreground/60">Read pages:</span> View Pages on any space you want to search</p>
+                    <p><span className="text-foreground/60">Space access:</span> Managed at the Confluence space level — Zenith searches all spaces your account can see</p>
+                    <p className="pt-1 border-t border-white/8"><span className="text-foreground/60">API token:</span> Same Atlassian token as Jira if using the same account</p>
+                    <p className="text-muted-foreground/50">Zenith only reads Confluence — no write permissions needed.</p>
+                  </HelpTooltip>
                   <span className="ml-2 text-[11px] text-muted-foreground">
                     {confluenceStatus.configured ? 'Connected' : 'Not connected'}
                   </span>
@@ -508,7 +572,9 @@ export default function TaskGroomerSettings(): React.JSX.Element {
 
               {/* Test result inline */}
               {confluenceTestResult && (
-                <p className={`mb-2 text-[11px] ${confluenceTestResult.success ? 'text-green-400' : 'text-red-400'}`}>
+                <p
+                  className={`mb-2 text-[11px] ${confluenceTestResult.success ? 'text-green-400' : 'text-red-400'}`}
+                >
                   {confluenceTestResult.message}
                 </p>
               )}
@@ -539,7 +605,9 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                     <input
                       type="url"
                       value={confluenceForm.baseUrl}
-                      onChange={(e) => setConfluenceForm((f) => ({ ...f, baseUrl: e.target.value }))}
+                      onChange={(e) =>
+                        setConfluenceForm((f) => ({ ...f, baseUrl: e.target.value }))
+                      }
                       placeholder="https://company.atlassian.net"
                       className="w-full rounded-lg border border-white/8 bg-white/4 px-2 py-1 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary"
                     />
@@ -555,11 +623,15 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-[11px] text-muted-foreground">API Token</label>
+                    <label className="mb-1 block text-[11px] text-muted-foreground">
+                      API Token
+                    </label>
                     <input
                       type="password"
                       value={confluenceForm.apiToken}
-                      onChange={(e) => setConfluenceForm((f) => ({ ...f, apiToken: e.target.value }))}
+                      onChange={(e) =>
+                        setConfluenceForm((f) => ({ ...f, apiToken: e.target.value }))
+                      }
                       placeholder="Atlassian API token"
                       className="w-full rounded-lg border border-white/8 bg-white/4 px-2 py-1 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary"
                     />
@@ -594,8 +666,8 @@ export default function TaskGroomerSettings(): React.JSX.Element {
                 <span className="ml-2 text-[11px] text-muted-foreground">Available</span>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                No credentials required. Uses Gemini CLI if installed, falls back to Playwright
-                (DuckDuckGo HTML scraping).
+                No credentials required. Uses Gemini CLI if installed, falls back to DuckDuckGo
+                HTML scraping via built-in fetch.
               </p>
             </div>
           </div>
