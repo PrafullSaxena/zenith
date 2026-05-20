@@ -101,6 +101,11 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - groomingRunActive module-level flag prevents double-trigger from both IPC and schedule
 - taskgroomer:groom:start is a separate push channel for schedule-triggered runs so renderer can react without initiating the IPC call
 
+**Phase 20-02 decisions (2026-05-21):**
+- failedTaskIds persists after __run_complete__ (not cleared) so banner and card indicators remain visible post-run
+- Banner reset uses two triggers: new lastGroomSummary reference (prevSummaryRef pattern) and groomingActive becoming true
+- AlertCircle icon placed before creation time span (rightmost slot after stale badge) to maintain left-to-right data density
+
 **Post-Phase-19 fix (2026-05-21):**
 - resolveGroomingProvider() reads plugins.task-groomer.groomingProvider from settings, falls back to first entry in agents.providers
 - SDK path: provider.requiresApiKey=true → getApiKeyForProvider() → generateText via Vercel AI SDK
