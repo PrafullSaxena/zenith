@@ -6,9 +6,8 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import {
-  CheckSquare,
-  Sparkles,
   Inbox,
+  Sparkles,
   Loader2,
   AlertCircle,
   X,
@@ -112,8 +111,8 @@ export default function TaskGroomerView(): React.JSX.Element {
 
       {/* Toolbar */}
       <PageHeader
-        icon={CheckSquare}
-        title="Task Groomer"
+        icon={Inbox}
+        title="InTake"
         tabs={TABS}
         activeTab={activeTab}
         onTabChange={(id) => setActiveTab(id as 'dumpyard' | 'groomed')}

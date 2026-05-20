@@ -316,7 +316,7 @@ export default function TaskGroomerSettings(): React.JSX.Element {
 
   return (
     <div>
-      <h2 className="mb-2 text-sm font-medium text-foreground tracking-tight">Task Groomer</h2>
+      <h2 className="mb-2 text-sm font-medium text-foreground tracking-tight">InTake</h2>
       <p className="mb-6 text-xs text-muted-foreground">
         AI-powered task grooming with Jira, Confluence, and web search integrations
       </p>

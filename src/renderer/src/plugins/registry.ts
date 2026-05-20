@@ -178,9 +178,9 @@ export const PLUGINS: readonly PluginDefinition[] = [
   },
   {
     id: 'task-groomer',
-    name: 'Task Groomer',
+    name: 'InTake',
     description: 'Capture, groom, and prioritize development tasks with AI assistance',
-    icon: 'CheckSquare',
+    icon: 'Inbox',
     route: '/task-groomer',
     component: React.lazy(() => import('./task-groomer/TaskGroomerView')),
     settingsSchema: [
