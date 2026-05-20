@@ -58,6 +58,20 @@ export default defineConfig({
         '@renderer': resolve('src/renderer/src')
       }
     },
-    plugins: [react(), tailwindcss(), copyExcalidrawFonts()]
+    plugins: [react(), tailwindcss(), copyExcalidrawFonts()],
+    build: {
+      rollupOptions: {
+        // Force lucide-react Inbox icon into the main chunk so it is available
+        // synchronously when the Sidebar renders. Without this, Rollup tree-shakes
+        // Inbox from the eager bundle because no eager JSX path uses it directly.
+        output: {
+          manualChunks(id: string) {
+            if (id.includes('lucide-react') && id.includes('inbox')) {
+              return 'index'
+            }
+          }
+        }
+      }
+    }
   }
 })

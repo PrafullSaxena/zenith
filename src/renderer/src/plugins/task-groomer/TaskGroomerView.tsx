@@ -5,7 +5,16 @@
  * Groomed tab: toggleable List / Kanban views with status-based columns.
  */
 import { useEffect, useRef, useState } from 'react'
-import { Inbox, CheckSquare, Sparkles, Loader2, AlertCircle, X, LayoutList, LayoutGrid } from 'lucide-react'
+import {
+  Sparkles,
+  Loader2,
+  AlertCircle,
+  X,
+  LayoutList,
+  LayoutGrid,
+  ArchiveX,
+  CheckSquare
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTaskGroomerStore } from '@renderer/stores/task-groomer-store'
@@ -103,7 +112,6 @@ export default function TaskGroomerView(): React.JSX.Element {
 
       {/* Toolbar */}
       <PageHeader
-        icon={Inbox}
         title="InTake"
         tabs={TABS}
         activeTab={activeTab}
@@ -242,7 +250,7 @@ export default function TaskGroomerView(): React.JSX.Element {
               visibleTasks.length === 0 &&
               (activeTab === 'dumpyard' ? (
                 <EmptyState
-                  icon={Inbox}
+                  icon={ArchiveX}
                   title="Your dumpyard is clear"
                   description="Press ⌘⇧D to capture your first task."
                 />

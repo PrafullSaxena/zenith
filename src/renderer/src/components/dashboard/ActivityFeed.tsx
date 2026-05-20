@@ -7,7 +7,7 @@ import {
   MessageSquare,
   Clock,
   Rocket,
-  Inbox
+  Bell
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ActivityEntry, ActivityStatus } from '../../types/activity'
@@ -67,7 +67,7 @@ export function ActivityFeed({
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-black/10 py-10">
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/6">
-          <Inbox size={20} className="text-primary/30" />
+          <Bell size={20} className="text-primary/30" />
         </div>
         <p className="text-sm font-medium text-muted-foreground">No recent activity</p>
         <p className="mt-1 text-[11px] text-muted-foreground/60">

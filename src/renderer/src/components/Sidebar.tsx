@@ -23,6 +23,7 @@ import type { PluginDefinition } from '../types/plugin'
 /**
  * Static map of icon name strings to lucide-react components.
  * All icons used in PLUGINS must be listed here.
+ * Inbox is forced into this chunk via manualChunks in electron.vite.config.ts.
  */
 const ICON_MAP: Record<string, LucideIcon> = {
   GitPullRequest,
