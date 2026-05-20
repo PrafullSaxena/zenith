@@ -33,7 +33,7 @@
 - [ ] **INT-01**: Jira: query related tickets as evidence for task enrichment (read-only during grooming)
 - [ ] **INT-02**: Confluence: pull relevant pages as evidence context
 - [ ] **INT-03**: Google: search for relevant docs/links for research-mode tasks
-- [ ] **INT-04**: Jira push: single-button "Create Jira ticket" action on any groomed task
+- [ ] **INT-04**: Jira integration surface: groomed task's linked Jira ticket key is a clickable link that opens the ticket in the browser (read-only). Full Jira push (create/update ticket) deferred to v4 roadmap.
 
 ### Data & Storage
 
