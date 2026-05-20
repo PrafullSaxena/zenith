@@ -122,9 +122,15 @@ Plans:
 **Goal**: Users can request a fresh AI analysis on any individual task; after each grooming run a digest view shows all newly groomed tasks in priority order
 **Depends on**: Phase 18
 **Requirements**: GROOM-05, GROOM-06
+**Plans:** 3 plans
 **Success Criteria** (what must be TRUE):
   1. A "Re-groom" button on any task triggers fresh AI analysis and updates the task's enrichment data
   2. After each grooming run, a digest view renders all newly groomed tasks sorted by priority with their evidence summaries
+
+Plans:
+- [ ] 19-01-PLAN.md — Re-groom IPC handler + preload bridge (main process layer)
+- [ ] 19-02-PLAN.md — Zustand store re-groom/digest state + Re-groom button in TaskSidePanel
+- [ ] 19-03-PLAN.md — GroomDigest component + TaskGroomerView wiring + human verification
 
 ### Phase 20: Settings & Polish
 **Goal**: Grooming schedule is configurable in Settings; Jira push works via single button; UI is polished and production-ready
