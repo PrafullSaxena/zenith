@@ -134,8 +134,10 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                   type="button"
                   disabled={isAnyGroomActive}
                   onClick={() => startReGroom(task.id)}
+                  aria-label={isReGrooming ? 'Grooming in progress' : 'Re-groom this task'}
                   className={cn(
                     'flex items-center gap-1.5 self-start px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
                     isReGrooming
                       ? 'bg-primary/20 border-primary/30 text-primary cursor-not-allowed'
                       : isAnyGroomActive
@@ -242,7 +244,7 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                                 <button
                                   type="button"
                                   onClick={() => window.api.app.openExternal(link.url)}
-                                  className="text-xs text-primary hover:underline text-left break-all"
+                                  className="text-xs text-primary hover:underline text-left break-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
                                 >
                                   {link.title || link.url}
                                 </button>
