@@ -1,13 +1,17 @@
 /**
  * grooming-agent.ts — Core AI grooming agent for the Task Groomer plugin.
  *
- * Processes a single Dump-status task by:
- *   1. Resolving the configured AI provider (CLI or SDK)
- *   2. Gathering integration credentials (Jira, Confluence)
- *   3. Querying integrations in parallel with 30s timeouts
- *   4. Building a context-rich prompt
- *   5. Calling the AI agent (SDK generateText or CLI spawn)
- *   6. Parsing and validating the structured JSON response
+ * Two-pass grooming design:
+ *   Pass 1 — Source selection: AI decides which sources (jira/confluence/google) are needed.
+ *             For simple/self-evident tasks, pass-1 also returns Summary + Next Steps,
+ *             so no second AI call is required (no-sources optimization).
+ *   Pass 2 — Summarization: Only runs when sources were queried. Receives task + source
+ *             results, produces structured Summary + Next Steps output.
+ *
+ * Progress stages emitted via optional onStage callback:
+ *   'analyzing'  — pass-1 AI call is running
+ *   'querying'   — integration sources are being queried
+ *   'summarizing'— pass-2 AI call is running
  *
  * This module runs ONLY in the main process.
  */
@@ -47,12 +51,15 @@ export interface GroomingResult {
   priority: 'p1' | 'p2' | 'p3'
   priorityRationale: string // one sentence, e.g. "P1 — blocks auth release this week"
   suggestedAction: 'do' | 'delegate' | 'defer' | 'delete'
-  evidenceSummary: string | null // bullet list, one bullet per source with results
-  jiraTicketKey: string | null // only when AI is confident it's the same work item
+  summary: string | null           // source-by-source Summary + Next Steps (## Summary\n...\n\n## Next Steps\n...)
+  nextSteps: string | null          // always null — embedded inside summary string
+  evidenceSummary: string | null    // backward compat: same value as summary (existing DB column + store reads this)
+  jiraTicketKey: string | null      // only when AI is confident it's the same work item
   jiraTicketUrl: string | null
-  researchSummary: string | null // 3-5 sentence synthesis — only for research-mode tasks
-  researchLinks: string | null // JSON: {title: string, url: string}[] — up to 5 links
-  groomedAt: number // Date.now()
+  researchSummary: string | null    // kept as null for backward compat (replaced by structured summary)
+  researchLinks: string | null      // JSON: {title: string, url: string}[] — up to 5 links
+  groomedAt: number                 // Date.now()
+  sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] // which sources were actually queried and returned results
 }
 
 // ── Internal helpers ───────────────────────────────────────────────────────
@@ -146,18 +153,40 @@ function buildIntegrationContext(
   return lines.length > 0 ? lines.join('\n') : 'No integration results found.'
 }
 
-// ── AI response shape ──────────────────────────────────────────────────────
+// ── AI response shapes ─────────────────────────────────────────────────────
 
-interface AiGroomingResponse {
+/** Pass-1 response when sources are needed */
+interface Pass1WithSources {
+  sourcesNeeded: ('jira' | 'confluence' | 'google')[]
+  skipReason: null
+  summary: null
+  nextSteps: null
+}
+
+/** Pass-1 response when no sources are needed (includes full assessment) */
+interface Pass1NoSources {
+  sourcesNeeded: []
+  skipReason: string | null
   priority: string
   priorityRationale: string
   suggestedAction: string
-  evidenceSummary: string | null
+  summary: string
+  nextSteps: null
+}
+
+type Pass1Response = Pass1WithSources | Pass1NoSources
+
+/** Pass-2 response (summarization after sources queried) */
+interface Pass2Response {
+  priority: string
+  priorityRationale: string
+  suggestedAction: string
   jiraTicketKey: string | null
   jiraTicketUrl: string | null
   isResearchMode: boolean
-  researchSummary: string | null
   researchLinks: Array<{ title: string; url: string }> | null
+  summary: string
+  nextSteps: null
 }
 
 // ── Validation helpers ────────────────────────────────────────────────────
@@ -173,19 +202,8 @@ function validateAction(value: string): value is 'do' | 'delegate' | 'defer' | '
   return VALID_ACTIONS.has(value)
 }
 
-// ── Main exported function ─────────────────────────────────────────────────
+// ── Provider resolution ────────────────────────────────────────────────────
 
-/**
- * Groom a single task using Claude AI and available integrations.
- *
- * Throws only on:
- * - Missing Anthropic API key
- * - Claude API call failure
- * - Invalid/unparseable JSON response from Claude
- *
- * Integration timeouts and missing credentials produce skip sentinels,
- * not errors — grooming always completes as long as Claude is reachable.
- */
 /**
  * Resolve which provider to use for grooming.
  * Reads plugins.task-groomer.groomingProvider from settings, then looks up
@@ -211,7 +229,7 @@ function resolveGroomingProvider(): {
     }> | null) ?? []
 
   // Find the explicitly selected provider, or auto-select first connected one
-  let provider = savedProviderId
+  const provider = savedProviderId
     ? allProviders.find((p) => p.id === savedProviderId)
     : allProviders[0]
 
@@ -224,6 +242,8 @@ function resolveGroomingProvider(): {
     apiKey: provider.requiresApiKey ? getApiKeyForProvider(provider.id) : Promise.resolve(undefined)
   }
 }
+
+// ── CLI helper ────────────────────────────────────────────────────────────
 
 /**
  * Call the AI via CLI spawn — pipes the full prompt to stdin, collects stdout,
@@ -277,7 +297,66 @@ function groomWithCLI(prompt: string, command: string): Promise<string> {
   })
 }
 
-export async function groomTask(task: Task): Promise<GroomingResult> {
+// ── AI call helper ────────────────────────────────────────────────────────
+
+/**
+ * Calls the AI agent (SDK or CLI) with a system + user prompt and returns the raw text.
+ */
+async function callAI(
+  systemPrompt: string,
+  userPrompt: string,
+  opts: {
+    useSDK: boolean
+    useCLI: boolean
+    providerId: string
+    model: string
+    apiKey: string | undefined
+    command: string
+    maxTokens: number
+  }
+): Promise<string> {
+  if (opts.useSDK) {
+    const sdkModel = createModel(opts.providerId, opts.model, opts.apiKey!)
+    const { text } = await generateText({
+      model: sdkModel,
+      system: systemPrompt,
+      prompt: userPrompt,
+      maxOutputTokens: opts.maxTokens
+    })
+    return text
+  } else {
+    // CLI: combine system + user prompts into a single stdin payload
+    const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`
+    return groomWithCLI(combinedPrompt, opts.command)
+  }
+}
+
+// ── Main exported function ─────────────────────────────────────────────────
+
+/**
+ * Groom a single task using a two-pass AI approach.
+ *
+ * Pass 1: AI decides which sources are needed. For simple tasks, returns
+ *         summary + priority + action immediately (no pass-2).
+ * Pass 2: Runs only when sources were queried. AI summarizes source results.
+ *
+ * The optional onStage callback emits progress stages for the UI:
+ *   'analyzing'   — before pass-1 AI call
+ *   'querying'    — before integration source queries
+ *   'summarizing' — before pass-2 AI call
+ *
+ * Throws only on:
+ * - Missing AI provider configuration
+ * - AI API call failure
+ * - Invalid/unparseable JSON response from AI
+ *
+ * Integration timeouts and missing credentials produce skip sentinels,
+ * not errors — grooming always completes as long as the AI provider is reachable.
+ */
+export async function groomTask(
+  task: Task,
+  onStage?: (stage: 'analyzing' | 'querying' | 'summarizing') => void
+): Promise<GroomingResult> {
   // Step 1: Resolve configured AI provider — fail fast if nothing is set up
   const providerConfig = resolveGroomingProvider()
   if (!providerConfig) {
@@ -298,118 +377,221 @@ export async function groomTask(task: Task): Promise<GroomingResult> {
     )
   }
 
-  // Step 2: Build integration credentials (null if any required field is missing)
+  const aiOpts = { useSDK, useCLI, providerId, model, apiKey, command, maxTokens: 512 }
+
+  // ── Pass 1: Source selection ─────────────────────────────────────────────
+
+  const pass1System = `You are a task groomer. Respond with JSON only.`
+
+  const pass1UserBase = `TASK: ${task.text}
+
+Decide which sources are needed to groom this task.
+If the task is short and self-evident (typo fix, version bump, config change) — no sources needed.
+If the task is ambiguous, technical, or multi-step — select the relevant sources.
+
+Available sources: jira, confluence, google
+
+Rules:
+- If sourcesNeeded is empty: populate summary with a complete ## Summary and ## Next Steps section. nextSteps must be null (summary contains both). Also provide priority, priorityRationale, and suggestedAction.
+- If sourcesNeeded is non-empty: set summary=null and nextSteps=null (pass 2 will produce them). Do NOT include priority/priorityRationale/suggestedAction.
+- sourcesNeeded items: only include sources that would plausibly have relevant content for THIS specific task.
+- 'google' is always available. 'jira'/'confluence' only when the task involves project work or existing docs.
+
+Priority rules (when sourcesNeeded is empty):
+- p1: Do today — blocks something, urgent, time-sensitive
+- p2: Do this week — important but not today
+- p3: Someday — low urgency, nice to have
+
+4D rules (when sourcesNeeded is empty):
+- do: You should act on this yourself
+- delegate: Someone else should handle this
+- defer: Do it later, not urgent
+- delete: No longer relevant or worthwhile
+
+Respond with exactly this JSON (no other text):
+{
+  "sourcesNeeded": ["jira", "confluence", "google"] | [],
+  "skipReason": "short/clear task" | null,
+  "priority": "p1" | "p2" | "p3" | null,
+  "priorityRationale": "<one sentence>" | null,
+  "suggestedAction": "do" | "delegate" | "defer" | "delete" | null,
+  "summary": "<## Summary\\n[findings or 'No external sources needed — task is self-evident.']\\n\\n## Next Steps\\n- bullet1\\n- bullet2 (3-5 bullets)>" | null,
+  "nextSteps": null
+}`
+
+  onStage?.('analyzing')
+
+  const pass1Raw = await callAI(pass1System, pass1UserBase, aiOpts)
+
+  let pass1: Pass1Response
+  try {
+    pass1 = JSON.parse(pass1Raw) as Pass1Response
+  } catch {
+    const preview = pass1Raw.slice(0, 200)
+    throw new Error(`AI (pass-1) returned invalid JSON. Raw response (first 200 chars): ${preview}`)
+  }
+
+  // ── No-sources path: return immediately with pass-1 result ───────────────
+
+  if (!pass1.sourcesNeeded || pass1.sourcesNeeded.length === 0) {
+    const p1 = pass1 as Pass1NoSources
+
+    if (!p1.priority || !validatePriority(p1.priority)) {
+      throw new Error(
+        `AI (pass-1 no-sources) returned invalid priority: "${p1.priority}". Expected p1, p2, or p3.`
+      )
+    }
+    if (!p1.suggestedAction || !validateAction(p1.suggestedAction)) {
+      throw new Error(
+        `AI (pass-1 no-sources) returned invalid suggestedAction: "${p1.suggestedAction}". Expected do, delegate, defer, or delete.`
+      )
+    }
+
+    const summary = p1.summary ?? null
+
+    return {
+      priority: p1.priority,
+      priorityRationale: p1.priorityRationale ?? '',
+      suggestedAction: p1.suggestedAction,
+      summary,
+      nextSteps: null,
+      evidenceSummary: summary, // backward compat
+      jiraTicketKey: null,
+      jiraTicketUrl: null,
+      researchSummary: null,
+      researchLinks: null,
+      groomedAt: Date.now(),
+      sourcesUsed: ['ai']
+    }
+  }
+
+  // ── Sources path: query requested integrations in parallel ───────────────
+
+  const requestedSources = pass1.sourcesNeeded as ('jira' | 'confluence' | 'google')[]
+
+  const wantsJira = requestedSources.includes('jira')
+  const wantsConfluence = requestedSources.includes('confluence')
+  const wantsGoogle = requestedSources.includes('google')
+
   const jiraCredentials = buildJiraCredentials()
   const confluenceCredentials = buildConfluenceCredentials()
 
-  // Step 3: Query integrations in parallel with 30s timeouts — never throw on failure
+  onStage?.('querying')
+
   const [jiraResult, confluenceResult, webResult] = await Promise.all([
-    withTimeout(searchJira(task.text, jiraCredentials), 30000).catch(() => JIRA_SKIP),
-    withTimeout(searchConfluence(task.text, confluenceCredentials), 30000).catch(
-      () => CONFLUENCE_SKIP
-    ),
-    withTimeout(webSearch(task.text), 30000).catch(() => WEB_SKIP)
+    wantsJira
+      ? withTimeout(searchJira(task.text, jiraCredentials), 30000).catch(() => JIRA_SKIP)
+      : Promise.resolve(JIRA_SKIP),
+    wantsConfluence
+      ? withTimeout(searchConfluence(task.text, confluenceCredentials), 30000).catch(
+          () => CONFLUENCE_SKIP
+        )
+      : Promise.resolve(CONFLUENCE_SKIP),
+    wantsGoogle
+      ? withTimeout(webSearch(task.text), 30000).catch(() => WEB_SKIP)
+      : Promise.resolve(WEB_SKIP)
   ])
 
-  // Step 4: Build integration context string for the AI prompt
+  // Build sourcesUsed: 'ai' always; add each integration only when queried AND returned results
+  const sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] = ['ai']
+  if (wantsJira && jiraResult.skipped === false && jiraResult.results.length > 0) {
+    sourcesUsed.push('jira')
+  }
+  if (wantsConfluence && confluenceResult.skipped === false && confluenceResult.results.length > 0) {
+    sourcesUsed.push('confluence')
+  }
+  if (wantsGoogle && webResult.skipped === false && webResult.results.length > 0) {
+    sourcesUsed.push('google')
+  }
+
+  // Build integration context string (only lines for sources with results)
   const integrationContext = buildIntegrationContext(jiraResult, confluenceResult, webResult)
 
-  // Step 5: Build prompts
-  const systemPrompt = `You are a task grooming assistant for a software developer. You analyze tasks and produce structured grooming output. You MUST respond with valid JSON only — no markdown, no explanation, just the JSON object.`
+  // ── Pass 2: Summarization ─────────────────────────────────────────────────
 
-  const userPrompt = `Groom this task:
+  const pass2System = `You are a task groomer. Respond with JSON only.`
 
-TASK: ${task.text}
+  const pass2User = `TASK: ${task.text}
 
-INTEGRATION CONTEXT:
+SOURCE RESULTS:
 ${integrationContext}
 
-Respond with exactly this JSON structure (no other text):
+Produce structured grooming output. Respond with exactly this JSON (no other text):
 {
   "priority": "p1" | "p2" | "p3",
-  "priorityRationale": "<one sentence explaining why, e.g. P1 — blocks the auth release>",
+  "priorityRationale": "<one sentence, e.g. P1 — blocks auth release>",
   "suggestedAction": "do" | "delegate" | "defer" | "delete",
-  "evidenceSummary": "<bullet list with one bullet per source that returned results, e.g. '• Jira: PROJ-42 in progress — auth token bug\\n• Web: 3 relevant articles found'. null if no sources returned results.>",
-  "jiraTicketKey": "<Jira key like PROJ-42 only when you are confident this is the SAME work item, or null>",
-  "jiraTicketUrl": "<full URL if jiraTicketKey is set, or null>",
+  "jiraTicketKey": "<PROJ-42 if confident same work item, else null>",
+  "jiraTicketUrl": "<full URL if jiraTicketKey set, else null>",
   "isResearchMode": true | false,
-  "researchSummary": "<3-5 sentence synthesis of all findings — only include if isResearchMode is true, otherwise null>",
-  "researchLinks": [{"title": "...", "url": "..."}] | null
+  "researchLinks": [{"title":"...","url":"..."}] | null,
+  "summary": "## Summary\\n[Source-by-source blocks, one per source with results. Omit sources with no results.]\\n\\n## Next Steps\\n- bullet1\\n- bullet2\\n(3-5 bullets mixing open questions + concrete actions)",
+  "nextSteps": null
 }
 
-Research mode rules:
-- Set isResearchMode=true if the task is ambiguous, technical, multi-part, or unclear what to do next.
-- Set isResearchMode=false if the task is short and clear (e.g. "Fix typo in docs", "Update package version").
-- researchLinks: up to 5 links from Jira, Confluence, or web results. null if isResearchMode=false.
-
 Priority rules:
-- P1: Do today — blocks something, urgent, time-sensitive
-- P2: Do this week — important but not today
-- P3: Someday — low urgency, nice to have
+- p1: Do today — blocks something, urgent, time-sensitive
+- p2: Do this week — important but not today
+- p3: Someday — low urgency, nice to have
 
 4D rules:
-- Do: You should act on this yourself
-- Delegate: Someone else should handle this
-- Defer: Do it later, not urgent
-- Delete: This is no longer relevant or worthwhile`
+- do: You should act on this yourself
+- delegate: Someone else should handle this
+- defer: Do it later, not urgent
+- delete: No longer relevant or worthwhile
 
-  // Step 6: Call the AI agent — SDK (generateText) or CLI (spawn + stdin)
-  let responseText: string
-  if (useSDK) {
-    const sdkModel = createModel(providerId, model, apiKey)
-    const { text } = await generateText({
-      model: sdkModel,
-      system: systemPrompt,
-      prompt: userPrompt,
-      maxTokens: 1024
-    })
-    responseText = text
-  } else {
-    // CLI: combine system + user prompts into a single stdin payload
-    const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`
-    responseText = await groomWithCLI(combinedPrompt, command)
-  }
+Research mode:
+- isResearchMode=true if the task is ambiguous, technical, or multi-part
+- researchLinks: up to 5 links from Jira/Confluence/web results. null if isResearchMode=false.`
 
-  // Step 7: Parse and validate the JSON response
-  let parsed: AiGroomingResponse
+  onStage?.('summarizing')
+
+  const pass2Raw = await callAI(pass2System, pass2User, { ...aiOpts, maxTokens: 1024 })
+
+  let pass2: Pass2Response
   try {
-    parsed = JSON.parse(responseText) as AiGroomingResponse
+    pass2 = JSON.parse(pass2Raw) as Pass2Response
   } catch {
-    const preview = responseText.slice(0, 200)
-    throw new Error(`AI returned invalid JSON. Raw response (first 200 chars): ${preview}`)
+    const preview = pass2Raw.slice(0, 200)
+    throw new Error(`AI (pass-2) returned invalid JSON. Raw response (first 200 chars): ${preview}`)
   }
 
-  if (!parsed.priority || !validatePriority(parsed.priority)) {
+  if (!pass2.priority || !validatePriority(pass2.priority)) {
     throw new Error(
-      `Claude returned invalid priority: "${parsed.priority}". Expected p1, p2, or p3.`
+      `AI (pass-2) returned invalid priority: "${pass2.priority}". Expected p1, p2, or p3.`
     )
   }
 
-  if (!parsed.suggestedAction || !validateAction(parsed.suggestedAction)) {
+  if (!pass2.suggestedAction || !validateAction(pass2.suggestedAction)) {
     throw new Error(
-      `Claude returned invalid suggestedAction: "${parsed.suggestedAction}". Expected do, delegate, defer, or delete.`
+      `AI (pass-2) returned invalid suggestedAction: "${pass2.suggestedAction}". Expected do, delegate, defer, or delete.`
     )
   }
 
-  // Step 8: Map researchLinks to JSON string if research mode is active
+  // Serialize research links to JSON string if research mode is active
   let researchLinks: string | null = null
   if (
-    parsed.isResearchMode === true &&
-    Array.isArray(parsed.researchLinks) &&
-    parsed.researchLinks.length > 0
+    pass2.isResearchMode === true &&
+    Array.isArray(pass2.researchLinks) &&
+    pass2.researchLinks.length > 0
   ) {
-    researchLinks = JSON.stringify(parsed.researchLinks.slice(0, 5))
+    researchLinks = JSON.stringify(pass2.researchLinks.slice(0, 5))
   }
 
+  const summary = pass2.summary ?? null
+
   return {
-    priority: parsed.priority,
-    priorityRationale: parsed.priorityRationale ?? '',
-    suggestedAction: parsed.suggestedAction,
-    evidenceSummary: parsed.evidenceSummary ?? null,
-    jiraTicketKey: parsed.jiraTicketKey ?? null,
-    jiraTicketUrl: parsed.jiraTicketUrl ?? null,
-    researchSummary: parsed.isResearchMode === true ? (parsed.researchSummary ?? null) : null,
+    priority: pass2.priority,
+    priorityRationale: pass2.priorityRationale ?? '',
+    suggestedAction: pass2.suggestedAction,
+    summary,
+    nextSteps: null,
+    evidenceSummary: summary, // backward compat: same value as summary
+    jiraTicketKey: pass2.jiraTicketKey ?? null,
+    jiraTicketUrl: pass2.jiraTicketUrl ?? null,
+    researchSummary: null, // replaced by structured summary; kept as null for backward compat
     researchLinks,
-    groomedAt: Date.now()
+    groomedAt: Date.now(),
+    sourcesUsed
   }
 }
