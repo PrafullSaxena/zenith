@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@renderer/comp
 import { useTaskGroomerStore, isTaskStale } from '@renderer/stores/task-groomer-store'
 import StatusDropdown from './StatusDropdown'
 import { cn } from '@renderer/lib/utils'
+import { ContentRenderer } from '@renderer/components/shared/content-renderer'
 import {
   Loader2,
   RotateCcw,
@@ -338,18 +339,18 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                         </p>
                       )}
 
-                      {/* Evidence */}
+                      {/* Evidence / Summary — rendered as markdown so ## headings, bullets, bold display correctly */}
                       {task.evidenceSummary && (
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-1.5">
                             <FileText size={11} className="text-muted-foreground/50" />
                             <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">
-                              Evidence
+                              Summary
                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed pl-4 border-l border-white/10">
-                            {task.evidenceSummary}
-                          </p>
+                          <div className="pl-4 border-l border-white/10 text-sm text-muted-foreground [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:text-foreground/80 [&_h2]:uppercase [&_h2]:tracking-wide [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-xs [&_h3]:font-medium [&_h3]:text-foreground/70 [&_h3]:mt-2 [&_ul]:space-y-0.5 [&_ol]:space-y-0.5 [&_strong]:font-semibold [&_strong]:text-foreground/90 [&_p]:leading-relaxed">
+                            <ContentRenderer content={task.evidenceSummary} />
+                          </div>
                         </div>
                       )}
 
@@ -362,9 +363,9 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                               Research
                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed pl-4 border-l border-white/10">
-                            {task.researchSummary}
-                          </p>
+                          <div className="pl-4 border-l border-white/10 text-sm text-muted-foreground [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:text-foreground/80 [&_strong]:font-semibold [&_strong]:text-foreground/90 [&_ul]:space-y-0.5 [&_p]:leading-relaxed">
+                            <ContentRenderer content={task.researchSummary} />
+                          </div>
                         </div>
                       )}
 
