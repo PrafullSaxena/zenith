@@ -14,7 +14,7 @@ interface Tab {
 }
 
 export interface PageHeaderProps {
-  icon: LucideIcon
+  icon?: LucideIcon
   title: string
   tabs?: Tab[]
   activeTab?: string
@@ -45,7 +45,7 @@ export function PageHeader({
           className
         )}
       >
-        <Icon size={18} className="text-primary shrink-0" />
+        {Icon && <Icon size={18} className="text-primary shrink-0" />}
         <h1 className="text-[13px] font-medium text-foreground whitespace-nowrap tracking-tight">{title}</h1>
 
         {tabs && tabs.length > 0 && (
