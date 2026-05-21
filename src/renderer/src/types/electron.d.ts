@@ -41,6 +41,7 @@ interface Task {
   researchLinks: string | null
   priorityRationale: string | null
   groomedAt: number | null
+  sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] | null
   comments: TaskComment[] // always an array, never null
 }
 
@@ -344,6 +345,7 @@ export interface ElectronAPI {
         researchSummary: string | null
         researchLinks: string | null
         groomedAt: number
+        sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[]
       } | null
       error?: string
     }>
@@ -351,6 +353,7 @@ export interface ElectronAPI {
       cb: (data: {
         taskId: string
         status: 'grooming' | 'done' | 'failed'
+        stage?: 'analyzing' | 'querying' | 'summarizing'
         result?: Record<string, unknown>
       }) => void
     ) => void

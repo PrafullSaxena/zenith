@@ -1490,7 +1490,8 @@ export function registerIpcHandlers(): void {
           jiraTicketUrl: result.jiraTicketUrl ?? existingJiraUrl,
           researchSummary: result.researchSummary,
           researchLinks: result.researchLinks,
-          groomedAt: result.groomedAt
+          groomedAt: result.groomedAt,
+          sourcesUsed: result.sourcesUsed
         }
       }
     } catch (err) {
@@ -1736,14 +1737,15 @@ async function runGroomingBatch(win: BrowserWindow | null): Promise<void> {
   let failed = 0
 
   for (const task of dumpTasks) {
-    // Push 'grooming' status — renderer shows shimmer
-    win?.webContents.send('taskgroomer:groom:progress', {
-      taskId: task.id,
-      status: 'grooming'
-    })
-
     try {
-      const result = await groomTask(task)
+      const result = await groomTask(task, (stage) => {
+        // Push stage-specific grooming progress — renderer shows shimmer + stage label
+        win?.webContents.send('taskgroomer:groom:progress', {
+          taskId: task.id,
+          status: 'grooming',
+          stage
+        })
+      })
 
       // Write result back to DB
       db.updateTask({
@@ -1775,7 +1777,8 @@ async function runGroomingBatch(win: BrowserWindow | null): Promise<void> {
           jiraTicketUrl: result.jiraTicketUrl,
           researchSummary: result.researchSummary,
           researchLinks: result.researchLinks,
-          groomedAt: result.groomedAt
+          groomedAt: result.groomedAt,
+          sourcesUsed: result.sourcesUsed
         }
       })
 

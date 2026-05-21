@@ -53,6 +53,7 @@ interface TaskGroomerState {
   groomingActive: boolean // true while a run is in progress
   groomingTaskIds: Set<string> // task IDs currently being processed (shimmer state)
   groomCount: number // count of dump tasks at start of run (for button label)
+  groomStage: 'analyzing' | 'querying' | 'summarizing' | null // current stage within active grooming run
   lastGroomSummary: { succeeded: number; failed: number; total: number } | null
   failedTaskIds: Set<string> // task IDs that failed grooming in the most recent run
 
@@ -75,6 +76,7 @@ interface TaskGroomerState {
   handleGroomProgress: (data: {
     taskId: string
     status: 'grooming' | 'done' | 'failed'
+    stage?: 'analyzing' | 'querying' | 'summarizing'
     result?: Record<string, unknown>
   }) => void
   initGroomListeners: () => void
@@ -96,6 +98,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
   groomingActive: false,
   groomingTaskIds: new Set<string>(),
   groomCount: 0,
+  groomStage: null,
   lastGroomSummary: null,
   failedTaskIds: new Set<string>(),
 
@@ -169,6 +172,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
     set({
       groomingActive: true,
       groomCount: dumpTasks.length,
+      groomStage: null,
       groomingTaskIds: new Set(),
       failedTaskIds: new Set(),
       digestTasks: [],
@@ -226,6 +230,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
                 researchSummary: r.researchSummary,
                 researchLinks: r.researchLinks,
                 groomedAt: r.groomedAt,
+                sourcesUsed: r.sourcesUsed ?? null,
                 updatedAt: Date.now()
               }
             : t
@@ -243,7 +248,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
   },
 
   handleGroomProgress: (data) => {
-    const { taskId, status, result } = data
+    const { taskId, status, stage, result } = data
 
     // Sentinel event: run is complete
     if (taskId === '__run_complete__') {
@@ -271,6 +276,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
 
       set({
         groomingActive: false,
+        groomStage: null,
         groomingTaskIds: new Set(),
         digestTasks: sortedDigest,
         showDigest: sortedDigest.length > 0
@@ -289,9 +295,10 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
     }
 
     if (status === 'grooming') {
-      // Add task to shimmering set
+      // Update shimmer set; if a stage is provided, update groomStage as well
       set((state) => ({
-        groomingTaskIds: new Set([...state.groomingTaskIds, taskId])
+        groomingTaskIds: new Set([...state.groomingTaskIds, taskId]),
+        ...(stage ? { groomStage: stage } : {})
       }))
       return
     }
@@ -307,6 +314,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
         researchSummary: string | null
         researchLinks: string | null
         groomedAt: number
+        sourcesUsed?: ('ai' | 'jira' | 'confluence' | 'google')[]
       }
       set((state) => {
         const newShimmerIds = new Set(state.groomingTaskIds)
@@ -326,6 +334,7 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
                   researchSummary: taskResult.researchSummary,
                   researchLinks: taskResult.researchLinks,
                   groomedAt: taskResult.groomedAt,
+                  sourcesUsed: taskResult.sourcesUsed ?? null,
                   updatedAt: Date.now()
                 }
               : t
