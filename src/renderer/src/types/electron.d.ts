@@ -18,33 +18,6 @@ export interface PaginatedPRResult {
   hasPrev: boolean
 }
 
-interface TaskComment {
-  id: string
-  text: string
-  createdAt: number
-  updatedAt: number
-}
-
-interface Task {
-  id: string
-  text: string
-  status: 'dump' | 'groomed' | 'working' | 'done' | 'delegated' | 'aborted'
-  captureSource: 'typed' | 'clipboard'
-  createdAt: number
-  updatedAt: number
-  priority: 'p1' | 'p2' | 'p3' | null
-  suggestedAction: 'do' | 'delegate' | 'defer' | 'delete' | null
-  jiraTicketKey: string | null
-  jiraTicketUrl: string | null
-  evidenceSummary: string | null
-  researchSummary: string | null
-  researchLinks: string | null
-  priorityRationale: string | null
-  groomedAt: number | null
-  sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] | null
-  comments: TaskComment[] // always an array, never null
-}
-
 export interface ElectronAPI {
   settings: {
     getAll: () => Promise<Record<string, unknown>>
@@ -410,6 +383,33 @@ export interface ElectronAPI {
 }
 
 declare global {
+  interface TaskComment {
+    id: string
+    text: string
+    createdAt: number
+    updatedAt: number
+  }
+
+  interface Task {
+    id: string
+    text: string
+    status: 'dump' | 'groomed' | 'working' | 'done' | 'delegated' | 'aborted'
+    captureSource: 'typed' | 'clipboard'
+    createdAt: number
+    updatedAt: number
+    priority: 'p1' | 'p2' | 'p3' | null
+    suggestedAction: 'do' | 'delegate' | 'defer' | 'delete' | null
+    jiraTicketKey: string | null
+    jiraTicketUrl: string | null
+    evidenceSummary: string | null
+    researchSummary: string | null
+    researchLinks: string | null
+    priorityRationale: string | null
+    groomedAt: number | null
+    sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] | null
+    comments: TaskComment[] // always an array, never null
+  }
+
   interface Window {
     api: ElectronAPI
   }

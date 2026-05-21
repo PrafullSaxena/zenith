@@ -30,7 +30,7 @@ import { exportDiagnosticZip } from './log-collector'
 // module-level side effects (pdfmake.fonts) that could interfere
 // with handler registration if module loading fails.
 import { NebulaDatabase } from './nebula/database'
-import { TaskDatabase, type TaskComment } from './taskgroomer/database'
+import { TaskDatabase } from './taskgroomer/database'
 import { NoteFileStorage } from './nebula/file-storage'
 import { transcribeAudio } from './nebula/transcription'
 import { getApiKeyForProvider } from './ai/providers'
