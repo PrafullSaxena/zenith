@@ -30,7 +30,7 @@ import { exportDiagnosticZip } from './log-collector'
 // module-level side effects (pdfmake.fonts) that could interfere
 // with handler registration if module loading fails.
 import { NebulaDatabase } from './nebula/database'
-import { TaskDatabase } from './taskgroomer/database'
+import { TaskDatabase, type TaskComment } from './taskgroomer/database'
 import { NoteFileStorage } from './nebula/file-storage'
 import { transcribeAudio } from './nebula/transcription'
 import { getApiKeyForProvider } from './ai/providers'
@@ -1403,6 +1403,27 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('taskgroomer:deleteTask', (_event, args: { id: string }) => {
     return getTaskGroomerDb().deleteTask(args.id)
   })
+
+  ipcMain.handle(
+    'taskgroomer:addComment',
+    (_event, args: { taskId: string; text: string }) => {
+      return getTaskGroomerDb().addComment(args.taskId, args.text)
+    }
+  )
+
+  ipcMain.handle(
+    'taskgroomer:updateComment',
+    (_event, args: { taskId: string; commentId: string; text: string }) => {
+      return getTaskGroomerDb().updateComment(args.taskId, args.commentId, args.text)
+    }
+  )
+
+  ipcMain.handle(
+    'taskgroomer:deleteComment',
+    (_event, args: { taskId: string; commentId: string }) => {
+      return getTaskGroomerDb().deleteComment(args.taskId, args.commentId)
+    }
+  )
 
   ipcMain.handle('taskgroomer:groom', async (event) => {
     if (groomingRunActive) {

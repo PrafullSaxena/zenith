@@ -526,7 +526,14 @@ const api = {
     removeGroomListeners: (): void => {
       ipcRenderer.removeAllListeners('taskgroomer:groom:progress')
       ipcRenderer.removeAllListeners('taskgroomer:groom:start')
-    }
+    },
+
+    addComment: (args: { taskId: string; text: string }) =>
+      ipcRenderer.invoke('taskgroomer:addComment', args),
+    updateComment: (args: { taskId: string; commentId: string; text: string }) =>
+      ipcRenderer.invoke('taskgroomer:updateComment', args),
+    deleteComment: (args: { taskId: string; commentId: string }) =>
+      ipcRenderer.invoke('taskgroomer:deleteComment', args)
   },
   capture: {
     getClipboard: (): Promise<string | null> => ipcRenderer.invoke('capture:getClipboard'),

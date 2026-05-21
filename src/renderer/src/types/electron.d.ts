@@ -18,6 +18,13 @@ export interface PaginatedPRResult {
   hasPrev: boolean
 }
 
+interface TaskComment {
+  id: string
+  text: string
+  createdAt: number
+  updatedAt: number
+}
+
 interface Task {
   id: string
   text: string
@@ -34,6 +41,7 @@ interface Task {
   researchLinks: string | null
   priorityRationale: string | null
   groomedAt: number | null
+  comments: TaskComment[] // always an array, never null
 }
 
 export interface ElectronAPI {
@@ -348,6 +356,9 @@ export interface ElectronAPI {
     ) => void
     onGroomStart: (cb: (data: { taskCount: number }) => void) => void
     removeGroomListeners: () => void
+    addComment: (args: { taskId: string; text: string }) => Promise<Task>
+    updateComment: (args: { taskId: string; commentId: string; text: string }) => Promise<Task>
+    deleteComment: (args: { taskId: string; commentId: string }) => Promise<Task>
   }
   capture: {
     getClipboard: () => Promise<string | null>
