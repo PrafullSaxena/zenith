@@ -116,6 +116,10 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 20-settings-polish]: Empty grooming state renders styled card (rounded-lg border bg-white/[0.02]) for visual clarity
 - [Phase 20-settings-polish]: Re-groom aria-label reflects runtime state: 'Grooming in progress' when active, 'Re-groom this task' otherwise
 
+**Quick-1 decisions (2026-05-21):**
+- Phase 19-01 decision ("Task status NOT changed during re-groom") intentionally overridden — product requirement is that re-grooming promotes task to 'groomed'
+- Reload button placed as first item in statusIndicator div (always visible regardless of active tab)
+
 ### Pending Todos
 
 None.
@@ -127,5 +131,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-21
-Stopped at: Completed 20-04-PLAN.md (GroomDigest polish + StatusDropdown a11y + Capture popup spotlight, commits fb24cc5, 1e77ea0)
+Stopped at: Completed quick-1-PLAN.md (InTake reload button + re-groom status fix, commits f24aacc, 1b885dd)
 Resume at: 20-05-PLAN.md (final plan in 20-settings-polish phase)
