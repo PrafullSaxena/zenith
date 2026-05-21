@@ -130,6 +130,7 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 21]: groomStage resets to null both on startGroom and on __run_complete__; SourcesRibbon defined inline in TaskSidePanel; Ticket icon confirmed available in lucide-react; FileText reused for Confluence in ribbon; stage-specific shimmer events replace standalone pre-try grooming push
 - [Phase 21]: key={task?.id ?? 'none'} on DialogContent resets all local state (tab, edit state) on task switch — simpler than useEffect cleanup
 - [Phase 21]: deleteComment is optimistic: snapshot prev tasks, apply filter immediately, confirm via IPC, revert on failure — matches deleteTask pattern
+- [Phase 21-intake-grooming-improvements-comments]: Task and TaskComment moved into declare global{} in electron.d.ts — file has top-level import making it a module so interfaces outside declare global are not globally accessible
 
 ### Quick Tasks Completed
 
