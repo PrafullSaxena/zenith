@@ -21,16 +21,25 @@ import { ContentRenderer } from '@renderer/components/shared/content-renderer'
  * with all the text as its title. Add \n\n before each heading marker.
  */
 function normalizeGroomingMarkdown(text: string): string {
-  return text
-    // Add blank line before any heading marker not already preceded by blank line
-    .replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2')
-    // Handle heading immediately after non-heading text with no newline at all
-    .replace(/([^#\n])(#{2,6}\s)/g, '$1\n\n$2')
-    // Add blank line before bullet lists not already preceded by blank line
-    .replace(/([^\n])\n([-*]\s)/g, '$1\n\n$2')
-    // Collapse 3+ newlines back to max 2
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  return (
+    text
+      // Split inline numbered list items: "accuracy. 2. Graph" → "accuracy.\n2. Graph"
+      // Matches ". N. " where N is a digit and the next word starts with uppercase
+      .replace(/\.\s+(\d+)\.\s+([A-Z])/g, '.\n$1. $2')
+      // Also split when preceded by other sentence-ending punctuation
+      .replace(/([!?])\s+(\d+)\.\s+([A-Z])/g, '$1\n$2. $3')
+      // Add blank line before any heading marker not already preceded by blank line
+      .replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2')
+      // Handle heading immediately after non-heading text with no newline at all
+      .replace(/([^#\n])(#{2,6}\s)/g, '$1\n\n$2')
+      // Add blank line before bullet lists not already preceded by blank line
+      .replace(/([^\n])\n([-*]\s)/g, '$1\n\n$2')
+      // Add blank lines before numbered list items that are on their own lines
+      .replace(/([^\n])\n(\d+[.)]\s)/g, '$1\n\n$2')
+      // Collapse 3+ newlines back to max 2
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+  )
 }
 import {
   Loader2,
@@ -368,8 +377,10 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                               Summary
                             </span>
                           </div>
-                          <div className="pl-4 border-l border-white/10 text-sm text-muted-foreground [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:text-foreground/80 [&_h2]:uppercase [&_h2]:tracking-wide [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-xs [&_h3]:font-medium [&_h3]:text-foreground/70 [&_h3]:mt-2 [&_ul]:space-y-0.5 [&_ol]:space-y-0.5 [&_strong]:font-semibold [&_strong]:text-foreground/90 [&_p]:leading-relaxed">
-                            <ContentRenderer content={normalizeGroomingMarkdown(task.evidenceSummary)} />
+                          <div className="pl-4 border-l border-white/10 text-muted-foreground [&_.text-2xl]:!text-[11px] [&_.text-2xl]:!font-semibold [&_.text-2xl]:!uppercase [&_.text-2xl]:!tracking-wide [&_.text-2xl]:!text-foreground/75 [&_.text-2xl]:mt-2 [&_.text-xl]:!text-[11px] [&_.text-xl]:!font-semibold [&_.text-xl]:!uppercase [&_.text-xl]:!tracking-wide [&_.text-xl]:!text-foreground/75 [&_.text-xl]:mt-2 [&_.text-lg]:!text-[11px] [&_.text-lg]:!font-medium [&_.text-lg]:!text-foreground/65 [&_.text-lg]:mt-1.5 [&_p]:!text-sm [&_p]:leading-relaxed [&_ol]:!text-sm [&_ul]:!text-sm [&_li]:!text-sm">
+                            <ContentRenderer
+                              content={normalizeGroomingMarkdown(task.evidenceSummary)}
+                            />
                           </div>
                         </div>
                       )}
@@ -383,8 +394,10 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                               Research
                             </span>
                           </div>
-                          <div className="pl-4 border-l border-white/10 text-sm text-muted-foreground [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:text-foreground/80 [&_strong]:font-semibold [&_strong]:text-foreground/90 [&_ul]:space-y-0.5 [&_p]:leading-relaxed">
-                            <ContentRenderer content={normalizeGroomingMarkdown(task.researchSummary)} />
+                          <div className="pl-4 border-l border-white/10 text-muted-foreground [&_.text-2xl]:!text-[11px] [&_.text-2xl]:!font-semibold [&_.text-2xl]:!uppercase [&_.text-2xl]:!tracking-wide [&_.text-2xl]:!text-foreground/75 [&_.text-xl]:!text-[11px] [&_.text-xl]:!font-semibold [&_.text-xl]:!uppercase [&_.text-xl]:!tracking-wide [&_.text-xl]:!text-foreground/75 [&_.text-lg]:!text-[11px] [&_.text-lg]:!font-medium [&_.text-lg]:!text-foreground/65 [&_p]:!text-sm [&_p]:leading-relaxed [&_ol]:!text-sm [&_ul]:!text-sm [&_li]:!text-sm">
+                            <ContentRenderer
+                              content={normalizeGroomingMarkdown(task.researchSummary)}
+                            />
                           </div>
                         </div>
                       )}
