@@ -5,13 +5,13 @@
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Reduce the friction of developer workflows through AI-augmented tooling — all in a single, fast, consistent desktop app.
-**Current focus:** v3.0 — Task Groomer Plugin (Phase 20: Settings & Polish)
+**Current focus:** v3.0 — Task Groomer Plugin (Phase 21: InTake Grooming Improvements + Comments)
 
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 20-settings-polish — In Progress (Plan 04/05 complete)
-Status: Plan 20-04 complete (2026-05-21). Polished GroomDigest (text-sm rows, focus rings), StatusDropdown a11y focus ring, and capture popup spotlight aesthetic with styled submit button.
+Phase: 21-intake-grooming-improvements-comments — In Progress (Plan 02/04 complete)
+Status: Plan 21-02 complete (2026-05-21). Comments persistence backend: SQLite comments column (v3 migration), TaskDatabase CRUD methods, three IPC channels, preload bridge, and Task type extension.
 
 Progress: [█████████░] 90% (6/7 phases complete — Phase 20 in progress)
 
@@ -116,6 +116,11 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 20-settings-polish]: Empty grooming state renders styled card (rounded-lg border bg-white/[0.02]) for visual clarity
 - [Phase 20-settings-polish]: Re-groom aria-label reflects runtime state: 'Grooming in progress' when active, 'Re-groom this task' otherwise
 
+**Phase 21-02 decisions (2026-05-21):**
+- comments column managed exclusively by addComment/updateComment/deleteComment — CAMEL_TO_SNAKE does NOT include 'comments' so updateTask (AI re-groom) never clobbers user annotations
+- Task.comments typed as TaskComment[] (never null) — rowToTask guarantees [] fallback via IIFE try/catch
+- Version 3 migration uses try/catch around ALTER TABLE — idempotent for DBs where column was pre-created
+
 **Quick-1 decisions (2026-05-21):**
 - Phase 19-01 decision ("Task status NOT changed during re-groom") intentionally overridden — product requirement is that re-grooming promotes task to 'groomed'
 - Reload button placed as first item in statusIndicator div (always visible regardless of active tab)
@@ -141,5 +146,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-21
-Stopped at: Quick-1 complete (InTake reload button + re-groom status fix). Now planning Phase 21 grooming improvements + comments feature.
-Resume at: /gsd:discuss-phase 21
+Stopped at: Completed 21-02-PLAN.md (comments persistence backend — DB migration, CRUD, IPC, preload, types)
+Resume at: /gsd:execute-phase 21 (plan 03 — Notes tab UI)

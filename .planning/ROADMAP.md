@@ -155,7 +155,7 @@ Plans:
 **Goal**: The Task Groomer uses a token-efficient two-pass AI agent that shows live stage progress, persists user comments per task (surviving re-grooms), and displays which integration sources were consulted via a status ribbon in the task detail modal
 **Depends on:** Phase 20
 **Requirements**: GROOM-03, GROOM-04
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 
 Plans:
 - [ ] 21-01-PLAN.md — Two-pass grooming agent rewrite (grooming-agent.ts): source-selection pass + summarization pass + sourcesUsed field
@@ -176,7 +176,7 @@ Plans:
 | 18. AI Grooming Engine | 5/5 | Complete    | 2026-05-20 |
 | 19. Re-groom + Digest | 3/3 | Complete   | 2026-05-20 |
 | 20. Settings & Polish | 4/5 | In Progress|  |
-| 21. InTake Grooming Improvements + Comments | 0/5 | Planned | |
+| 21. InTake Grooming Improvements + Comments | 1/5 | In Progress|  |
 
 ---
 *Roadmap updated: 2026-05-21 — Phase 21 planned (5 plans)*
