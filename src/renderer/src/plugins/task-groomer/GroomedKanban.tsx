@@ -22,7 +22,7 @@ import {
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCheck, ArrowRight, Users, XCircle, Trash2 } from 'lucide-react'
+import { CheckCheck, ArrowRight, Users, XCircle, Trash2, Zap } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { isTaskStale } from '@renderer/stores/task-groomer-store'
 import StatusDropdown from './StatusDropdown'
@@ -31,7 +31,7 @@ import StatusDropdown from './StatusDropdown'
 // Column definitions
 // ---------------------------------------------------------------------------
 
-type KanbanStatus = 'groomed' | 'done' | 'delegated' | 'aborted'
+type KanbanStatus = 'groomed' | 'working' | 'done' | 'delegated' | 'aborted'
 
 const COLUMNS: {
   id: KanbanStatus
@@ -50,6 +50,15 @@ const COLUMNS: {
     headerBg: 'bg-violet-400/8',
     overBg: 'bg-violet-400/15 border-violet-400/40',
     countBg: 'bg-violet-400/15 text-violet-400'
+  },
+  {
+    id: 'working',
+    label: 'Working',
+    icon: Zap,
+    accent: 'border-sky-400/30',
+    headerBg: 'bg-sky-400/8',
+    overBg: 'bg-sky-400/15 border-sky-400/40',
+    countBg: 'bg-sky-400/15 text-sky-400'
   },
   {
     id: 'done',
@@ -94,11 +103,14 @@ const ACTION_CONFIG: Record<string, string> = {
 }
 
 function reltime(ms: number): string {
-  const d = Date.now() - ms, m = Math.floor(d / 6e4)
+  const d = Date.now() - ms,
+    m = Math.floor(d / 6e4)
   if (m < 1) return 'now'
   if (m < 60) return `${m}m`
-  const h = Math.floor(d / 36e5); if (h < 24) return `${h}h`
-  const dy = Math.floor(d / 864e5); if (dy < 30) return `${dy}d`
+  const h = Math.floor(d / 36e5)
+  if (h < 24) return `${h}h`
+  const dy = Math.floor(d / 864e5)
+  if (dy < 30) return `${dy}d`
   return `${Math.floor(d / (30 * 864e5))}mo`
 }
 
@@ -129,12 +141,19 @@ function CardContent({
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-1 flex-wrap">
           {pc && (
-            <span className={cn('text-[10px] font-semibold border rounded-full px-1.5 py-0.5', pc.cls)}>
+            <span
+              className={cn('text-[10px] font-semibold border rounded-full px-1.5 py-0.5', pc.cls)}
+            >
               {pc.label}
             </span>
           )}
           {ac && task.suggestedAction && (
-            <span className={cn('text-[10px] font-medium border rounded-full px-1.5 py-0.5 capitalize', ac)}>
+            <span
+              className={cn(
+                'text-[10px] font-medium border rounded-full px-1.5 py-0.5 capitalize',
+                ac
+              )}
+            >
               {task.suggestedAction}
             </span>
           )}
@@ -149,8 +168,15 @@ function CardContent({
           {onDelete && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onDelete(task.id) }}
-              style={{ opacity: hovered ? 1 : 0, transform: hovered ? 'scale(1)' : 'scale(0.7)', transition: 'opacity 0.12s, transform 0.12s' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(task.id)
+              }}
+              style={{
+                opacity: hovered ? 1 : 0,
+                transform: hovered ? 'scale(1)' : 'scale(0.7)',
+                transition: 'opacity 0.12s, transform 0.12s'
+              }}
               className="w-5 h-5 flex items-center justify-center rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-colors"
               aria-label="Delete task"
             >
@@ -276,7 +302,9 @@ function KanbanColumn({
       >
         <Icon size={13} className="text-muted-foreground shrink-0" />
         <span className="text-[11px] font-semibold text-foreground/80 flex-1">{column.label}</span>
-        <span className={cn('text-[10px] font-semibold rounded-full px-1.5 py-0.5', column.countBg)}>
+        <span
+          className={cn('text-[10px] font-semibold rounded-full px-1.5 py-0.5', column.countBg)}
+        >
           {tasks.length}
         </span>
       </div>
@@ -298,7 +326,9 @@ function KanbanColumn({
               exit={{ opacity: 0 }}
               className={cn(
                 'flex items-center justify-center py-10 rounded-xl border border-dashed transition-colors duration-200',
-                isOver ? 'border-white/25 bg-white/[0.03] text-foreground/40' : 'border-white/8 text-muted-foreground/35'
+                isOver
+                  ? 'border-white/25 bg-white/[0.03] text-foreground/40'
+                  : 'border-white/8 text-muted-foreground/35'
               )}
             >
               <span className="text-[11px]">{isOver ? '↓ Drop here' : 'No tasks'}</span>
@@ -341,7 +371,7 @@ export function GroomedKanban({
   selectedTaskId
 }: GroomedKanbanProps): React.JSX.Element {
   const [draggingId, setDraggingId] = useState<string | null>(null)
-  const draggingTask = draggingId ? tasks.find((t) => t.id === draggingId) ?? null : null
+  const draggingTask = draggingId ? (tasks.find((t) => t.id === draggingId) ?? null) : null
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -361,7 +391,7 @@ export function GroomedKanban({
     const targetStatus = over.id as KanbanStatus
     const task = tasks.find((t) => t.id === taskId)
     if (!task || task.status === targetStatus) return
-    const valid: KanbanStatus[] = ['groomed', 'done', 'delegated', 'aborted']
+    const valid: KanbanStatus[] = ['groomed', 'working', 'done', 'delegated', 'aborted']
     if (valid.includes(targetStatus)) onStatusChange(taskId, targetStatus)
   }
 

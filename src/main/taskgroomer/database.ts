@@ -37,7 +37,7 @@ interface TaskRow {
 export interface Task {
   id: string
   text: string
-  status: 'dump' | 'groomed' | 'done' | 'delegated' | 'aborted'
+  status: 'dump' | 'groomed' | 'working' | 'done' | 'delegated' | 'aborted'
   captureSource: 'typed' | 'clipboard'
   createdAt: number // Unix ms
   updatedAt: number // Unix ms

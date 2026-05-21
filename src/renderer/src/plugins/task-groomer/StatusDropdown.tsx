@@ -39,6 +39,11 @@ const STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
     color: 'text-violet-400',
     bgColor: 'bg-violet-400/15 border-violet-400/20'
   },
+  working: {
+    label: 'Working',
+    color: 'text-sky-400',
+    bgColor: 'bg-sky-400/15 border-sky-400/20'
+  },
   done: {
     label: 'Done',
     color: 'text-green-400',
@@ -58,14 +63,16 @@ const STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
 
 /**
  * Context-aware status ordering.
+ * Natural lifecycle order: Dump → Groomed → Working → Done → Delegated → Aborted
  * Current status is always listed last (rendered grayed out).
  */
 const STATUS_ORDER: Record<TaskStatus, TaskStatus[]> = {
-  dump: ['groomed', 'done', 'delegated', 'aborted', 'dump'],
-  groomed: ['done', 'delegated', 'aborted', 'dump', 'groomed'],
-  done: ['dump', 'groomed', 'delegated', 'aborted', 'done'],
-  delegated: ['dump', 'groomed', 'done', 'aborted', 'delegated'],
-  aborted: ['dump', 'groomed', 'done', 'delegated', 'aborted']
+  dump:     ['groomed', 'working', 'done', 'delegated', 'aborted', 'dump'],
+  groomed:  ['working', 'done', 'delegated', 'aborted', 'dump', 'groomed'],
+  working:  ['done', 'delegated', 'aborted', 'dump', 'groomed', 'working'],
+  done:     ['dump', 'groomed', 'working', 'delegated', 'aborted', 'done'],
+  delegated:['dump', 'groomed', 'working', 'done', 'aborted', 'delegated'],
+  aborted:  ['dump', 'groomed', 'working', 'done', 'delegated', 'aborted']
 }
 
 // ---------------------------------------------------------------------------

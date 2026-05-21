@@ -21,7 +21,7 @@ export interface PaginatedPRResult {
 interface Task {
   id: string
   text: string
-  status: 'dump' | 'groomed' | 'done' | 'delegated' | 'aborted'
+  status: 'dump' | 'groomed' | 'working' | 'done' | 'delegated' | 'aborted'
   captureSource: 'typed' | 'clipboard'
   createdAt: number
   updatedAt: number
