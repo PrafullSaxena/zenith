@@ -120,6 +120,12 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - Phase 19-01 decision ("Task status NOT changed during re-groom") intentionally overridden — product requirement is that re-grooming promotes task to 'groomed'
 - Reload button placed as first item in statusIndicator div (always visible regardless of active tab)
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | Fix InTake bugs: reload button after capture and re-groom status to groomed | 2026-05-21 | 1b885dd | [1-fix-intake-bugs](./quick/1-fix-intake-bugs-reload-button-after-capt/) |
+
 ### Pending Todos
 
 None.
@@ -131,5 +137,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-21
-Stopped at: Completed quick-1-PLAN.md (InTake reload button + re-groom status fix, commits f24aacc, 1b885dd)
-Resume at: 20-05-PLAN.md (final plan in 20-settings-polish phase)
+Stopped at: Quick-1 complete (InTake reload button + re-groom status fix). Now planning Phase 21 grooming improvements + comments feature.
+Resume at: /gsd:discuss-phase 21
