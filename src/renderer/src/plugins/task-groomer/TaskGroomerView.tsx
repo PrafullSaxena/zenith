@@ -46,6 +46,7 @@ export default function TaskGroomerView(): React.JSX.Element {
 
   const groomingActive = useTaskGroomerStore((s) => s.groomingActive)
   const groomCount = useTaskGroomerStore((s) => s.groomCount)
+  const groomStage = useTaskGroomerStore((s) => s.groomStage)
   const groomingTaskIds = useTaskGroomerStore((s) => s.groomingTaskIds)
   const startGroom = useTaskGroomerStore((s) => s.startGroom)
   const initGroomListeners = useTaskGroomerStore((s) => s.initGroomListeners)
@@ -181,7 +182,9 @@ export default function TaskGroomerView(): React.JSX.Element {
                 dumpTasks.length === 0
                   ? 'No Dump tasks to groom'
                   : groomingActive
-                    ? `Grooming ${groomCount} tasks...`
+                    ? (groomStage
+                        ? `${groomStage.charAt(0).toUpperCase() + groomStage.slice(1)}...`
+                        : `Grooming ${groomCount} tasks...`)
                     : 'Groom all Dump tasks with AI'
               }
               className={cn(
@@ -196,7 +199,13 @@ export default function TaskGroomerView(): React.JSX.Element {
               {groomingActive ? (
                 <>
                   <Loader2 size={12} className="animate-spin" />
-                  Grooming {groomCount}...
+                  {groomStage === 'analyzing'
+                    ? 'Analyzing tasks...'
+                    : groomStage === 'querying'
+                      ? 'Querying sources...'
+                      : groomStage === 'summarizing'
+                        ? 'Summarizing...'
+                        : `Grooming ${groomCount}...`}
                 </>
               ) : (
                 <>

@@ -19,7 +19,10 @@ import {
   AlertTriangle,
   Zap,
   FileText,
-  Link
+  Link,
+  Bot,
+  Ticket,
+  Globe
 } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
@@ -48,6 +51,45 @@ const ACTION_CONFIG: Record<string, string> = {
   delegate: 'text-violet-400 bg-violet-400/10 border-violet-400/20',
   defer: 'text-slate-400 bg-slate-400/10 border-slate-400/20',
   delete: 'text-rose-400 bg-rose-400/10 border-rose-400/20'
+}
+
+// ---------------------------------------------------------------------------
+// Sources ribbon
+// ---------------------------------------------------------------------------
+
+const RIBBON_ICONS = [
+  { key: 'ai' as const, label: 'AI', Icon: Bot, color: 'text-violet-400' },
+  { key: 'jira' as const, label: 'Jira', Icon: Ticket, color: 'text-blue-400' },
+  { key: 'confluence' as const, label: 'Confluence', Icon: FileText, color: 'text-sky-400' },
+  { key: 'google' as const, label: 'Google', Icon: Globe, color: 'text-emerald-400' }
+]
+
+function SourcesRibbon({
+  sourcesUsed
+}: {
+  sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] | null
+}) {
+  const used = new Set(sourcesUsed ?? [])
+  return (
+    <div className="flex items-center gap-3 py-2 px-3 rounded-lg border border-white/6 bg-white/[0.02]">
+      {RIBBON_ICONS.map(({ key, label, Icon, color }) => {
+        const active = used.has(key)
+        return (
+          <div
+            key={key}
+            className={cn(
+              'flex items-center gap-1.5 transition-all',
+              active ? color : 'text-muted-foreground/30 grayscale opacity-30'
+            )}
+            title={active ? `${label} queried` : `${label} not used`}
+          >
+            <Icon size={12} />
+            <span className="text-[10px] font-medium">{label}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -206,6 +248,11 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                   </div>
                 ) : (
                   <div className="flex flex-col gap-3">
+                    {/* Sources ribbon — only shown when sourcesUsed is present */}
+                    {task.sourcesUsed && (
+                      <SourcesRibbon sourcesUsed={task.sourcesUsed} />
+                    )}
+
                     {/* Priority + Action row */}
                     {(task.priority || task.suggestedAction) && (
                       <div className="flex items-center gap-2 flex-wrap">
