@@ -37,6 +37,7 @@ See full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 18: AI Grooming Engine** — Grooming agent, scheduling, per-task output (priority, evidence, research mini-summary) (completed 2026-05-20)
 - [x] **Phase 19: Re-groom + Digest** — On-demand re-groom per task, post-grooming digest view (completed 2026-05-20)
 - [ ] **Phase 20: Settings & Polish** — Integration health dashboard, error UI, Jira link, UI/a11y polish
+- [ ] **Phase 21: InTake Grooming Improvements + Comments** — Two-pass grooming agent, task comments/notes, integration status ribbon
 
 ## Phase Details
 
@@ -150,6 +151,19 @@ Plans:
 - [ ] 20-04-PLAN.md — GroomDigest polish + capture popup submit button + StatusDropdown focus ring
 - [ ] 20-05-PLAN.md — Final compile + human verification checkpoint
 
+### Phase 21: InTake Grooming Improvements + Comments
+**Goal**: The Task Groomer uses a token-efficient two-pass AI agent that shows live stage progress, persists user comments per task (surviving re-grooms), and displays which integration sources were consulted via a status ribbon in the task detail modal
+**Depends on:** Phase 20
+**Requirements**: GROOM-03, GROOM-04
+**Plans:** 5 plans
+
+Plans:
+- [ ] 21-01-PLAN.md — Two-pass grooming agent rewrite (grooming-agent.ts): source-selection pass + summarization pass + sourcesUsed field
+- [ ] 21-02-PLAN.md — Comments DB schema + IPC handlers + preload bridge + Task type extension
+- [ ] 21-03-PLAN.md — Renderer: stage labels in TaskGroomerView + sourcesUsed wiring + SourcesRibbon in TaskSidePanel
+- [ ] 21-04-PLAN.md — Notes tab UI in TaskSidePanel: comment thread CRUD + add/edit/delete + store actions
+- [ ] 21-05-PLAN.md — Full compile verification + human verification checkpoint
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -162,15 +176,7 @@ Plans:
 | 18. AI Grooming Engine | 5/5 | Complete    | 2026-05-20 |
 | 19. Re-groom + Digest | 3/3 | Complete   | 2026-05-20 |
 | 20. Settings & Polish | 4/5 | In Progress|  |
-
-### Phase 21: InTake Grooming Improvements + Comments
-
-**Goal:** [To be planned]
-**Depends on:** Phase 20
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 21 to break down)
+| 21. InTake Grooming Improvements + Comments | 0/5 | Planned | |
 
 ---
-*Roadmap updated: 2026-05-21 — Phase 20 planned (5 plans)*
+*Roadmap updated: 2026-05-21 — Phase 21 planned (5 plans)*
