@@ -302,8 +302,8 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                     </div>
                   ) : (
                     <div className="flex flex-col gap-3">
-                      {/* Sources ribbon — only shown when sourcesUsed is present */}
-                      {task.sourcesUsed && <SourcesRibbon sourcesUsed={task.sourcesUsed} />}
+                      {/* Sources ribbon — always shown in Grooming Results; unused sources are blurred */}
+                      <SourcesRibbon sourcesUsed={task.sourcesUsed ?? []} />
 
                       {/* Priority + Action row */}
                       {(task.priority || task.suggestedAction) && (
@@ -494,9 +494,15 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                                 disabled={!editingText.trim()}
                                 onClick={async () => {
                                   if (!editingText.trim()) return
-                                  await updateComment(task.id, comment.id, editingText.trim())
-                                  setEditingCommentId(null)
-                                  setEditingText('')
+                                  try {
+                                    await updateComment(task.id, comment.id, editingText.trim())
+                                    setEditingCommentId(null)
+                                    setEditingText('')
+                                  } catch (err) {
+                                    console.error('[Notes] updateComment failed:', err)
+                                    const { toast } = await import('sonner')
+                                    toast.error('Failed to update note — try again.')
+                                  }
                                 }}
                                 className="px-3 py-1 rounded-lg text-xs font-medium bg-primary/80 hover:bg-primary text-primary-foreground border border-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                               >
@@ -530,8 +536,14 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                       disabled={!newCommentText.trim()}
                       onClick={async () => {
                         if (!newCommentText.trim()) return
-                        await addComment(task.id, newCommentText.trim())
-                        setNewCommentText('')
+                        try {
+                          await addComment(task.id, newCommentText.trim())
+                          setNewCommentText('')
+                        } catch (err) {
+                          console.error('[Notes] addComment failed:', err)
+                          const { toast } = await import('sonner')
+                          toast.error('Failed to save note — try again.')
+                        }
                       }}
                       className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium bg-primary/80 hover:bg-primary text-primary-foreground border border-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                     >

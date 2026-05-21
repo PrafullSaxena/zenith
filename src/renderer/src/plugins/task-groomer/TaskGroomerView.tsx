@@ -54,8 +54,10 @@ export default function TaskGroomerView(): React.JSX.Element {
   const lastGroomSummary = useTaskGroomerStore((s) => s.lastGroomSummary)
   const failedTaskIds = useTaskGroomerStore((s) => s.failedTaskIds)
 
-  // Groomed view mode — persisted across tab switches
-  const [groomedViewMode, setGroomedViewMode] = useState<'list' | 'kanban'>('list')
+  // Groomed view mode — persisted in localStorage so it survives navigation away and back
+  const [groomedViewMode, setGroomedViewMode] = useState<'list' | 'kanban'>(
+    () => (localStorage.getItem('intake:groomedViewMode') as 'list' | 'kanban' | null) ?? 'list'
+  )
   const [failureBannerDismissed, setFailureBannerDismissed] = useState(false)
 
   useEffect(() => {
@@ -144,7 +146,7 @@ export default function TaskGroomerView(): React.JSX.Element {
               <div className="flex items-center rounded-lg border border-white/8 bg-white/[0.03] p-0.5 gap-0.5">
                 <button
                   type="button"
-                  onClick={() => setGroomedViewMode('list')}
+                  onClick={() => { setGroomedViewMode('list'); localStorage.setItem('intake:groomedViewMode', 'list') }}
                   className={cn(
                     'flex items-center justify-center w-6 h-6 rounded-md transition-colors',
                     groomedViewMode === 'list'
@@ -158,7 +160,7 @@ export default function TaskGroomerView(): React.JSX.Element {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setGroomedViewMode('kanban')}
+                  onClick={() => { setGroomedViewMode('kanban'); localStorage.setItem('intake:groomedViewMode', 'kanban') }}
                   className={cn(
                     'flex items-center justify-center w-6 h-6 rounded-md transition-colors',
                     groomedViewMode === 'kanban'
@@ -182,9 +184,9 @@ export default function TaskGroomerView(): React.JSX.Element {
                 dumpTasks.length === 0
                   ? 'No Dump tasks to groom'
                   : groomingActive
-                    ? (groomStage
-                        ? `${groomStage.charAt(0).toUpperCase() + groomStage.slice(1)}...`
-                        : `Grooming ${groomCount} tasks...`)
+                    ? groomStage
+                      ? `${groomStage.charAt(0).toUpperCase() + groomStage.slice(1)}...`
+                      : `Grooming ${groomCount} tasks...`
                     : 'Groom all Dump tasks with AI'
               }
               className={cn(
