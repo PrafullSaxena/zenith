@@ -126,6 +126,10 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 |---|-------------|------|--------|-----------|
 | 1 | Fix InTake bugs: reload button after capture and re-groom status to groomed | 2026-05-21 | 1b885dd | [1-fix-intake-bugs](./quick/1-fix-intake-bugs-reload-button-after-capt/) |
 
+### Roadmap Evolution
+
+- Phase 21 added: InTake Grooming Improvements + Comments — two-pass grooming agent, structured Summary+Next Steps output, task notes/comments field, integration status ribbon
+
 ### Pending Todos
 
 None.

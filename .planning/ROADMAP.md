@@ -163,5 +163,14 @@ Plans:
 | 19. Re-groom + Digest | 3/3 | Complete   | 2026-05-20 |
 | 20. Settings & Polish | 4/5 | In Progress|  |
 
+### Phase 21: InTake Grooming Improvements + Comments
+
+**Goal:** [To be planned]
+**Depends on:** Phase 20
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 21 to break down)
+
 ---
 *Roadmap updated: 2026-05-21 — Phase 20 planned (5 plans)*
