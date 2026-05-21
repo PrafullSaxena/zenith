@@ -123,10 +123,14 @@ export default function TaskGroomerView(): React.JSX.Element {
 
   const dumpLabel = searchQuery
     ? `Dumpyard (${filteredDump.length}/${dumpTasks.length})`
-    : dumpTasks.length > 0 ? `Dumpyard (${dumpTasks.length})` : 'Dumpyard'
+    : dumpTasks.length > 0
+      ? `Dumpyard (${dumpTasks.length})`
+      : 'Dumpyard'
   const groomedLabel = searchQuery
     ? `Groomed (${filteredGroomed.length}/${groomedTasks.length})`
-    : groomedTasks.length > 0 ? `Groomed (${groomedTasks.length})` : 'Groomed'
+    : groomedTasks.length > 0
+      ? `Groomed (${groomedTasks.length})`
+      : 'Groomed'
 
   const TABS = [
     { id: 'dumpyard', label: dumpLabel },
@@ -149,6 +153,33 @@ export default function TaskGroomerView(): React.JSX.Element {
         onTabChange={(id) => setActiveTab(id as 'dumpyard' | 'groomed')}
         statusIndicator={
           <div className="flex items-center gap-2">
+            {/* Search bar */}
+            <div className="flex items-center gap-1.5 rounded-lg border border-white/8 bg-white/[0.03] px-2 h-7 transition-colors focus-within:border-white/16 focus-within:bg-white/[0.05]">
+              <Search size={11} className="text-muted-foreground/50 shrink-0" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') { setSearchQuery(''); searchRef.current?.blur() }
+                }}
+                placeholder="Search…"
+                aria-label="Search tasks"
+                className="w-32 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => { setSearchQuery(''); searchRef.current?.focus() }}
+                  className="text-muted-foreground/50 hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X size={10} />
+                </button>
+              )}
+            </div>
+
             {/* Reload button */}
             <button
               type="button"
@@ -250,38 +281,6 @@ export default function TaskGroomerView(): React.JSX.Element {
           </div>
         }
       />
-
-      {/* Search bar */}
-      <div className="relative z-10 mx-3 mt-2 mb-1">
-        <div className="flex items-center gap-2 rounded-lg border border-white/8 bg-white/[0.03] px-2.5 h-8 transition-colors focus-within:border-white/16 focus-within:bg-white/[0.05]">
-          <Search size={12} className="text-muted-foreground/50 shrink-0" />
-          <input
-            ref={searchRef}
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                setSearchQuery('')
-                searchRef.current?.blur()
-              }
-            }}
-            placeholder="Search tasks…"
-            aria-label="Search tasks"
-            className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => { setSearchQuery(''); searchRef.current?.focus() }}
-              className="text-muted-foreground/50 hover:text-foreground transition-colors"
-              aria-label="Clear search"
-            >
-              <X size={11} />
-            </button>
-          )}
-        </div>
-      </div>
 
       {/* Failure banner */}
       <AnimatePresence>
