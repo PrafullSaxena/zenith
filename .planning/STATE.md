@@ -10,8 +10,8 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 21-intake-grooming-improvements-comments — In Progress (Plan 03/04 complete)
-Status: Plan 21-03 complete (2026-05-21). Groom stage labels (Analyzing tasks... / Querying sources... / Summarizing...) wired through IPC onStage callback → groomStage store field → TaskGroomerView button; SourcesRibbon component (4 icons: AI/Jira/Confluence/Google) added to TaskSidePanel Grooming Results section; sourcesUsed propagated from groomTask result through IPC, types, and store.
+Phase: 21-intake-grooming-improvements-comments — COMPLETE (Plan 04/04 complete)
+Status: Plan 21-04 complete (2026-05-21). Notes tab UI added to TaskSidePanel Dialog — two-tab layout (Grooming Results / Notes), timestamped comment thread with inline edit + optimistic delete, new comment textarea with Save button. addComment/updateComment/deleteComment wired to Zustand store and IPC channels from Plan 02. key={task?.id} on DialogContent resets local state on task switch.
 
 Progress: [█████████░] 90% (6/7 phases complete — Phase 20 in progress)
 
@@ -128,6 +128,8 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 21-01]: maxOutputTokens used instead of maxTokens — AI SDK v3 renamed the parameter
 - [Phase 21-01]: evidenceSummary set to same value as summary for backward compat — ipc-handlers.ts unchanged
 - [Phase 21]: groomStage resets to null both on startGroom and on __run_complete__; SourcesRibbon defined inline in TaskSidePanel; Ticket icon confirmed available in lucide-react; FileText reused for Confluence in ribbon; stage-specific shimmer events replace standalone pre-try grooming push
+- [Phase 21]: key={task?.id ?? 'none'} on DialogContent resets all local state (tab, edit state) on task switch — simpler than useEffect cleanup
+- [Phase 21]: deleteComment is optimistic: snapshot prev tasks, apply filter immediately, confirm via IPC, revert on failure — matches deleteTask pattern
 
 ### Quick Tasks Completed
 
@@ -136,6 +138,7 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 | 1 | Fix InTake bugs: reload button after capture and re-groom status to groomed | 2026-05-21 | 1b885dd | [1-fix-intake-bugs](./quick/1-fix-intake-bugs-reload-button-after-capt/) |
 | Phase 21-intake-grooming-improvements-comments P01 | 284s | 1 tasks | 1 files |
 | Phase 21 P03 | 388 | 2 tasks | 5 files |
+| Phase 21 P04 | 277 | 2 tasks | 2 files |
 
 ### Roadmap Evolution
 
@@ -152,5 +155,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-21
-Stopped at: Completed 21-03-PLAN.md (groom stage labels + SourcesRibbon — groomStage store field, stage-aware Groom button, integration status ribbon)
-Resume at: /gsd:execute-phase 21 (plan 04 — Notes tab UI)
+Stopped at: Completed 21-04-PLAN.md (Notes tab UI + comment CRUD — addComment/updateComment/deleteComment store actions, two-tab TaskSidePanel with timestamped thread)
+Resume at: Phase 21 complete — all 4 plans done
