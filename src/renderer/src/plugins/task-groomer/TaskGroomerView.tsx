@@ -4,7 +4,7 @@
  * Dumpyard tab: compact list with hover-delete + side panel.
  * Groomed tab: toggleable List / Kanban views with status-based columns.
  */
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   FolderOpen,
   Sparkles,
@@ -15,7 +15,8 @@ import {
   LayoutGrid,
   ArchiveX,
   CheckSquare,
-  RefreshCw
+  RefreshCw,
+  Search
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
@@ -53,6 +54,10 @@ export default function TaskGroomerView(): React.JSX.Element {
   const cleanupGroomListeners = useTaskGroomerStore((s) => s.cleanupGroomListeners)
   const lastGroomSummary = useTaskGroomerStore((s) => s.lastGroomSummary)
   const failedTaskIds = useTaskGroomerStore((s) => s.failedTaskIds)
+
+  // Search state — fuzzy filters both tabs
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchRef = React.useRef<HTMLInputElement>(null)
 
   // Groomed view mode — persisted in localStorage so it survives navigation away and back
   const [groomedViewMode, setGroomedViewMode] = useState<'list' | 'kanban'>(
@@ -95,17 +100,37 @@ export default function TaskGroomerView(): React.JSX.Element {
     !failureBannerDismissed &&
     !groomingActive
 
+  // Fuzzy match: every character in query must appear in order in the text
+  const fuzzyMatch = (text: string, query: string): boolean => {
+    if (!query) return true
+    const t = text.toLowerCase()
+    const q = query.toLowerCase()
+    let qi = 0
+    for (let i = 0; i < t.length && qi < q.length; i++) {
+      if (t[i] === q[qi]) qi++
+    }
+    return qi === q.length
+  }
+
   const dumpTasks = tasks.filter((t) => t.status === 'dump')
   const groomedTasks = tasks.filter((t) => t.status !== 'dump')
-  const visibleTasks = activeTab === 'dumpyard' ? dumpTasks : groomedTasks
+
+  // Apply search filter
+  const filteredDump = dumpTasks.filter((t) => fuzzyMatch(t.text, searchQuery))
+  const filteredGroomed = groomedTasks.filter((t) => fuzzyMatch(t.text, searchQuery))
+  const visibleTasks = activeTab === 'dumpyard' ? filteredDump : filteredGroomed
   const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? null
 
+  const dumpLabel = searchQuery
+    ? `Dumpyard (${filteredDump.length}/${dumpTasks.length})`
+    : dumpTasks.length > 0 ? `Dumpyard (${dumpTasks.length})` : 'Dumpyard'
+  const groomedLabel = searchQuery
+    ? `Groomed (${filteredGroomed.length}/${groomedTasks.length})`
+    : groomedTasks.length > 0 ? `Groomed (${groomedTasks.length})` : 'Groomed'
+
   const TABS = [
-    { id: 'dumpyard', label: dumpTasks.length > 0 ? `Dumpyard (${dumpTasks.length})` : 'Dumpyard' },
-    {
-      id: 'groomed',
-      label: groomedTasks.length > 0 ? `Groomed (${groomedTasks.length})` : 'Groomed'
-    }
+    { id: 'dumpyard', label: dumpLabel },
+    { id: 'groomed', label: groomedLabel }
   ]
 
   const isKanban = activeTab === 'groomed' && groomedViewMode === 'kanban'
@@ -146,7 +171,10 @@ export default function TaskGroomerView(): React.JSX.Element {
               <div className="flex items-center rounded-lg border border-white/8 bg-white/[0.03] p-0.5 gap-0.5">
                 <button
                   type="button"
-                  onClick={() => { setGroomedViewMode('list'); localStorage.setItem('intake:groomedViewMode', 'list') }}
+                  onClick={() => {
+                    setGroomedViewMode('list')
+                    localStorage.setItem('intake:groomedViewMode', 'list')
+                  }}
                   className={cn(
                     'flex items-center justify-center w-6 h-6 rounded-md transition-colors',
                     groomedViewMode === 'list'
@@ -160,7 +188,10 @@ export default function TaskGroomerView(): React.JSX.Element {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setGroomedViewMode('kanban'); localStorage.setItem('intake:groomedViewMode', 'kanban') }}
+                  onClick={() => {
+                    setGroomedViewMode('kanban')
+                    localStorage.setItem('intake:groomedViewMode', 'kanban')
+                  }}
                   className={cn(
                     'flex items-center justify-center w-6 h-6 rounded-md transition-colors',
                     groomedViewMode === 'kanban'
@@ -219,6 +250,38 @@ export default function TaskGroomerView(): React.JSX.Element {
           </div>
         }
       />
+
+      {/* Search bar */}
+      <div className="relative z-10 mx-3 mt-2 mb-1">
+        <div className="flex items-center gap-2 rounded-lg border border-white/8 bg-white/[0.03] px-2.5 h-8 transition-colors focus-within:border-white/16 focus-within:bg-white/[0.05]">
+          <Search size={12} className="text-muted-foreground/50 shrink-0" />
+          <input
+            ref={searchRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setSearchQuery('')
+                searchRef.current?.blur()
+              }
+            }}
+            placeholder="Search tasks…"
+            aria-label="Search tasks"
+            className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => { setSearchQuery(''); searchRef.current?.focus() }}
+              className="text-muted-foreground/50 hover:text-foreground transition-colors"
+              aria-label="Clear search"
+            >
+              <X size={11} />
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Failure banner */}
       <AnimatePresence>
@@ -296,7 +359,7 @@ export default function TaskGroomerView(): React.JSX.Element {
             {/* DUMPYARD — card grid (dump tasks have no grooming data; cards > list rows) */}
             {!loading && visibleTasks.length > 0 && activeTab === 'dumpyard' && (
               <DumpyardGrid
-                tasks={dumpTasks}
+                tasks={filteredDump}
                 onStatusChange={updateTaskStatus}
                 onDelete={deleteTask}
                 onCardClick={(t) => {
@@ -312,7 +375,7 @@ export default function TaskGroomerView(): React.JSX.Element {
             {/* KANBAN VIEW — Groomed tab only */}
             {!loading && visibleTasks.length > 0 && isKanban && (
               <GroomedKanban
-                tasks={groomedTasks}
+                tasks={filteredGroomed}
                 onStatusChange={updateTaskStatus}
                 onDelete={deleteTask}
                 onCardClick={(t) => {
