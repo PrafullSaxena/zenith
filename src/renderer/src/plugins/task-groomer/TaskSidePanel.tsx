@@ -12,6 +12,26 @@ import { useTaskGroomerStore, isTaskStale } from '@renderer/stores/task-groomer-
 import StatusDropdown from './StatusDropdown'
 import { cn } from '@renderer/lib/utils'
 import { ContentRenderer } from '@renderer/components/shared/content-renderer'
+
+/**
+ * Normalize markdown from the grooming agent.
+ * The AI often returns headings and list items separated by single \n, but
+ * ContentRenderer's parseMarkdown splits blocks on \n\n (paragraph breaks).
+ * Without normalization, "## Summary\n### Task" becomes one heading block
+ * with all the text as its title. Add \n\n before each heading marker.
+ */
+function normalizeGroomingMarkdown(text: string): string {
+  return text
+    // Add blank line before any heading marker not already preceded by blank line
+    .replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2')
+    // Handle heading immediately after non-heading text with no newline at all
+    .replace(/([^#\n])(#{2,6}\s)/g, '$1\n\n$2')
+    // Add blank line before bullet lists not already preceded by blank line
+    .replace(/([^\n])\n([-*]\s)/g, '$1\n\n$2')
+    // Collapse 3+ newlines back to max 2
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
 import {
   Loader2,
   RotateCcw,
@@ -349,7 +369,7 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                             </span>
                           </div>
                           <div className="pl-4 border-l border-white/10 text-sm text-muted-foreground [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:text-foreground/80 [&_h2]:uppercase [&_h2]:tracking-wide [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-xs [&_h3]:font-medium [&_h3]:text-foreground/70 [&_h3]:mt-2 [&_ul]:space-y-0.5 [&_ol]:space-y-0.5 [&_strong]:font-semibold [&_strong]:text-foreground/90 [&_p]:leading-relaxed">
-                            <ContentRenderer content={task.evidenceSummary} />
+                            <ContentRenderer content={normalizeGroomingMarkdown(task.evidenceSummary)} />
                           </div>
                         </div>
                       )}
@@ -364,7 +384,7 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
                             </span>
                           </div>
                           <div className="pl-4 border-l border-white/10 text-sm text-muted-foreground [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:text-foreground/80 [&_strong]:font-semibold [&_strong]:text-foreground/90 [&_ul]:space-y-0.5 [&_p]:leading-relaxed">
-                            <ContentRenderer content={task.researchSummary} />
+                            <ContentRenderer content={normalizeGroomingMarkdown(task.researchSummary)} />
                           </div>
                         </div>
                       )}
