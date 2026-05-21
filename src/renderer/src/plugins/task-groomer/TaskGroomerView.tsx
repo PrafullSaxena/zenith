@@ -14,7 +14,8 @@ import {
   LayoutList,
   LayoutGrid,
   ArchiveX,
-  CheckSquare
+  CheckSquare,
+  RefreshCw
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
@@ -120,6 +121,23 @@ export default function TaskGroomerView(): React.JSX.Element {
         onTabChange={(id) => setActiveTab(id as 'dumpyard' | 'groomed')}
         statusIndicator={
           <div className="flex items-center gap-2">
+            {/* Reload button */}
+            <button
+              type="button"
+              onClick={loadTasks}
+              disabled={loading}
+              title="Reload tasks"
+              aria-label="Reload tasks"
+              className={cn(
+                'flex items-center justify-center w-7 h-7 rounded-lg border border-white/8 bg-white/[0.03] transition-colors',
+                loading
+                  ? 'text-muted-foreground opacity-50 cursor-not-allowed'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/8 cursor-pointer'
+              )}
+            >
+              <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+            </button>
+
             {/* Kanban/List toggle — only on Groomed tab */}
             {activeTab === 'groomed' && (
               <div className="flex items-center rounded-lg border border-white/8 bg-white/[0.03] p-0.5 gap-0.5">
