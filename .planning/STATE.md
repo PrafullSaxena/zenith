@@ -124,12 +124,16 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 **Quick-1 decisions (2026-05-21):**
 - Phase 19-01 decision ("Task status NOT changed during re-groom") intentionally overridden — product requirement is that re-grooming promotes task to 'groomed'
 - Reload button placed as first item in statusIndicator div (always visible regardless of active tab)
+- [Phase 21-01]: Pass-1 doubles as pass-2 for simple tasks (no-sources optimization) — single AI call for self-evident tasks
+- [Phase 21-01]: maxOutputTokens used instead of maxTokens — AI SDK v3 renamed the parameter
+- [Phase 21-01]: evidenceSummary set to same value as summary for backward compat — ipc-handlers.ts unchanged
 
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | Fix InTake bugs: reload button after capture and re-groom status to groomed | 2026-05-21 | 1b885dd | [1-fix-intake-bugs](./quick/1-fix-intake-bugs-reload-button-after-capt/) |
+| Phase 21-intake-grooming-improvements-comments P01 | 284s | 1 tasks | 1 files |
 
 ### Roadmap Evolution
 
