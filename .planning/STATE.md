@@ -10,8 +10,8 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v3.0 — Task Groomer Plugin (IN PROGRESS)
-Phase: 21-intake-grooming-improvements-comments — In Progress (Plan 02/04 complete)
-Status: Plan 21-02 complete (2026-05-21). Comments persistence backend: SQLite comments column (v3 migration), TaskDatabase CRUD methods, three IPC channels, preload bridge, and Task type extension.
+Phase: 21-intake-grooming-improvements-comments — In Progress (Plan 03/04 complete)
+Status: Plan 21-03 complete (2026-05-21). Groom stage labels (Analyzing tasks... / Querying sources... / Summarizing...) wired through IPC onStage callback → groomStage store field → TaskGroomerView button; SourcesRibbon component (4 icons: AI/Jira/Confluence/Google) added to TaskSidePanel Grooming Results section; sourcesUsed propagated from groomTask result through IPC, types, and store.
 
 Progress: [█████████░] 90% (6/7 phases complete — Phase 20 in progress)
 
@@ -127,6 +127,7 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 21-01]: Pass-1 doubles as pass-2 for simple tasks (no-sources optimization) — single AI call for self-evident tasks
 - [Phase 21-01]: maxOutputTokens used instead of maxTokens — AI SDK v3 renamed the parameter
 - [Phase 21-01]: evidenceSummary set to same value as summary for backward compat — ipc-handlers.ts unchanged
+- [Phase 21]: groomStage resets to null both on startGroom and on __run_complete__; SourcesRibbon defined inline in TaskSidePanel; Ticket icon confirmed available in lucide-react; FileText reused for Confluence in ribbon; stage-specific shimmer events replace standalone pre-try grooming push
 
 ### Quick Tasks Completed
 
@@ -134,6 +135,7 @@ All v2.0 decisions logged in PROJECT.md Key Decisions table.
 |---|-------------|------|--------|-----------|
 | 1 | Fix InTake bugs: reload button after capture and re-groom status to groomed | 2026-05-21 | 1b885dd | [1-fix-intake-bugs](./quick/1-fix-intake-bugs-reload-button-after-capt/) |
 | Phase 21-intake-grooming-improvements-comments P01 | 284s | 1 tasks | 1 files |
+| Phase 21 P03 | 388 | 2 tasks | 5 files |
 
 ### Roadmap Evolution
 
@@ -150,5 +152,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-21
-Stopped at: Completed 21-02-PLAN.md (comments persistence backend — DB migration, CRUD, IPC, preload, types)
-Resume at: /gsd:execute-phase 21 (plan 03 — Notes tab UI)
+Stopped at: Completed 21-03-PLAN.md (groom stage labels + SourcesRibbon — groomStage store field, stage-aware Groom button, integration status ribbon)
+Resume at: /gsd:execute-phase 21 (plan 04 — Notes tab UI)
