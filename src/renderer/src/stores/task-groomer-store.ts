@@ -209,13 +209,14 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
 
       const r = response.result
 
-      // In-place update: replace AI fields, preserve everything else
+      // In-place update: replace AI fields, promote status to 'groomed', preserve everything else
       set((state) => ({
         reGroomTaskId: null,
         tasks: state.tasks.map((t) =>
           t.id === taskId
             ? {
                 ...t,
+                status: 'groomed' as const,
                 priority: r.priority as Task['priority'],
                 priorityRationale: r.priorityRationale,
                 suggestedAction: r.suggestedAction as Task['suggestedAction'],

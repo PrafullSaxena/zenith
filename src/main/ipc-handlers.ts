@@ -1445,6 +1445,7 @@ export function registerIpcHandlers(): void {
       db.updateTask({
         id: task.id,
         fields: {
+          status: 'groomed',
           priority: result.priority,
           priorityRationale: result.priorityRationale,
           suggestedAction: result.suggestedAction,
