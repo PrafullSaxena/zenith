@@ -380,15 +380,21 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
 
   addComment: async (taskId, text) => {
     const updatedTask = await window.api.taskgroomer.addComment({ taskId, text })
+    // Merge only comments — preserve all in-memory fields (like sourcesUsed) that aren't in the DB
     set((state) => ({
-      tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      tasks: state.tasks.map((t) =>
+        t.id === taskId ? { ...t, comments: updatedTask.comments, updatedAt: updatedTask.updatedAt } : t
+      )
     }))
   },
 
   updateComment: async (taskId, commentId, text) => {
     const updatedTask = await window.api.taskgroomer.updateComment({ taskId, commentId, text })
+    // Merge only comments — preserve all in-memory fields
     set((state) => ({
-      tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      tasks: state.tasks.map((t) =>
+        t.id === taskId ? { ...t, comments: updatedTask.comments, updatedAt: updatedTask.updatedAt } : t
+      )
     }))
   },
 

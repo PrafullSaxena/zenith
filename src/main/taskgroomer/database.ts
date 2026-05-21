@@ -31,12 +31,13 @@ interface TaskRow {
   priority_rationale: string | null
   groomed_at: number | null
   comments: string | null
+  sources_used: string | null  // JSON array: ('ai'|'jira'|'confluence'|'google')[]
 }
 
 // ── Public interfaces ─────────────────────────────────────────────────
 
 export interface TaskComment {
-  id: string        // crypto.randomUUID()
+  id: string // crypto.randomUUID()
   text: string
   createdAt: number // Date.now() at creation
   updatedAt: number // Date.now() at last edit; same as createdAt if never edited
@@ -59,6 +60,7 @@ export interface Task {
   researchLinks: string | null // JSON array: {title, url}[]
   priorityRationale: string | null
   groomedAt: number | null // Unix ms
+  sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] // sources queried during last groom
   comments: TaskComment[] // always an array, never null
 }
 
@@ -87,7 +89,8 @@ const CAMEL_TO_SNAKE: Record<string, string> = {
   researchSummary: 'research_summary',
   researchLinks: 'research_links',
   priorityRationale: 'priority_rationale',
-  groomedAt: 'groomed_at'
+  groomedAt: 'groomed_at',
+  sourcesUsed: 'sources_used'
 }
 
 // ── TaskDatabase class ────────────────────────────────────────────────
@@ -149,6 +152,14 @@ export class TaskDatabase {
       }
       this.db.pragma('user_version = 3')
     }
+    if (version < 4) {
+      try {
+        this.db.exec(`ALTER TABLE tasks ADD COLUMN sources_used TEXT DEFAULT '[]'`)
+      } catch {
+        // Column may already exist — safe to ignore
+      }
+      this.db.pragma('user_version = 4')
+    }
   }
 
   // ── Private helpers ──────────────────────────────────────────────────
@@ -170,9 +181,19 @@ export class TaskDatabase {
       researchLinks: row.research_links ?? null,
       priorityRationale: row.priority_rationale ?? null,
       groomedAt: row.groomed_at ?? null,
+      sourcesUsed: (() => {
+        try {
+          return JSON.parse(row.sources_used ?? '[]') as ('ai' | 'jira' | 'confluence' | 'google')[]
+        } catch {
+          return []
+        }
+      })(),
       comments: (() => {
-        try { return JSON.parse(row.comments ?? '[]') as TaskComment[] }
-        catch { return [] }
+        try {
+          return JSON.parse(row.comments ?? '[]') as TaskComment[]
+        } catch {
+          return []
+        }
       })()
     }
   }
@@ -233,7 +254,12 @@ export class TaskDatabase {
       const snakeKey = CAMEL_TO_SNAKE[camelKey]
       if (!snakeKey) continue // ignore unknown or non-updatable fields
       setClauses.push(`${snakeKey} = ?`)
-      values.push(value)
+      // Serialize array fields to JSON strings before storing
+      if (camelKey === 'sourcesUsed' && Array.isArray(value)) {
+        values.push(JSON.stringify(value))
+      } else {
+        values.push(value)
+      }
     }
 
     // Always update updated_at
@@ -273,11 +299,26 @@ export class TaskDatabase {
   addComment(taskId: string, text: string): Task {
     const task = this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(taskId)
     if (!task) throw new Error(`Task not found: ${taskId}`)
-    const existing: TaskComment[] = (() => { try { return JSON.parse(task.comments ?? '[]') } catch { return [] } })()
-    const newComment: TaskComment = { id: crypto.randomUUID(), text, createdAt: Date.now(), updatedAt: Date.now() }
+    const existing: TaskComment[] = (() => {
+      try {
+        return JSON.parse(task.comments ?? '[]')
+      } catch {
+        return []
+      }
+    })()
+    const newComment: TaskComment = {
+      id: crypto.randomUUID(),
+      text,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }
     const updated = [...existing, newComment]
-    this.db.prepare(`UPDATE tasks SET comments = ?, updated_at = ? WHERE id = ?`).run(JSON.stringify(updated), Date.now(), taskId)
-    return this.rowToTask(this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(taskId)!)
+    this.db
+      .prepare(`UPDATE tasks SET comments = ?, updated_at = ? WHERE id = ?`)
+      .run(JSON.stringify(updated), Date.now(), taskId)
+    return this.rowToTask(
+      this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(taskId)!
+    )
   }
 
   /**
@@ -287,10 +328,22 @@ export class TaskDatabase {
   updateComment(taskId: string, commentId: string, text: string): Task {
     const task = this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(taskId)
     if (!task) throw new Error(`Task not found: ${taskId}`)
-    const existing: TaskComment[] = (() => { try { return JSON.parse(task.comments ?? '[]') } catch { return [] } })()
-    const updated = existing.map(c => c.id === commentId ? { ...c, text, updatedAt: Date.now() } : c)
-    this.db.prepare(`UPDATE tasks SET comments = ?, updated_at = ? WHERE id = ?`).run(JSON.stringify(updated), Date.now(), taskId)
-    return this.rowToTask(this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(taskId)!)
+    const existing: TaskComment[] = (() => {
+      try {
+        return JSON.parse(task.comments ?? '[]')
+      } catch {
+        return []
+      }
+    })()
+    const updated = existing.map((c) =>
+      c.id === commentId ? { ...c, text, updatedAt: Date.now() } : c
+    )
+    this.db
+      .prepare(`UPDATE tasks SET comments = ?, updated_at = ? WHERE id = ?`)
+      .run(JSON.stringify(updated), Date.now(), taskId)
+    return this.rowToTask(
+      this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(taskId)!
+    )
   }
 
   /**
@@ -300,10 +353,20 @@ export class TaskDatabase {
   deleteComment(taskId: string, commentId: string): Task {
     const task = this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(taskId)
     if (!task) throw new Error(`Task not found: ${taskId}`)
-    const existing: TaskComment[] = (() => { try { return JSON.parse(task.comments ?? '[]') } catch { return [] } })()
-    const updated = existing.filter(c => c.id !== commentId)
-    this.db.prepare(`UPDATE tasks SET comments = ?, updated_at = ? WHERE id = ?`).run(JSON.stringify(updated), Date.now(), taskId)
-    return this.rowToTask(this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(taskId)!)
+    const existing: TaskComment[] = (() => {
+      try {
+        return JSON.parse(task.comments ?? '[]')
+      } catch {
+        return []
+      }
+    })()
+    const updated = existing.filter((c) => c.id !== commentId)
+    this.db
+      .prepare(`UPDATE tasks SET comments = ?, updated_at = ? WHERE id = ?`)
+      .run(JSON.stringify(updated), Date.now(), taskId)
+    return this.rowToTask(
+      this.db.prepare<[string], TaskRow>(`SELECT * FROM tasks WHERE id = ?`).get(taskId)!
+    )
   }
 
   /**

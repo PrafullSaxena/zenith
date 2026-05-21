@@ -1404,12 +1404,9 @@ export function registerIpcHandlers(): void {
     return getTaskGroomerDb().deleteTask(args.id)
   })
 
-  ipcMain.handle(
-    'taskgroomer:addComment',
-    (_event, args: { taskId: string; text: string }) => {
-      return getTaskGroomerDb().addComment(args.taskId, args.text)
-    }
-  )
+  ipcMain.handle('taskgroomer:addComment', (_event, args: { taskId: string; text: string }) => {
+    return getTaskGroomerDb().addComment(args.taskId, args.text)
+  })
 
   ipcMain.handle(
     'taskgroomer:updateComment',
@@ -1475,7 +1472,8 @@ export function registerIpcHandlers(): void {
           jiraTicketUrl: result.jiraTicketUrl ?? existingJiraUrl,
           researchSummary: result.researchSummary,
           researchLinks: result.researchLinks,
-          groomedAt: result.groomedAt
+          groomedAt: result.groomedAt,
+          sourcesUsed: result.sourcesUsed ?? ['ai']
         }
       })
 
@@ -1760,7 +1758,8 @@ async function runGroomingBatch(win: BrowserWindow | null): Promise<void> {
           jiraTicketUrl: result.jiraTicketUrl,
           researchSummary: result.researchSummary,
           researchLinks: result.researchLinks,
-          groomedAt: result.groomedAt
+          groomedAt: result.groomedAt,
+          sourcesUsed: result.sourcesUsed ?? ['ai']
         }
       })
 
