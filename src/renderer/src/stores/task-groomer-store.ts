@@ -81,6 +81,11 @@ interface TaskGroomerState {
   }) => void
   initGroomListeners: () => void
   cleanupGroomListeners: () => void
+
+  // Comment actions
+  addComment: (taskId: string, text: string) => Promise<void>
+  updateComment: (taskId: string, commentId: string, text: string) => Promise<void>
+  deleteComment: (taskId: string, commentId: string) => Promise<void>
 }
 
 // ---------------------------------------------------------------------------
@@ -371,5 +376,41 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
 
   cleanupGroomListeners: () => {
     window.api.taskgroomer.removeGroomListeners()
+  },
+
+  addComment: async (taskId, text) => {
+    const updatedTask = await window.api.taskgroomer.addComment({ taskId, text })
+    set((state) => ({
+      tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t))
+    }))
+  },
+
+  updateComment: async (taskId, commentId, text) => {
+    const updatedTask = await window.api.taskgroomer.updateComment({ taskId, commentId, text })
+    set((state) => ({
+      tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t))
+    }))
+  },
+
+  deleteComment: async (taskId, commentId) => {
+    // Optimistic: remove the comment from local state immediately
+    const prev = get().tasks
+    set((state) => ({
+      tasks: state.tasks.map((t) =>
+        t.id === taskId
+          ? { ...t, comments: (t.comments ?? []).filter((c) => c.id !== commentId) }
+          : t
+      )
+    }))
+    try {
+      const updatedTask = await window.api.taskgroomer.deleteComment({ taskId, commentId })
+      // Confirm with server state
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      }))
+    } catch {
+      // Revert on failure
+      set({ tasks: prev })
+    }
   }
 }))
