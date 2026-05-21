@@ -6,6 +6,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import {
+  FolderOpen,
   Sparkles,
   Loader2,
   AlertCircle,
@@ -112,6 +113,7 @@ export default function TaskGroomerView(): React.JSX.Element {
 
       {/* Toolbar */}
       <PageHeader
+        icon={FolderOpen}
         title="InTake"
         tabs={TABS}
         activeTab={activeTab}

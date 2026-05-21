@@ -13,7 +13,8 @@ import {
   PenLine,
   GripVertical,
   Brain,
-  PanelLeft
+  PanelLeft,
+  FolderOpen
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PLUGINS } from '../../plugins/registry'
@@ -41,7 +42,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Rocket,
   BookOpen,
   PenLine,
-  Brain
+  Brain,
+  FolderOpen
 }
 
 // ---------------------------------------------------------------------------
