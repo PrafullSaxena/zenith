@@ -67,6 +67,7 @@ interface TaskGroomerState {
   // Actions
   loadTasks: () => Promise<void>
   updateTaskStatus: (id: string, status: Task['status']) => Promise<void>
+  updateTaskPriority: (id: string, priority: Task['priority']) => Promise<void>
   deleteTask: (id: string) => Promise<void>
   setActiveTab: (tab: 'dumpyard' | 'groomed') => void
   setSelectedTaskId: (id: string | null) => void
@@ -163,6 +164,16 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
     }
   },
 
+  updateTaskPriority: async (id: string, priority: Task['priority']) => {
+    const prev = get().tasks
+    set({ tasks: prev.map((t) => (t.id === id ? { ...t, priority, updatedAt: Date.now() } : t)) })
+    try {
+      await window.api.taskgroomer.updateTask({ id, fields: { priority } })
+    } catch {
+      set({ tasks: prev })
+    }
+  },
+
   setActiveTab: (tab: 'dumpyard' | 'groomed') => {
     set({ activeTab: tab })
   },
@@ -236,6 +247,10 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
                 researchLinks: r.researchLinks,
                 groomedAt: r.groomedAt,
                 sourcesUsed: r.sourcesUsed ?? null,
+                shortTitle: r.shortTitle ?? null,
+                category: r.category ?? null,
+                summarySection: r.summarySection ?? null,
+                nextStepsSection: r.nextStepsSection ?? null,
                 updatedAt: Date.now()
               }
             : t
@@ -340,6 +355,10 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
                   researchLinks: taskResult.researchLinks,
                   groomedAt: taskResult.groomedAt,
                   sourcesUsed: taskResult.sourcesUsed ?? null,
+                  shortTitle: (taskResult as Record<string, unknown>).shortTitle as string | null ?? null,
+                  category: (taskResult as Record<string, unknown>).category as Task['category'] ?? null,
+                  summarySection: (taskResult as Record<string, unknown>).summarySection as string | null ?? null,
+                  nextStepsSection: (taskResult as Record<string, unknown>).nextStepsSection as string | null ?? null,
                   updatedAt: Date.now()
                 }
               : t
@@ -383,7 +402,9 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
     // Merge only comments — preserve all in-memory fields (like sourcesUsed) that aren't in the DB
     set((state) => ({
       tasks: state.tasks.map((t) =>
-        t.id === taskId ? { ...t, comments: updatedTask.comments, updatedAt: updatedTask.updatedAt } : t
+        t.id === taskId
+          ? { ...t, comments: updatedTask.comments, updatedAt: updatedTask.updatedAt }
+          : t
       )
     }))
   },
@@ -393,7 +414,9 @@ export const useTaskGroomerStore = create<TaskGroomerState>()((set, get) => ({
     // Merge only comments — preserve all in-memory fields
     set((state) => ({
       tasks: state.tasks.map((t) =>
-        t.id === taskId ? { ...t, comments: updatedTask.comments, updatedAt: updatedTask.updatedAt } : t
+        t.id === taskId
+          ? { ...t, comments: updatedTask.comments, updatedAt: updatedTask.updatedAt }
+          : t
       )
     }))
   },

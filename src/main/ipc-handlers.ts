@@ -1473,7 +1473,11 @@ export function registerIpcHandlers(): void {
           researchSummary: result.researchSummary,
           researchLinks: result.researchLinks,
           groomedAt: result.groomedAt,
-          sourcesUsed: result.sourcesUsed ?? ['ai']
+          sourcesUsed: result.sourcesUsed ?? ['ai'],
+          shortTitle: result.shortTitle ?? null,
+          category: result.category ?? null,
+          summarySection: result.summarySection ?? null,
+          nextStepsSection: result.nextStepsSection ?? null
         }
       })
 
@@ -1489,7 +1493,11 @@ export function registerIpcHandlers(): void {
           researchSummary: result.researchSummary,
           researchLinks: result.researchLinks,
           groomedAt: result.groomedAt,
-          sourcesUsed: result.sourcesUsed
+          sourcesUsed: result.sourcesUsed,
+          shortTitle: result.shortTitle ?? null,
+          category: result.category ?? null,
+          summarySection: result.summarySection ?? null,
+          nextStepsSection: result.nextStepsSection ?? null
         }
       }
     } catch (err) {
@@ -1759,7 +1767,11 @@ async function runGroomingBatch(win: BrowserWindow | null): Promise<void> {
           researchSummary: result.researchSummary,
           researchLinks: result.researchLinks,
           groomedAt: result.groomedAt,
-          sourcesUsed: result.sourcesUsed ?? ['ai']
+          sourcesUsed: result.sourcesUsed ?? ['ai'],
+          shortTitle: result.shortTitle ?? null,
+          category: result.category ?? null,
+          summarySection: result.summarySection ?? null,
+          nextStepsSection: result.nextStepsSection ?? null
         }
       })
 
@@ -1777,7 +1789,11 @@ async function runGroomingBatch(win: BrowserWindow | null): Promise<void> {
           researchSummary: result.researchSummary,
           researchLinks: result.researchLinks,
           groomedAt: result.groomedAt,
-          sourcesUsed: result.sourcesUsed
+          sourcesUsed: result.sourcesUsed,
+          shortTitle: result.shortTitle ?? null,
+          category: result.category ?? null,
+          summarySection: result.summarySection ?? null,
+          nextStepsSection: result.nextStepsSection ?? null
         }
       })
 

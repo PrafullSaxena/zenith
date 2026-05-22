@@ -31,7 +31,11 @@ interface TaskRow {
   priority_rationale: string | null
   groomed_at: number | null
   comments: string | null
-  sources_used: string | null  // JSON array: ('ai'|'jira'|'confluence'|'google')[]
+  sources_used: string | null // JSON array: ('ai'|'jira'|'confluence'|'google')[]
+  short_title: string | null
+  category: string | null
+  summary_section: string | null
+  next_steps_section: string | null
 }
 
 // ── Public interfaces ─────────────────────────────────────────────────
@@ -61,6 +65,10 @@ export interface Task {
   priorityRationale: string | null
   groomedAt: number | null // Unix ms
   sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] // sources queried during last groom
+  shortTitle: string | null // AI-generated ≤8-word title
+  category: 'research' | 'bug' | 'chore' | null // task category
+  summarySection: string | null // bullet-point summary
+  nextStepsSection: string | null // bullet-point next steps
   comments: TaskComment[] // always an array, never null
 }
 
@@ -90,7 +98,11 @@ const CAMEL_TO_SNAKE: Record<string, string> = {
   researchLinks: 'research_links',
   priorityRationale: 'priority_rationale',
   groomedAt: 'groomed_at',
-  sourcesUsed: 'sources_used'
+  sourcesUsed: 'sources_used',
+  shortTitle: 'short_title',
+  category: 'category',
+  summarySection: 'summary_section',
+  nextStepsSection: 'next_steps_section'
 }
 
 // ── TaskDatabase class ────────────────────────────────────────────────
@@ -160,6 +172,13 @@ export class TaskDatabase {
       }
       this.db.pragma('user_version = 4')
     }
+    if (version < 5) {
+      const cols = ['short_title TEXT', 'category TEXT', 'summary_section TEXT', 'next_steps_section TEXT']
+      for (const col of cols) {
+        try { this.db.exec(`ALTER TABLE tasks ADD COLUMN ${col}`) } catch { /* ignore */ }
+      }
+      this.db.pragma('user_version = 5')
+    }
   }
 
   // ── Private helpers ──────────────────────────────────────────────────
@@ -188,6 +207,10 @@ export class TaskDatabase {
           return []
         }
       })(),
+      shortTitle: row.short_title ?? null,
+      category: (row.category ?? null) as Task['category'],
+      summarySection: row.summary_section ?? null,
+      nextStepsSection: row.next_steps_section ?? null,
       comments: (() => {
         try {
           return JSON.parse(row.comments ?? '[]') as TaskComment[]

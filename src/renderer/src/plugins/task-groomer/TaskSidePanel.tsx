@@ -1,10 +1,7 @@
 /**
- * TaskSidePanel — Task detail modal (centered Dialog).
- *
- * Replaces the right-side Sheet with a centered modal so task details
- * are shown without consuming horizontal layout space.
- *
- * Content: full task text, status, metadata, grooming results + re-groom.
+ * TaskSidePanel — Task detail modal with structured sections:
+ *   Title · Status/Priority/Action row · Details · Raw Text
+ *   Summary · Next Steps · References · Notes
  */
 import { useState, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@renderer/components/ui/dialog'
@@ -12,114 +9,68 @@ import { useTaskGroomerStore, isTaskStale } from '@renderer/stores/task-groomer-
 import StatusDropdown from './StatusDropdown'
 import { cn } from '@renderer/lib/utils'
 import { ContentRenderer } from '@renderer/components/shared/content-renderer'
-
-/**
- * Normalize markdown from the grooming agent.
- * The AI often returns headings and list items separated by single \n, but
- * ContentRenderer's parseMarkdown splits blocks on \n\n (paragraph breaks).
- * Without normalization, "## Summary\n### Task" becomes one heading block
- * with all the text as its title. Add \n\n before each heading marker.
- */
-function normalizeGroomingMarkdown(text: string): string {
-  return (
-    text
-      // Split inline numbered list items: "accuracy. 2. Graph" → "accuracy.\n2. Graph"
-      // Matches ". N. " where N is a digit and the next word starts with uppercase
-      .replace(/\.\s+(\d+)\.\s+([A-Z])/g, '.\n$1. $2')
-      // Also split when preceded by other sentence-ending punctuation
-      .replace(/([!?])\s+(\d+)\.\s+([A-Z])/g, '$1\n$2. $3')
-      // Add blank line before any heading marker not already preceded by blank line
-      .replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2')
-      // Handle heading immediately after non-heading text with no newline at all
-      .replace(/([^#\n])(#{2,6}\s)/g, '$1\n\n$2')
-      // Add blank line before bullet lists not already preceded by blank line
-      .replace(/([^\n])\n([-*]\s)/g, '$1\n\n$2')
-      // Add blank lines before numbered list items that are on their own lines
-      .replace(/([^\n])\n(\d+[.)]\s)/g, '$1\n\n$2')
-      // Collapse 3+ newlines back to max 2
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
-  )
-}
 import {
-  Loader2,
-  RotateCcw,
-  Calendar,
-  Clock,
-  Tag,
-  AlertTriangle,
-  Zap,
-  FileText,
-  Link,
-  Bot,
-  Ticket,
-  Globe,
-  MessageSquare,
-  Pencil,
-  Trash2,
-  Send
+  Loader2, RotateCcw, Clock, AlertTriangle, Zap, Link, Bot, Ticket, Globe,
+  FileText, MessageSquare, Pencil, Trash2, Send, ChevronDown
 } from 'lucide-react'
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 function formatDateTime(ms: number): string {
   return new Date(ms).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true
   })
 }
 
-const PRIORITY_CONFIG: Record<NonNullable<Task['priority']>, { label: string; badge: string }> = {
-  p1: { label: 'P1 — High', badge: 'text-red-400 bg-red-400/15 border-red-400/25' },
-  p2: { label: 'P2 — Medium', badge: 'text-amber-400 bg-amber-400/15 border-amber-400/25' },
-  p3: { label: 'P3 — Low', badge: 'text-blue-400 bg-blue-400/15 border-blue-400/25' }
+function normalizeGroomingMarkdown(text: string): string {
+  return text
+    .replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2')
+    .replace(/([^#\n])(#{2,6}\s)/g, '$1\n\n$2')
+    .replace(/([^\n])\n([-*]\s)/g, '$1\n\n$2')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }
 
-const ACTION_CONFIG: Record<string, string> = {
+const PRIORITY_OPTIONS: { label: string; value: Task['priority']; cls: string }[] = [
+  { label: 'P1 — High', value: 'p1', cls: 'text-red-400 bg-red-400/15 border-red-400/25' },
+  { label: 'P2 — Medium', value: 'p2', cls: 'text-amber-400 bg-amber-400/15 border-amber-400/25' },
+  { label: 'P3 — Low', value: 'p3', cls: 'text-blue-400 bg-blue-400/15 border-blue-400/25' },
+]
+const PRIORITY_CLS: Record<string, string> = {
+  p1: 'text-red-400 bg-red-400/15 border-red-400/25',
+  p2: 'text-amber-400 bg-amber-400/15 border-amber-400/25',
+  p3: 'text-blue-400 bg-blue-400/15 border-blue-400/25',
+}
+const ACTION_CLS: Record<string, string> = {
   do: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
   delegate: 'text-violet-400 bg-violet-400/10 border-violet-400/20',
   defer: 'text-slate-400 bg-slate-400/10 border-slate-400/20',
-  delete: 'text-rose-400 bg-rose-400/10 border-rose-400/20'
+  delete: 'text-rose-400 bg-rose-400/10 border-rose-400/20',
+}
+const CATEGORY_CLS: Record<string, string> = {
+  research: 'text-sky-400 bg-sky-400/10 border-sky-400/20',
+  bug: 'text-orange-400 bg-orange-400/10 border-orange-400/20',
+  chore: 'text-slate-400 bg-slate-400/10 border-slate-400/20',
 }
 
-// ---------------------------------------------------------------------------
-// Sources ribbon
-// ---------------------------------------------------------------------------
+// ── Sources ribbon ─────────────────────────────────────────────────────────
 
 const RIBBON_ICONS = [
   { key: 'ai' as const, label: 'AI', Icon: Bot, color: 'text-violet-400' },
   { key: 'jira' as const, label: 'Jira', Icon: Ticket, color: 'text-blue-400' },
   { key: 'confluence' as const, label: 'Confluence', Icon: FileText, color: 'text-sky-400' },
-  { key: 'google' as const, label: 'Google', Icon: Globe, color: 'text-emerald-400' }
+  { key: 'google' as const, label: 'Google', Icon: Globe, color: 'text-emerald-400' },
 ]
-
-function SourcesRibbon({
-  sourcesUsed
-}: {
-  sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] | null
-}) {
+function SourcesRibbon({ sourcesUsed }: { sourcesUsed: ('ai'|'jira'|'confluence'|'google')[]|null }) {
   const used = new Set(sourcesUsed ?? [])
   return (
-    <div className="flex items-center gap-3 py-2 px-3 rounded-lg border border-white/6 bg-white/[0.02]">
+    <div className="flex items-center gap-3 py-1.5 px-3 rounded-lg border border-white/6 bg-white/[0.02]">
       {RIBBON_ICONS.map(({ key, label, Icon, color }) => {
         const active = used.has(key)
         return (
-          <div
-            key={key}
-            className={cn(
-              'flex items-center gap-1.5 transition-all',
-              active ? color : 'text-muted-foreground/30 grayscale opacity-30'
-            )}
-            title={active ? `${label} queried` : `${label} not used`}
-          >
-            <Icon size={12} />
-            <span className="text-[10px] font-medium">{label}</span>
+          <div key={key} className={cn('flex items-center gap-1 transition-all', active ? color : 'text-muted-foreground/25 grayscale opacity-30')} title={active ? `${label} queried` : `${label} not used`}>
+            <Icon size={11} /><span className="text-[9.5px] font-medium">{label}</span>
           </div>
         )
       })}
@@ -127,44 +78,35 @@ function SourcesRibbon({
   )
 }
 
-// ---------------------------------------------------------------------------
-// Section wrapper
-// ---------------------------------------------------------------------------
+// ── Section wrapper ────────────────────────────────────────────────────────
 
-function Section({
-  title,
-  icon: Icon,
-  children
-}: {
-  title: string
-  icon: React.ElementType
-  children: React.ReactNode
+function Section({ label, icon: Icon, collapsible = false, children }: {
+  label: string; icon: React.ElementType; collapsible?: boolean; children: React.ReactNode
 }) {
+  const [open, setOpen] = useState(true)
   return (
-    <div className="flex flex-col gap-2.5">
-      <div className="flex items-center gap-2">
-        <Icon size={12} className="text-muted-foreground/60 shrink-0" />
-        <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-          {title}
-        </span>
-      </div>
-      {children}
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={() => collapsible && setOpen(!open)}
+        className={cn('flex items-center gap-2', collapsible && 'cursor-pointer group')}
+      >
+        <Icon size={11} className="text-muted-foreground/50 shrink-0" />
+        <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/55 flex-1 text-left">{label}</span>
+        {collapsible && <ChevronDown size={11} className={cn('text-muted-foreground/30 transition-transform', !open && '-rotate-90')} />}
+      </button>
+      {open && children}
     </div>
   )
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+// ── Main component ─────────────────────────────────────────────────────────
 
-interface TaskSidePanelProps {
-  task: Task | null
-  open: boolean
-  onClose: () => void
-}
+interface TaskSidePanelProps { task: Task | null; open: boolean; onClose: () => void }
 
 export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): React.JSX.Element {
   const updateTaskStatus = useTaskGroomerStore((s) => s.updateTaskStatus)
+  const updateTaskPriority = useTaskGroomerStore((s) => s.updateTaskPriority)
   const reGroomTaskId = useTaskGroomerStore((s) => s.reGroomTaskId)
   const groomingActive = useTaskGroomerStore((s) => s.groomingActive)
   const startReGroom = useTaskGroomerStore((s) => s.startReGroom)
@@ -172,422 +114,279 @@ export function TaskSidePanel({ task, open, onClose }: TaskSidePanelProps): Reac
   const updateComment = useTaskGroomerStore((s) => s.updateComment)
   const deleteComment = useTaskGroomerStore((s) => s.deleteComment)
 
-  // Tab + comment edit local state — all reset via key={task?.id} on DialogContent
-  const [activeTab, setActiveTab] = useState<'grooming' | 'notes'>('grooming')
+  const [activeTab, setActiveTab] = useState<'details' | 'notes'>('details')
   const [newCommentText, setNewCommentText] = useState('')
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState('')
   const newCommentRef = useRef<HTMLTextAreaElement>(null)
 
   const stale = task ? isTaskStale(task) : false
-  const hasGroomingData = task
-    ? task.priority !== null || task.suggestedAction !== null || task.evidenceSummary !== null
-    : false
-
+  const hasGroomingData = task ? (task.priority !== null || task.summarySection !== null || task.evidenceSummary !== null) : false
   const isReGrooming = task ? reGroomTaskId === task.id : false
   const isAnyGroomActive = groomingActive || reGroomTaskId !== null
 
-  // Parse research links safely
   let researchLinks: { title: string; url: string }[] = []
   if (task?.researchLinks) {
-    try {
-      researchLinks = JSON.parse(task.researchLinks)
-    } catch {
-      /* skip */
-    }
+    try { researchLinks = JSON.parse(task.researchLinks) } catch { /* skip */ }
   }
+
+  const title = task ? (task.shortTitle ?? task.text.slice(0, 80) + (task.text.length > 80 ? '…' : '')) : ''
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      {/* key resets all local state (tab, edit state) when a different task is opened */}
-      <DialogContent
-        key={task?.id ?? 'none'}
-        className="max-w-[580px] max-h-[80vh] p-0 gap-0 overflow-hidden flex flex-col"
-      >
+      <DialogContent key={task?.id ?? 'none'} className="max-w-[620px] max-h-[85vh] p-0 gap-0 overflow-hidden flex flex-col">
         {task && (
           <>
-            {/* Header */}
-            <DialogHeader className="px-6 pt-6 pb-4 border-b border-white/8 shrink-0">
-              <div className="flex items-start justify-between gap-4 pr-8">
-                <DialogTitle className="text-base font-medium leading-snug text-left break-words flex-1">
-                  {task.text}
-                </DialogTitle>
-              </div>
+            {/* ── Title ── */}
+            <DialogHeader className="px-6 pt-5 pb-3 border-b border-white/8 shrink-0">
+              <DialogTitle className="text-[15px] font-semibold leading-snug text-left break-words">
+                {title}
+              </DialogTitle>
+              {task.shortTitle && task.text !== title && (
+                <p className="text-[11px] text-muted-foreground/50 mt-1 leading-snug line-clamp-2">{task.text}</p>
+              )}
 
-              {/* Status + Re-groom row */}
-              <div className="flex items-center gap-3 mt-3">
+              {/* ── Status / Priority / Action / Re-groom row ── */}
+              <div className="flex items-center gap-2 mt-3 flex-wrap">
                 <StatusDropdown task={task} onStatusChange={updateTaskStatus} />
-                {stale && (
-                  <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-400/15 border border-amber-400/20 text-amber-400">
-                    <AlertTriangle size={9} />
-                    Stale
+
+                {/* Category badge */}
+                {task.category && (
+                  <span className={cn('text-[10px] font-medium border rounded-full px-2 py-0.5 capitalize', CATEGORY_CLS[task.category])}>
+                    {task.category}
                   </span>
                 )}
+
+                {/* Priority inline dropdown */}
+                <div className="relative">
+                  <select
+                    value={task.priority ?? ''}
+                    onChange={(e) => updateTaskPriority(task.id, e.target.value as Task['priority'])}
+                    className={cn(
+                      'appearance-none text-[10px] font-medium border rounded-full px-2 py-0.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40 bg-transparent transition-colors',
+                      task.priority ? PRIORITY_CLS[task.priority] : 'text-muted-foreground/50 border-white/10'
+                    )}
+                  >
+                    <option value="" disabled>Priority</option>
+                    {PRIORITY_OPTIONS.map(o => (
+                      <option key={o.value} value={o.value ?? ''} className="bg-popover text-foreground">{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Suggested action */}
+                {task.suggestedAction && ACTION_CLS[task.suggestedAction] && (
+                  <span className={cn('text-[10px] font-medium border rounded-full px-2 py-0.5 capitalize', ACTION_CLS[task.suggestedAction])}>
+                    {task.suggestedAction}
+                  </span>
+                )}
+
+                {stale && (
+                  <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-400/15 border border-amber-400/20 text-amber-400">
+                    <AlertTriangle size={9} />Stale
+                  </span>
+                )}
+
                 <div className="flex-1" />
+
+                {/* Re-groom */}
                 <button
                   type="button"
                   disabled={isAnyGroomActive}
                   onClick={() => startReGroom(task.id)}
-                  aria-label={isReGrooming ? 'Grooming in progress' : 'Re-groom this task'}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
-                    isReGrooming
-                      ? 'bg-primary/20 border-primary/30 text-primary cursor-not-allowed'
-                      : isAnyGroomActive
-                        ? 'bg-white/4 border-white/8 text-muted-foreground opacity-50 cursor-not-allowed'
-                        : 'bg-white/6 border-white/12 text-foreground hover:bg-white/10 cursor-pointer'
+                    'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
+                    isReGrooming ? 'bg-primary/20 border-primary/30 text-primary cursor-not-allowed' :
+                    isAnyGroomActive ? 'bg-white/4 border-white/8 text-muted-foreground opacity-50 cursor-not-allowed' :
+                    'bg-white/6 border-white/12 text-foreground hover:bg-white/10 cursor-pointer'
                   )}
                 >
-                  {isReGrooming ? (
-                    <>
-                      <Loader2 size={11} className="animate-spin" />
-                      Grooming…
-                    </>
-                  ) : (
-                    <>
-                      <RotateCcw size={11} />
-                      Re-groom
-                    </>
-                  )}
+                  {isReGrooming ? <><Loader2 size={11} className="animate-spin" />Grooming…</> : <><RotateCcw size={11} />Re-groom</>}
                 </button>
+              </div>
+
+              {/* Tab bar */}
+              <div className="flex gap-1 mt-3 -mb-3 border-b border-white/6">
+                {(['details', 'notes'] as const).map(tab => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    className={cn(
+                      'px-3 py-1.5 text-[11px] font-medium capitalize transition-colors border-b-2 -mb-px',
+                      activeTab === tab ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {tab}
+                    {tab === 'notes' && (task.comments?.length ?? 0) > 0 && (
+                      <span className="ml-1.5 text-[9px] bg-primary/20 text-primary rounded-full px-1.5 py-0.5">{task.comments.length}</span>
+                    )}
+                  </button>
+                ))}
               </div>
             </DialogHeader>
 
-            {/* Tab bar */}
-            <div className="flex border-b border-white/8 shrink-0">
-              <button
-                type="button"
-                onClick={() => setActiveTab('grooming')}
-                className={cn(
-                  'px-5 py-2.5 text-xs font-medium border-b-2 transition-colors',
-                  activeTab === 'grooming'
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                )}
-              >
-                Grooming Results
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('notes')}
-                className={cn(
-                  'flex items-center gap-1.5 px-5 py-2.5 text-xs font-medium border-b-2 transition-colors',
-                  activeTab === 'notes'
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <MessageSquare size={11} />
-                Notes
-                {task.comments && task.comments.length > 0 && (
-                  <span className="ml-1 rounded-full bg-white/10 px-1.5 py-0.5 text-[9px] font-semibold">
-                    {task.comments.length}
-                  </span>
-                )}
-              </button>
-            </div>
+            {/* ── Scrollable body ── */}
+            <div className="flex-1 overflow-y-auto">
 
-            {/* Grooming Results tab content */}
-            {activeTab === 'grooming' && (
-              <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
-                {/* Metadata */}
-                <Section title="Details" icon={Calendar}>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-2 rounded-xl border border-white/6 bg-white/[0.02] px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Calendar size={11} className="text-muted-foreground/50 shrink-0" />
-                      <span className="text-[11px] text-muted-foreground/60">Created</span>
-                      <span className="text-[11px] text-foreground/80 ml-auto">
-                        {formatDateTime(task.createdAt)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock size={11} className="text-muted-foreground/50 shrink-0" />
-                      <span className="text-[11px] text-muted-foreground/60">Updated</span>
-                      <span className="text-[11px] text-foreground/80 ml-auto">
-                        {formatDateTime(task.updatedAt)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Tag size={11} className="text-muted-foreground/50 shrink-0" />
-                      <span className="text-[11px] text-muted-foreground/60">Source</span>
-                      <span className="text-[11px] text-foreground/80 ml-auto capitalize">
-                        {task.captureSource}
-                      </span>
-                    </div>
-                  </div>
-                </Section>
+              {/* DETAILS TAB */}
+              {activeTab === 'details' && (
+                <div className="px-6 py-5 flex flex-col gap-5">
 
-                {/* Grooming results */}
-                <Section title="Grooming Results" icon={Zap}>
-                  {!hasGroomingData ? (
-                    <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.015] px-4 py-6 flex flex-col items-center gap-2 text-center">
-                      <Zap size={18} className="text-muted-foreground/25" />
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        No grooming results yet.
-                      </p>
-                      <p className="text-[11px] text-muted-foreground/50">
-                        Click Re-groom or run a batch groom to analyze this task.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-3">
-                      {/* Sources ribbon — always shown in Grooming Results; unused sources are blurred */}
-                      <SourcesRibbon sourcesUsed={task.sourcesUsed ?? []} />
-
-                      {/* Priority + Action row */}
-                      {(task.priority || task.suggestedAction) && (
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {task.priority && (
-                            <span
-                              className={cn(
-                                'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold border',
-                                PRIORITY_CONFIG[task.priority].badge
-                              )}
-                            >
-                              {PRIORITY_CONFIG[task.priority].label}
-                            </span>
-                          )}
-                          {task.suggestedAction && ACTION_CONFIG[task.suggestedAction] && (
-                            <span
-                              className={cn(
-                                'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium border capitalize',
-                                ACTION_CONFIG[task.suggestedAction]
-                              )}
-                            >
-                              {task.suggestedAction}
-                            </span>
-                          )}
+                  {/* Details metadata */}
+                  <Section label="Details" icon={Clock} collapsible>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 rounded-xl border border-white/6 bg-white/[0.02] px-4 py-3 text-[11px]">
+                      {[
+                        ['Created', formatDateTime(task.createdAt)],
+                        ['Updated', formatDateTime(task.updatedAt)],
+                        ['Source', task.captureSource],
+                        task.category ? ['Category', task.category] : null,
+                      ].filter(Boolean).map(([k, v]) => (
+                        <div key={k as string} className="flex gap-2">
+                          <span className="text-muted-foreground/50 w-16 shrink-0">{k}</span>
+                          <span className="text-foreground/70 capitalize">{v as string}</span>
                         </div>
-                      )}
+                      ))}
+                    </div>
+                  </Section>
+
+                  {/* Raw Text */}
+                  <Section label="Raw Text" icon={FileText} collapsible>
+                    <div className="rounded-xl border border-white/6 bg-white/[0.02] px-4 py-3">
+                      <p className="text-[12px] text-muted-foreground/80 leading-relaxed whitespace-pre-wrap break-words">{task.text}</p>
+                    </div>
+                  </Section>
+
+                  {/* Grooming data */}
+                  {hasGroomingData ? (
+                    <>
+                      {/* Integration sources ribbon */}
+                      <SourcesRibbon sourcesUsed={task.sourcesUsed ?? []} />
 
                       {/* Priority rationale */}
                       {task.priorityRationale && (
-                        <p className="text-xs text-muted-foreground leading-relaxed rounded-lg bg-white/[0.03] border border-white/6 px-3 py-2.5">
+                        <p className="text-[11px] text-muted-foreground/60 leading-relaxed italic px-1">
                           {task.priorityRationale}
                         </p>
                       )}
 
-                      {/* Evidence / Summary — rendered as markdown so ## headings, bullets, bold display correctly */}
-                      {task.evidenceSummary && (
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <FileText size={11} className="text-muted-foreground/50" />
-                            <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">
-                              Summary
-                            </span>
+                      {/* Summary */}
+                      {(task.summarySection || task.evidenceSummary) && (
+                        <Section label="Summary" icon={Zap}>
+                          <div className="text-[12px] text-muted-foreground leading-relaxed [&_ul]:space-y-1 [&_li]:leading-relaxed [&_strong]:font-semibold [&_strong]:text-foreground/80 [&_p]:leading-relaxed [&_h2]:text-[11px] [&_h2]:font-semibold [&_h2]:text-foreground/70 [&_h2]:uppercase [&_h2]:tracking-wide [&_h2]:mt-2 [&_h2]:mb-1">
+                            <ContentRenderer content={normalizeGroomingMarkdown(task.summarySection ?? task.evidenceSummary ?? '')} />
                           </div>
-                          <div className="pl-4 border-l border-white/10 text-muted-foreground [&_.text-2xl]:!text-[11px] [&_.text-2xl]:!font-semibold [&_.text-2xl]:!uppercase [&_.text-2xl]:!tracking-wide [&_.text-2xl]:!text-foreground/75 [&_.text-2xl]:mt-2 [&_.text-xl]:!text-[11px] [&_.text-xl]:!font-semibold [&_.text-xl]:!uppercase [&_.text-xl]:!tracking-wide [&_.text-xl]:!text-foreground/75 [&_.text-xl]:mt-2 [&_.text-lg]:!text-[11px] [&_.text-lg]:!font-medium [&_.text-lg]:!text-foreground/65 [&_.text-lg]:mt-1.5 [&_p]:!text-sm [&_p]:leading-relaxed [&_ol]:!text-sm [&_ul]:!text-sm [&_li]:!text-sm">
-                            <ContentRenderer
-                              content={normalizeGroomingMarkdown(task.evidenceSummary)}
-                            />
-                          </div>
-                        </div>
+                        </Section>
                       )}
 
-                      {/* Research summary */}
-                      {task.researchSummary && (
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <FileText size={11} className="text-muted-foreground/50" />
-                            <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">
-                              Research
-                            </span>
+                      {/* Next Steps */}
+                      {task.nextStepsSection && (
+                        <Section label="Next Steps" icon={Zap}>
+                          <div className="text-[12px] text-muted-foreground leading-relaxed [&_ul]:space-y-1 [&_li]:leading-relaxed [&_strong]:font-semibold [&_strong]:text-foreground/80">
+                            <ContentRenderer content={normalizeGroomingMarkdown(task.nextStepsSection)} />
                           </div>
-                          <div className="pl-4 border-l border-white/10 text-muted-foreground [&_.text-2xl]:!text-[11px] [&_.text-2xl]:!font-semibold [&_.text-2xl]:!uppercase [&_.text-2xl]:!tracking-wide [&_.text-2xl]:!text-foreground/75 [&_.text-xl]:!text-[11px] [&_.text-xl]:!font-semibold [&_.text-xl]:!uppercase [&_.text-xl]:!tracking-wide [&_.text-xl]:!text-foreground/75 [&_.text-lg]:!text-[11px] [&_.text-lg]:!font-medium [&_.text-lg]:!text-foreground/65 [&_p]:!text-sm [&_p]:leading-relaxed [&_ol]:!text-sm [&_ul]:!text-sm [&_li]:!text-sm">
-                            <ContentRenderer
-                              content={normalizeGroomingMarkdown(task.researchSummary)}
-                            />
-                          </div>
-                        </div>
+                        </Section>
                       )}
 
-                      {/* Research links */}
-                      {researchLinks.length > 0 && (
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <Link size={11} className="text-muted-foreground/50" />
-                            <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">
-                              Links
-                            </span>
-                          </div>
-                          <ul className="flex flex-col gap-1 pl-4">
-                            {researchLinks.map((link, i) => (
-                              <li key={i}>
-                                <button
-                                  type="button"
-                                  onClick={() => window.api.app.openExternal(link.url)}
-                                  className="text-xs text-primary hover:underline text-left break-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
-                                >
-                                  {link.title || link.url}
+                      {/* References */}
+                      {(researchLinks.length > 0 || (task.jiraTicketKey && task.jiraTicketUrl)) && (
+                        <Section label="References" icon={Link}>
+                          <div className="flex flex-col gap-1">
+                            {task.jiraTicketKey && task.jiraTicketUrl && (
+                              <div className="flex items-center gap-2 rounded-lg border border-blue-400/15 bg-blue-400/[0.04] px-3 py-2">
+                                <Ticket size={11} className="text-blue-400 shrink-0" />
+                                <button type="button" onClick={() => window.api.app.openExternal(task.jiraTicketUrl!)}
+                                  className="text-[11px] text-blue-400 hover:underline focus-visible:outline-none rounded">
+                                  {task.jiraTicketKey} ↗
                                 </button>
-                              </li>
+                              </div>
+                            )}
+                            {researchLinks.map((link, i) => (
+                              <button key={i} type="button" onClick={() => window.api.app.openExternal(link.url)}
+                                className="text-left text-[11px] text-primary hover:underline break-all focus-visible:outline-none rounded px-1">
+                                {link.title || link.url}
+                              </button>
                             ))}
-                          </ul>
-                        </div>
+                          </div>
+                        </Section>
                       )}
-
-                      {/* Jira ticket */}
-                      {task.jiraTicketKey && task.jiraTicketUrl && (
-                        <div className="flex items-center gap-2 rounded-lg border border-blue-400/15 bg-blue-400/[0.04] px-3 py-2">
-                          <span className="text-[10.5px] text-muted-foreground/60 uppercase tracking-wide font-medium">
-                            Jira
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => window.api.app.openExternal(task.jiraTicketUrl!)}
-                            className="text-xs text-blue-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 rounded"
-                            aria-label={`Open Jira ticket ${task.jiraTicketKey}`}
-                          >
-                            {task.jiraTicketKey} ↗
-                          </button>
-                        </div>
-                      )}
+                    </>
+                  ) : (
+                    /* Empty grooming state */
+                    <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.015] px-4 py-8 flex flex-col items-center gap-2 text-center">
+                      <Zap size={20} className="text-muted-foreground/20" />
+                      <p className="text-[11px] text-muted-foreground/60">No grooming results yet</p>
+                      <p className="text-[10.5px] text-muted-foreground/40">Click Re-groom or run a batch groom to analyse this task.</p>
                     </div>
                   )}
-                </Section>
-              </div>
-            )}
+                </div>
+              )}
 
-            {/* Notes tab content */}
-            {activeTab === 'notes' && (
-              <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
-                {/* Comment thread */}
-                {!task.comments || task.comments.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.015] px-4 py-6 flex flex-col items-center gap-2 text-center">
-                    <MessageSquare size={18} className="text-muted-foreground/25" />
-                    <p className="text-xs text-muted-foreground">No notes yet.</p>
-                    <p className="text-[11px] text-muted-foreground/50">
-                      Add a note below to annotate this task.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    {task.comments.map((comment) => (
-                      <div
-                        key={comment.id}
-                        className="rounded-xl border border-white/6 bg-white/[0.02] px-4 py-3 flex flex-col gap-2"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50">
-                            <Clock size={9} />
-                            {new Date(comment.createdAt).toLocaleString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: 'numeric',
-                              minute: '2-digit',
-                              hour12: true
-                            })}
-                            {comment.updatedAt !== comment.createdAt && (
-                              <span className="text-muted-foreground/35">(edited)</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingCommentId(comment.id)
-                                setEditingText(comment.text)
-                              }}
-                              className="p-1 rounded hover:bg-white/8 text-muted-foreground/40 hover:text-foreground/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                              aria-label="Edit comment"
-                            >
-                              <Pencil size={10} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => deleteComment(task.id, comment.id)}
-                              className="p-1 rounded hover:bg-rose-400/10 text-muted-foreground/40 hover:text-rose-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60"
-                              aria-label="Delete comment"
-                            >
-                              <Trash2 size={10} />
-                            </button>
-                          </div>
-                        </div>
-                        {editingCommentId === comment.id ? (
-                          <div className="flex flex-col gap-2">
-                            <textarea
-                              value={editingText}
-                              onChange={(e) => setEditingText(e.target.value)}
-                              className="w-full resize-none rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-foreground/90 placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/30 min-h-[60px]"
-                              rows={3}
-                            />
-                            <div className="flex justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditingCommentId(null)
-                                  setEditingText('')
-                                }}
-                                className="px-3 py-1 rounded-lg text-xs text-muted-foreground hover:text-foreground border border-white/8 hover:border-white/16 transition-colors"
-                              >
-                                Cancel
+              {/* NOTES TAB */}
+              {activeTab === 'notes' && (
+                <div className="px-6 py-5 flex flex-col gap-4">
+                  {/* Thread */}
+                  {(!task.comments || task.comments.length === 0) ? (
+                    <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.015] px-4 py-8 flex flex-col items-center gap-2 text-center">
+                      <MessageSquare size={18} className="text-muted-foreground/25" />
+                      <p className="text-xs text-muted-foreground/60">No notes yet.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {task.comments.map((comment) => (
+                        <div key={comment.id} className="rounded-xl border border-white/6 bg-white/[0.02] px-4 py-3 flex flex-col gap-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50">
+                              <Clock size={9} />
+                              {new Date(comment.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
+                              {comment.updatedAt !== comment.createdAt && <span className="text-muted-foreground/35">(edited)</span>}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button type="button" onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.text) }}
+                                className="p-1 rounded hover:bg-white/8 text-muted-foreground/40 hover:text-foreground/70 transition-colors">
+                                <Pencil size={10} />
                               </button>
-                              <button
-                                type="button"
-                                disabled={!editingText.trim()}
-                                onClick={async () => {
-                                  if (!editingText.trim()) return
-                                  try {
-                                    await updateComment(task.id, comment.id, editingText.trim())
-                                    setEditingCommentId(null)
-                                    setEditingText('')
-                                  } catch (err) {
-                                    console.error('[Notes] updateComment failed:', err)
-                                    const { toast } = await import('sonner')
-                                    toast.error('Failed to update note — try again.')
-                                  }
-                                }}
-                                className="px-3 py-1 rounded-lg text-xs font-medium bg-primary/80 hover:bg-primary text-primary-foreground border border-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                              >
-                                Save
+                              <button type="button" onClick={() => deleteComment(task.id, comment.id)}
+                                className="p-1 rounded hover:bg-rose-400/10 text-muted-foreground/40 hover:text-rose-400 transition-colors">
+                                <Trash2 size={10} />
                               </button>
                             </div>
                           </div>
-                        ) : (
-                          <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                            {comment.text}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* New comment input */}
-                <div className="flex flex-col gap-2 mt-auto pt-2 border-t border-white/6">
-                  <textarea
-                    ref={newCommentRef}
-                    value={newCommentText}
-                    onChange={(e) => setNewCommentText(e.target.value)}
-                    placeholder="Add a note..."
-                    className="w-full resize-none rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-foreground/90 placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/30 min-h-[72px]"
-                    rows={3}
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      disabled={!newCommentText.trim()}
-                      onClick={async () => {
-                        if (!newCommentText.trim()) return
-                        try {
-                          await addComment(task.id, newCommentText.trim())
-                          setNewCommentText('')
-                        } catch (err) {
-                          console.error('[Notes] addComment failed:', err)
-                          const { toast } = await import('sonner')
-                          toast.error('Failed to save note — try again.')
-                        }
-                      }}
-                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium bg-primary/80 hover:bg-primary text-primary-foreground border border-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                    >
-                      <Send size={10} />
-                      Save
-                    </button>
+                          {editingCommentId === comment.id ? (
+                            <div className="flex flex-col gap-2">
+                              <textarea value={editingText} onChange={(e) => setEditingText(e.target.value)}
+                                className="w-full resize-none rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-foreground/90 focus:outline-none focus:border-primary/40 min-h-[60px]" rows={3} />
+                              <div className="flex justify-end gap-2">
+                                <button type="button" onClick={() => { setEditingCommentId(null); setEditingText('') }}
+                                  className="px-3 py-1 rounded-lg text-xs text-muted-foreground hover:text-foreground border border-white/8 transition-colors">Cancel</button>
+                                <button type="button" disabled={!editingText.trim()}
+                                  onClick={async () => { try { await updateComment(task.id, comment.id, editingText.trim()); setEditingCommentId(null); setEditingText('') } catch { const {toast} = await import('sonner'); toast.error('Failed to update note') }}}
+                                  className="px-3 py-1 rounded-lg text-xs font-medium bg-primary/80 hover:bg-primary text-primary-foreground border border-primary/50 transition-colors disabled:opacity-50">Save</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{comment.text}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* New comment */}
+                  <div className="flex flex-col gap-2 border-t border-white/6 pt-3">
+                    <textarea ref={newCommentRef} value={newCommentText} onChange={(e) => setNewCommentText(e.target.value)}
+                      placeholder="Add a note…"
+                      className="w-full resize-none rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-foreground/90 placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/40 min-h-[72px]" rows={3} />
+                    <div className="flex justify-end">
+                      <button type="button" disabled={!newCommentText.trim()}
+                        onClick={async () => { if (!newCommentText.trim()) return; try { await addComment(task.id, newCommentText.trim()); setNewCommentText('') } catch { const {toast} = await import('sonner'); toast.error('Failed to save note') }}}
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium bg-primary/80 hover:bg-primary text-primary-foreground border border-primary/50 transition-colors disabled:opacity-50">
+                        <Send size={10} />Save
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </>
         )}
       </DialogContent>

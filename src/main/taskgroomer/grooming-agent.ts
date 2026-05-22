@@ -51,12 +51,16 @@ export interface GroomingResult {
   priority: 'p1' | 'p2' | 'p3'
   priorityRationale: string // one sentence, e.g. "P1 — blocks auth release this week"
   suggestedAction: 'do' | 'delegate' | 'defer' | 'delete'
-  summary: string | null // source-by-source Summary + Next Steps (## Summary\n...\n\n## Next Steps\n...)
+  shortTitle: string | null // AI-generated short title ≤8 words
+  category: 'research' | 'bug' | 'chore' | null // detected task category
+  summarySection: string | null // bullet-point summary (without Next Steps)
+  nextStepsSection: string | null // bullet-point next steps
+  summary: string | null // full combined text for backward compat
   nextSteps: string | null // always null — embedded inside summary string
-  evidenceSummary: string | null // backward compat: same value as summary (existing DB column + store reads this)
+  evidenceSummary: string | null // backward compat: same value as summary
   jiraTicketKey: string | null // only when AI is confident it's the same work item
   jiraTicketUrl: string | null
-  researchSummary: string | null // kept as null for backward compat (replaced by structured summary)
+  researchSummary: string | null // kept as null for backward compat
   researchLinks: string | null // JSON: {title: string, url: string}[] — up to 5 links
   groomedAt: number // Date.now()
   sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] // which sources were actually queried and returned results
@@ -157,6 +161,8 @@ function buildIntegrationContext(
 
 /** Pass-1 response when sources are needed */
 interface Pass1WithSources {
+  category: 'research' | 'bug' | 'chore'
+  shortTitle: string
   sourcesNeeded: ('jira' | 'confluence' | 'google')[]
   skipReason: null
   summary: null
@@ -165,12 +171,16 @@ interface Pass1WithSources {
 
 /** Pass-1 response when no sources are needed (includes full assessment) */
 interface Pass1NoSources {
+  category: 'research' | 'bug' | 'chore'
+  shortTitle: string
   sourcesNeeded: []
   skipReason: string | null
   priority: string
   priorityRationale: string
   suggestedAction: string
-  summary: string
+  summarySection: string
+  nextStepsSection: string
+  summary: null
   nextSteps: null
 }
 
@@ -181,6 +191,9 @@ interface Pass2Response {
   priority: string
   priorityRationale: string
   suggestedAction: string
+  shortTitle: string
+  summarySection: string
+  nextStepsSection: string
   jiraTicketKey: string | null
   jiraTicketUrl: string | null
   isResearchMode: boolean
@@ -392,37 +405,46 @@ export async function groomTask(
 
   const pass1UserBase = `TASK: ${task.text}
 
-Decide which sources are needed to groom this task.
-If the task is short and self-evident (typo fix, version bump, config change) — no sources needed.
-If the task is ambiguous, technical, or multi-step — select the relevant sources.
+Step 1 — Classify the task into exactly one category:
+- "research": learning, reading, investigating a topic, writing docs, exploring options
+- "bug": fixing a bug, crash, error, performance issue, regression investigation
+- "chore": config change, version bump, admin task, meeting, planning, typo fix
 
-Available sources: jira, confluence, google
+Step 2 — Generate a short title (≤8 words, imperative, no filler words).
 
-Rules:
-- If sourcesNeeded is empty: populate summary with a complete ## Summary and ## Next Steps section. nextSteps must be null (summary contains both). Also provide priority, priorityRationale, and suggestedAction.
-- If sourcesNeeded is non-empty: set summary=null and nextSteps=null (pass 2 will produce them). Do NOT include priority/priorityRationale/suggestedAction.
-- sourcesNeeded items: only include sources that would plausibly have relevant content for THIS specific task.
-- 'google' is always available. 'jira'/'confluence' only when the task involves project work or existing docs.
+Step 3 — Select sources based on category:
+- research → may use confluence (internal docs) and google (external research). Never jira.
+- bug → may use jira (related tickets) and confluence (relevant docs). Never google.
+- chore → ALWAYS sourcesNeeded=[]. Never query any source.
 
-Priority rules (when sourcesNeeded is empty):
-- p1: Do today — blocks something, urgent, time-sensitive
-- p2: Do this week — important but not today
-- p3: Someday — low urgency, nice to have
+For the selected sources, only include ones that would actually have relevant content.
 
-4D rules (when sourcesNeeded is empty):
-- do: You should act on this yourself
-- delegate: Someone else should handle this
-- defer: Do it later, not urgent
-- delete: No longer relevant or worthwhile
+Step 4 — If sourcesNeeded is empty: produce the full assessment now (priority, action, summary, nextSteps).
+         If sourcesNeeded is non-empty: a second pass will produce the assessment after querying sources.
+
+Priority rules (only when sourcesNeeded=[]):
+- p1: blocks something today, urgent, time-sensitive
+- p2: important this week
+- p3: low urgency, someday
+
+4D rules (only when sourcesNeeded=[]):
+- do: act yourself now
+- delegate: hand off to someone else
+- defer: do later
+- delete: no longer needed
 
 Respond with exactly this JSON (no other text):
 {
-  "sourcesNeeded": ["jira", "confluence", "google"] | [],
-  "skipReason": "short/clear task" | null,
+  "category": "research" | "bug" | "chore",
+  "shortTitle": "<≤8 word imperative title>",
+  "sourcesNeeded": ["confluence", "google"] | ["jira", "confluence"] | [],
+  "skipReason": "chore task / self-evident" | null,
   "priority": "p1" | "p2" | "p3" | null,
   "priorityRationale": "<one sentence>" | null,
   "suggestedAction": "do" | "delegate" | "defer" | "delete" | null,
-  "summary": "<## Summary\\n[findings or 'No external sources needed — task is self-evident.']\\n\\n## Next Steps\\n- bullet1\\n- bullet2 (3-5 bullets)>" | null,
+  "summarySection": "- bullet1\\n- bullet2 (3-5 concise bullets about what was found)" | null,
+  "nextStepsSection": "- step1\\n- step2 (3-5 concrete next actions)" | null,
+  "summary": null,
   "nextSteps": null
 }`
 
@@ -454,15 +476,21 @@ Respond with exactly this JSON (no other text):
       )
     }
 
-    const summary = p1.summary ?? null
+    const summarySection = (p1 as Pass1NoSources).summarySection ?? null
+    const nextStepsSection = (p1 as Pass1NoSources).nextStepsSection ?? null
+    const combined = [summarySection && `## Summary\n${summarySection}`, nextStepsSection && `## Next Steps\n${nextStepsSection}`].filter(Boolean).join('\n\n') || null
 
     return {
       priority: p1.priority,
       priorityRationale: p1.priorityRationale ?? '',
       suggestedAction: p1.suggestedAction,
-      summary,
+      shortTitle: (p1 as Pass1NoSources).shortTitle ?? null,
+      category: (p1 as Pass1NoSources).category ?? null,
+      summarySection,
+      nextStepsSection,
+      summary: combined,
       nextSteps: null,
-      evidenceSummary: summary, // backward compat
+      evidenceSummary: combined, // backward compat
       jiraTicketKey: null,
       jiraTicketUrl: null,
       researchSummary: null,
@@ -523,6 +551,8 @@ Respond with exactly this JSON (no other text):
   const pass2System = `You are a task groomer. Respond with JSON only. Do NOT use any tools, fetch any URLs, or access the internet. Use only the source results already provided in the prompt.`
 
   const pass2User = `TASK: ${task.text}
+CATEGORY: ${(pass1 as Pass1WithSources).category ?? 'unknown'}
+SHORT TITLE: ${(pass1 as Pass1WithSources).shortTitle ?? ''}
 
 SOURCE RESULTS:
 ${integrationContext}
@@ -532,11 +562,13 @@ Produce structured grooming output. Respond with exactly this JSON (no other tex
   "priority": "p1" | "p2" | "p3",
   "priorityRationale": "<one sentence, e.g. P1 — blocks auth release>",
   "suggestedAction": "do" | "delegate" | "defer" | "delete",
+  "shortTitle": "<≤8 word imperative title — refine if needed>",
   "jiraTicketKey": "<PROJ-42 if confident same work item, else null>",
   "jiraTicketUrl": "<full URL if jiraTicketKey set, else null>",
-  "isResearchMode": true | false,
   "researchLinks": [{"title":"...","url":"..."}] | null,
-  "summary": "## Summary\\n[Source-by-source blocks, one per source with results. Omit sources with no results.]\\n\\n## Next Steps\\n- bullet1\\n- bullet2\\n(3-5 bullets mixing open questions + concrete actions)",
+  "summarySection": "- bullet1 from source X\\n- bullet2 from source Y\\n(3-6 concise bullets, source-labelled, omit sources with no results)",
+  "nextStepsSection": "- concrete action 1\\n- open question to answer\\n(3-5 bullets mixing concrete next actions + open questions)",
+  "summary": null,
   "nextSteps": null
 }
 
@@ -546,14 +578,10 @@ Priority rules:
 - p3: Someday — low urgency, nice to have
 
 4D rules:
-- do: You should act on this yourself
-- delegate: Someone else should handle this
-- defer: Do it later, not urgent
-- delete: No longer relevant or worthwhile
+- do: act yourself now  - delegate: hand off
+- defer: do later  - delete: no longer needed
 
-Research mode:
-- isResearchMode=true if the task is ambiguous, technical, or multi-part
-- researchLinks: up to 5 links from Jira/Confluence/web results. null if isResearchMode=false.`
+researchLinks: up to 5 most relevant links from the source results.`
 
   onStage?.('summarizing')
 
@@ -579,28 +607,30 @@ Research mode:
     )
   }
 
-  // Serialize research links to JSON string if research mode is active
+  // Serialize research links
   let researchLinks: string | null = null
-  if (
-    pass2.isResearchMode === true &&
-    Array.isArray(pass2.researchLinks) &&
-    pass2.researchLinks.length > 0
-  ) {
+  if (Array.isArray(pass2.researchLinks) && pass2.researchLinks.length > 0) {
     researchLinks = JSON.stringify(pass2.researchLinks.slice(0, 5))
   }
 
-  const summary = pass2.summary ?? null
+  const summarySection = pass2.summarySection ?? null
+  const nextStepsSection = pass2.nextStepsSection ?? null
+  const combined = [summarySection && `## Summary\n${summarySection}`, nextStepsSection && `## Next Steps\n${nextStepsSection}`].filter(Boolean).join('\n\n') || null
 
   return {
     priority: pass2.priority,
     priorityRationale: pass2.priorityRationale ?? '',
     suggestedAction: pass2.suggestedAction,
-    summary,
+    shortTitle: pass2.shortTitle ?? (pass1 as Pass1WithSources).shortTitle ?? null,
+    category: (pass1 as Pass1WithSources).category ?? null,
+    summarySection,
+    nextStepsSection,
+    summary: combined,
     nextSteps: null,
-    evidenceSummary: summary, // backward compat: same value as summary
+    evidenceSummary: combined, // backward compat
     jiraTicketKey: pass2.jiraTicketKey ?? null,
     jiraTicketUrl: pass2.jiraTicketUrl ?? null,
-    researchSummary: null, // replaced by structured summary; kept as null for backward compat
+    researchSummary: null,
     researchLinks,
     groomedAt: Date.now(),
     sourcesUsed

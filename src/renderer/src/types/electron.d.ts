@@ -319,6 +319,10 @@ export interface ElectronAPI {
         researchLinks: string | null
         groomedAt: number
         sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[]
+        shortTitle: string | null
+        category: 'research' | 'bug' | 'chore' | null
+        summarySection: string | null
+        nextStepsSection: string | null
       } | null
       error?: string
     }>
@@ -407,6 +411,10 @@ declare global {
     priorityRationale: string | null
     groomedAt: number | null
     sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] | null
+    shortTitle: string | null
+    category: 'research' | 'bug' | 'chore' | null
+    summarySection: string | null
+    nextStepsSection: string | null
     comments: TaskComment[] // always an array, never null
   }
 
