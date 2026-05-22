@@ -51,14 +51,14 @@ export interface GroomingResult {
   priority: 'p1' | 'p2' | 'p3'
   priorityRationale: string // one sentence, e.g. "P1 — blocks auth release this week"
   suggestedAction: 'do' | 'delegate' | 'defer' | 'delete'
-  summary: string | null           // source-by-source Summary + Next Steps (## Summary\n...\n\n## Next Steps\n...)
-  nextSteps: string | null          // always null — embedded inside summary string
-  evidenceSummary: string | null    // backward compat: same value as summary (existing DB column + store reads this)
-  jiraTicketKey: string | null      // only when AI is confident it's the same work item
+  summary: string | null // source-by-source Summary + Next Steps (## Summary\n...\n\n## Next Steps\n...)
+  nextSteps: string | null // always null — embedded inside summary string
+  evidenceSummary: string | null // backward compat: same value as summary (existing DB column + store reads this)
+  jiraTicketKey: string | null // only when AI is confident it's the same work item
   jiraTicketUrl: string | null
-  researchSummary: string | null    // kept as null for backward compat (replaced by structured summary)
-  researchLinks: string | null      // JSON: {title: string, url: string}[] — up to 5 links
-  groomedAt: number                 // Date.now()
+  researchSummary: string | null // kept as null for backward compat (replaced by structured summary)
+  researchLinks: string | null // JSON: {title: string, url: string}[] — up to 5 links
+  groomedAt: number // Date.now()
   sourcesUsed: ('ai' | 'jira' | 'confluence' | 'google')[] // which sources were actually queried and returned results
 }
 
@@ -248,10 +248,17 @@ function resolveGroomingProvider(): {
 /**
  * Call the AI via CLI spawn — pipes the full prompt to stdin, collects stdout,
  * extracts the first JSON object from the response.
+ *
+ * Appends `--tools ""` to disable all CLI tools (WebFetch, Exa, Bash, etc.).
+ * Without this, Claude CLI may attempt to fetch URLs found in task text,
+ * fail with permission errors, and never return JSON.
  */
 function groomWithCLI(prompt: string, command: string): Promise<string> {
+  // Disable all built-in CLI tools for grooming — we only want JSON, no fetches
+  const safeCommand = command.includes('--tools') ? command : `${command} --tools ""`
+
   return new Promise((resolve, reject) => {
-    const child = spawn(command, {
+    const child = spawn(safeCommand, {
       shell: true,
       stdio: ['pipe', 'pipe', 'pipe'],
       env: getShellEnv()
@@ -381,7 +388,7 @@ export async function groomTask(
 
   // ── Pass 1: Source selection ─────────────────────────────────────────────
 
-  const pass1System = `You are a task groomer. Respond with JSON only.`
+  const pass1System = `You are a task groomer. Respond with JSON only. Do NOT use any tools, fetch any URLs, or access the internet. Analyse the task text and respond entirely from your training knowledge.`
 
   const pass1UserBase = `TASK: ${task.text}
 
@@ -497,7 +504,11 @@ Respond with exactly this JSON (no other text):
   if (wantsJira && jiraResult.skipped === false && jiraResult.results.length > 0) {
     sourcesUsed.push('jira')
   }
-  if (wantsConfluence && confluenceResult.skipped === false && confluenceResult.results.length > 0) {
+  if (
+    wantsConfluence &&
+    confluenceResult.skipped === false &&
+    confluenceResult.results.length > 0
+  ) {
     sourcesUsed.push('confluence')
   }
   if (wantsGoogle && webResult.skipped === false && webResult.results.length > 0) {
@@ -509,7 +520,7 @@ Respond with exactly this JSON (no other text):
 
   // ── Pass 2: Summarization ─────────────────────────────────────────────────
 
-  const pass2System = `You are a task groomer. Respond with JSON only.`
+  const pass2System = `You are a task groomer. Respond with JSON only. Do NOT use any tools, fetch any URLs, or access the internet. Use only the source results already provided in the prompt.`
 
   const pass2User = `TASK: ${task.text}
 
