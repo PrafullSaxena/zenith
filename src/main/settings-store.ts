@@ -20,7 +20,9 @@ const DEFAULTS: Record<string, unknown> = {
       connections: []
     },
     'task-groomer': {
-      groomingProvider: ''
+      groomingProvider: '',
+      'schedule.mode': 'simple',
+      'schedule.cron': '0 9 * * *'
     }
   },
   agents: {},

@@ -6,10 +6,231 @@
  *   2. Grooming Schedule — schedule enable/time/frequency settings
  *   3. Integrations — Jira, Confluence, and Web Search cards
  */
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Bot, Ticket, FileText, Globe } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
+
+// ── Visual Cron Builder ───────────────────────────────────────────────────────
+
+/** Parse a single cron field into a human-readable phrase. */
+function describeCronField(
+  value: string,
+  unit: 'minute' | 'hour' | 'dom' | 'month' | 'dow'
+): string {
+  if (value === '*') return `every ${unit === 'dom' ? 'day' : unit === 'dow' ? 'weekday' : unit}`
+  if (value.startsWith('*/')) {
+    const n = value.slice(2)
+    const labels: Record<string, string> = {
+      minute: `mins`, hour: `hours`, dom: `days`, month: `months`, dow: `days`
+    }
+    return `every ${n} ${labels[unit]}`
+  }
+  const DOW_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const MONTH_NAMES = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  if (unit === 'dow') {
+    if (value === '1-5') return 'Mon–Fri'
+    if (value === '0,6') return 'Sat & Sun'
+    return value.split(',').map(d => DOW_NAMES[parseInt(d)] ?? d).join(', ')
+  }
+  if (unit === 'month') {
+    return value.split(',').map(m => MONTH_NAMES[parseInt(m)] ?? m).join(', ')
+  }
+  return value
+}
+
+/** Return a simple English description of the full cron expression. */
+function describeCron(expr: string): string {
+  const parts = expr.trim().split(/\s+/)
+  if (parts.length !== 5) return 'Invalid expression (need 5 fields)'
+  const [min, hour, dom, month, dow] = parts
+
+  try {
+    const timeStr = (min !== '*' && !min.startsWith('*/') && hour !== '*' && !hour.startsWith('*/'))
+      ? `at ${hour.padStart(2, '0')}:${min.padStart(2, '0')}`
+      : min === '*' && hour === '*'
+        ? 'every minute'
+        : min.startsWith('*/') && hour === '*'
+          ? `every ${min.slice(2)} minutes`
+          : `at hour ${hour}, minute ${min}`
+
+    const dayStr = dom !== '*' ? `on day ${dom} of the month` :
+      dow !== '*' ? `on ${describeCronField(dow, 'dow')}` : 'every day'
+    const monthStr = month !== '*' ? ` in ${describeCronField(month, 'month')}` : ''
+
+    return `Runs ${timeStr}, ${dayStr}${monthStr}`
+  } catch {
+    return expr
+  }
+}
+
+interface CronBuilderProps {
+  value: string
+  onChange: (cron: string) => void
+  disabled?: boolean
+}
+
+const CRON_PRESETS = [
+  { label: 'Every 30 min', value: '*/30 * * * *' },
+  { label: 'Every hour', value: '0 * * * *' },
+  { label: 'Every 4 hours', value: '0 */4 * * *' },
+  { label: 'Daily 9am', value: '0 9 * * *' },
+  { label: 'Weekdays 9am', value: '0 9 * * 1-5' },
+  { label: 'Mon & Thu 10am', value: '0 10 * * 1,4' },
+  { label: 'Weekly Mon', value: '0 9 * * 1' },
+]
+
+const FIELD_OPTIONS = {
+  minute: [
+    { label: 'Every minute', value: '*' },
+    { label: 'Every 5 min', value: '*/5' },
+    { label: 'Every 10 min', value: '*/10' },
+    { label: 'Every 15 min', value: '*/15' },
+    { label: 'Every 30 min', value: '*/30' },
+    ...[0, 5, 10, 15, 20, 25, 30, 45].map(v => ({ label: `At :${String(v).padStart(2,'0')}`, value: String(v) }))
+  ],
+  hour: [
+    { label: 'Every hour', value: '*' },
+    { label: 'Every 2h', value: '*/2' },
+    { label: 'Every 4h', value: '*/4' },
+    { label: 'Every 6h', value: '*/6' },
+    { label: 'Every 12h', value: '*/12' },
+    ...[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23].map(h => ({
+      label: `${String(h).padStart(2,'0')}:00`, value: String(h)
+    }))
+  ],
+  dom: [
+    { label: 'Every day', value: '*' },
+    ...[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+      .map(d => ({ label: `Day ${d}`, value: String(d) }))
+  ],
+  month: [
+    { label: 'Every month', value: '*' },
+    ...['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+      .map((m, i) => ({ label: m, value: String(i + 1) }))
+  ],
+  dow: [
+    { label: 'Every day', value: '*' },
+    { label: 'Mon–Fri', value: '1-5' },
+    { label: 'Sat & Sun', value: '0,6' },
+    ...['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d, i) => ({ label: d, value: String(i) }))
+  ]
+}
+
+function CronBuilder({ value, onChange, disabled }: CronBuilderProps) {
+  const parts = useMemo(() => {
+    const p = value.trim().split(/\s+/)
+    return p.length === 5 ? p : ['0', '9', '*', '*', '*']
+  }, [value])
+
+  const [min, hour, dom, month, dow] = parts
+  const [rawMode, setRawMode] = useState(false)
+  const [rawInput, setRawInput] = useState(value)
+
+  const setField = (idx: number, val: string) => {
+    const next = [...parts]
+    next[idx] = val
+    onChange(next.join(' '))
+  }
+
+  const description = useMemo(() => describeCron(value), [value])
+  const isValid = parts.length === 5
+
+  const fieldConf = [
+    { label: 'Minute', key: 'minute' as const, idx: 0, val: min },
+    { label: 'Hour', key: 'hour' as const, idx: 1, val: hour },
+    { label: 'Day', key: 'dom' as const, idx: 2, val: dom },
+    { label: 'Month', key: 'month' as const, idx: 3, val: month },
+    { label: 'Weekday', key: 'dow' as const, idx: 4, val: dow }
+  ]
+
+  return (
+    <div className={cn('flex flex-col gap-3', disabled && 'opacity-40 pointer-events-none')}>
+      {/* Presets */}
+      <div className="flex flex-wrap gap-1.5">
+        {CRON_PRESETS.map(p => (
+          <button
+            key={p.value}
+            type="button"
+            onClick={() => { onChange(p.value); setRawInput(p.value) }}
+            className={cn(
+              'px-2 py-0.5 rounded-md text-[11px] border transition-colors',
+              value === p.value
+                ? 'bg-primary/20 border-primary/40 text-primary'
+                : 'bg-white/4 border-white/8 text-muted-foreground hover:text-foreground hover:border-white/16'
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Field selects / raw toggle */}
+      <div className="flex items-center gap-1 justify-end">
+        <button
+          type="button"
+          onClick={() => setRawMode(!rawMode)}
+          className="text-[10.5px] text-muted-foreground/60 hover:text-primary transition-colors"
+        >
+          {rawMode ? '← Visual' : 'Raw cron →'}
+        </button>
+      </div>
+
+      {rawMode ? (
+        /* Raw cron expression input */
+        <div className="flex flex-col gap-1.5">
+          <input
+            type="text"
+            value={rawInput}
+            onChange={(e) => {
+              setRawInput(e.target.value)
+              if (e.target.value.trim().split(/\s+/).length === 5) {
+                onChange(e.target.value.trim())
+              }
+            }}
+            placeholder="e.g. 0 9 * * 1-5"
+            className="w-full rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 text-[12px] font-mono text-foreground focus:outline-none focus:border-primary"
+          />
+          <p className="text-[10.5px] text-muted-foreground/50">
+            Format: minute hour day-of-month month day-of-week
+          </p>
+        </div>
+      ) : (
+        /* Visual selects grid */
+        <div className="grid grid-cols-5 gap-2">
+          {fieldConf.map(({ label, key, idx, val }) => (
+            <div key={key} className="flex flex-col gap-1">
+              <span className="text-[10px] text-muted-foreground/60 text-center">{label}</span>
+              <select
+                value={FIELD_OPTIONS[key].some(o => o.value === val) ? val : '__custom__'}
+                onChange={(e) => {
+                  if (e.target.value !== '__custom__') setField(idx, e.target.value)
+                }}
+                className="w-full rounded-lg border border-white/8 bg-white/4 px-1 py-1 text-[11px] text-foreground focus:outline-none focus:border-primary appearance-none text-center"
+              >
+                {FIELD_OPTIONS[key].map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+                {!FIELD_OPTIONS[key].some(o => o.value === val) && (
+                  <option value="__custom__">{val}</option>
+                )}
+              </select>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Expression + description */}
+      <div className="rounded-lg border border-white/6 bg-white/[0.02] px-3 py-2">
+        <div className="flex items-center gap-2">
+          <code className="text-[11px] font-mono text-primary/80">{value}</code>
+          {isValid && <span className="text-[10px] text-muted-foreground/50 ml-auto">·</span>}
+          <span className="text-[11px] text-muted-foreground/70 truncate">{description}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
 import { useSettingsStore } from '../../stores/settings-store'
 import { useAgentStore } from '../../stores/agent-store'
 
@@ -173,6 +394,10 @@ export default function TaskGroomerSettings(): React.JSX.Element {
   const scheduleTime = (getSetting('plugins.task-groomer.schedule.time') as string) ?? '09:00'
   const scheduleFrequency =
     (getSetting('plugins.task-groomer.schedule.frequency') as string) ?? 'daily'
+  const scheduleMode =
+    (getSetting('plugins.task-groomer.schedule.mode') as string) ?? 'simple'
+  const scheduleCron =
+    (getSetting('plugins.task-groomer.schedule.cron') as string) ?? '0 9 * * *'
 
   // ── Data fetching ──────────────────────────────────────────────────────
 
@@ -376,10 +601,30 @@ export default function TaskGroomerSettings(): React.JSX.Element {
 
         {/* ── Section 1: Grooming Schedule ─────────────────────────── */}
         <div className="rounded-xl border border-white/6 bg-white/[0.04] p-5">
-          <h3 className="text-[13px] font-medium text-foreground mb-4">Grooming Schedule</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[13px] font-medium text-foreground">Grooming Schedule</h3>
+            {/* Mode toggle */}
+            <div className="flex items-center rounded-lg border border-white/8 bg-white/[0.03] p-0.5 gap-0.5">
+              {(['simple', 'cron'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setSetting('plugins.task-groomer.schedule.mode', mode)}
+                  className={cn(
+                    'px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
+                    scheduleMode === mode
+                      ? 'bg-white/10 text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {mode === 'simple' ? 'Simple' : 'Cron'}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="space-y-3">
-            {/* Enable toggle */}
+            {/* Enable toggle — always shown */}
             <div className="flex items-center justify-between">
               <label className="text-[12px] text-muted-foreground">Auto-grooming enabled</label>
               <button
@@ -398,36 +643,52 @@ export default function TaskGroomerSettings(): React.JSX.Element {
               </button>
             </div>
 
-            {/* Schedule time */}
-            <div>
-              <label className="mb-1.5 block text-[12px] text-muted-foreground">
-                Schedule time
-              </label>
-              <input
-                type="time"
-                value={scheduleTime}
-                onChange={(e) => setSetting('plugins.task-groomer.schedule.time', e.target.value)}
-                disabled={!scheduleEnabled}
-                className="w-full rounded-lg border border-white/8 bg-white/4 px-2 py-1 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary disabled:opacity-40"
-              />
-            </div>
+            {scheduleMode === 'simple' ? (
+              <>
+                {/* Schedule time */}
+                <div>
+                  <label className="mb-1.5 block text-[12px] text-muted-foreground">
+                    Schedule time
+                  </label>
+                  <input
+                    type="time"
+                    value={scheduleTime}
+                    onChange={(e) => setSetting('plugins.task-groomer.schedule.time', e.target.value)}
+                    disabled={!scheduleEnabled}
+                    className="w-full rounded-lg border border-white/8 bg-white/4 px-2 py-1 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary disabled:opacity-40"
+                  />
+                </div>
 
-            {/* Frequency */}
-            <div>
-              <label className="mb-1.5 block text-[12px] text-muted-foreground">Frequency</label>
-              <select
-                value={scheduleFrequency}
-                onChange={(e) =>
-                  setSetting('plugins.task-groomer.schedule.frequency', e.target.value)
-                }
-                disabled={!scheduleEnabled}
-                className="w-full rounded-lg border border-white/8 bg-white/4 px-2 py-1 text-[12px] text-foreground focus:outline-none focus:border-primary disabled:opacity-40 appearance-none"
-              >
-                <option value="daily">Daily</option>
-                <option value="weekdays">Weekdays only</option>
-                <option value="weekly">Weekly</option>
-              </select>
-            </div>
+                {/* Frequency */}
+                <div>
+                  <label className="mb-1.5 block text-[12px] text-muted-foreground">Frequency</label>
+                  <select
+                    value={scheduleFrequency}
+                    onChange={(e) =>
+                      setSetting('plugins.task-groomer.schedule.frequency', e.target.value)
+                    }
+                    disabled={!scheduleEnabled}
+                    className="w-full rounded-lg border border-white/8 bg-white/4 px-2 py-1 text-[12px] text-foreground focus:outline-none focus:border-primary disabled:opacity-40 appearance-none"
+                  >
+                    <option value="daily">Daily</option>
+                    <option value="weekdays">Weekdays only</option>
+                    <option value="weekly">Weekly</option>
+                  </select>
+                </div>
+              </>
+            ) : (
+              /* ── Cron mode ── */
+              <div className={!scheduleEnabled ? 'opacity-40 pointer-events-none' : ''}>
+                <label className="mb-2 block text-[12px] text-muted-foreground">
+                  Cron expression
+                </label>
+                <CronBuilder
+                  value={scheduleCron}
+                  onChange={(cron) => setSetting('plugins.task-groomer.schedule.cron', cron)}
+                  disabled={!scheduleEnabled}
+                />
+              </div>
+            )}
           </div>
         </div>
 

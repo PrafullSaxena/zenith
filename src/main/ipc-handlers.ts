@@ -1820,22 +1820,79 @@ export function initGroomingSchedule(mainWindow: BrowserWindow): void {
     return new Date().toDateString()
   }
 
-  function getScheduleConfig(): { enabled: boolean; time: string } {
+  function getScheduleConfig(): { enabled: boolean; time: string; mode: string; cron: string } {
     const enabled = (getSetting('plugins.task-groomer.schedule.enabled') as boolean) ?? false
     const time = (getSetting('plugins.task-groomer.schedule.time') as string) ?? '09:00'
-    return { enabled, time }
+    const mode = (getSetting('plugins.task-groomer.schedule.mode') as string) ?? 'simple'
+    const cron = (getSetting('plugins.task-groomer.schedule.cron') as string) ?? '0 9 * * *'
+    return { enabled, time, mode, cron }
   }
 
+  /**
+   * Minimal cron matcher — supports *, specific values, step syntax (N), and ranges (a-b) and
+   * comma-separated lists. Checks the 5-field cron expression against the given Date.
+   */
+  function matchesCron(expr: string, now: Date): boolean {
+    const parts = expr.trim().split(/\s+/)
+    if (parts.length !== 5) return false
+    const [minExpr, hourExpr, domExpr, monthExpr, dowExpr] = parts
+
+    const matchField = (field: string, value: number): boolean => {
+      if (field === '*') return true
+      return field.split(',').some((part) => {
+        if (part.includes('/')) {
+          const [range, step] = part.split('/')
+          const stepN = parseInt(step)
+          if (isNaN(stepN)) return false
+          if (range === '*') return value % stepN === 0
+          const [from] = range.split('-').map(Number)
+          return (value - from) % stepN === 0 && value >= from
+        }
+        if (part.includes('-')) {
+          const [lo, hi] = part.split('-').map(Number)
+          return value >= lo && value <= hi
+        }
+        return parseInt(part) === value
+      })
+    }
+
+    return (
+      matchField(minExpr, now.getMinutes()) &&
+      matchField(hourExpr, now.getHours()) &&
+      matchField(domExpr, now.getDate()) &&
+      matchField(monthExpr, now.getMonth() + 1) &&
+      matchField(dowExpr, now.getDay())
+    )
+  }
+
+  /**
+   * Tracks the last minute a cron-triggered groom was fired, to prevent
+   * re-firing within the same minute when the 60-second poll fires again.
+   */
+  let lastCronFireMinute: string | null = null
+
   function shouldRunNow(): boolean {
-    const { enabled, time } = getScheduleConfig()
+    const { enabled, time, mode, cron } = getScheduleConfig()
     if (!enabled) return false
     if (groomingRunActive) return false
 
+    const now = new Date()
+
+    if (mode === 'cron') {
+      // Cron mode: fire whenever expression matches the current minute
+      if (!matchesCron(cron, now)) return false
+      // Deduplicate: only fire once per matching minute
+      const minuteKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`
+      if (lastCronFireMinute === minuteKey) return false
+      lastCronFireMinute = minuteKey
+      return true
+    }
+
+    // Simple mode: fire once per day at the configured time
     const today = getTodayStr()
-    if (lastAutoGroomDate === today) return false // Already ran today
+    if (lastAutoGroomDate === today) return false
 
     const [hours, minutes] = time.split(':').map(Number)
-    const now = new Date()
     return now.getHours() > hours || (now.getHours() === hours && now.getMinutes() >= minutes)
   }
 
