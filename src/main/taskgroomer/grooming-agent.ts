@@ -259,16 +259,28 @@ function resolveGroomingProvider(): {
 // ── CLI helper ────────────────────────────────────────────────────────────
 
 /**
+ * Returns a CLI-specific flag to disable tool use during grooming.
+ * Each CLI has a different (or no) flag for this purpose:
+ *   - Claude CLI: `--tools ""` disables all built-in tools (WebFetch, Exa, etc.)
+ *   - Gemini CLI: no equivalent flag; rely on system-prompt instruction only
+ *   - Others (codex, ollama, cursor-agent): no equivalent; rely on system prompt
+ */
+function getNoToolsFlag(command: string): string {
+  const base = command.trim().split(/\s+/)[0].toLowerCase()
+  // Claude CLI binary is "claude"; never add the flag if already present
+  if ((base === 'claude' || base.endsWith('/claude')) && !command.includes('--tools')) {
+    return '--tools ""'
+  }
+  return ''
+}
+
+/**
  * Call the AI via CLI spawn — pipes the full prompt to stdin, collects stdout,
  * extracts the first JSON object from the response.
- *
- * Appends `--tools ""` to disable all CLI tools (WebFetch, Exa, Bash, etc.).
- * Without this, Claude CLI may attempt to fetch URLs found in task text,
- * fail with permission errors, and never return JSON.
  */
 function groomWithCLI(prompt: string, command: string): Promise<string> {
-  // Disable all built-in CLI tools for grooming — we only want JSON, no fetches
-  const safeCommand = command.includes('--tools') ? command : `${command} --tools ""`
+  const toolFlag = getNoToolsFlag(command)
+  const safeCommand = toolFlag ? `${command} ${toolFlag}` : command
 
   return new Promise((resolve, reject) => {
     const child = spawn(safeCommand, {
@@ -478,7 +490,13 @@ Respond with exactly this JSON (no other text):
 
     const summarySection = (p1 as Pass1NoSources).summarySection ?? null
     const nextStepsSection = (p1 as Pass1NoSources).nextStepsSection ?? null
-    const combined = [summarySection && `## Summary\n${summarySection}`, nextStepsSection && `## Next Steps\n${nextStepsSection}`].filter(Boolean).join('\n\n') || null
+    const combined =
+      [
+        summarySection && `## Summary\n${summarySection}`,
+        nextStepsSection && `## Next Steps\n${nextStepsSection}`
+      ]
+        .filter(Boolean)
+        .join('\n\n') || null
 
     return {
       priority: p1.priority,
@@ -615,7 +633,13 @@ researchLinks: up to 5 most relevant links from the source results.`
 
   const summarySection = pass2.summarySection ?? null
   const nextStepsSection = pass2.nextStepsSection ?? null
-  const combined = [summarySection && `## Summary\n${summarySection}`, nextStepsSection && `## Next Steps\n${nextStepsSection}`].filter(Boolean).join('\n\n') || null
+  const combined =
+    [
+      summarySection && `## Summary\n${summarySection}`,
+      nextStepsSection && `## Next Steps\n${nextStepsSection}`
+    ]
+      .filter(Boolean)
+      .join('\n\n') || null
 
   return {
     priority: pass2.priority,
